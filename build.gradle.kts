@@ -118,7 +118,7 @@ tasks.named<Jar>("jar") {
 
 tasks.named<KotlinCompile>("compileKotlin") {
     kotlinOptions.jvmTarget = "1.8"
-
+    dependsOn("generateSources")
 }
 
 tasks.named<KotlinCompile>("compileTestKotlin") {
@@ -134,8 +134,4 @@ tasks.withType<Test> {
 
 tasks.withType<Wrapper> {
     gradleVersion = "5.1.1"
-}
-
-tasks.withType<JavaCompile> {
-    dependsOn("generateSources")
 }
