@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val slf4jVersion = "1.7.25"
-val ktorVersion = "1.1.2"
 val prometheusVersion = "0.5.0"
 val gsonVersion = "2.7"
 val navStreamsVersion = "1a24b7e"
@@ -12,11 +11,17 @@ val assertJVersion = "3.11.1"
 val jacksonVersion = "2.9.8"
 val wireMockVersion = "2.19.0"
 val mockkVersion="1.9"
+val springBootVersion="2.1.3.RELEASE"
+val kafkaVersion="2.0.1"
+val confluentVersion="5.0.0"
 
 plugins {
     kotlin("jvm") version "1.3.20"
-
+    id("org.springframework.boot") version "2.1.3.RELEASE"
+    kotlin("plugin.spring") version "1.3.20"
 }
+
+apply(plugin = "io.spring.dependency-management")
 
 buildscript {
     dependencies {
@@ -30,18 +35,16 @@ val jaxbTargetDir = file("$buildDir/generated/src/main/java")
 
 dependencies {
     compile(kotlin("stdlib"))
+    compile(kotlin("reflect"))
     compile("ch.qos.logback:logback-classic:1.2.3")
     compile("net.logstash.logback:logstash-logback-encoder:5.2")
-    compile("io.ktor:ktor-server-netty:$ktorVersion")
-    compile("io.ktor:ktor-html-builder:$ktorVersion")
-    compile("io.ktor:ktor-gson:$ktorVersion")
-    compile("no.nav.helse:streams:$navStreamsVersion")
+    compile("org.apache.kafka:kafka-streams:$kafkaVersion")
+    compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
     compile("io.prometheus:simpleclient_common:$prometheusVersion")
     compile("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     compile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    compile("com.github.kittinunf.fuel:fuel:$fuelVersion")
     // jdk 11 removed all jaxb, xml support jars
     compile("javax.validation:validation-api:2.0.1.Final")
     compile("javax.xml.bind:jaxb-api:2.3.1")
@@ -50,6 +53,9 @@ dependencies {
     compile("javax.annotation:javax.annotation-api:1.3.2")
     compile("javax.activation:activation:1.1")
 
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("com.ibm.mq:mq-jms-spring-boot-starter:2.0.0")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testCompile("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testCompile("org.assertj:assertj-core:$assertJVersion")
@@ -120,10 +126,12 @@ tasks.named<Jar>("jar") {
 tasks.named<KotlinCompile>("compileKotlin") {
     kotlinOptions.jvmTarget = "1.8"
     dependsOn("generateSources")
+    kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
 }
 
 tasks.named<KotlinCompile>("compileTestKotlin") {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
 }
 
 tasks.withType<Test> {
