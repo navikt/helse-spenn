@@ -35,6 +35,7 @@ dependencies {
     compile("io.ktor:ktor-server-netty:$ktorVersion")
     compile("io.ktor:ktor-html-builder:$ktorVersion")
     compile("io.ktor:ktor-gson:$ktorVersion")
+    compile("no.nav.helse:streams:$navStreamsVersion")
     compile("io.prometheus:simpleclient_common:$prometheusVersion")
     compile("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
