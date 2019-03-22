@@ -1,7 +1,5 @@
-package no.nav.helse.spenn
+package no.nav.helse
 
-import no.nav.helse.integrasjon.okonomi.oppdrag.Environment
-import no.nav.helse.integrasjon.okonomi.oppdrag.VedtakListener
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -13,6 +11,5 @@ class Application
 fun main(args: Array<String>) {
     runApplication<Application>(*args) {
         setBannerMode(Banner.Mode.OFF)
-        VedtakListener(Environment()).start()
     }
 }

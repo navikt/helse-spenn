@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.jms.OppdragMQSender
 import org.springframework.web.bind.annotation.*
 
 @RestController

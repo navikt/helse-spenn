@@ -1,6 +1,7 @@
-package no.nav.helse.integrasjon.okonomi.oppdrag
+package no.nav.helse
 
 data class Environment(
+        val appId: String = "spenn-1",
         val kafkaUsername: String? = getEnvVarOptional("SERVICEUSER_USERNAME"),
         val kafkaPassword: String? = getEnvVarOptional("SERVICEUSER_PASSWORD"),
         val bootstrapServersUrl: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS"),

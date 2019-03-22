@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.vedtak
 
 import io.prometheus.client.hotspot.DefaultExports
 

@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.jms
+package no.nav.helse.spenn.oppdrag
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
