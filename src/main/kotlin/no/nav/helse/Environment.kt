@@ -11,7 +11,6 @@ data class Environment(
 
 )
 
-
 private fun getEnvVarOptional(varName: String, defaultValue: String? = null) = System.getenv(varName) ?: defaultValue
 
 private fun getEnvVar(varName: String, defaultValue: String? = null) =

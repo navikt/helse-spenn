@@ -55,3 +55,10 @@ enum class SatsTypeKode(val kode : String ) {
     ÅRLIG("AAR"),
     A_KONTO("AKTO")
 }
+
+enum class KvitteringTransaksjonStatus(val kode : String) {
+    OK("00"),
+    AKSEPTERT_MEN_NOE_ER_FEIL("04"),
+    AVVIST_FUNKSJONELLE_FEIL("08"),
+    AVVIST_TEKNISK_FEIL("12")
+}

@@ -12,7 +12,9 @@ class OppdragMQReceiver {
 
     @JmsListener(destination = "\${oppdrag.queue.mottak}")
     fun receiveOppdragKvittering(kvittering: String) {
-        log.info("Received: "+kvittering)
+
     }
+
+
 
 }
