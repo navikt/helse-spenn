@@ -7,7 +7,8 @@ data class Environment(
         val bootstrapServersUrl: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS"),
         val navTruststorePath: String? = getEnvVarOptional("NAV_TRUSTSTORE_PATH"),
         val plainTextKafka: String? = getEnvVarOptional("PLAIN_TEXT_KAFKA"),
-        val navTruststorePassword: String? = getEnvVarOptional("NAV_TRUSTSTORE_PASSWORD")
+        val navTruststorePassword: String? = getEnvVarOptional("NAV_TRUSTSTORE_PASSWORD"),
+        val oppdragDBNavn: String = getEnvVar("OPPDRAG_DB_NAVN")
 
 )
 

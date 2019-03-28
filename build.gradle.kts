@@ -62,6 +62,8 @@ dependencies {
     compile("javax.activation:activation:1.1")
 
     compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.data:spring-data-jdbc")
+    compile("org.flywaydb:flyway-core")
     compile("com.ibm.mq:mq-jms-spring-boot-starter:2.0.0")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
