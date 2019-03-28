@@ -54,10 +54,8 @@ class OppdragMapperTest {
             sats = BigDecimal(1230)
             fradragTillegg = TfradragTillegg.T
             typeSats = SatsTypeKode.ENGANGSBELØP.kode
-            skyldnerId = "123456" //behandlende enhetsorgnr
-            utbetalesTilId = orgnr_fnr //fnr eller orgnr
             saksbehId = appNavn
-            brukKjoreplan = "B" // ?
+            brukKjoreplan = "N"
             attestant180.add(attestant)
 
         }

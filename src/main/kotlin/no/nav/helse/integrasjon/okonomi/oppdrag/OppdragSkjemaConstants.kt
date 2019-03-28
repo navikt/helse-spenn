@@ -11,7 +11,7 @@ class OppdragSkjemaConstants {
 
 enum class AksjonsKode(val kode: String) {
     OPPDATER("1"),
-    SIMULERING("3")
+    SIMULERING("S")
 }
 
 enum class EndringsKode(val kode : String) {

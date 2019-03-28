@@ -4,10 +4,11 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/oppdrag")
-class OppdragRest(val mqSender: OppdragMQSender) {
+class OppdragRest(val mqSender: OppdragMQSender, val jaxb : JAXBOppdrag) {
 
-    @GetMapping("/{melding}")
-    fun sendOppdrag(@PathVariable melding: String) {
-        mqSender.sendOppdrag(melding)
+    @PostMapping
+    fun sendOppdrag(@RequestBody oppdragXml: String) {
+        mqSender.sendOppdrag(jaxb.toOppdrag(oppdragXml))
     }
+
 }
