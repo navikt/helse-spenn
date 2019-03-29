@@ -15,23 +15,31 @@ val springBootVersion="2.1.3.RELEASE"
 val kafkaVersion="2.0.1"
 val confluentVersion="5.0.0"
 
+
 plugins {
     kotlin("jvm") version "1.3.20"
     id("org.springframework.boot") version "2.1.3.RELEASE"
     kotlin("plugin.spring") version "1.3.20"
 }
 
-apply(plugin = "io.spring.dependency-management")
+
 
 buildscript {
+
     dependencies {
         classpath("org.junit.platform:junit-platform-gradle-plugin:1.2.0")
     }
 
 }
 
+
+apply(plugin = "io.spring.dependency-management")
+
+
+
 val jaxb by configurations.creating
 val jaxbTargetDir = file("$buildDir/generated/src/main/java")
+
 
 dependencies {
     compile(kotlin("stdlib"))
@@ -60,7 +68,6 @@ dependencies {
     testCompile("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testCompile("org.assertj:assertj-core:$assertJVersion")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
-
     jaxb ("javax.xml.bind:jaxb-api:2.3.1")
     jaxb ("com.sun.xml.bind:jaxb-impl:2.3.2")
     jaxb ("com.sun.xml.bind:jaxb-xjc:2.3.2")
@@ -102,25 +109,6 @@ sourceSets["main"].java.srcDir(jaxbTargetDir)
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
-}
-
-tasks.named<Jar>("jar") {
-    baseName = "app"
-
-    manifest {
-       // attributes["Main-Class"] = mainClass
-        attributes["Class-Path"] = configurations["compile"].map {
-            it.name
-        }.joinToString(separator = " ")
-    }
-
-    doLast {
-        configurations["compile"].forEach {
-            val file = File("$buildDir/libs/${it.name}")
-            if (!file.exists())
-                it.copyTo(file)
-        }
-    }
 }
 
 tasks.named<KotlinCompile>("compileKotlin") {
