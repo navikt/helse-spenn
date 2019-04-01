@@ -1,0 +1,8 @@
+rabbitmq:
+  image: ibmcom/mq
+  ports:
+    - "1414:1414"
+    - "9157:9157"
+  environment:
+    - LICENSE=accept
+    - MQ_QMGR_NAME=QM1
