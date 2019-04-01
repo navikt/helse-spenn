@@ -1,0 +1,3 @@
+export OPPDRAG_DB_NAVN=helse-spenn-oppdrag
+export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+
