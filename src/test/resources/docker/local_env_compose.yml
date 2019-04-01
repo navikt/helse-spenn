@@ -6,3 +6,8 @@ rabbitmq:
   environment:
     - LICENSE=accept
     - MQ_QMGR_NAME=QM1
+
+postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
