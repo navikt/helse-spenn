@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 val slf4jVersion = "1.7.25"
 val prometheusVersion = "0.5.0"
@@ -15,14 +16,11 @@ val springBootVersion="2.1.3.RELEASE"
 val kafkaVersion="2.0.1"
 val confluentVersion="5.0.0"
 
-
 plugins {
     kotlin("jvm") version "1.3.20"
     id("org.springframework.boot") version "2.1.3.RELEASE"
     kotlin("plugin.spring") version "1.3.20"
 }
-
-
 
 buildscript {
 
@@ -32,10 +30,7 @@ buildscript {
 
 }
 
-
 apply(plugin = "io.spring.dependency-management")
-
-
 
 val jaxb by configurations.creating
 val jaxbTargetDir = file("$buildDir/generated/src/main/java")
@@ -122,6 +117,11 @@ tasks.named<KotlinCompile>("compileKotlin") {
 tasks.named<KotlinCompile>("compileTestKotlin") {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict")
+}
+
+val activeProfile: String = (findProperty("profile")?: "default") as String
+tasks.withType<BootRun> {
+    systemProperty("spring.profiles.active", activeProfile)
 }
 
 tasks.withType<Test> {
