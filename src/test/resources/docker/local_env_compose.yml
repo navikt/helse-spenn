@@ -44,9 +44,7 @@ services:
       - MQ_QMGR_NAME=QM1
 
   postgres:
-    image: postgres
+    build: ./postgres
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_DB=helse-spenn-oppdrag
 
