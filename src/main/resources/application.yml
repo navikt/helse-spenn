@@ -1,3 +1,11 @@
+spring:
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/${OPPDRAG_DB_NAVN}
+    username: postgres
+    password:
+    driverClassName: org.postgresql.Driver
+
 ibm:
   mq:
     queue-manager: ${MQ_QUEUE_MANAGER:QM1}
