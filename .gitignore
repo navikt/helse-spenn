@@ -55,4 +55,4 @@ nb-configuration.xml
 *.swp
 mqjms.log.*
 
-full-stack/*
+full-stack
