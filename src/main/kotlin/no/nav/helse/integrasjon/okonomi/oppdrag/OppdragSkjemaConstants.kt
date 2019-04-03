@@ -2,6 +2,7 @@ package no.nav.helse.integrasjon.okonomi.oppdrag
 
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 
+
 class OppdragSkjemaConstants {
 
     companion object {
@@ -61,4 +62,11 @@ enum class KvitteringTransaksjonStatus(val kode : String) {
     AKSEPTERT_MEN_NOE_ER_FEIL("04"),
     AVVIST_FUNKSJONELLE_FEIL("08"),
     AVVIST_TEKNISK_FEIL("12")
+}
+
+enum class GradTypeKode(val kode: String ) {
+    UFØREGRAD("UFOR"),
+    UTBETALINGSGRAD("UBGR"),
+    UTTAKSGRAD_ALDERSPENSJON("UTAP"),
+    UTTAKSGRAD_AFP("AFPG")
 }
