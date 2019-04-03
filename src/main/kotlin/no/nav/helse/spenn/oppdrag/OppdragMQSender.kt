@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
+
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

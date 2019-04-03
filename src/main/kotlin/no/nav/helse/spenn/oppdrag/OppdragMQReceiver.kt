@@ -13,6 +13,7 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag) {
 
     @JmsListener(destination = "\${oppdrag.queue.mottak}")
     fun receiveOppdragKvittering(kvittering: String) {
+        log.info(kvittering)
         handleKvittering(jaxb.toOppdrag(kvittering))
     }
 
