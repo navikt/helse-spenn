@@ -18,7 +18,7 @@ import javax.xml.transform.stream.StreamSource
 
 class OppdragMapperTest {
 
-    val oppdragMapper = OppdragMapper(ObjectFactory())
+    val oppdragMapper = OppdragMapper()
 
     @Test
     fun createOppdragXml() {

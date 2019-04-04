@@ -1,6 +1,13 @@
 package no.nav.helse.spenn.oppdrag
 
 import no.nav.helse.integrasjon.okonomi.oppdrag.*
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.APP
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.BOS
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.KOMPONENT_KODE
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP_ENHET
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toFnrOrOrgnr
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toXMLDate
 import no.trygdeetaten.skjema.oppdrag.ObjectFactory
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
@@ -14,13 +21,14 @@ import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 
 @Component
-class OppdragMapper(val objectFactory: ObjectFactory) {
+class OppdragMapper {
 
+    val objectFactory = ObjectFactory()
 
     fun mapUtbetalingsOppdrag(utbetaling : UtbetalingsOppdrag): Oppdrag {
 
         val oppdragsEnhet = objectFactory.createOppdragsEnhet120().apply {
-            enhet = Companion.SP_ENHET
+            enhet = SP_ENHET
             typeEnhet = BOS
             datoEnhetFom = toXMLDate(LocalDate.EPOCH)
         }
@@ -72,23 +80,4 @@ class OppdragMapper(val objectFactory: ObjectFactory) {
 
         }
     }
-
-    private fun toXMLDate(dato : LocalDate) : XMLGregorianCalendar {
-        return DatatypeFactory.newInstance()
-                .newXMLGregorianCalendar(GregorianCalendar.from(dato.atStartOfDay(ZoneId.systemDefault())))
-    }
-
-    private fun toFnrOrOrgnr(fonr: String) : String {
-        if (fonr.length==9) return "00" + fonr
-        return fonr
-    }
-
-    companion object {
-        const val SP_ENHET = "4151"
-        const val BOS = "BOS"
-        const val KOMPONENT_KODE = "SPREFAG-IOP"
-        const val APP = "SPENN"
-        const val SP = "SP"
-    }
-
 }

@@ -1,13 +1,38 @@
 package no.nav.helse.integrasjon.okonomi.oppdrag
 
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.*
+import javax.xml.datatype.DatatypeFactory
+import javax.xml.datatype.XMLGregorianCalendar
 
 
 class OppdragSkjemaConstants {
 
     companion object {
-        @JvmField val JAXB_CLASS = Oppdrag::class.java
+        @JvmField
+        val JAXB_CLASS = Oppdrag::class.java
+        const val SP_ENHET = "4151"
+        const val BOS = "BOS"
+        const val KOMPONENT_KODE = "SPREFAG-IOP"
+        const val APP = "SPENN"
+        const val SP = "SP"
+
+        @JvmStatic
+        fun toXMLDate(dato : LocalDate) : XMLGregorianCalendar {
+            return DatatypeFactory.newInstance()
+                    .newXMLGregorianCalendar(GregorianCalendar.from(dato.atStartOfDay(ZoneId.systemDefault())))
+        }
+
+        @JvmStatic
+        fun toFnrOrOrgnr(fonr: String) : String {
+            if (fonr.length==9) return "00" + fonr
+            return fonr
+        }
+
     }
+
 }
 
 enum class AksjonsKode(val kode: String) {
