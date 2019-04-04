@@ -7,7 +7,7 @@
    <artifactId>spenn</artifactId>
    <version>0.1-SNAPSHOT</version>
    <name>helse-spenn</name>
-   <description>Boilerplate for helse Kafka apps</description>
+   <description>Utbetaling</description>
    <url>https://github.com/navikt/helse-spenn</url>
    <parent>
       <groupId>org.springframework.boot</groupId>
@@ -23,8 +23,8 @@
       <prometheus.version>0.5.0</prometheus.version>
       <logback.version>1.2.3</logback.version>
       <logstash.encoder.version>5.2</logstash.encoder.version>
-      <maven.compiler.source>1.8</maven.compiler.source>
-      <maven.compiler.target>1.8</maven.compiler.target>
+      <maven.compiler.source>11</maven.compiler.source>
+      <maven.compiler.target>11</maven.compiler.target>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <jackson.version>2.9.8</jackson.version>
       <jaxb-api.version>2.3.1</jaxb-api.version>
