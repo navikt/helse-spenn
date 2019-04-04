@@ -210,6 +210,7 @@
                      <goal>xsdtojava</goal>
                   </goals>
                   <configuration>
+                     <sourceRoot>${project.build.directory}/generated-sources/xsd2java</sourceRoot>
                      <xsdOptions>
                         <xsdOption>
                            <xsd>${basedir}/src/main/xsd/oppdragskjema-v1.xsd</xsd>
