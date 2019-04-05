@@ -3,7 +3,6 @@ package no.nav.helse.integrasjon.okonomi.oppdrag
 import no.nav.helse.spenn.oppdrag.OppdragMapper
 import no.nav.helse.spenn.oppdrag.OppdragsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.trygdeetaten.skjema.oppdrag.ObjectFactory
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.StringReader
@@ -44,7 +43,7 @@ class OppdragMapperTest {
     fun readOppdragKvitteringXml() {
         val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
         val unmarshaller = jaxbContext.createUnmarshaller()
-        val xmlInputFactory = XMLInputFactory.newFactory().apply {
+        val xmlInputFactory = XMLInputFactory.newInstance().apply {
             setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
             setProperty(XMLInputFactory.SUPPORT_DTD, false)
         }

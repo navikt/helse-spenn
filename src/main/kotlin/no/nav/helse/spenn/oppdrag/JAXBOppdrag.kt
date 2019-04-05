@@ -21,7 +21,7 @@ class JAXBOppdrag {
         setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
     }
 
-    val xmlInputFactory = XMLInputFactory.newFactory().apply {
+    val xmlInputFactory = XMLInputFactory.newInstance().apply {
         setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
         setProperty(XMLInputFactory.SUPPORT_DTD, false)
     }

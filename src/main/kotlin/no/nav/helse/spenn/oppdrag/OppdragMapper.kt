@@ -23,7 +23,7 @@ import javax.xml.datatype.XMLGregorianCalendar
 @Component
 class OppdragMapper {
 
-    val objectFactory = ObjectFactory()
+    private val objectFactory = ObjectFactory()
 
     fun mapUtbetalingsOppdrag(utbetaling : UtbetalingsOppdrag): Oppdrag {
 
