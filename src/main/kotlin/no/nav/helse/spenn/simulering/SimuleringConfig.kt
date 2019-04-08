@@ -25,8 +25,8 @@ class SimuleringConfig {
     private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
     private val SERVICE = QName(NAMESPACE, "simulerFpService")
     private val PORT = QName(NAMESPACE, "simulerFpServicePort")
-    private val STS_CLIENT_AUTHENTICATION_POLICY = "classpath:ws/untPolicy.xml"
-    private val STS_SAML_POLICY = "classpath:ws/requestSamlPolicy.xml"
+    private val STS_CLIENT_AUTHENTICATION_POLICY = "classpath:untPolicy.xml"
+    private val STS_SAML_POLICY = "classpath:requestSamlPolicy.xml"
 
     @Bean
     fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
