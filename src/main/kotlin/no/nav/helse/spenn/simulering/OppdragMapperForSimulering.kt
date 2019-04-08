@@ -15,8 +15,8 @@ import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
 import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
+import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory
-import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdrag
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -29,8 +29,9 @@ class OppdragMapperForSimulering() {
 
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val objectFactory = ObjectFactory()
+    private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
-    fun mapUtbetalingsOppdrag(utbetaling : UtbetalingsOppdrag): Oppdrag {
+    fun mapOppdragToSimuleringRequest(utbetaling : UtbetalingsOppdrag): SimulerBeregningRequest {
 
         val oppdragsEnhet = Enhet().apply {
             enhet = SP_ENHET
@@ -38,7 +39,7 @@ class OppdragMapperForSimulering() {
             datoEnhetFom = LocalDate.EPOCH.format(formatter)
         }
 
-        return  objectFactory.createOppdrag().apply {
+        val oppdrag = objectFactory.createOppdrag().apply {
             kodeEndring = EndringsKode.NY.kode
             kodeFagomraade = SP
             fagsystemId = utbetaling.id
@@ -48,6 +49,12 @@ class OppdragMapperForSimulering() {
             enhet.add(oppdragsEnhet)
             utbetaling.oppdragslinje.forEach {
                 oppdragslinje.add(mapToOppdragslinje150(it))
+            }
+        }
+        return grensesnittFactory.createSimulerBeregningRequest().apply {
+            this.request = objectFactory.createSimulerBeregningRequest().apply {
+                this.oppdrag = oppdrag
+                simuleringsPeriode = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest.SimuleringsPeriode()
             }
         }
 

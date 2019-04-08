@@ -11,4 +11,9 @@ class OppdragRest(val mqSender: OppdragMQSender, val jaxb : JAXBOppdrag) {
         mqSender.sendOppdrag(jaxb.toOppdrag(oppdragXml))
     }
 
+
+    @PostMapping("/simulering")
+    fun sendSimulering(@RequestBody oppdragXml: String) {
+        
+    }
 }
