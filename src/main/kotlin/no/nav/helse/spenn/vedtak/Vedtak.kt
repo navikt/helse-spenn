@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.vedtak
 
-import jdk.jfr.Percentage
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -22,6 +21,5 @@ data class Vedtaksperiode(
 
 data class Fordeling(
         val mottager: String,
-        val kontonummer: String,
-        val andel: BigDecimal
+        val andel: Int
 )

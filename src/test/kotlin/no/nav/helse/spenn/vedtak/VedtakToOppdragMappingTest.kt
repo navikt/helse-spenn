@@ -4,7 +4,6 @@ import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
 import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.OppdragsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -47,8 +46,7 @@ class VedtakToOppdragMappingTest {
                         dagsats = BigDecimal.valueOf(1234L),
                         fordeling = listOf(Fordeling(
                                 mottager = "897654321",
-                                andel = BigDecimal.valueOf(100L),
-                                kontonummer = "betyr ikke noe enda"
+                                andel = 100
                         ))
                 ))
         )

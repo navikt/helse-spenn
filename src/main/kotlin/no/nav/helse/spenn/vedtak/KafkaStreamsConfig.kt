@@ -1,5 +1,7 @@
 package no.nav.helse.spenn.vedtak
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import no.nav.helse.Environment
 import org.apache.kafka.clients.CommonClientConfigs
@@ -19,6 +21,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.File
+import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.*
 
 @Configuration
@@ -46,10 +50,43 @@ class KafkaStreamsConfig {
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
                 .peek{_, _ -> log.info("here goes payments")}
+                .mapValues { key:String, node: JsonNode -> parseVedtak(key, node) }
 
-        return builder.build();
+        return builder.build()
     }
 
+    fun parseVedtak(key: String, node: JsonNode): Vedtak =
+            Vedtak(søknadId = node.get("originalSøknad").get("id").textValue(),
+                    fnr = node.get("originalSøknad").get("aktorId").textValue(),
+                    vedtaksperioder = parsePerioder(node.get("vedtak").get("perioder")))
+
+    private fun parsePerioder(perioderNode: JsonNode): List<Vedtaksperiode> =
+        when(perioderNode) {
+            is ArrayNode -> {
+                perioderNode.map { pNode ->
+                    Vedtaksperiode(
+                            fom = pNode.get("fom").asLocalDate(),
+                            tom = pNode.get("tom").asLocalDate(),
+                            dagsats = BigDecimal(pNode.get("dagsats").textValue()),
+                            fordeling = parseFordelinger(pNode.get("fordeling"))
+                    )
+                }
+            }
+            else -> emptyList()
+        }
+
+    private fun parseFordelinger(fordelingsNode: JsonNode): List<Fordeling> =
+        when (fordelingsNode) {
+            is ArrayNode -> {
+                fordelingsNode.map { fNode ->
+                    Fordeling(
+                            mottager = fNode.get("mottager").textValue(),
+                            andel = fNode.get("andel").intValue()
+                    )
+                }
+            }
+            else -> emptyList()
+        }
 
     fun <K : Any, V : Any> StreamsBuilder.consumeTopic(topic: Topic<K, V>): KStream<K, V> {
         return consumeTopic(topic, null)
@@ -122,6 +159,9 @@ class KafkaStreamsConfig {
         }
     }
 }
+
+private fun JsonNode.asLocalDate(): LocalDate = LocalDate.parse(textValue())
+
 
 data class Topic<K, V>(
         val name: String,
