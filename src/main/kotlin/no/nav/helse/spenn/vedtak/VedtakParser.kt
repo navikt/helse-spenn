@@ -3,7 +3,6 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
 import java.time.LocalDate
 
 @Component

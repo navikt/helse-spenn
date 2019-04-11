@@ -11,8 +11,8 @@ import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
 
 val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
-.registerModule(JavaTimeModule())
-.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                                          .registerModule(JavaTimeModule())
+                                          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
 private val strings = Serdes.String()
 private val json = Serdes.serdeFrom(JsonSerializer(), JsonDeserializer())

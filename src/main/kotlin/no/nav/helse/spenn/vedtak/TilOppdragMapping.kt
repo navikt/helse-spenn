@@ -6,10 +6,18 @@ import no.nav.helse.spenn.oppdrag.OppdragsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import java.math.BigDecimal
 
-fun tilOppdrag(vedtak: Vedtak): UtbetalingsOppdrag = UtbetalingsOppdrag(
+typealias Fodselsnummer = String
+interface AktørTilFnrMapper {
+    fun tilFnr(aktørId: String): Fodselsnummer
+}
+private class DummyAktørMapper(): AktørTilFnrMapper {
+    override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
+}
+
+fun tilOppdrag(vedtak: Vedtak, mapper: AktørTilFnrMapper = DummyAktørMapper()): UtbetalingsOppdrag = UtbetalingsOppdrag(
         id = vedtak.søknadId,
         operasjon = AksjonsKode.OPPDATER,
-        oppdragGjelder = vedtak.aktørId,
+        oppdragGjelder = mapper.tilFnr(vedtak.aktørId),
         oppdragslinje = lagLinjer(vedtak)
 )
 
