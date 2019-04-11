@@ -352,6 +352,7 @@
             </executions>
          </plugin>
       </plugins>
+      <finalName>helse-spenn</finalName>
    </build>
 
    <licenses>

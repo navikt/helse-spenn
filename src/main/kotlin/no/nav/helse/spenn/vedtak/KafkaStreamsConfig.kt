@@ -1,5 +1,7 @@
 package no.nav.helse.spenn.vedtak
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import no.nav.helse.Environment
 import org.apache.kafka.clients.CommonClientConfigs
@@ -16,13 +18,16 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.File
+import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.*
 
 @Configuration
-class KafkaStreamsConfig {
+class KafkaStreamsConfig(@Autowired val parser: VedtakParser) {
 
     private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
 
@@ -41,10 +46,10 @@ class KafkaStreamsConfig {
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
                 .peek{_, _ -> log.info("here goes payments")}
+                .mapValues { key:String, node: JsonNode -> parser.parse(key, node) }
 
-        return builder.build();
+        return builder.build()
     }
-
 
     fun <K : Any, V : Any> StreamsBuilder.consumeTopic(topic: Topic<K, V>): KStream<K, V> {
         return consumeTopic(topic, null)
