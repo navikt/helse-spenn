@@ -2,11 +2,12 @@ package no.nav.helse.spenn.vedtak
 
 import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
 import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.OppdragsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
 
@@ -16,19 +17,20 @@ class VedtakToOppdragMappingTest {
     fun `mapping av et enkelt vedtak`() {
         val vedtak = etEnkeltVedtak()
 
-        val oppdragsLinje = OppdragsLinje(
+        val oppdragsLinje = UtbetalingsLinje(
                 id = "0/0",
                 sats = BigDecimal.valueOf(1234L),
                 satsTypeKode = SatsTypeKode.DAGLIG,
                 datoFom = vedtak.vedtaksperioder[0].fom,
                 datoTom = vedtak.vedtaksperioder[0].tom,
-                utbetalesTil = vedtak.vedtaksperioder[0].fordeling[0].mottager
+                utbetalesTil = vedtak.vedtaksperioder[0].fordeling[0].mottager,
+                grad = BigInteger.valueOf(100)
         )
         val målbilde = UtbetalingsOppdrag(
                 id = vedtak.søknadId,
                 operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = vedtak.aktørId,
-                oppdragslinje = listOf(oppdragsLinje)
+                utbetalingsLinje = listOf(oppdragsLinje)
         )
 
         val faktisk = tilOppdrag(vedtak)

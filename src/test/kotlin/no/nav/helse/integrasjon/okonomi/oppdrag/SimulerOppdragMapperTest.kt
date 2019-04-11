@@ -1,6 +1,6 @@
 package no.nav.helse.integrasjon.okonomi.oppdrag
 
-import no.nav.helse.spenn.oppdrag.UbetalingsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.simulering.OppdragMapperForSimulering
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
@@ -18,11 +18,11 @@ class SimulerOppdragTest {
     @Test
     fun mapSimuleringsOppdrag() {
         val mapper = OppdragMapperForSimulering()
-        val enOppdragsLinje = UbetalingsLinje(id = "1234567890", datoFom = LocalDate.now().minusWeeks(2),
+        val enOppdragsLinje = UtbetalingsLinje(id = "1234567890", datoFom = LocalDate.now().minusWeeks(2),
                 datoTom = LocalDate.now(), sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.MÅNEDLIG,
                 utbetalesTil = "123456789", grad = BigInteger.valueOf(100))
         val utbetalingsOppdrag = UtbetalingsOppdrag(id = "2019040808450", operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "123456789", oppdragslinje = listOf(enOppdragsLinje))
+                oppdragGjelder = "123456789", utbetalingsLinje = listOf(enOppdragsLinje))
         val simuleringRequest = mapper.mapOppdragToSimuleringRequest(utbetalingsOppdrag)
         val jaxbContext = JAXBContext.newInstance(SimulerBeregningRequest::class.java)
         val marshaller = jaxbContext.createMarshaller()

@@ -37,7 +37,7 @@ class OppdragMapper {
             oppdragGjelderId = toFnrOrOrgnr(utbetaling.oppdragGjelder)
             saksbehId = APP
             oppdragsEnhet120.add(oppdragsEnhet)
-            utbetaling.oppdragslinje.forEach {
+            utbetaling.utbetalingsLinje.forEach {
                 oppdragsLinje150.add(mapToOppdragslinje150(it))
             }
         }
@@ -49,7 +49,7 @@ class OppdragMapper {
 
     }
 
-    private fun mapToOppdragslinje150(oppdragslinje : UbetalingsLinje) : OppdragsLinje150 {
+    private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : OppdragsLinje150 {
         val grad = objectFactory.createGrad170().apply {
             typeGrad = GradTypeKode.UFØREGRAD.kode
             grad = oppdragslinje.grad

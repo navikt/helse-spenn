@@ -9,7 +9,7 @@ import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion
 import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP_ENHET
 import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toFnrOrOrgnr
 import no.nav.helse.integrasjon.okonomi.oppdrag.UtbetalingsfrekvensKode
-import no.nav.helse.spenn.oppdrag.UbetalingsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
@@ -49,7 +49,7 @@ class OppdragMapperForSimulering() {
             datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
             saksbehId = APP
             enhet.add(oppdragsEnhet)
-            utbetaling.oppdragslinje.forEach {
+            utbetaling.utbetalingsLinje.forEach {
                 if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
                 if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
                 oppdragslinje.add(mapToOppdragslinje150(it))
@@ -68,7 +68,7 @@ class OppdragMapperForSimulering() {
 
     }
 
-    private fun mapToOppdragslinje150(oppdragslinje : UbetalingsLinje) : Oppdragslinje {
+    private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : Oppdragslinje {
         val grad = Grad().apply {
             typeGrad = GradTypeKode.UFØREGRAD.kode
             grad = oppdragslinje.grad

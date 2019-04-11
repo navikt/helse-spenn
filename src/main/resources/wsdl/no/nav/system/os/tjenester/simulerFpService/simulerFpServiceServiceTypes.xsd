@@ -18,7 +18,7 @@
 		<xsd:documentation>Kan bestå av både standard (gjenbrukbare) entiteter som kan bli gjenbrukt og (komplekse)typer spesifikk for denne tjenesten</xsd:documentation>		
 	</xsd:annotation>
     
-  <!--oppdragslinje er forksjellig av definisjon for request og respons. egne types på servicenivå-->
+  <!--utbetalingsLinje er forksjellig av definisjon for request og respons. egne types på servicenivå-->
   <xsd:complexType name="oppdragslinje">
 	<xsd:complexContent>
 		<xsd:extension base="oppdragSkjema:oppdragslinje">

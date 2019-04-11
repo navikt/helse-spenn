@@ -2,7 +2,7 @@ package no.nav.helse.integrasjon.okonomi.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.AppConfig
-import no.nav.helse.spenn.oppdrag.UbetalingsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.simulering.OppdragMapperForSimulering
 import no.nav.helse.spenn.simulering.SimuleringConfig
@@ -33,11 +33,11 @@ class SimulerOppdragIT {
     fun simuleringOppdragEnOppdragslinje() {
         val fom = LocalDate.of(2019, Month.APRIL, 2)
         val tom = LocalDate.of(2019, Month.APRIL, 16)
-        val linje = UbetalingsLinje(id = "1234567890", datoFom = fom,
+        val linje = UtbetalingsLinje(id = "1234567890", datoFom = fom,
                 datoTom = tom, sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
         val utbetalingsOppdrag = UtbetalingsOppdrag(id = "20190408084501", operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "995816598", oppdragslinje = listOf(linje))
+                oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
         val simulerOppdrag = simuleringService.simulerOppdrag(simuleringsmapper.mapOppdragToSimuleringRequest(utbetalingsOppdrag))
         log.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simulerOppdrag))
     }
@@ -46,24 +46,24 @@ class SimulerOppdragIT {
     fun simuleringOppdragFlereOppdragslinje() {
         val fom1 = LocalDate.of(2019, Month.JANUARY, 1)
         val tom1 = LocalDate.of(2019, Month.JANUARY, 12)
-        val oppdragslinje1 = UbetalingsLinje(id = "1", datoFom = fom1,
+        val oppdragslinje1 = UtbetalingsLinje(id = "1", datoFom = fom1,
                 datoTom =tom1, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(50))
 
         val fom2 = LocalDate.of(2019,Month.FEBRUARY, 13)
         val tom2 = LocalDate.of(2019,Month.FEBRUARY, 20)
-        val oppdragslinje2 = UbetalingsLinje(id = "2", datoFom = fom2,
+        val oppdragslinje2 = UtbetalingsLinje(id = "2", datoFom = fom2,
                 datoTom = tom2, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(70))
 
         val fom3 = LocalDate.of(2019,Month.MARCH, 18)
         val tom3 = LocalDate.of(2019, Month.APRIL, 12)
-        val oppdragslinje3 = UbetalingsLinje(id = "3", datoFom = fom3,
+        val oppdragslinje3 = UtbetalingsLinje(id = "3", datoFom = fom3,
                 datoTom = tom3, sats = BigDecimal.valueOf(1000), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
         val utbetalingsOppdrag = UtbetalingsOppdrag(id = "20190408084501", operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "21038014495", oppdragslinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
+                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
         log.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simuleringService.simulerOppdrag(
                 simuleringsmapper.mapOppdragToSimuleringRequest(utbetalingsOppdrag))))
 
