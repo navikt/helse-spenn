@@ -29,11 +29,11 @@ class VedtakToOppdragMappingTest {
         val målbilde = UtbetalingsOppdrag(
                 id = vedtak.søknadId,
                 operasjon = AksjonsKode.OPPDATER,
-                oppdragGjelder = vedtak.aktørId,
+                oppdragGjelder = "some_dummy_fnr",
                 utbetalingsLinje = listOf(oppdragsLinje)
         )
 
-        val faktisk = tilOppdrag(vedtak)
+        val faktisk = tilOppdrag(vedtak, LocalFnrMapper())
 
         Assertions.assertEquals(målbilde, faktisk)
     }
@@ -41,7 +41,7 @@ class VedtakToOppdragMappingTest {
     private fun etEnkeltVedtak(): Vedtak {
         return Vedtak(
                 søknadId = UUID.randomUUID().toString(),
-                aktørId = "12345612345",
+                aktørId = "en random aktørid",
                 vedtaksperioder = listOf(Vedtaksperiode(
                         fom = LocalDate.of(2020, 1, 15),
                         tom = LocalDate.of(2020, 1, 30),
@@ -53,4 +53,8 @@ class VedtakToOppdragMappingTest {
                 ))
         )
     }
+}
+
+class LocalFnrMapper : AktørTilFnrMapper {
+    override fun tilFnr(aktørId: String): Fodselsnummer = "some_dummy_fnr"
 }
