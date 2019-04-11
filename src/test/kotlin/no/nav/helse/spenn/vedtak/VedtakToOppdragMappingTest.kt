@@ -27,7 +27,7 @@ class VedtakToOppdragMappingTest {
         val målbilde = UtbetalingsOppdrag(
                 id = vedtak.søknadId,
                 operasjon = AksjonsKode.OPPDATER,
-                oppdragGjelder = vedtak.fnr,
+                oppdragGjelder = vedtak.aktørId,
                 oppdragslinje = listOf(oppdragsLinje)
         )
 
@@ -39,11 +39,11 @@ class VedtakToOppdragMappingTest {
     private fun etEnkeltVedtak(): Vedtak {
         return Vedtak(
                 søknadId = UUID.randomUUID().toString(),
-                fnr = "12345612345",
+                aktørId = "12345612345",
                 vedtaksperioder = listOf(Vedtaksperiode(
                         fom = LocalDate.of(2020, 1, 15),
                         tom = LocalDate.of(2020, 1, 30),
-                        dagsats = BigDecimal.valueOf(1234L),
+                        dagsats = 1234,
                         fordeling = listOf(Fordeling(
                                 mottager = "897654321",
                                 andel = 100

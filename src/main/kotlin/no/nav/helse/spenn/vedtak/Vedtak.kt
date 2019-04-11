@@ -7,15 +7,15 @@ import java.time.LocalDate
  aggregert fra SPA sitt SykepengeVedtak-objekt
  */
 data class Vedtak (
-    val søknadId: String,
-    val fnr: String,
-    val vedtaksperioder: List<Vedtaksperiode>
+        val søknadId: String,
+        val aktørId: String,
+        val vedtaksperioder: List<Vedtaksperiode>
 )
 
 data class Vedtaksperiode(
         val fom: LocalDate,
         val tom: LocalDate,
-        val dagsats: BigDecimal,
+        val dagsats: Int,
         val fordeling: List<Fordeling>
 )
 
