@@ -27,11 +27,6 @@ class KafkaStreamsConfig {
     private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
 
     @Bean
-    fun appEnv(): Environment {
-        return Environment()
-    }
-
-    @Bean
     fun kafkaStreams(env : Environment, topology: Topology) : KafkaStreams {
         val streamConfig = if ("true" == env.plainTextKafka) streamConfigPlainTextKafka(env) else streamConfig(env.appId, env.bootstrapServersUrl,
                     env.kafkaUsername to env.kafkaPassword,

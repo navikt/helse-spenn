@@ -1,13 +1,14 @@
 package no.nav.helse.integrasjon.okonomi.oppdrag
 
 import no.nav.helse.spenn.oppdrag.OppdragMapper
-import no.nav.helse.spenn.oppdrag.OppdragsLinje
+import no.nav.helse.spenn.oppdrag.UbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.StringReader
 import java.io.StringWriter
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
@@ -21,9 +22,9 @@ class OppdragMapperTest {
 
     @Test
     fun createOppdragXml() {
-        val enOppdragsLinje = OppdragsLinje(id = "1234567890", datoFom = LocalDate.now().minusWeeks(2),
+        val enOppdragsLinje = UbetalingsLinje(id = "1234567890", datoFom = LocalDate.now().minusWeeks(2),
                 datoTom = LocalDate.now(), sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.MÅNEDLIG,
-                utbetalesTil = "995816598")
+                utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
         val utbetaling = UtbetalingsOppdrag(id = "20190401110001", operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "995816598", oppdragslinje = listOf(enOppdragsLinje))
 

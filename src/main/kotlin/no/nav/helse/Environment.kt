@@ -8,7 +8,10 @@ data class Environment(
         val navTruststorePath: String? = getEnvVarOptional("NAV_TRUSTSTORE_PATH"),
         val plainTextKafka: String? = getEnvVarOptional("PLAIN_TEXT_KAFKA"),
         val navTruststorePassword: String? = getEnvVarOptional("NAV_TRUSTSTORE_PASSWORD"),
-        val oppdragDBNavn: String = getEnvVar("OPPDRAG_DB_NAVN")
+        val oppdragDBNavn: String = getEnvVar("OPPDRAG_DB_NAVN"),
+        val stsUrl: String? = getEnvVarOptional("SECURITYTOKENSERVICE_URL"),
+        val OppdragServiceUrl: String? = getEnvVarOptional("OPPDRAG_SERVICE_URL")
+
 
 )
 

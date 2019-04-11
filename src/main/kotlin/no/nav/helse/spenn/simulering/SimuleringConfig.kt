@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.simulering
 
+import no.nav.helse.Environment
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12
@@ -20,7 +21,7 @@ import org.apache.neethi.Policy
 import org.springframework.context.annotation.Bean
 
 @Configuration
-class SimuleringConfig {
+class SimuleringConfig(val appEnv: Environment) {
     private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerFpServiceWSBinding.wsdl"
     private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
     private val SERVICE = QName(NAMESPACE, "simulerFpService")
@@ -31,7 +32,7 @@ class SimuleringConfig {
     @Bean
     fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
         val factory = JaxWsProxyFactoryBean().apply {
-            address = "https://somewhere/cics/services/simulerFpServiceWSBinding"
+            address = appEnv.OppdragServiceUrl
             wsdlURL = WSDL
             serviceName = SERVICE
             endpointName = PORT
@@ -44,12 +45,12 @@ class SimuleringConfig {
                 isEnableAppliesTo = false
                 isAllowRenewing = false
 
-                location = "http://stsurloft3"
+                location = appEnv.stsUrl
                 features = listOf(LoggingFeature())
 
                 properties = mapOf(
-                        SecurityConstants.USERNAME to "",
-                        SecurityConstants.PASSWORD to ""
+                        SecurityConstants.USERNAME to appEnv.kafkaUsername,
+                        SecurityConstants.PASSWORD to appEnv.kafkaPassword
                 )
                 setPolicy(bus.resolvePolicy(STS_CLIENT_AUTHENTICATION_POLICY))
             }

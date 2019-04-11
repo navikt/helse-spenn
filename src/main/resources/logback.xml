@@ -6,6 +6,7 @@
       </encoder>
    </appender>
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
+   <logger name="no.nav" level="DEBUG" />
    <root level="INFO">
       <appender-ref ref="STDOUT"/>
    </root>

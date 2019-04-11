@@ -13,12 +13,7 @@ import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
 import no.trygdeetaten.skjema.oppdrag.TfradragTillegg
 import org.springframework.stereotype.Component
-import java.math.BigInteger
 import java.time.LocalDate
-import java.time.ZoneId
-import java.util.*
-import javax.xml.datatype.DatatypeFactory
-import javax.xml.datatype.XMLGregorianCalendar
 
 @Component
 class OppdragMapper {
@@ -54,10 +49,10 @@ class OppdragMapper {
 
     }
 
-    private fun mapToOppdragslinje150(oppdragslinje : OppdragsLinje) : OppdragsLinje150 {
+    private fun mapToOppdragslinje150(oppdragslinje : UbetalingsLinje) : OppdragsLinje150 {
         val grad = objectFactory.createGrad170().apply {
             typeGrad = GradTypeKode.UFØREGRAD.kode
-            grad = BigInteger.valueOf(100L)
+            grad = oppdragslinje.grad
         }
         val attestant = objectFactory.createAttestant180().apply {
             attestantId = APP

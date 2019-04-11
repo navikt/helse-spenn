@@ -9,7 +9,7 @@ import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion
 import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP_ENHET
 import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toFnrOrOrgnr
 import no.nav.helse.integrasjon.okonomi.oppdrag.UtbetalingsfrekvensKode
-import no.nav.helse.spenn.oppdrag.OppdragsLinje
+import no.nav.helse.spenn.oppdrag.UbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
@@ -19,7 +19,6 @@ import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.S
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
 import org.springframework.stereotype.Component
-import java.math.BigInteger
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -32,6 +31,8 @@ class OppdragMapperForSimulering() {
     private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
     fun mapOppdragToSimuleringRequest(utbetaling : UtbetalingsOppdrag): SimulerBeregningRequest {
+        var simulerFom = LocalDate.MAX
+        var simulerTom = LocalDate.MIN
 
         val oppdragsEnhet = Enhet().apply {
             enhet = SP_ENHET
@@ -45,25 +46,32 @@ class OppdragMapperForSimulering() {
             fagsystemId = utbetaling.id
             utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
             oppdragGjelderId = toFnrOrOrgnr(utbetaling.oppdragGjelder)
+            datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
             saksbehId = APP
             enhet.add(oppdragsEnhet)
             utbetaling.oppdragslinje.forEach {
+                if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
+                if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
                 oppdragslinje.add(mapToOppdragslinje150(it))
             }
         }
         return grensesnittFactory.createSimulerBeregningRequest().apply {
             this.request = objectFactory.createSimulerBeregningRequest().apply {
                 this.oppdrag = oppdrag
-                simuleringsPeriode = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest.SimuleringsPeriode()
+                simuleringsPeriode = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
+                        .SimuleringsPeriode().apply {
+                            datoSimulerFom = simulerFom.format(formatter)
+                            datoSimulerTom = simulerTom.format(formatter)
+                        }
             }
         }
 
     }
 
-    private fun mapToOppdragslinje150(oppdragslinje : OppdragsLinje) : Oppdragslinje {
+    private fun mapToOppdragslinje150(oppdragslinje : UbetalingsLinje) : Oppdragslinje {
         val grad = Grad().apply {
             typeGrad = GradTypeKode.UFØREGRAD.kode
-            grad = BigInteger.valueOf(100L)
+            grad = oppdragslinje.grad
         }
         val attestant = Attestant().apply {
             attestantId = APP
@@ -74,6 +82,7 @@ class OppdragMapperForSimulering() {
             kodeKlassifik = KOMPONENT_KODE
             datoVedtakFom = oppdragslinje.datoFom.format(formatter)
             datoVedtakTom = oppdragslinje.datoTom.format(formatter)
+            //vedtakId = "1234"
             delytelseId = oppdragslinje.id
             sats = oppdragslinje.sats
             fradragTillegg = FradragTillegg.T
@@ -81,6 +90,7 @@ class OppdragMapperForSimulering() {
             saksbehId = APP
             utbetalesTilId = toFnrOrOrgnr(oppdragslinje.utbetalesTil)
             brukKjoreplan = "N"
+            henvisning = "1234567890"
             this.grad.add(grad)
             this.attestant.add(attestant)
         }
