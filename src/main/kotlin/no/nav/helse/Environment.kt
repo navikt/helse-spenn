@@ -14,8 +14,13 @@ data class Environment(
         val navTruststorePassword: String? = getEnvVarOptional("NAV_TRUSTSTORE_PASSWORD"),
         val oppdragDBNavn: String = getEnvVar("OPPDRAG_DB_NAVN"),
         val stsUrl: String? = getEnvVarOptional("SECURITYTOKENSERVICE_URL"),
-        val OppdragServiceUrl: String? = getEnvVarOptional("OPPDRAG_SERVICE_URL")
-
+        val oppdragServiceUrl: String? = getEnvVarOptional("OPPDRAG_SERVICE_URL"),
+        val mqHostname: String? = getEnvVarOptional("MQ_HOSTNAME"),
+        val mqChannel: String? = getEnvVarOptional("MQ_CHANNEL"),
+        val mqPort: String? = getEnvVarOptional("MQ_PORT"),
+        val queueManager: String? = getEnvVarOptional("MQ_QUEUE_MANAGER"),
+        val mqUsername: String? = getEnvVarOptional("MQ_USERNAME"),
+        val mqPassword: String? = getEnvVarOptional("MQ_PASSWORD")
 
 )
 

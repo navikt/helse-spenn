@@ -32,7 +32,7 @@ class SimuleringConfig(val appEnv: Environment) {
     @Bean
     fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
         val factory = JaxWsProxyFactoryBean().apply {
-            address = appEnv.OppdragServiceUrl
+            address = appEnv.oppdragServiceUrl
             wsdlURL = WSDL
             serviceName = SERVICE
             endpointName = PORT
