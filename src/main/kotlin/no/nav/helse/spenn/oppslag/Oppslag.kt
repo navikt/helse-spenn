@@ -1,24 +1,27 @@
 package no.nav.helse.spenn.oppslag
 
-import com.github.kittinunf.fuel.httpGet
+import no.nav.helse.Environment
 import no.nav.helse.spenn.vedtak.Fodselsnummer
 import org.slf4j.LoggerFactory
+import org.springframework.http.MediaType
+import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 
-class FnrOppslag(val sparkelUrl: String, val stsRestClient: StsRestClient) {
+@Component
+class FnrOppslag(val env: Environment, val stsRestClient: StsRestClient) {
     private val log = LoggerFactory.getLogger(FnrOppslag::class.java.name)
-
-    fun hentFnr(aktørId: String): Fodselsnummer {
+    fun hentFnr(aktørId: String): Fodselsnummer? {
         val bearer = stsRestClient.token()
-        val (_, _, result) = "$sparkelUrl/api/aktor/${aktørId}/fnr".httpGet()
-                .header(mapOf(
-                        "Authorization" to "Bearer $bearer",
-                        "Accept" to "application/json",
-                        "Nav-Call-Id" to UUID.randomUUID().toString(),
-                        "Nav-Consumer-Id" to "spa"
-                ))
-                .responseString()
+        val webClient = WebClient.builder().baseUrl(env.sparkelBaseUrl).build()
+        return webClient.get()
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer $bearer")
+                .header("Nav-Call-Id", UUID.randomUUID().toString())
+                .header("Nav-Consumer-Id", "spenn")
+                .retrieve()
+                .bodyToMono(Fodselsnummer::class.java).block()
 
-        return result.component1()!!
     }
+
 }

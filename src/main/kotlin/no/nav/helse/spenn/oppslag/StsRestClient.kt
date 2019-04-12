@@ -2,26 +2,29 @@ package no.nav.helse.spenn.oppslag
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.github.kittinunf.fuel.httpGet
-import no.nav.helse.spenn.vedtak.defaultObjectMapper
+import no.nav.helse.Environment
+import org.springframework.http.MediaType
+import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.ExchangeFilterFunctions
+import org.springframework.web.reactive.function.client.WebClient
 import java.time.LocalDateTime
 
-/**
- * henter jwt token fra STS
- */
-class StsRestClient(val baseUrl: String, val username: String, val password: String) {
+
+@Component
+class StsRestClient(val env: Environment) {
     private var cachedOidcToken: Token? = null
 
     fun token(): String {
         if (Token.shouldRenew(cachedOidcToken))  {
-            val (_, _, result) = "$baseUrl/rest/v1/sts/token?grant_type=client_credentials&scope=openid".httpGet()
-                    .authenticate(username, password)
-                    .header(mapOf("Accept" to "application/json"))
-                    .response()
-
-            cachedOidcToken = defaultObjectMapper.readValue(result.get(), Token::class.java)
+           val webClient = WebClient.builder().baseUrl(env.stsRestUrl)
+                   .filter(ExchangeFilterFunctions.basicAuthentication(env.stsUsername!!, env.stsPassword!!))
+                   .build()
+            cachedOidcToken = webClient.get().uri("/rest/v1/sts/token?grant_type=client_credentials&scope=openid")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(Token::class.java)
+                    .block()
         }
-
         return cachedOidcToken!!.accessToken
     }
 

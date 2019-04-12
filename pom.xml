@@ -83,11 +83,6 @@
          <version>${jackson.version}</version>
       </dependency>
       <dependency>
-         <groupId>com.github.kittinunf.fuel</groupId>
-         <artifactId>fuel</artifactId>
-         <version>${fuel.version}</version>
-      </dependency>
-      <dependency>
          <groupId>org.apache.kafka</groupId>
          <artifactId>kafka-streams</artifactId>
          <version>${kafka.version}</version>
@@ -126,7 +121,7 @@
       </dependency>
       <dependency>
          <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-web</artifactId>
+         <artifactId>spring-boot-starter-webflux</artifactId>
       </dependency>
 
       <dependency>
