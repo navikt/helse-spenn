@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.client.RestTemplate
 
 @Configuration
 class AppConfig {
@@ -21,11 +20,6 @@ class AppConfig {
         return jacksonObjectMapper()
                 .registerModule(JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    }
-
-    @Bean
-    fun restTemplate(): RestTemplate {
-        return RestTemplate()
     }
 
 }
