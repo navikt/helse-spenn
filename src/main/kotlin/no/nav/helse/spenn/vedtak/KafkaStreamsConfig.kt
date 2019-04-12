@@ -24,7 +24,7 @@ import java.io.File
 import java.util.*
 
 @Configuration
-class KafkaStreamsConfig(@Autowired val parser: VedtakParser, @Autowired val aktørTilFnrMapper: AktørTilFnrMapper) {
+class KafkaStreamsConfig(@Autowired val aktørTilFnrMapper: AktørTilFnrMapper) {
 
     private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
 
@@ -43,7 +43,7 @@ class KafkaStreamsConfig(@Autowired val parser: VedtakParser, @Autowired val akt
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
                 .peek{_, _ -> log.info("here goes payments")}
-                .mapValues { key:String, node: JsonNode -> parser.parse(key, node) }
+                .mapValues { key:String, node: JsonNode -> node.tilVedtak(key) }
                 .mapValues { _, vedtak -> vedtak.tilOppdrag(aktørTilFnrMapper) }
 
         return builder.build()

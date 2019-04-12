@@ -10,7 +10,7 @@ class JsonToVedtakParserTest {
     @Test
     fun `les en vilkårlig behandlet søknad`() {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = VedtakParser().parse("some_id", node)
+        val vedtak = node.tilVedtak("some_id")
 
         assertNotNull(vedtak)
         assertEquals(vedtak.aktørId, "1495662136252")

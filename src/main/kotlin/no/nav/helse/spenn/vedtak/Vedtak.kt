@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.vedtak
 
-import java.math.BigDecimal
 import java.time.LocalDate
 
 /**
