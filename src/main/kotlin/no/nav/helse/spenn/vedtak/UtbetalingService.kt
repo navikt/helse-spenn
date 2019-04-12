@@ -10,10 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class UtbetalingService(@Autowired val simuleringService: SimuleringService,
-                        @Autowired val oppdragMapperForSimulering: OppdragMapperForSimulering,
-                        @Autowired val oppdragSender: OppdragMQSender,
-                        @Autowired val oppdragMapper: OppdragMapper) {
+class UtbetalingService(val simuleringService: SimuleringService,
+                        val oppdragMapperForSimulering: OppdragMapperForSimulering,
+                        val oppdragSender: OppdragMQSender,
+                        val oppdragMapper: OppdragMapper) {
 
     fun sendUtbetalingToOS(utbetaling: UtbetalingsOppdrag) {
         if (utbetaling.operasjon == AksjonsKode.SIMULERING) {
