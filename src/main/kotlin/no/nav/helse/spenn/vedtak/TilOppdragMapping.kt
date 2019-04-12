@@ -8,22 +8,24 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 typealias Fodselsnummer = String
+
 interface AktørTilFnrMapper {
     fun tilFnr(aktørId: String): Fodselsnummer
 }
-private class DummyAktørMapper(): AktørTilFnrMapper {
+
+private class DummyAktørMapper() : AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
 }
 
-fun tilOppdrag(vedtak: Vedtak, mapper: AktørTilFnrMapper = DummyAktørMapper()): UtbetalingsOppdrag = UtbetalingsOppdrag(
-        id = vedtak.søknadId,
+fun Vedtak.tilOppdrag(mapper: AktørTilFnrMapper = DummyAktørMapper()): UtbetalingsOppdrag = UtbetalingsOppdrag(
+        id = søknadId,
         operasjon = AksjonsKode.OPPDATER,
-        oppdragGjelder = mapper.tilFnr(vedtak.aktørId),
-        utbetalingsLinje = lagLinjer(vedtak)
+        oppdragGjelder = mapper.tilFnr(aktørId),
+        utbetalingsLinje = lagLinjer()
 )
 
-fun lagLinjer(vedtak: Vedtak): List<UtbetalingsLinje> =
-        vedtak.vedtaksperioder.mapIndexed { index, periode ->
+private fun Vedtak.lagLinjer(): List<UtbetalingsLinje> =
+        vedtaksperioder.mapIndexed { index, periode ->
             periode.fordeling.mapIndexed { fordelingsIndex, fordeling ->
                 UtbetalingsLinje(
                         id = "$index/$fordelingsIndex",

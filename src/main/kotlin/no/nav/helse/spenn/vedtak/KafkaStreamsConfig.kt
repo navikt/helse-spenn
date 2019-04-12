@@ -44,7 +44,7 @@ class KafkaStreamsConfig(@Autowired val parser: VedtakParser, @Autowired val akt
         builder.consumeTopic(VEDTAK_SYKEPENGER)
                 .peek{_, _ -> log.info("here goes payments")}
                 .mapValues { key:String, node: JsonNode -> parser.parse(key, node) }
-                .mapValues { _, vedtak -> tilOppdrag(vedtak, aktørTilFnrMapper) }
+                .mapValues { _, vedtak -> vedtak.tilOppdrag(aktørTilFnrMapper) }
 
         return builder.build()
     }

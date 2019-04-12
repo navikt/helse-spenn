@@ -33,7 +33,7 @@ class VedtakToOppdragMappingTest {
                 utbetalingsLinje = listOf(oppdragsLinje)
         )
 
-        val faktisk = tilOppdrag(vedtak, LocalFnrMapper())
+        val faktisk = vedtak.tilOppdrag(LocalFnrMapper())
 
         Assertions.assertEquals(målbilde, faktisk)
     }
