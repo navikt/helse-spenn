@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import no.nav.helse.Environment
 import org.apache.kafka.clients.CommonClientConfigs
@@ -22,12 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.File
-import java.math.BigDecimal
-import java.time.LocalDate
 import java.util.*
 
 @Configuration
-class KafkaStreamsConfig(@Autowired val parser: VedtakParser) {
+class KafkaStreamsConfig(@Autowired val parser: VedtakParser, @Autowired val aktørTilFnrMapper: AktørTilFnrMapper) {
 
     private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
 
@@ -47,6 +44,7 @@ class KafkaStreamsConfig(@Autowired val parser: VedtakParser) {
         builder.consumeTopic(VEDTAK_SYKEPENGER)
                 .peek{_, _ -> log.info("here goes payments")}
                 .mapValues { key:String, node: JsonNode -> parser.parse(key, node) }
+                .mapValues { _, vedtak -> tilOppdrag(vedtak, aktørTilFnrMapper) }
 
         return builder.build()
     }
