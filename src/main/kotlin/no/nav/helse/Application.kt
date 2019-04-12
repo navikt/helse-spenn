@@ -8,7 +8,7 @@ import org.springframework.jms.annotation.EnableJms
 
 @SpringBootApplication
 @EnableJms
-@ComponentScan("no.nav.helse.spenn")
+@ComponentScan("no.nav.helse")
 class Application
 fun main(args: Array<String>) {
     runApplication<Application>(*args) {

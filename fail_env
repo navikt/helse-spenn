@@ -1,3 +1,4 @@
 export OPPDRAG_DB_NAVN=helse-spenn-oppdrag
 export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+export SECURITY_TOKEN_SERVICE_REST_URL=localhost:8080
 
