@@ -82,7 +82,6 @@ class OppdragMapperForSimulering() {
             kodeKlassifik = KOMPONENT_KODE
             datoVedtakFom = oppdragslinje.datoFom.format(formatter)
             datoVedtakTom = oppdragslinje.datoTom.format(formatter)
-            //vedtakId = "1234"
             delytelseId = oppdragslinje.id
             sats = oppdragslinje.sats
             fradragTillegg = FradragTillegg.T
@@ -90,7 +89,6 @@ class OppdragMapperForSimulering() {
             saksbehId = APP
             utbetalesTilId = toFnrOrOrgnr(oppdragslinje.utbetalesTil)
             brukKjoreplan = "N"
-            henvisning = "1234567890"
             this.grad.add(grad)
             this.attestant.add(attestant)
         }

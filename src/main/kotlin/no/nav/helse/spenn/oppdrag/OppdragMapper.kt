@@ -35,6 +35,7 @@ class OppdragMapper {
             fagsystemId = utbetaling.id
             utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
             oppdragGjelderId = toFnrOrOrgnr(utbetaling.oppdragGjelder)
+            datoOppdragGjelderFom = toXMLDate(LocalDate.EPOCH)
             saksbehId = APP
             oppdragsEnhet120.add(oppdragsEnhet)
             utbetaling.utbetalingsLinje.forEach {
