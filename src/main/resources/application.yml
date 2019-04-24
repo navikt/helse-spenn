@@ -1,8 +1,11 @@
 management:
   endpoints:
     web:
+      base-path: /
       exposure:
-        include: metrics, prometheus, health, info
+        include: prometheus, health, info
+      path-mapping:
+        prometheus: metrics
 
 spring:
   datasource:

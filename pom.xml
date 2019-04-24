@@ -78,11 +78,6 @@
          <version>2.1.1</version>
       </dependency>
       <dependency>
-         <groupId>org.springframework.metrics</groupId>
-         <artifactId>spring-metrics</artifactId>
-         <version>0.5.1.RELEASE</version>
-      </dependency>
-      <dependency>
          <groupId>com.fasterxml.jackson.datatype</groupId>
          <artifactId>jackson-datatype-jsr310</artifactId>
          <version>${jackson.version}</version>
@@ -102,6 +97,14 @@
                <artifactId>slf4j-log4j12</artifactId>
             </exclusion>
          </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>io.micrometer</groupId>
+         <artifactId>micrometer-registry-prometheus</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-actuator</artifactId>
       </dependency>
       <dependency>
          <groupId>io.prometheus</groupId>
