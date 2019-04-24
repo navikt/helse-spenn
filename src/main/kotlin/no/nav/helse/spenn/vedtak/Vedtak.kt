@@ -14,6 +14,7 @@ data class Vedtak (
 data class Vedtaksperiode(
         val fom: LocalDate,
         val tom: LocalDate,
+        val grad: Int = 100,
         val dagsats: Int,
         val fordeling: List<Fordeling>
 )
