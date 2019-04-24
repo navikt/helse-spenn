@@ -8,11 +8,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter
+import org.springframework.jms.core.JmsTemplate
 
 import javax.jms.ConnectionFactory;
 
 @Configuration
-@Profile("prod")
 class JmsConfig(val env: Environment) {
 
 	private final val UTF_8_WITH_PUA = 1208
@@ -36,5 +36,10 @@ class JmsConfig(val env: Environment) {
         }
 
 	}
+
+    @Bean
+    fun jmsTemplate(connectionFactory: ConnectionFactory): JmsTemplate {
+        return JmsTemplate(connectionFactory)
+    }
 
 }

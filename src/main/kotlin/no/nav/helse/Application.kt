@@ -7,7 +7,6 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.jms.annotation.EnableJms
 
 @SpringBootApplication
-@EnableJms
 @ComponentScan("no.nav.helse")
 class Application
 fun main(args: Array<String>) {

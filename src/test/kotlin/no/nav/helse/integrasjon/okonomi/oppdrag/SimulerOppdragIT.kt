@@ -29,7 +29,7 @@ class SimulerOppdragIT {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    //@Test
+    @Test
     fun simuleringOppdragEnOppdragslinje() {
         val fom = LocalDate.of(2019, Month.APRIL, 2)
         val tom = LocalDate.of(2019, Month.APRIL, 16)

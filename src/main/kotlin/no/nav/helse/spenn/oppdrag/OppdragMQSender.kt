@@ -16,7 +16,7 @@ class OppdragMQSender(val jmsTemplate: JmsTemplate, @Value("\${oppdrag.queue.sen
 
     fun sendOppdrag(oppdrag : Oppdrag) {
         val oppdragXml = jaxb.fromOppdragToXml(oppdrag)
-        log.info("sending to $sendqueue: " + oppdragXml)
+        log.debug("sending to $sendqueue: " + oppdragXml)
         jmsTemplate.convertAndSend(sendqueue, oppdragXml)
     }
 

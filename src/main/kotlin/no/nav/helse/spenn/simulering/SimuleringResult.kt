@@ -6,9 +6,9 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 
-data class Resultat(val status: ResultatStatus,
-                    val feilMelding: String = "",
-                    val mottaker: Mottaker? = null)
+data class SimuleringResult(val status: Status,
+                            val feilMelding: String = "",
+                            val mottaker: Mottaker? = null)
 
 data class Mottaker(val gjelderId: String,
                     val gjelderNavn: String,
@@ -31,7 +31,7 @@ data class Periode(val id: String,
                    val uforegrad: BigInteger,
                    val utbetalingsType: UtbetalingsType)
 
-enum class ResultatStatus {
+enum class Status {
     OK,
     FEIL
 }

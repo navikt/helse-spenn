@@ -13,12 +13,25 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag) {
 
     @JmsListener(destination = "\${oppdrag.queue.mottak}")
     fun receiveOppdragKvittering(kvittering: String) {
-        log.info(kvittering)
-        handleKvittering(jaxb.toOppdrag(kvittering))
+        log.debug(kvittering)
+        //rar xml som blir returnert
+        val replaced = kvittering.replace("oppdrag xmlns", "ns2:oppdrag xmlns:ns2")
+        handleKvittering(jaxb.toOppdrag(replaced))
     }
 
-    fun handleKvittering(oppdrag : Oppdrag) {
-        log.info("Received kvittering for ${oppdrag.mmel.systemId} with status kode ${oppdrag.mmel.kodeMelding}")
-        // TODO
+    private fun handleKvittering(oppdrag : Oppdrag) {
+        val kvittering = Kvittering(status=mapStatus(oppdrag), alvorlighetsgrad = oppdrag.mmel.alvorlighetsgrad,
+                beskrMelding = oppdrag.mmel.beskrMelding, kodeMelding = oppdrag.mmel.kodeMelding,
+                fagsystemId = oppdrag.oppdrag110.fagsystemId)
+        log.info("Kvittering for ${kvittering.fagsystemId}  ${kvittering.status} '${kvittering.beskrMelding}'")
+        // TODO persist kvittering
+    }
+
+    private fun mapStatus(oppdrag: Oppdrag): KvitteringStatus {
+        when(oppdrag.mmel.alvorlighetsgrad) {
+            "00" -> return KvitteringStatus.OK
+            "04" -> return KvitteringStatus.AKSEPTERT_MED_FEILMELDING
+        }
+        return KvitteringStatus.FEIL
     }
 }

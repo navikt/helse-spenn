@@ -1,8 +1,6 @@
 package no.nav.helse.integrasjon.okonomi.oppdrag
 
-import no.nav.helse.spenn.oppdrag.OppdragMapper
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.StringReader
@@ -19,6 +17,7 @@ import javax.xml.transform.stream.StreamSource
 class OppdragMapperTest {
 
     val oppdragMapper = OppdragMapper()
+    val oppdragMQReceiver = OppdragMQReceiver(JAXBOppdrag())
 
     @Test
     fun createOppdragXml() {
@@ -42,69 +41,86 @@ class OppdragMapperTest {
 
     @Test
     fun readOppdragKvitteringXml() {
-        val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
-        val unmarshaller = jaxbContext.createUnmarshaller()
-        val xmlInputFactory = XMLInputFactory.newInstance().apply {
-            setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
-            setProperty(XMLInputFactory.SUPPORT_DTD, false)
-        }
-        val source = StreamSource(StringReader(kvittering))
-        val unmarshal = unmarshaller.unmarshal(xmlInputFactory.createXMLStreamReader(source),
-                OppdragSkjemaConstants.JAXB_CLASS)
-        val kvitteringOppdrag = unmarshal.value
-
-        println(kvitteringOppdrag.mmel.alvorlighetsgrad)
+        oppdragMQReceiver.receiveOppdragKvittering(kvittering)
     }
 
 }
 
-val kvittering = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns2:oppdrag xmlns:ns2="http://www.trygdeetaten.no/skjema/oppdrag">
-    <mmel>
-        <systemId>systemId</systemId>
-        <kodeMelding>00</kodeMelding>
-        <alvorlighetsgrad>00</alvorlighetsgrad>
-        <beskrMelding>Oppdrag behandlet</beskrMelding>
-        <sqlKode>sqlKode</sqlKode>
-        <sqlState>sqlState</sqlState>
-        <sqlMelding>sqlMelding</sqlMelding>
-        <mqCompletionKode>mqCompletionKode</mqCompletionKode>
-        <mqReasonKode>mqReasonKode</mqReasonKode>
-        <programId>programId</programId>
-        <sectionNavn>sectionNavn</sectionNavn>
-    </mmel>
-    <oppdrag-110>
+val kvittering = """<?xml version="1.0" encoding="utf-8"?><oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag"><mmel><systemId>231-OPPD</systemId><kodeMelding>B110008F</kodeMelding><alvorlighetsgrad>08</alvorlighetsgrad><beskrMelding>Oppdraget finnes fra før</beskrMelding><programId>K231BB10</programId><sectionNavn>CA10-INPUTKONTROLL</sectionNavn></mmel><oppdrag-110>
         <kodeAksjon>1</kodeAksjon>
         <kodeEndring>NY</kodeEndring>
-        <kodeStatus>NY</kodeStatus>
-        <kodeFagomraade>SP_VET_IKKE</kodeFagomraade>
-        <fagsystemId>123</fagsystemId>
-        <utbetFrekvens>ENG</utbetFrekvens>
-        <oppdragGjelderId>9999_FNR_ELLER_ORGNR</oppdragGjelderId>
-        <saksbehId>helse-spenn</saksbehId>
+        <kodeFagomraade>SP</kodeFagomraade>
+        <fagsystemId>20190408084501</fagsystemId>
+        <utbetFrekvens>MND</utbetFrekvens>
+        <oppdragGjelderId>21038014495</oppdragGjelderId>
+        <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>
+        <saksbehId>SPENN</saksbehId>
         <oppdrags-enhet-120>
             <typeEnhet>BOS</typeEnhet>
             <enhet>4151</enhet>
-            <datoEnhetFom>2019-03-26+01:00</datoEnhetFom>
+            <datoEnhetFom>1970-01-01+01:00</datoEnhetFom>
         </oppdrags-enhet-120>
         <oppdrags-linje-150>
             <kodeEndringLinje>NY</kodeEndringLinje>
-            <vedtakId>123</vedtakId>
-            <delytelseId>321</delytelseId>
-            <kodeKlassifik>SP_VET_IKKE</kodeKlassifik>
-            <datoVedtakFom>2019-03-26+01:00</datoVedtakFom>
-            <datoVedtakTom>2019-03-26+01:00</datoVedtakTom>
-            <sats>1230</sats>
+            <delytelseId>1</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-01-01+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-01-12+01:00</datoVedtakTom>
+            <sats>600</sats>
             <fradragTillegg>T</fradragTillegg>
-            <typeSats>ENG</typeSats>
-            <skyldnerId>123456</skyldnerId>
-            <brukKjoreplan>B</brukKjoreplan>
-            <saksbehId>helse-spenn</saksbehId>
-            <utbetalesTilId>9999_FNR_ELLER_ORGNR</utbetalesTilId>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPENN</saksbehId>
+            <utbetalesTilId>00995816598</utbetalesTilId>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>50</grad>
+            </grad-170>
             <attestant-180>
-                <attestantId>helse-spenn</attestantId>
-                <datoUgyldigFom>2019-04-09+02:00</datoUgyldigFom>
+                <attestantId>SPENN</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>2</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-02-13+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-02-20+01:00</datoVedtakTom>
+            <sats>600</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPENN</saksbehId>
+            <utbetalesTilId>00995816598</utbetalesTilId>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>70</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPENN</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>3</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-03-18+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-04-12+02:00</datoVedtakTom>
+            <sats>1000</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPENN</saksbehId>
+            <utbetalesTilId>00995816598</utbetalesTilId>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>100</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPENN</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
     </oppdrag-110>
 </ns2:oppdrag>"""
+
+

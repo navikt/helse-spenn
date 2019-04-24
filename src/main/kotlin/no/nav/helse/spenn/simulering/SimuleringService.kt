@@ -27,7 +27,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
     private val log = LoggerFactory.getLogger(SimuleringService::class.java)
 
 
-    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): Resultat {
+    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         disableCnCheck(simulerFpService)
         //dumpXML(simulerRequest)
         try {
@@ -36,7 +36,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         }
         catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
-            return Resultat(status = ResultatStatus.FEIL, feilMelding = e.faultInfo.errorMessage)
+            return SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
         }
 
     }
@@ -50,10 +50,10 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         log.info(stringWriter.toString())
     }
 
-    private fun mapResponseToResultat(response: SimulerBeregningResponse) : Resultat {
+    private fun mapResponseToResultat(response: SimulerBeregningResponse) : SimuleringResult {
         val simulering = response.simulering
 
-        return Resultat(status = ResultatStatus.OK, mottaker =
+        return SimuleringResult(status = Status.OK, mottaker =
                 Mottaker(gjelderId = simulering.gjelderId, gjelderNavn = simulering.gjelderNavn.trim(),
                         datoBeregnet = simulering.datoBeregnet, totalBelop = simulering.belop,
                         periodeList = mapPeriodeList(simulering.beregningsPeriode)))
