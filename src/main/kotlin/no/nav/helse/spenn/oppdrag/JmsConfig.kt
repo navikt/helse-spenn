@@ -21,7 +21,7 @@ class JmsConfig(val env: Environment) {
 	fun wmqConnectionFactory():ConnectionFactory {
         val connectionFactory = MQConnectionFactory().apply {
             hostName = env.mqHostname
-            port = env.mqPort!!.toInt()
+            port = env.mqPort.toInt()
             channel = env.mqChannel
             queueManager = env.queueManager
             transportType = WMQConstants.WMQ_CM_CLIENT
@@ -31,8 +31,8 @@ class JmsConfig(val env: Environment) {
         }
         return UserCredentialsConnectionFactoryAdapter().apply {
             setTargetConnectionFactory(connectionFactory)
-            setUsername(env.mqUsername!!)
-            setPassword(env.mqPassword!!)
+            setUsername(env.mqUsername)
+            setPassword(env.mqPassword)
         }
 
 	}

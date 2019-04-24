@@ -15,12 +15,12 @@ data class Environment(
         val oppdragDBNavn: String = getEnvVar("OPPDRAG_DB_NAVN"),
         val stsUrl: String? = getEnvVarOptional("SECURITYTOKENSERVICE_URL"),
         val oppdragServiceUrl: String? = getEnvVarOptional("OPPDRAG_SERVICE_URL"),
-        val mqHostname: String? = getEnvVarOptional("MQ_HOSTNAME"),
-        val mqChannel: String? = getEnvVarOptional("MQ_CHANNEL"),
-        val mqPort: String? = getEnvVarOptional("MQ_PORT"),
-        val queueManager: String? = getEnvVarOptional("MQ_QUEUE_MANAGER"),
-        val mqUsername: String? = getEnvVarOptional("MQ_USERNAME"),
-        val mqPassword: String? = getEnvVarOptional("MQ_PASSWORD")
+        val mqHostname: String? = getEnvVarOptional("MQ_HOSTNAME", "localhost"),
+        val mqChannel: String? = getEnvVarOptional("MQ_CHANNEL", "who_knows"),
+        val mqPort: String = getEnvVar("MQ_PORT", "1414"),
+        val queueManager: String? = getEnvVarOptional("MQ_QUEUE_MANAGER", "MQQM"),
+        val mqUsername: String = getEnvVar("MQ_USERNAME", "rabbit"),
+        val mqPassword: String = getEnvVar("MQ_PASSWORD", "rabbit")
 
 )
 
