@@ -10,8 +10,15 @@ jobs:
     working_directory: ~/spenn
     environment:
       MAVEN_OPTS: -Xmx512m
+      APP: spenn
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: install dependencies
+          command: |
+            snap install yq
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
@@ -22,4 +29,10 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
-      - run: mvn clean install
+      - run: mvn install
+      - run:
+          name: push to docker
+            command: |
+              set -e
+              if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
+              fi
