@@ -7,14 +7,18 @@ management:
       path-mapping:
         prometheus: metrics
 
+#spring:
+#  datasource:
+#    platform: postgres
+#    url: jdbc:postgresql://localhost:5432/${OPPDRAG_DB_NAVN}
+#    username: postgres
+#    password:
+#    driverClassName: org.postgresql.Driver
 spring:
   datasource:
-    platform: postgres
-    url: jdbc:postgresql://localhost:5432/${OPPDRAG_DB_NAVN}
-    username: postgres
-    password:
-    driverClassName: org.postgresql.Driver
-
+    url: jdbc:h2:mem:testdb;Mode=PostgreSQL
+    platform: h2
+    continue-on-error: true
 ibm:
   mq:
     queue-manager: ${MQ_QUEUE_MANAGER:QM1}

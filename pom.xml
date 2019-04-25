@@ -171,9 +171,9 @@
          <artifactId>commons-dbcp2</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.postgresql</groupId>
-         <artifactId>postgresql</artifactId>
-         <version>42.2.5</version>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.flywaydb</groupId>
