@@ -10,7 +10,6 @@ jobs:
     working_directory: ~/spenn
     environment:
       MAVEN_OPTS: -Xmx512m
-      APP: spenn
     steps:
       - checkout
       #- setup_remote_docker:
@@ -35,4 +34,9 @@ jobs:
           command: |
             set -e
             if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
+              export DOCKER_IMG_NAME=navikt/spenn
+              export COMMIT_SHORT=$(git rev-parse --short HEAD)
+              docker build . -t $DOCKER_IMG_NAME:$COMMIT_SHORT
+              echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+              docker push $DOCKER_IMG_NAME:$COMMIT_SHORT
             fi
