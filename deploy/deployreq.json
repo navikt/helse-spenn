@@ -1,5 +1,5 @@
 {
-    "ref": "set_from_pipeline",
+    "ref": "master",
     "description": "Automated deployment request from pipeline",
     "environment": "set_from_pipeline",
     "required_contexts": [],

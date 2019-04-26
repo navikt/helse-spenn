@@ -14,10 +14,6 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      - run:
-          name: install dependencies
-          command: |
-            curl -Lo yq https://github.com/mikefarah/yq/releases/download/2.3.0/yq_linux_amd64 && chmod +x yq
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
@@ -30,13 +26,39 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
       - run: mvn install
       - run:
+          name: github creds
+          command: |
+            set -e
+            git clone https://github.com/navikt/github-apps-support.git
+            export PATH=`pwd`/github-apps-support/bin:$PATH
+            echo $HELSECI_KEY | tr '_' '\n' > helseci.key
+            export GITHUB_APP_ID=19726
+            export GH_TOKEN=$(generate-installation-token.sh `generate-jwt.sh helseci.key $GITHUB_APP_ID`)
+            echo -e "machine api.github.com login x-access-token password $GH_TOKEN" > ~/.netrc
+            rm helseci.key
+      - run:
           name: build and push to docker
           command: |
             set -e
             if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
               export DOCKER_IMG_NAME=navikt/spenn
               export COMMIT_SHORT=$(git rev-parse --short HEAD)
-              docker build . -t $DOCKER_IMG_NAME:$COMMIT_SHORT
+              export DOCKER_TAG=$DOCKER_IMG_NAME:$COMMIT_SHORT
+              docker build . -t $DOCKER_TAG
               echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
-              docker push $DOCKER_IMG_NAME:$COMMIT_SHORT
+              docker push $DOCKER_TAG
+            fi
+      - run:
+          name: deploy to preprod
+          command: |
+            set -e
+            if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
+              PREPROD_NAISERATOR=$(cat deploy/preprod.json | jq '.spec.image="'$DOCKER_TAG'"' -c)
+              PREPROD_DEPLOYMENT=$(cat deploy/deployreq.json | jq '.payload.kubernetes.resources += ['$PREPROD_NAISERATOR']')
+              PREPROD_DEPLOYMENT=$(echo $PREPROD_DEPLOYMENT | jq '.environment = "dev-fss"')
+              curl -i -n \
+                   -X POST \
+                   -d "$PREPROD_DEPLOYMENT" \
+                   -H "Accept: application/vnd.github.ant-man-preview+json" \
+                   https://api.github.com/repos/navikt/helse-speil/deployments
             fi
