@@ -47,6 +47,7 @@ jobs:
               docker build . -t $DOCKER_TAG
               echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
               docker push $DOCKER_TAG
+              echo 'export DOCKER_TAG="$DOCKER_IMG_NAME:$COMMIT_SHORT"' >> $BASH_ENV
             fi
       - run:
           name: deploy to preprod
