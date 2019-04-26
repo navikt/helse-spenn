@@ -31,7 +31,7 @@ jobs:
             set -e
             git clone https://github.com/navikt/github-apps-support.git
             export PATH=`pwd`/github-apps-support/bin:$PATH
-            echo $HELSECI_KEY | tr '_' '\n' > helseci.key
+            echo $HELSECI_KEY > helseci.key
             export GITHUB_APP_ID=19726
             export GH_TOKEN=$(generate-installation-token.sh `generate-jwt.sh helseci.key $GITHUB_APP_ID`)
             echo -e "machine api.github.com login x-access-token password $GH_TOKEN" > ~/.netrc
