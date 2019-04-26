@@ -2,10 +2,10 @@ package no.nav.helse
 
 data class Environment(
         val appId: String = "spenn-1",
-        val kafkaUsername: String? = getEnvVarOptional("SERVICEUSER_USERNAME"),
-        val kafkaPassword: String? = getEnvVarOptional("SERVICEUSER_PASSWORD"),
-        val stsUsername: String? = getEnvVarOptional("SERVICEUSER_USERNAME"),
-        val stsPassword: String? = getEnvVarOptional("SERVICEUSER_PASSWORD"),
+        val kafkaUsername: String? = getEnvVarOptional("SERVICE_USERNAME"),
+        val kafkaPassword: String? = getEnvVarOptional("SERVICE_PASSWORD"),
+        val stsUsername: String? = getEnvVarOptional("SERVICE_USERNAME"),
+        val stsPassword: String? = getEnvVarOptional("SERVICE_PASSWORD"),
         val bootstrapServersUrl: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS"),
         val navTruststorePath: String? = getEnvVarOptional("NAV_TRUSTSTORE_PATH"),
         val sparkelBaseUrl: String = getEnvVar("SPARKEL_BASE_URL", "http://sparkel"),

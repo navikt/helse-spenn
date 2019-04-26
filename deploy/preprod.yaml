@@ -6,7 +6,7 @@ metadata:
   labels:
     team: tbd
 spec:
-  image: navikt/spenn:7117a4b
+  image: navikt/spenn:4aaa90a
   port: 8080
   team: tbd
   liveness:
@@ -41,3 +41,5 @@ spec:
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     - name: SECURITY_TOKEN_SERVICE_REST_URL
       value: http://security-token-service
+    - name: OPPDRAG_DB_NAVN
+      value: SPENN_OPPDRAG
