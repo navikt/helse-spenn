@@ -30,7 +30,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
       - run: mvn install
       - run:
-          name: push to docker
+          name: build and push to docker
           command: |
             set -e
             if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
