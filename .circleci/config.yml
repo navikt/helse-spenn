@@ -46,14 +46,15 @@ jobs:
               export DOCKER_TAG=$DOCKER_IMG_NAME:$COMMIT_SHORT
               docker build . -t $DOCKER_TAG
               echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+              echo "export DOCKER_TAG=$DOCKER_TAG" >> $BASH_ENV
               docker push $DOCKER_TAG
-              echo 'export DOCKER_TAG="$DOCKER_TAG"' >> $BASH_ENV
             fi
       - run:
           name: deploy to preprod
           command: |
             set -e
             if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
+              echo 'deploying ${DOCKER_TAG}'
               PREPROD_NAISERATOR=$(cat deploy/preprod.json | jq '.spec.image="'$DOCKER_TAG'"' -c)
               PREPROD_DEPLOYMENT=$(cat deploy/deployreq.json | jq '.payload.kubernetes.resources += ['$PREPROD_NAISERATOR']')
               PREPROD_DEPLOYMENT=$(echo $PREPROD_DEPLOYMENT | jq '.environment = "dev-fss"')
