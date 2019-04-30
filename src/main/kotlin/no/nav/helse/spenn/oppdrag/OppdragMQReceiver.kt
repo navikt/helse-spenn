@@ -12,26 +12,26 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag) {
     private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
 
     @JmsListener(destination = "\${oppdrag.queue.mottak}")
-    fun receiveOppdragKvittering(kvittering: String) {
-        log.debug(kvittering)
+    fun receiveOppdragResponse(response: String) {
+        log.debug(response)
         //rar xml som blir returnert
-        val replaced = kvittering.replace("oppdrag xmlns", "ns2:oppdrag xmlns:ns2")
-        handleKvittering(jaxb.toOppdrag(replaced))
+        val replaced = response.replace("oppdrag xmlns", "ns2:oppdrag xmlns:ns2")
+        handleResponse(jaxb.toOppdrag(replaced))
     }
 
-    private fun handleKvittering(oppdrag : Oppdrag) {
-        val kvittering = Kvittering(status=mapStatus(oppdrag), alvorlighetsgrad = oppdrag.mmel.alvorlighetsgrad,
+    private fun handleResponse(oppdrag : Oppdrag) {
+        val response = OppdragResponse(status=mapStatus(oppdrag), alvorlighetsgrad = oppdrag.mmel.alvorlighetsgrad,
                 beskrMelding = oppdrag.mmel.beskrMelding, kodeMelding = oppdrag.mmel.kodeMelding,
                 fagsystemId = oppdrag.oppdrag110.fagsystemId)
-        log.info("Kvittering for ${kvittering.fagsystemId}  ${kvittering.status} '${kvittering.beskrMelding}'")
-        // TODO persist kvittering
+        log.info("OppdragResponse for ${response.fagsystemId}  ${response.status} '${response.beskrMelding}'")
+        // TODO persist response
     }
 
-    private fun mapStatus(oppdrag: Oppdrag): KvitteringStatus {
+    private fun mapStatus(oppdrag: Oppdrag): OppdragStatus {
         when(oppdrag.mmel.alvorlighetsgrad) {
-            "00" -> return KvitteringStatus.OK
-            "04" -> return KvitteringStatus.AKSEPTERT_MED_FEILMELDING
+            "00" -> return OppdragStatus.OK
+            "04" -> return OppdragStatus.AKSEPTERT_MED_FEILMELDING
         }
-        return KvitteringStatus.FEIL
+        return OppdragStatus.FEIL
     }
 }
