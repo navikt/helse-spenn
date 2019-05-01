@@ -16,9 +16,11 @@ management:
 #    driverClassName: org.postgresql.Driver
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;Mode=PostgreSQL
+    url: jdbc:h2:mem:testdb
     platform: h2
     continue-on-error: true
+  jooq:
+    sql-dialect: H2
 ibm:
   mq:
     queue-manager: ${MQ_QUEUE_MANAGER:QM1}

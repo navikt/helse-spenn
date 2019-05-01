@@ -5,8 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 
-@SpringBootApplication
-@ComponentScan("no.nav.helse")
+@SpringBootApplication(scanBasePackages = arrayOf("no.nav.helse"))
 class Application
 fun main(args: Array<String>) {
     runApplication<Application>(*args) {
