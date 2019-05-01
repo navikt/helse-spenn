@@ -41,7 +41,7 @@ class OppdragMapperTest {
 
     @Test
     fun readOppdragKvitteringXml() {
-        oppdragMQReceiver.receiveOppdragKvittering(kvittering)
+        oppdragMQReceiver.receiveOppdragResponse(kvittering)
     }
 
 }
