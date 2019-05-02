@@ -16,6 +16,9 @@ import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.context.annotation.ComponentScan
 
 import java.util.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @DataJdbcTest
 @ImportAutoConfiguration(classes = arrayOf(JooqAutoConfiguration::class))
@@ -26,15 +29,22 @@ class OppdragStateRepositoryTest {
 
     @Test
     fun crudOppdragState() {
+        val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(UUID.randomUUID().toString())
+        val vedtak = node.tilVedtak(soknadKey.toString())
+        val vedtakAsString = defaultObjectMapper.writeValueAsString(vedtak)
+        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.PENDING,
+                vedtak = vedtakAsString)
+        val dbState = repository.insert(state)
+        assertNotNull(dbState.created)
+        assertNotNull(dbState.modified)
+        assertEquals(soknadKey,dbState.soknadId)
+        assertEquals(OppdragStateStatus.PENDING, dbState.status)
+        assertEquals(vedtakAsString, dbState.vedtak)
 
-        val state = OppdragState(soknadId = UUID.randomUUID(), status = OppdragStateStatus.PENDING,
-                vedtak = defaultObjectMapper.writeValueAsString(vedtak))
-        val id = repository.insert(state)
-        var dbState = repository.findById(id)
         val oppdragResponse = OppdragResponse(status = OppdragStatus.OK, alvorlighetsgrad = "00", beskrMelding = "beskrivelse",
-                fagsystemId = id.toString(), kodeMelding = "kodemelding")
+                fagsystemId = dbState.id.toString(), kodeMelding = "kodemelding")
+
         val update = repository.update(OppdragState(
                 id=dbState.id,
                 soknadId = dbState.soknadId,
@@ -44,7 +54,9 @@ class OppdragStateRepositoryTest {
                 created = dbState.created,
                 modified = dbState.modified,
                 simuleringResult = dbState.simuleringResult))
-        println(update)
+
+        assertEquals(OppdragStateStatus.OK, update.status)
+        assertTrue(update.modified.isAfter(dbState.modified))
     }
 
 }

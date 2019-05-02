@@ -5,7 +5,7 @@ import java.util.*
 
 interface OppdragStateRepository {
 
-    fun insert(oppdragstate: OppdragState): Long
+    fun insert(oppdragstate: OppdragState): OppdragState
 
     fun delete(id: Long): OppdragState
 

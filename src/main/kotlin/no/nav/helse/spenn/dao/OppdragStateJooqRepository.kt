@@ -16,9 +16,9 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
 
 
     @Transactional(readOnly = false)
-    override fun insert(oppdragstate: OppdragState): Long {
+    override fun insert(oppdragstate: OppdragState): OppdragState {
         with(OPPDRAGSTATE) {
-            return jooq.insertInto(this)
+            val id =  jooq.insertInto(this)
                     .set(SOKNAD_ID, oppdragstate.soknadId)
                     .set(MODIFIED, currentTimestamp())
                     .set(CREATED, currentTimestamp())
@@ -29,6 +29,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                     .returning()
                     .fetchOne()
                     .id
+            return findById(id)
         }
     }
 
@@ -93,7 +94,4 @@ private fun OppdragstateRecord?.toOppdragState(): OppdragState {
 }
 
 
-class OppdragStateNotFound : Throwable() {
-
-}
-
+class OppdragStateNotFound : Throwable()
