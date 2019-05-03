@@ -29,7 +29,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
 
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         disableCnCheck(simulerFpService)
-        //dumpXML(simulerRequest)
+        dumpXML(simulerRequest)
         try {
             val response = simulerFpService.simulerBeregning(simulerRequest)
             return mapResponseToResultat(response.response)

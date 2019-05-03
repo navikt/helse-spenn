@@ -2,8 +2,8 @@ package no.nav.helse
 
 data class Environment(
         val appId: String = "spenn-1",
-        val kafkaUsername: String? = getEnvVarOptional("SERVICE_USERNAME"),
-        val kafkaPassword: String? = getEnvVarOptional("SERVICE_PASSWORD"),
+        val kafkaUsername: String? = getEnvVarOptional("KAFKA_USERNAME"),
+        val kafkaPassword: String? = getEnvVarOptional("KAFKA_PASSWORD"),
         val stsUsername: String? = getEnvVarOptional("SERVICE_USERNAME"),
         val stsPassword: String? = getEnvVarOptional("SERVICE_PASSWORD"),
         val bootstrapServersUrl: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS"),

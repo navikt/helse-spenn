@@ -49,8 +49,8 @@ class SimuleringConfig(val appEnv: Environment) {
                 features = listOf(LoggingFeature())
 
                 properties = mapOf(
-                        SecurityConstants.USERNAME to appEnv.kafkaUsername,
-                        SecurityConstants.PASSWORD to appEnv.kafkaPassword
+                        SecurityConstants.USERNAME to appEnv.stsUsername,
+                        SecurityConstants.PASSWORD to appEnv.stsPassword
                 )
                 setPolicy(bus.resolvePolicy(STS_CLIENT_AUTHENTICATION_POLICY))
             }

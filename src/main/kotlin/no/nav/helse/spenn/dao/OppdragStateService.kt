@@ -7,19 +7,24 @@ import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 class OppdragStateService(val repository: OppdragStateRepository) {
 
 
     @Transactional(readOnly = false)
-    fun saveOppdragState(dto: OppdragStateDTO) : OppdragStateDTO {
+    fun saveOppdragState(dto: OppdragStateDTO): OppdragStateDTO {
         if (dto.id==null) {
             return fromEntity(repository.insert(toEntity(dto)))
         }
         return fromEntity(repository.update(toEntity(dto)))
     }
 
+    @Transactional(readOnly = true)
+    fun fetchOppdragState(soknadId: UUID):  OppdragStateDTO {
+        return fromEntity(repository.findBySoknadId(soknadId))
+    }
 
     private fun toEntity(dto: OppdragStateDTO): OppdragState {
         return OppdragState(id=dto.id,
