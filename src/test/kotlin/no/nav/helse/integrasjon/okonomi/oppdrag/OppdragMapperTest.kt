@@ -16,7 +16,6 @@ import javax.xml.transform.stream.StreamSource
 
 class OppdragMapperTest {
 
-    val oppdragMapper = OppdragMapper()
     val oppdragMQReceiver = OppdragMQReceiver(JAXBOppdrag())
 
     @Test
@@ -27,7 +26,7 @@ class OppdragMapperTest {
         val utbetaling = UtbetalingsOppdrag(id = "20190401110001", operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(enOppdragsLinje))
 
-        val oppdrag = oppdragMapper.mapUtbetalingsOppdrag(utbetaling)
+        val oppdrag = utbetaling.toOppdrag()
         val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
         val marshaller = jaxbContext.createMarshaller()
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)

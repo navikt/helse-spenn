@@ -27,20 +27,19 @@ class VedtakToOppdragMappingTest {
                 grad = BigInteger.valueOf(100)
         )
         val målbilde = UtbetalingsOppdrag(
-                id = vedtak.søknadId,
+                id = "123",
                 operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "some_dummy_fnr",
                 utbetalingsLinje = listOf(oppdragsLinje)
         )
 
-        val faktisk = vedtak.tilOppdrag(LocalFnrMapper())
-
+        val faktisk = vedtak.tilUtbetaling(LocalFnrMapper(), 123L)
         Assertions.assertEquals(målbilde, faktisk)
     }
 
     private fun etEnkeltVedtak(): Vedtak {
         return Vedtak(
-                søknadId = UUID.randomUUID().toString(),
+                søknadId = UUID.randomUUID(),
                 aktørId = "en random aktørid",
                 vedtaksperioder = listOf(Vedtaksperiode(
                         fom = LocalDate.of(2020, 1, 15),

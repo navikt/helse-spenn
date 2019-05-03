@@ -1,12 +1,13 @@
 package no.nav.helse.spenn.vedtak
 
 import java.time.LocalDate
+import java.util.*
 
 /**
  aggregert fra SPA sitt SykepengeVedtak-objekt
  */
 data class Vedtak (
-        val søknadId: String,
+        val søknadId: UUID,
         val aktørId: String,
         val vedtaksperioder: List<Vedtaksperiode>
 )

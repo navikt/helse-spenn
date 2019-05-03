@@ -3,6 +3,7 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import no.nav.helse.Environment
+import no.nav.helse.spenn.dao.OppdragStateService
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -17,14 +18,14 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.File
 import java.util.*
 
 @Configuration
-class KafkaStreamsConfig(@Autowired val aktørTilFnrMapper: AktørTilFnrMapper) {
+class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
+                         val oppdragStateService: OppdragStateService) {
 
     private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
 
@@ -42,12 +43,15 @@ class KafkaStreamsConfig(@Autowired val aktørTilFnrMapper: AktørTilFnrMapper) 
         val builder = StreamsBuilder()
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{_, _ -> log.info("here goes payments")}
+                .peek{ key: String, _ -> log.info("incoming soknad id ${key}")}
                 .mapValues { key:String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> vedtak.tilOppdrag(aktørTilFnrMapper) }
+                .mapValues { _, vedtak -> oppdragStateService.saveOppdragState(
+                                            OppdragStateDTO(soknadId = vedtak.søknadId, vedtak = vedtak))}
+                .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}
 
         return builder.build()
     }
+
 
     fun <K : Any, V : Any> StreamsBuilder.consumeTopic(topic: Topic<K, V>): KStream<K, V> {
         return consumeTopic(topic, null)
@@ -120,6 +124,8 @@ class KafkaStreamsConfig(@Autowired val aktørTilFnrMapper: AktørTilFnrMapper) 
         }
     }
 }
+
+
 
 data class Topic<K, V>(
         val name: String,

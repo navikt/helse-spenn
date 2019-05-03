@@ -9,12 +9,12 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
+import java.util.*
 
 @SpringBootTest
 class MQOppdragIT {
 
     @Autowired lateinit var mqSender: OppdragMQSender
-    @Autowired lateinit var oppdragMapper: OppdragMapper
 
     @Test
     fun sendOppdragTilOS() {
@@ -36,9 +36,9 @@ class MQOppdragIT {
                 datoTom = tom3, sats = BigDecimal.valueOf(1000), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
-        val utbetalingsOppdrag = UtbetalingsOppdrag(id = "1234567890123456789012345678901234", operasjon = AksjonsKode.OPPDATER,
+        val utbetaling = UtbetalingsOppdrag(id = "1234567890123456789012345678901234", operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
-        mqSender.sendOppdrag(oppdragMapper.mapUtbetalingsOppdrag(utbetalingsOppdrag))
+        mqSender.sendOppdrag(utbetaling.toOppdrag())
         while (true) {
             Thread.sleep(1000)
         }

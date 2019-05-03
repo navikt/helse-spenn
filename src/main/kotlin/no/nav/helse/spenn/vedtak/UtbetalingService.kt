@@ -1,27 +1,32 @@
 package no.nav.helse.spenn.vedtak
 
-import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
+import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.OppdragMQSender
-import no.nav.helse.spenn.oppdrag.OppdragMapper
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.simulering.OppdragMapperForSimulering
+import no.nav.helse.spenn.oppdrag.toOppdrag
+import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringService
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 
-@Component
+import org.springframework.stereotype.Service
+
+@Service
 class UtbetalingService(val simuleringService: SimuleringService,
-                        val oppdragMapperForSimulering: OppdragMapperForSimulering,
                         val oppdragSender: OppdragMQSender,
-                        val oppdragMapper: OppdragMapper) {
+                        val oppdragStateService: OppdragStateService,
+                        val aktørTilFnrMapper: AktørTilFnrMapper) {
 
-    fun sendUtbetalingToOS(utbetaling: UtbetalingsOppdrag) {
-        if (utbetaling.operasjon == AksjonsKode.SIMULERING) {
-            simuleringService.simulerOppdrag(oppdragMapperForSimulering.mapOppdragToSimuleringRequest(utbetaling))
-        }
-        else {
-            oppdragSender.sendOppdrag(oppdragMapper.mapUtbetalingsOppdrag(utbetaling))
-        }
-
+    fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
+        val utbetaling = oppdrag.vedtak.tilUtbetaling(fagSystemId = oppdrag.id!!)
+        val result = simuleringService
+                .simulerOppdrag(utbetaling.toSimuleringRequest())
+        oppdrag.simuleringResult = result
+        return oppdragStateService.saveOppdragState(oppdrag)
     }
+
+
+    fun sendUtbetalingOppdragMQ(oppdrag: OppdragStateDTO) {
+        val utbetaling = oppdrag.vedtak.tilUtbetaling(aktørTilFnrMapper, oppdrag.id!!)
+        oppdragSender.sendOppdrag(utbetaling.toOppdrag())
+    }
+
+
 }

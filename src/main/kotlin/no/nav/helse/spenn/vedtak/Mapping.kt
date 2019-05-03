@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.vedtak
 
+import com.ctc.wstx.io.SystemId
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
@@ -9,6 +10,7 @@ import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
+import java.util.*
 
 typealias Fodselsnummer = String
 
@@ -20,8 +22,8 @@ private class DummyAktørMapper() : AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
 }
 
-fun Vedtak.tilOppdrag(mapper: AktørTilFnrMapper = DummyAktørMapper()): UtbetalingsOppdrag = UtbetalingsOppdrag(
-        id = søknadId,
+fun Vedtak.tilUtbetaling(mapper: AktørTilFnrMapper = DummyAktørMapper(), fagSystemId: Long): UtbetalingsOppdrag = UtbetalingsOppdrag(
+        id = fagSystemId.toString(),
         operasjon = AksjonsKode.OPPDATER,
         oppdragGjelder = mapper.tilFnr(aktørId),
         utbetalingsLinje = lagLinjer()
@@ -43,7 +45,7 @@ private fun Vedtak.lagLinjer(): List<UtbetalingsLinje> =
         }.flatten()
 
 fun JsonNode.tilVedtak(key: String): Vedtak =
-        Vedtak(søknadId = key,
+        Vedtak(søknadId = UUID.fromString(key),
                 aktørId = this.get("originalSøknad").get("aktorId").textValue(),
                 vedtaksperioder = lagVedtaksperioder(this.get("vedtak").get("perioder")))
 

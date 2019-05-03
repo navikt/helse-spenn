@@ -1,12 +1,13 @@
 package no.nav.helse.integrasjon.okonomi.oppdrag
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.AppConfig
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.simulering.OppdragMapperForSimulering
+
+import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -18,16 +19,13 @@ import java.time.LocalDate
 import java.time.Month
 
 @SpringBootTest(classes = arrayOf(AppConfig::class, CxfAutoConfiguration::class,
-        SimuleringConfig::class, SimuleringService::class, OppdragMapperForSimulering::class))
+        SimuleringConfig::class, SimuleringService::class))
 class SimulerOppdragIT {
 
     private val log = LoggerFactory.getLogger(SimulerOppdragIT::class.java)
     @Autowired
     lateinit var simuleringService : SimuleringService
-    @Autowired
-    lateinit var simuleringsmapper : OppdragMapperForSimulering
-    @Autowired
-    lateinit var objectMapper: ObjectMapper
+
 
     @Test
     fun simuleringOppdragEnOppdragslinje() {
@@ -38,8 +36,8 @@ class SimulerOppdragIT {
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
         val utbetalingsOppdrag = UtbetalingsOppdrag(id = "20190408084501", operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
-        val simulerOppdrag = simuleringService.simulerOppdrag(simuleringsmapper.mapOppdragToSimuleringRequest(utbetalingsOppdrag))
-        log.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simulerOppdrag))
+        val simulerOppdrag = simuleringService.simulerOppdrag(utbetalingsOppdrag.toSimuleringRequest())
+        log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simulerOppdrag))
     }
 
     @Test
@@ -64,8 +62,8 @@ class SimulerOppdragIT {
 
         val utbetalingsOppdrag = UtbetalingsOppdrag(id = "20190408084501", operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
-        log.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simuleringService.simulerOppdrag(
-                simuleringsmapper.mapOppdragToSimuleringRequest(utbetalingsOppdrag))))
+        log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simuleringService.simulerOppdrag(
+                utbetalingsOppdrag.toSimuleringRequest())))
 
     }
 

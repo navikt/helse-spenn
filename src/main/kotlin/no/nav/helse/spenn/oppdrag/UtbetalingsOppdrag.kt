@@ -1,10 +1,31 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
-import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
+import no.nav.helse.integrasjon.okonomi.oppdrag.*
+import no.nav.system.os.entiteter.oppdragskjema.Attestant
+import no.nav.system.os.entiteter.oppdragskjema.Enhet
+import no.nav.system.os.entiteter.oppdragskjema.Grad
+import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
+import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
+import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
+
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.APP
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.BOS
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.KOMPONENT_KODE
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP_ENHET
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toFnrOrOrgnr
+import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toXMLDate
+import no.trygdeetaten.skjema.oppdrag.ObjectFactory
+import no.trygdeetaten.skjema.oppdrag.Oppdrag
+import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
+import no.trygdeetaten.skjema.oppdrag.TfradragTillegg
+
+import java.time.format.DateTimeFormatter
+
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
+
 
 
 data class UtbetalingsOppdrag(val id: String, //"fagsystemets identifikasjon av vedtaket"
@@ -19,3 +40,131 @@ data class UtbetalingsLinje(val id: String, // delytelseId - "fagsystemets entyd
                             val datoTom : LocalDate,
                             val utbetalesTil: String,  // "kan registreres med fødselsnummer eller organisasjonsnummer til den enheten som skal motta ubetalingen. Normalt vil dette være den samme som oppdraget gjelder, men kan f.eks være en arbeidsgiver som skal få refundert pengene."
                             val grad: BigInteger)
+
+
+private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory()
+private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
+
+fun UtbetalingsOppdrag.toSimuleringRequest(): SimulerBeregningRequest {
+    var simulerFom = LocalDate.MAX
+    var simulerTom = LocalDate.MIN
+
+    val oppdragsEnhet = Enhet().apply {
+        enhet = SP_ENHET
+        typeEnhet = BOS
+        datoEnhetFom = LocalDate.EPOCH.format(formatter)
+    }
+
+    val oppdrag = simFactory.createOppdrag().apply {
+        kodeEndring = EndringsKode.NY.kode
+        kodeFagomraade = SP
+        fagsystemId = id
+        utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
+        oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)
+        datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
+        saksbehId = APP
+        enhet.add(oppdragsEnhet)
+        utbetalingsLinje.forEach {
+            if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
+            if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
+            oppdragslinje.add(mapToOppdragslinje150(it))
+        }
+    }
+    return grensesnittFactory.createSimulerBeregningRequest().apply {
+        this.request = simFactory.createSimulerBeregningRequest().apply {
+            this.oppdrag = oppdrag
+            simuleringsPeriode = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
+                    .SimuleringsPeriode().apply {
+                        datoSimulerFom = simulerFom.format(formatter)
+                        datoSimulerTom = simulerTom.format(formatter)
+                    }
+        }
+    }
+
+}
+
+private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : Oppdragslinje {
+    val grad = Grad().apply {
+        typeGrad = GradTypeKode.UFØREGRAD.kode
+        grad = oppdragslinje.grad
+    }
+    val attestant = Attestant().apply {
+        attestantId = OppdragSkjemaConstants.APP
+    }
+
+    return  Oppdragslinje().apply {
+        kodeEndringLinje = EndringsKode.NY.kode
+        kodeKlassifik = OppdragSkjemaConstants.KOMPONENT_KODE
+        datoVedtakFom = oppdragslinje.datoFom.format(formatter)
+        datoVedtakTom = oppdragslinje.datoTom.format(formatter)
+        delytelseId = oppdragslinje.id
+        sats = oppdragslinje.sats
+        fradragTillegg = FradragTillegg.T
+        typeSats = oppdragslinje.satsTypeKode.kode
+        saksbehId = OppdragSkjemaConstants.APP
+        utbetalesTilId = OppdragSkjemaConstants.toFnrOrOrgnr(oppdragslinje.utbetalesTil)
+        brukKjoreplan = "N"
+        this.grad.add(grad)
+        this.attestant.add(attestant)
+    }
+}
+
+private val objectFactory = ObjectFactory()
+
+fun UtbetalingsOppdrag.toOppdrag(): Oppdrag {
+
+    val oppdragsEnhet = objectFactory.createOppdragsEnhet120().apply {
+        enhet = SP_ENHET
+        typeEnhet = BOS
+        datoEnhetFom = toXMLDate(LocalDate.EPOCH)
+    }
+
+    val oppdrag110 = objectFactory.createOppdrag110().apply {
+        kodeAksjon = operasjon.kode
+        kodeEndring = EndringsKode.NY.kode
+        kodeFagomraade = SP
+        fagsystemId = id
+        utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
+        oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)
+        datoOppdragGjelderFom = toXMLDate(LocalDate.EPOCH)
+        saksbehId = APP
+        oppdragsEnhet120.add(oppdragsEnhet)
+        utbetalingsLinje.forEach {
+            oppdragsLinje150.add(mapTolinje150(it))
+        }
+    }
+
+    return  objectFactory.createOppdrag().apply {
+        this.oppdrag110 = oppdrag110
+    }
+
+
+}
+
+private fun mapTolinje150(oppdragslinje : UtbetalingsLinje) : OppdragsLinje150 {
+    val grad = objectFactory.createGrad170().apply {
+        typeGrad = GradTypeKode.UFØREGRAD.kode
+        grad = oppdragslinje.grad
+    }
+    val attestant = objectFactory.createAttestant180().apply {
+        attestantId = APP
+    }
+
+    return  objectFactory.createOppdragsLinje150().apply {
+        kodeEndringLinje = EndringsKode.NY.kode
+        kodeKlassifik = KOMPONENT_KODE
+        datoVedtakFom = toXMLDate(oppdragslinje.datoFom)
+        datoVedtakTom = toXMLDate(oppdragslinje.datoTom)
+        delytelseId = oppdragslinje.id
+        sats = oppdragslinje.sats
+        fradragTillegg = TfradragTillegg.T
+        typeSats = oppdragslinje.satsTypeKode.kode
+        saksbehId = APP
+        utbetalesTilId = toFnrOrOrgnr(oppdragslinje.utbetalesTil)
+        brukKjoreplan = "N"
+        grad170.add(grad)
+        attestant180.add(attestant)
+
+    }
+}
