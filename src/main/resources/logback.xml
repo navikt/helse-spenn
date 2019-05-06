@@ -7,7 +7,7 @@
    </appender>
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
    <logger name="no.nav" level="DEBUG" />
-   <logger name="org.jooq" level="DEBUG" />
+   <logger name="org.jooq" level="INFO" />
    <root level="INFO">
       <appender-ref ref="STDOUT"/>
    </root>
