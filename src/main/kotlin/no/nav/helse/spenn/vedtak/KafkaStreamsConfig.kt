@@ -34,8 +34,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
         val streamConfig = if ("true" == env.plainTextKafka) streamConfigPlainTextKafka(env) else streamConfig(env.appId, env.bootstrapServersUrl,
                     env.kafkaUsername to env.kafkaPassword,
                     env.navTruststorePath to env.navTruststorePassword)
-        val kafkaStreams = KafkaStreams(topology, streamConfig)
-        return kafkaStreams
+        return KafkaStreams(topology, streamConfig)
     }
 
     @Bean
@@ -45,7 +44,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
         builder.consumeTopic(VEDTAK_SYKEPENGER)
                 .peek{ key: String, _ -> log.info("soknad id ${key}")}
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { key: String, vedtak -> vedtak.tilUtbetaling() }
+                .mapValues { _, vedtak -> vedtak.tilUtbetaling() }
                 .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
                                             OppdragStateDTO(soknadId = UUID.fromString(key), utbetalingsOppdrag = utbetaling ))}
                 .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}

@@ -12,7 +12,6 @@ data class Environment(
         val stsRestUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_REST_URL"),
         val plainTextKafka: String? = getEnvVarOptional("PLAIN_TEXT_KAFKA"),
         val navTruststorePassword: String? = getEnvVarOptional("NAV_TRUSTSTORE_PASSWORD"),
-        val oppdragDBNavn: String = getEnvVar("OPPDRAG_DB_NAVN"),
         val stsUrl: String? = getEnvVarOptional("SECURITYTOKENSERVICE_URL"),
         val oppdragServiceUrl: String? = getEnvVarOptional("OPPDRAG_SERVICE_URL"),
         val mqHostname: String? = getEnvVarOptional("MQ_HOSTNAME", "localhost"),

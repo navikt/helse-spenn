@@ -6,7 +6,6 @@ import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12
 import org.apache.cxf.binding.soap.SoapMessage
 import org.apache.cxf.endpoint.Client
-import org.apache.cxf.feature.LoggingFeature
 import org.apache.cxf.frontend.ClientProxy
 import org.springframework.context.annotation.Configuration
 import javax.xml.namespace.QName
@@ -46,8 +45,6 @@ class SimuleringConfig(val appEnv: Environment) {
                 isAllowRenewing = false
 
                 location = appEnv.stsUrl
-                features = listOf(LoggingFeature())
-
                 properties = mapOf(
                         SecurityConstants.USERNAME to appEnv.stsUsername,
                         SecurityConstants.PASSWORD to appEnv.stsPassword

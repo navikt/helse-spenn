@@ -62,5 +62,5 @@ jobs:
                    -X POST \
                    -d "$PREPROD_DEPLOYMENT" \
                    -H "Accept: application/vnd.github.ant-man-preview+json" \
-                   https://api.github.com/repos/navikt/helse-speil/deployments
+                   https://api.github.com/repos/navikt/helse-spenn/deployments
             fi
