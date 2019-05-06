@@ -16,14 +16,20 @@ class OppdragStateService(val repository: OppdragStateRepository) {
     @Transactional(readOnly = false)
     fun saveOppdragState(dto: OppdragStateDTO): OppdragStateDTO {
         if (dto.id==null) {
-            return fromEntity(repository.insert(toEntity(dto)))
+            return toDTO(repository.insert(toEntity(dto)))
         }
-        return fromEntity(repository.update(toEntity(dto)))
+        return toDTO(repository.update(toEntity(dto)))
     }
 
     @Transactional(readOnly = true)
     fun fetchOppdragState(soknadId: UUID):  OppdragStateDTO {
-        return fromEntity(repository.findBySoknadId(soknadId))
+        return toDTO(repository.findBySoknadId(soknadId))
+    }
+
+
+    @Transactional(readOnly = true)
+    fun fetchOppdragStateByStatus(status: OppdragStateStatus): List<OppdragStateDTO> {
+        return repository.findAllByStatus(status).map { toDTO(it) }
     }
 
     private fun toEntity(dto: OppdragStateDTO): OppdragState {
@@ -38,7 +44,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
         )
     }
 
-    private fun fromEntity(entity: OppdragState): OppdragStateDTO {
+    private fun toDTO(entity: OppdragState): OppdragStateDTO {
         return OppdragStateDTO(id = entity.id,
                 soknadId = entity.soknadId,
                 status = entity.status,

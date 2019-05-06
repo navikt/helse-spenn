@@ -7,6 +7,7 @@ import no.nav.helse.spenn.oppdrag.toOppdrag
 import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.Status
+import org.slf4j.LoggerFactory
 
 import org.springframework.stereotype.Service
 
@@ -16,7 +17,10 @@ class UtbetalingService(val simuleringService: SimuleringService,
                         val oppdragStateService: OppdragStateService,
                         val aktørTilFnrMapper: AktørTilFnrMapper) {
 
+    private val log = LoggerFactory.getLogger(UtbetalingService::class.java)
+
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
+        log.info("simulering for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
         val result = simuleringService
                 .simulerOppdrag(oppdrag.utbetalingsOppdrag.toSimuleringRequest(oppdrag.id.toString()))
         oppdrag.status = when(result.status) {
@@ -29,7 +33,9 @@ class UtbetalingService(val simuleringService: SimuleringService,
 
 
     fun sendUtbetalingOppdragMQ(oppdrag: OppdragStateDTO) {
+        log.info("send til Oppdragsystemet for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
         oppdragSender.sendOppdrag(oppdrag.utbetalingsOppdrag.toOppdrag(oppdrag.id.toString()))
+
     }
 
 
