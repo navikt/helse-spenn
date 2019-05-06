@@ -34,13 +34,13 @@ class OppdragStateRepositoryTest {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling()
-        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.PAGAENDE,
+        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.PENDING,
                utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
         val dbState = repository.insert(state)
         assertNotNull(dbState.created)
         assertNotNull(dbState.modified)
         assertEquals(soknadKey,dbState.soknadId)
-        assertEquals(OppdragStateStatus.PAGAENDE, dbState.status)
+        assertEquals(OppdragStateStatus.PENDING, dbState.status)
 
 
         val oppdragResponse = OppdragResponse(status = OppdragStatus.OK, alvorlighetsgrad = "00", beskrMelding = "beskrivelse",

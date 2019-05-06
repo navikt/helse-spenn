@@ -9,5 +9,5 @@ import java.util.*
 
 data class OppdragStateDTO (val id: Long? = null, val soknadId: UUID, val created: LocalDateTime = LocalDateTime.now(),
                             val modified: LocalDateTime = LocalDateTime.now(),
-                            val utbetalingsOppdrag: UtbetalingsOppdrag, var status: OppdragStateStatus = OppdragStateStatus.PAGAENDE,
+                            val utbetalingsOppdrag: UtbetalingsOppdrag, var status: OppdragStateStatus = OppdragStateStatus.PENDING,
                             var oppdragResponse: OppdragResponse? = null, var simuleringResult: SimuleringResult? = null)

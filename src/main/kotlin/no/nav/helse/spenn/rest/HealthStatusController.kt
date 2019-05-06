@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.health
+package no.nav.helse.spenn.rest
 
 import org.apache.kafka.streams.KafkaStreams
 import org.springframework.boot.actuate.jms.JmsHealthIndicator
