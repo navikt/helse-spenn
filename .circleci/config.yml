@@ -54,7 +54,7 @@ jobs:
           command: |
             set -e
             if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
-              echo 'deploying ${DOCKER_TAG}'
+              echo "deploying $DOCKER_TAG"
               PREPROD_NAISERATOR=$(cat deploy/preprod.json | jq '.spec.image="'$DOCKER_TAG'"' -c)
               PREPROD_DEPLOYMENT=$(cat deploy/deployreq.json | jq '.payload.kubernetes.resources += ['$PREPROD_NAISERATOR']')
               PREPROD_DEPLOYMENT=$(echo $PREPROD_DEPLOYMENT | jq '.environment = "dev-fss"')
