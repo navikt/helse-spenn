@@ -43,10 +43,11 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
         val builder = StreamsBuilder()
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{ key: String, _ -> log.info("incoming soknad id ${key}")}
-                .mapValues { key:String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> oppdragStateService.saveOppdragState(
-                                            OppdragStateDTO(soknadId = vedtak.søknadId, vedtak = vedtak))}
+                .peek{ key: String, _ -> log.info("soknad id ${key}")}
+                .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
+                .mapValues { key: String, vedtak -> vedtak.tilUtbetaling() }
+                .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
+                                            OppdragStateDTO(soknadId = UUID.fromString(key), utbetalingsOppdrag = utbetaling ))}
                 .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}
 
         return builder.build()

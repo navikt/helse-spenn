@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.vedtak
 
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
 import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
@@ -27,13 +28,13 @@ class VedtakToOppdragMappingTest {
                 grad = BigInteger.valueOf(100)
         )
         val målbilde = UtbetalingsOppdrag(
-                id = "123",
+                vedtak = defaultObjectMapper.convertValue(vedtak, JsonNode::class.java),
                 operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "some_dummy_fnr",
                 utbetalingsLinje = listOf(oppdragsLinje)
         )
 
-        val faktisk = vedtak.tilUtbetaling(LocalFnrMapper(), 123L)
+        val faktisk = vedtak.tilUtbetaling(LocalFnrMapper())
         Assertions.assertEquals(målbilde, faktisk)
     }
 

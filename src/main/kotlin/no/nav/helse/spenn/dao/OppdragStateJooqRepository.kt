@@ -22,7 +22,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                     .set(SOKNAD_ID, oppdragstate.soknadId)
                     .set(MODIFIED, currentTimestamp())
                     .set(CREATED, currentTimestamp())
-                    .set(VEDTAK, oppdragstate.vedtak)
+                    .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
                     .set(STATUS, oppdragstate.status.name)
                     .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
                     .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
@@ -64,7 +64,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                     .set(SOKNAD_ID, oppdragstate.soknadId)
                     .set(MODIFIED, currentTimestamp())
                     .set(STATUS, oppdragstate.status.name)
-                    .set(VEDTAK, oppdragstate.vedtak)
+                    .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
                     .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
                     .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
                     .where(ID.equal(oppdragstate.id))
@@ -89,7 +89,7 @@ private fun LocalDateTime?.toTimeStamp(): Timestamp? {
 private fun OppdragstateRecord?.toOppdragState(): OppdragState {
     if (this==null) throw OppdragStateNotFound()
     return OppdragState(id=id, soknadId = soknadId, created = created.toLocalDateTime(), modified = modified.toLocalDateTime(),
-            vedtak = vedtak, oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
+            utbetalingsOppdrag = utbetalingsoppdrag, oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
             simuleringResult = simuleringresult)
 }
 

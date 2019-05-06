@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.vedtak
 
-import com.ctc.wstx.io.SystemId
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
@@ -8,7 +7,7 @@ import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import java.math.BigDecimal
-import java.math.BigInteger
+
 import java.time.LocalDate
 import java.util.*
 
@@ -22,8 +21,8 @@ private class DummyAktørMapper() : AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
 }
 
-fun Vedtak.tilUtbetaling(mapper: AktørTilFnrMapper = DummyAktørMapper(), fagSystemId: Long): UtbetalingsOppdrag = UtbetalingsOppdrag(
-        id = fagSystemId.toString(),
+fun Vedtak.tilUtbetaling(mapper: AktørTilFnrMapper = DummyAktørMapper()): UtbetalingsOppdrag = UtbetalingsOppdrag(
+        vedtak = defaultObjectMapper.convertValue(this, JsonNode::class.java),
         operasjon = AksjonsKode.OPPDATER,
         oppdragGjelder = mapper.tilFnr(aktørId),
         utbetalingsLinje = lagLinjer()
@@ -39,7 +38,7 @@ private fun Vedtak.lagLinjer(): List<UtbetalingsLinje> =
                         sats = BigDecimal(periode.dagsats),
                         satsTypeKode = SatsTypeKode.DAGLIG,
                         utbetalesTil = fordeling.mottager,
-                        grad = BigInteger.valueOf(100)
+                        grad = periode.grad.toBigInteger()
                 )
             }
         }.flatten()

@@ -7,6 +7,7 @@ import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragResponse
 import no.nav.helse.spenn.oppdrag.OppdragStatus
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
+import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,15 +33,15 @@ class OppdragStateRepositoryTest {
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
-        val vedtakAsString = defaultObjectMapper.writeValueAsString(vedtak)
-        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.PENDING,
-                vedtak = vedtakAsString)
+        val utbetaling = vedtak.tilUtbetaling()
+        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.PAGAENDE,
+               utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
         val dbState = repository.insert(state)
         assertNotNull(dbState.created)
         assertNotNull(dbState.modified)
         assertEquals(soknadKey,dbState.soknadId)
-        assertEquals(OppdragStateStatus.PENDING, dbState.status)
-        assertEquals(vedtakAsString, dbState.vedtak)
+        assertEquals(OppdragStateStatus.PAGAENDE, dbState.status)
+
 
         val oppdragResponse = OppdragResponse(status = OppdragStatus.OK, alvorlighetsgrad = "00", beskrMelding = "beskrivelse",
                 fagsystemId = dbState.id.toString(), kodeMelding = "kodemelding")
@@ -48,14 +49,14 @@ class OppdragStateRepositoryTest {
         val update = repository.update(OppdragState(
                 id=dbState.id,
                 soknadId = dbState.soknadId,
-                vedtak = dbState.vedtak,
+                utbetalingsOppdrag = dbState.utbetalingsOppdrag,
                 oppdragResponse = defaultObjectMapper.writeValueAsString(oppdragResponse),
-                status = OppdragStateStatus.OK,
+                status = OppdragStateStatus.FERDIG,
                 created = dbState.created,
                 modified = dbState.modified,
                 simuleringResult = dbState.simuleringResult))
 
-        assertEquals(OppdragStateStatus.OK, update.status)
+        assertEquals(OppdragStateStatus.FERDIG, update.status)
         assertTrue(update.modified.isAfter(dbState.modified))
     }
 

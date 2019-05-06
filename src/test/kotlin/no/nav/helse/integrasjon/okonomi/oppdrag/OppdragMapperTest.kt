@@ -23,10 +23,10 @@ class OppdragMapperTest {
         val enOppdragsLinje = UtbetalingsLinje(id = "1234567890", datoFom = LocalDate.now().minusWeeks(2),
                 datoTom = LocalDate.now(), sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.MÅNEDLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
-        val utbetaling = UtbetalingsOppdrag(id = "20190401110001", operasjon = AksjonsKode.OPPDATER,
+        val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(enOppdragsLinje))
 
-        val oppdrag = utbetaling.toOppdrag()
+        val oppdrag = utbetaling.toOppdrag("oppdragId")
         val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
         val marshaller = jaxbContext.createMarshaller()
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)

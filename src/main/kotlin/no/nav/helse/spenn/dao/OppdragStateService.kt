@@ -1,9 +1,9 @@
 package no.nav.helse.spenn.dao
 
 import no.nav.helse.spenn.oppdrag.OppdragResponse
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.vedtak.OppdragStateDTO
-import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,7 +28,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
 
     private fun toEntity(dto: OppdragStateDTO): OppdragState {
         return OppdragState(id=dto.id,
-                vedtak = defaultObjectMapper.writeValueAsString(dto.vedtak),
+                utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(dto.utbetalingsOppdrag),
                 soknadId = dto.soknadId,
                 modified = dto.modified,
                 created = dto.created,
@@ -42,7 +42,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
         return OppdragStateDTO(id = entity.id,
                 soknadId = entity.soknadId,
                 status = entity.status,
-                vedtak = defaultObjectMapper.readValue(entity.vedtak,Vedtak::class.java),
+                utbetalingsOppdrag = defaultObjectMapper.readValue(entity.utbetalingsOppdrag, UtbetalingsOppdrag::class.java),
                 oppdragResponse = defaultObjectMapper.readValue(entity.oppdragResponse, OppdragResponse::class.java),
                 simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
                 modified = entity.modified,

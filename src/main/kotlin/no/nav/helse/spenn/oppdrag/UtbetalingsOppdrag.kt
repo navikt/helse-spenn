@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.integrasjon.okonomi.oppdrag.*
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
@@ -28,10 +29,11 @@ import java.time.LocalDate
 
 
 
-data class UtbetalingsOppdrag(val id: String, //"fagsystemets identifikasjon av vedtaket"
-                              val operasjon : AksjonsKode,
-                              val oppdragGjelder: String, // "angir hvem som saken/vedtaket er registrert på i fagrutinen"
-                              val utbetalingsLinje : List<UtbetalingsLinje>)
+data class UtbetalingsOppdrag(
+        val vedtak: JsonNode? = null,
+        val operasjon : AksjonsKode,
+        val oppdragGjelder: String, // "angir hvem som saken/vedtaket er registrert på i fagrutinen"
+        val utbetalingsLinje : List<UtbetalingsLinje>)
 
 data class UtbetalingsLinje(val id: String, // delytelseId - "fagsystemets entydige identifikasjon av oppdragslinjen"
                             val sats: BigDecimal,
@@ -46,7 +48,7 @@ private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpse
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
-fun UtbetalingsOppdrag.toSimuleringRequest(): SimulerBeregningRequest {
+fun UtbetalingsOppdrag.toSimuleringRequest(oppdragId : String): SimulerBeregningRequest {
     var simulerFom = LocalDate.MAX
     var simulerTom = LocalDate.MIN
 
@@ -59,7 +61,7 @@ fun UtbetalingsOppdrag.toSimuleringRequest(): SimulerBeregningRequest {
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = SP
-        fagsystemId = id
+        fagsystemId = oppdragId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
@@ -112,7 +114,7 @@ private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : Oppdragsli
 
 private val objectFactory = ObjectFactory()
 
-fun UtbetalingsOppdrag.toOppdrag(): Oppdrag {
+fun UtbetalingsOppdrag.toOppdrag(oppdragId: String): Oppdrag {
 
     val oppdragsEnhet = objectFactory.createOppdragsEnhet120().apply {
         enhet = SP_ENHET
@@ -124,7 +126,7 @@ fun UtbetalingsOppdrag.toOppdrag(): Oppdrag {
         kodeAksjon = operasjon.kode
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = SP
-        fagsystemId = id
+        fagsystemId = oppdragId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)
         datoOppdragGjelderFom = toXMLDate(LocalDate.EPOCH)

@@ -15,17 +15,15 @@ class UtbetalingService(val simuleringService: SimuleringService,
                         val aktørTilFnrMapper: AktørTilFnrMapper) {
 
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
-        val utbetaling = oppdrag.vedtak.tilUtbetaling(fagSystemId = oppdrag.id!!)
         val result = simuleringService
-                .simulerOppdrag(utbetaling.toSimuleringRequest())
+                .simulerOppdrag(oppdrag.utbetalingsOppdrag.toSimuleringRequest(oppdrag.id.toString()))
         oppdrag.simuleringResult = result
         return oppdragStateService.saveOppdragState(oppdrag)
     }
 
 
     fun sendUtbetalingOppdragMQ(oppdrag: OppdragStateDTO) {
-        val utbetaling = oppdrag.vedtak.tilUtbetaling(aktørTilFnrMapper, oppdrag.id!!)
-        oppdragSender.sendOppdrag(utbetaling.toOppdrag())
+        oppdragSender.sendOppdrag(oppdrag.utbetalingsOppdrag.toOppdrag(oppdrag.id.toString()))
     }
 
 

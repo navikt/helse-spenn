@@ -1,5 +1,6 @@
 package no.nav.helse.integrasjon.okonomi.oppdrag
 
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.oppdrag.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,9 +37,9 @@ class MQOppdragIT {
                 datoTom = tom3, sats = BigDecimal.valueOf(1000), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
-        val utbetaling = UtbetalingsOppdrag(id = "1234567890123456789012345678901234", operasjon = AksjonsKode.OPPDATER,
+        val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
-        mqSender.sendOppdrag(utbetaling.toOppdrag())
+        mqSender.sendOppdrag(utbetaling.toOppdrag(oppdragId="fagsystemId"))
         while (true) {
             Thread.sleep(1000)
         }

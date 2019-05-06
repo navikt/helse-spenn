@@ -34,9 +34,9 @@ class SimulerOppdragIT {
         val linje = UtbetalingsLinje(id = "1234567890", datoFom = fom,
                 datoTom = tom, sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
-        val utbetalingsOppdrag = UtbetalingsOppdrag(id = "20190408084501", operasjon = AksjonsKode.SIMULERING,
+        val utbetalingsOppdrag = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
-        val simulerOppdrag = simuleringService.simulerOppdrag(utbetalingsOppdrag.toSimuleringRequest())
+        val simulerOppdrag = simuleringService.simulerOppdrag(utbetalingsOppdrag.toSimuleringRequest("20190408084501"))
         log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simulerOppdrag))
     }
 
@@ -60,10 +60,10 @@ class SimulerOppdragIT {
                 datoTom = tom3, sats = BigDecimal.valueOf(1000), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
-        val utbetalingsOppdrag = UtbetalingsOppdrag(id = "20190408084501", operasjon = AksjonsKode.SIMULERING,
+        val utbetalingsOppdrag = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
         log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simuleringService.simulerOppdrag(
-                utbetalingsOppdrag.toSimuleringRequest())))
+                utbetalingsOppdrag.toSimuleringRequest("20190408084501"))))
 
     }
 
