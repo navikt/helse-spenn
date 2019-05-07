@@ -28,7 +28,7 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
         val state = oppdragStateService.fetchOppdragStateById(oppdrag.oppdrag110.fagsystemId.toLong())
         state.oppdragResponse = xml
         state.status = mapStatus(oppdrag)
-        meterRegistry.counter(OPPDRAG, "status", state.status.name)
+        meterRegistry.counter(OPPDRAG, "status", state.status.name).increment()
         oppdragStateService.saveOppdragState(state)
     }
 
