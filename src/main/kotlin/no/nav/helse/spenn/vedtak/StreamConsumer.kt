@@ -1,7 +1,5 @@
 package no.nav.helse.spenn.vedtak
 
-import io.prometheus.client.hotspot.DefaultExports
-
 import org.apache.kafka.streams.KafkaStreams
 
 import org.slf4j.LoggerFactory
@@ -15,8 +13,6 @@ class StreamConsumer(val consumerName: String,
 
     fun start() {
         addShutdownHook()
-
-        DefaultExports.initialize()
         streams.start()
         log.info("Started stream consumer $consumerName")
     }
