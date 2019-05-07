@@ -33,7 +33,7 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
         when(oppdrag.mmel.alvorlighetsgrad) {
             "00" -> return OppdragStateStatus.FERDIG
         }
-        log.warn("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId}")
+        log.error("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId}")
         return OppdragStateStatus.FEIL
     }
 }

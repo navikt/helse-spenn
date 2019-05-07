@@ -27,7 +27,7 @@ class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingS
                 oppdragStateService.saveOppdragState(it)
             }
             catch(e: Exception) {
-                log.info("Got excption while sending ${it.soknadId}", e)
+                log.error("Got exeption while sending ${it.soknadId}", e)
             }
         }
     }
