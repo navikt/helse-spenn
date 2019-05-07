@@ -47,7 +47,7 @@ class OppdragStateRepositoryTest {
                 id=dbState.id,
                 soknadId = dbState.soknadId,
                 utbetalingsOppdrag = dbState.utbetalingsOppdrag,
-                oppdragResponse = defaultObjectMapper.writeValueAsString(oppdragResponse),
+                oppdragResponse = dbState.oppdragResponse,
                 status = OppdragStateStatus.FERDIG,
                 created = dbState.created,
                 modified = dbState.modified,

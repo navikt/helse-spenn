@@ -242,6 +242,10 @@
          <artifactId>shedlock-spring</artifactId>
          <version>${shedlock.version}</version>
       </dependency>
+      <dependency>
+         <groupId>io.micrometer</groupId>
+         <artifactId>micrometer-registry-prometheus</artifactId>
+      </dependency>
    </dependencies>
 
    <build>

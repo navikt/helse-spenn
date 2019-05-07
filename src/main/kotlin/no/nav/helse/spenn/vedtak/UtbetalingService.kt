@@ -1,7 +1,9 @@
 package no.nav.helse.spenn.vedtak
 
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.metrics.SIMULERING
 import no.nav.helse.spenn.oppdrag.OppdragMQSender
 import no.nav.helse.spenn.oppdrag.toOppdrag
 import no.nav.helse.spenn.oppdrag.toSimuleringRequest
@@ -15,7 +17,8 @@ import org.springframework.stereotype.Service
 class UtbetalingService(val simuleringService: SimuleringService,
                         val oppdragSender: OppdragMQSender,
                         val oppdragStateService: OppdragStateService,
-                        val aktørTilFnrMapper: AktørTilFnrMapper) {
+                        val aktørTilFnrMapper: AktørTilFnrMapper,
+                        val meterRegistry: MeterRegistry) {
 
     private val log = LoggerFactory.getLogger(UtbetalingService::class.java)
 
@@ -28,6 +31,7 @@ class UtbetalingService(val simuleringService: SimuleringService,
             else -> OppdragStateStatus.FEIL
         }
         oppdrag.simuleringResult = result
+        meterRegistry.counter(SIMULERING, "status", oppdrag.status.name).increment()
         return oppdragStateService.saveOppdragState(oppdrag)
     }
 

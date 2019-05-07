@@ -2,8 +2,10 @@ package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.Environment
 import no.nav.helse.spenn.dao.OppdragStateService
+import no.nav.helse.spenn.metrics.VEDTAK
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -25,7 +27,8 @@ import java.util.*
 
 @Configuration
 class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
-                         val oppdragStateService: OppdragStateService) {
+                         val oppdragStateService: OppdragStateService,
+                         val meterRegistry: MeterRegistry) {
 
     private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
 
@@ -42,7 +45,10 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
         val builder = StreamsBuilder()
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{ key: String, _ -> log.info("soknad id ${key}")}
+                .peek{ key: String, _ ->
+                    log.info("soknad id ${key}")
+                    meterRegistry.counter(VEDTAK).increment()
+                }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
                 .mapValues { _, vedtak -> vedtak.tilUtbetaling() }
                 .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(

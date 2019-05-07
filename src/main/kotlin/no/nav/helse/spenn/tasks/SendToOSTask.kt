@@ -18,8 +18,8 @@ class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingS
     @Scheduled(cron = "59 * * * * *")
     @SchedulerLock(name = "sendToOS")
     fun sendToOS() {
-        log.info("running sendToOSTask() ")
         val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_OK)
+        log.info("We are sending ${oppdragList.size} to OS")
         oppdragList.forEach {
             try {
                 utbetalingService.sendUtbetalingOppdragMQ(it)

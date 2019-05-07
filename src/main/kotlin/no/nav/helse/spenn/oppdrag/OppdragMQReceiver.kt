@@ -4,12 +4,14 @@ import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
+import io.micrometer.core.instrument.MeterRegistry
+import no.nav.helse.spenn.metrics.OPPDRAG
 
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component
 
 @Component
-class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: OppdragStateService) {
+class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: OppdragStateService, val meterRegistry: MeterRegistry) {
 
     private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
 
@@ -26,6 +28,7 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
         val state = oppdragStateService.fetchOppdragStateById(oppdrag.oppdrag110.fagsystemId.toLong())
         state.oppdragResponse = xml
         state.status = mapStatus(oppdrag)
+        meterRegistry.counter(OPPDRAG, "status", state.status.name)
         oppdragStateService.saveOppdragState(state)
     }
 
