@@ -21,7 +21,14 @@ class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingS
         log.info("running sendToOSTask() ")
         val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_OK)
         oppdragList.forEach {
-            utbetalingService.sendUtbetalingOppdragMQ(it)
+            try {
+                utbetalingService.sendUtbetalingOppdragMQ(it)
+                it.status = OppdragStateStatus.SENDT_OS
+                oppdragStateService.saveOppdragState(it)
+            }
+            catch(e: Exception) {
+                log.info("Got excption while sending ${it.soknadId}", e)
+            }
         }
     }
 

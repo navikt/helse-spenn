@@ -11,6 +11,8 @@ data class OppdragState(val id: Long? = null, val soknadId: UUID, val created: L
 enum class OppdragStateStatus {
     PENDING,
     SIMULERING_OK,
+    SIMULERING_FEIL,
+    SENDT_OS,
     FERDIG,
     FEIL
 }
