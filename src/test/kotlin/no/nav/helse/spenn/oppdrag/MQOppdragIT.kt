@@ -1,6 +1,5 @@
-package no.nav.helse.integrasjon.okonomi.oppdrag
+package no.nav.helse.spenn.oppdrag
 
-import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.oppdrag.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,7 +9,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
-import java.util.*
 
 @SpringBootTest
 class MQOppdragIT {

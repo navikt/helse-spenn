@@ -1,4 +1,4 @@
-package no.nav.helse.integrasjon.okonomi.oppdrag
+package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.spenn.dao.OppdragState

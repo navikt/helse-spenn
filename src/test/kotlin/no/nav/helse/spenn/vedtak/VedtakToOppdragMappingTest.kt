@@ -1,8 +1,8 @@
 package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
-import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.AksjonsKode
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions

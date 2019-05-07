@@ -1,8 +1,5 @@
-package no.nav.helse.integrasjon.okonomi.oppdrag
+package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

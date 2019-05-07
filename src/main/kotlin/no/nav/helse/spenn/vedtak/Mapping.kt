@@ -2,8 +2,8 @@ package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import no.nav.helse.integrasjon.okonomi.oppdrag.AksjonsKode
-import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.AksjonsKode
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import java.math.BigDecimal

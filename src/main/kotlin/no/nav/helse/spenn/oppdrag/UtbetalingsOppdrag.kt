@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.integrasjon.okonomi.oppdrag.*
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
@@ -9,13 +8,13 @@ import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
 
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.APP
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.BOS
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.KOMPONENT_KODE
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.SP_ENHET
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toFnrOrOrgnr
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants.Companion.toXMLDate
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.APP
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.BOS
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.KOMPONENT_KODE
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.SP
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.SP_ENHET
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.toFnrOrOrgnr
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.toXMLDate
 import no.trygdeetaten.skjema.oppdrag.ObjectFactory
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150

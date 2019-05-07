@@ -1,18 +1,14 @@
-package no.nav.helse.integrasjon.okonomi.oppdrag
+package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.io.StringReader
 import java.io.StringWriter
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
-import javax.xml.stream.XMLInputFactory
-import javax.xml.transform.stream.StreamSource
 
 
 class OppdragMapperTest {

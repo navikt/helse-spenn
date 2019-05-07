@@ -1,4 +1,4 @@
-package no.nav.helse.integrasjon.okonomi.oppdrag
+package no.nav.helse.spenn.oppdrag
 
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import java.time.LocalDate

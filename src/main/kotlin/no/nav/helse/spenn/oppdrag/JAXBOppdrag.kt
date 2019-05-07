@@ -1,7 +1,6 @@
 
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.integrasjon.okonomi.oppdrag.OppdragSkjemaConstants
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 
 import org.springframework.stereotype.Component

@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.integrasjon.okonomi.oppdrag.SatsTypeKode
-import no.nav.helse.integrasjon.okonomi.oppdrag.UtbetalingsType
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.UtbetalingsType
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
