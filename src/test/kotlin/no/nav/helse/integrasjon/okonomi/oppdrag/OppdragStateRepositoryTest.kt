@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.spenn.dao.OppdragState
 import no.nav.helse.spenn.dao.OppdragStateRepository
 import no.nav.helse.spenn.dao.OppdragStateStatus
-import no.nav.helse.spenn.oppdrag.OppdragResponse
-import no.nav.helse.spenn.oppdrag.OppdragStatus
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
@@ -34,17 +32,16 @@ class OppdragStateRepositoryTest {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling()
-        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.PENDING,
+        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
                utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
         val dbState = repository.insert(state)
         assertNotNull(dbState.created)
         assertNotNull(dbState.modified)
         assertEquals(soknadKey,dbState.soknadId)
-        assertEquals(OppdragStateStatus.PENDING, dbState.status)
+        assertEquals(OppdragStateStatus.STARTET, dbState.status)
 
 
-        val oppdragResponse = OppdragResponse(status = OppdragStatus.OK, alvorlighetsgrad = "00", beskrMelding = "beskrivelse",
-                fagsystemId = dbState.id.toString(), kodeMelding = "kodemelding")
+        val oppdragResponse = kvittering
 
         val update = repository.update(OppdragState(
                 id=dbState.id,
@@ -61,3 +58,81 @@ class OppdragStateRepositoryTest {
     }
 
 }
+
+val kvittering = """<?xml version="1.0" encoding="utf-8"?><oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag"><mmel><systemId>231-OPPD</systemId><kodeMelding>B110008F</kodeMelding><alvorlighetsgrad>08</alvorlighetsgrad><beskrMelding>Oppdraget finnes fra før</beskrMelding><programId>K231BB10</programId><sectionNavn>CA10-INPUTKONTROLL</sectionNavn></mmel><oppdrag-110>
+        <kodeAksjon>1</kodeAksjon>
+        <kodeEndring>NY</kodeEndring>
+        <kodeFagomraade>SP</kodeFagomraade>
+        <fagsystemId>20190408084501</fagsystemId>
+        <utbetFrekvens>MND</utbetFrekvens>
+        <oppdragGjelderId>21038014495</oppdragGjelderId>
+        <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>
+        <saksbehId>SPENN</saksbehId>
+        <oppdrags-enhet-120>
+            <typeEnhet>BOS</typeEnhet>
+            <enhet>4151</enhet>
+            <datoEnhetFom>1970-01-01+01:00</datoEnhetFom>
+        </oppdrags-enhet-120>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>1</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-01-01+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-01-12+01:00</datoVedtakTom>
+            <sats>600</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPENN</saksbehId>
+            <utbetalesTilId>00995816598</utbetalesTilId>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>50</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPENN</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>2</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-02-13+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-02-20+01:00</datoVedtakTom>
+            <sats>600</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPENN</saksbehId>
+            <utbetalesTilId>00995816598</utbetalesTilId>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>70</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPENN</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>3</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-03-18+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-04-12+02:00</datoVedtakTom>
+            <sats>1000</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPENN</saksbehId>
+            <utbetalesTilId>00995816598</utbetalesTilId>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>100</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPENN</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+    </oppdrag-110>
+</ns2:oppdrag>"""
+

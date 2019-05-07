@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.dao
 
-import no.nav.helse.spenn.oppdrag.OppdragResponse
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.vedtak.OppdragStateDTO
@@ -32,6 +31,11 @@ class OppdragStateService(val repository: OppdragStateRepository) {
         return repository.findAllByStatus(status).map { toDTO(it) }
     }
 
+    @Transactional(readOnly = true)
+    fun fetchOppdragStateById(id: Long): OppdragStateDTO {
+        return toDTO(repository.findById(id))
+    }
+
     private fun toEntity(dto: OppdragStateDTO): OppdragState {
         return OppdragState(id=dto.id,
                 utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(dto.utbetalingsOppdrag),
@@ -49,7 +53,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
                 soknadId = entity.soknadId,
                 status = entity.status,
                 utbetalingsOppdrag = defaultObjectMapper.readValue(entity.utbetalingsOppdrag, UtbetalingsOppdrag::class.java),
-                oppdragResponse = defaultObjectMapper.readValue(entity.oppdragResponse, OppdragResponse::class.java),
+                oppdragResponse = entity.oppdragResponse,
                 simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
                 modified = entity.modified,
                 created = entity.created)

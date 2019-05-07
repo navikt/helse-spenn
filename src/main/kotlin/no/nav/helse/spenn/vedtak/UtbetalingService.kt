@@ -33,7 +33,7 @@ class UtbetalingService(val simuleringService: SimuleringService,
 
 
     fun sendUtbetalingOppdragMQ(oppdrag: OppdragStateDTO) {
-        log.info("send til Oppdragsystemet for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
+        log.info("sender til Oppdragsystemet for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
         oppdragSender.sendOppdrag(oppdrag.utbetalingsOppdrag.toOppdrag(oppdrag.id.toString()))
 
     }

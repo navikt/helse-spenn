@@ -4,7 +4,6 @@ import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
 import no.nav.helse.spenn.jooq.Tables.OPPDRAGSTATE
 import no.nav.helse.spenn.jooq.tables.records.OppdragstateRecord
-import no.nav.helse.spenn.oppdrag.OppdragStatus
 import org.jooq.impl.DSL.currentTimestamp
 import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
