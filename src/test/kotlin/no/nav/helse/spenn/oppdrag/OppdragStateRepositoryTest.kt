@@ -41,13 +41,11 @@ class OppdragStateRepositoryTest {
         assertEquals(OppdragStateStatus.STARTET, dbState.status)
 
 
-        val oppdragResponse = kvittering
-
         val update = repository.update(OppdragState(
                 id=dbState.id,
                 soknadId = dbState.soknadId,
                 utbetalingsOppdrag = dbState.utbetalingsOppdrag,
-                oppdragResponse = dbState.oppdragResponse,
+                oppdragResponse = kvittering,
                 status = OppdragStateStatus.FERDIG,
                 created = dbState.created,
                 modified = dbState.modified,

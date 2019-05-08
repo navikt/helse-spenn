@@ -48,7 +48,7 @@ fun JsonNode.tilVedtak(key: String): Vedtak =
                 aktørId = this.get("originalSøknad").get("aktorId").textValue(),
                 vedtaksperioder = lagVedtaksperioder(this.get("vedtak").get("perioder")))
 
-private fun lagVedtaksperioder(perioderNode: JsonNode): List<Vedtaksperiode> =
+private fun lagVedtaksperioder(perioderNode: JsonNode?): List<Vedtaksperiode> =
         when (perioderNode) {
             is ArrayNode -> {
                 perioderNode.map { pNode ->

@@ -28,7 +28,8 @@ import java.util.*
 @Configuration
 class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                          val oppdragStateService: OppdragStateService,
-                         val meterRegistry: MeterRegistry) {
+                         val meterRegistry: MeterRegistry,
+                         val aktørTilFnrMapper: AktørTilFnrMapper) {
 
     private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
 
@@ -50,7 +51,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                     meterRegistry.counter(VEDTAK).increment()
                 }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> vedtak.tilUtbetaling() }
+                .mapValues { _, vedtak -> vedtak.tilUtbetaling(aktørTilFnrMapper) }
                 .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
                                             OppdragStateDTO(soknadId = UUID.fromString(key), utbetalingsOppdrag = utbetaling ))}
                 .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}

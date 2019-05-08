@@ -17,7 +17,7 @@ class StsRestClient(val env: Environment) {
     fun token(): String {
         if (Token.shouldRenew(cachedOidcToken))  {
            val webClient = WebClient.builder().baseUrl(env.stsRestUrl)
-                   .filter(ExchangeFilterFunctions.basicAuthentication(env.stsUsername!!, env.stsPassword!!))
+                   .filter(ExchangeFilterFunctions.basicAuthentication(env.stsRestUsername, env.stsRestPassword))
                    .build()
             cachedOidcToken = webClient.get().uri("/rest/v1/sts/token?grant_type=client_credentials&scope=openid")
                     .accept(MediaType.APPLICATION_JSON)

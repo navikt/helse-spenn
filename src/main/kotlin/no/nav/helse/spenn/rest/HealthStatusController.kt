@@ -1,12 +1,13 @@
 package no.nav.helse.spenn.rest
 
 import org.apache.kafka.streams.KafkaStreams
-import org.springframework.boot.actuate.jms.JmsHealthIndicator
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class HealthStatusController(val kafkaStreams: KafkaStreams) {
+class HealthStatusController(val streams: KafkaStreams) {
 
     @GetMapping("/internal/isAlive")
     fun isAlive(): String {
@@ -14,14 +15,17 @@ class HealthStatusController(val kafkaStreams: KafkaStreams) {
     }
 
     @GetMapping("/internal/isReady")
-    fun isReady(): String {
-        return "READY"
+    fun isReady(): ResponseEntity<String> {
+        if (streams.state().isRunning)
+            return ResponseEntity.ok("READY")
+        else
+            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Kafka is not running")
     }
 
     @GetMapping("/internal/dependsOn")
     fun dependsOn(): String {
         // TODO add more later
-        return "Kafka state ${kafkaStreams.state().name}"
+        return "Kafka state ${streams.state().name}"
     }
 
 }
