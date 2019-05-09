@@ -17,6 +17,14 @@
       {
         "name": "SECURITY_TOKEN_SERVICE_REST_URL",
         "value": "http://security-token-service"
+      },
+      {
+        "name": "SECURITYTOKENSERVICE_URL",
+        "value": "https://sts-t4.test.local/SecurityTokenServiceProvider/"
+      },
+      {
+        "name": "SIMULERING_SERVICE_URL",
+        "value": "https://ztest.test.local:9128/cics/services/simulerFpServiceWSBinding"
       }
     ],
     "image": "${DOCKER_TAG}",
