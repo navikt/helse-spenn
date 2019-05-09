@@ -3,7 +3,7 @@
         <database>
             <name>org.jooq.meta.extensions.ddl.DDLDatabase</name>
             <includes>.*</includes>
-            <excludes></excludes>
+            <excludes>SHEDLOCK</excludes>
             <properties>
 
                 <!-- Specify the location of your SQL script.
