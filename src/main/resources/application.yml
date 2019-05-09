@@ -5,7 +5,7 @@ management:
       exposure:
         include: prometheus, health, info
       path-mapping:
-        prometheus: metrics
+        prometheus: /internal/metrics
 
 #spring:
 #  datasource:

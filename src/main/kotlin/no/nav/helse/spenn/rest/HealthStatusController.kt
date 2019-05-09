@@ -16,10 +16,11 @@ class HealthStatusController(val streams: KafkaStreams) {
 
     @GetMapping("/internal/isReady")
     fun isReady(): ResponseEntity<String> {
-        if (streams.state().isRunning)
-            return ResponseEntity.ok("READY")
-        else
-            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Kafka is not running")
+        return ResponseEntity.ok("isReady")
+//        if (streams.state().isRunning)
+//            return ResponseEntity.ok("READY")
+//        else
+//            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Kafka is not running")
     }
 
     @GetMapping("/internal/dependsOn")

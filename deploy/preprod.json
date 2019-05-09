@@ -41,7 +41,7 @@
     "port": 8080,
     "prometheus": {
       "enabled": true,
-      "path": "/metrics"
+      "path": "/internal/metrics"
     },
     "readiness": {
       "initialDelay": 20,
