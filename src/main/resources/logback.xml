@@ -7,7 +7,7 @@
    </appender>
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
    <logger name="no.nav" level="DEBUG" />
-   <logger name="org.jooq" level="INFO" />
+   <logger name="org.jooq.Constants" level="ERROR" />
    <!-- remember to remove this when we go prod  -->
    <logger name="org.springframework.jms.listener.DefaultMessageListenerContainer" level="OFF" />
    <root level="INFO">
