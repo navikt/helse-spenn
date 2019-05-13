@@ -4,8 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.metrics.SIMULERING
+import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_BELOP
-import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_TOTAL_BELOP
 import no.nav.helse.spenn.oppdrag.OppdragMQSender
 import no.nav.helse.spenn.oppdrag.toOppdrag
 import no.nav.helse.spenn.oppdrag.toSimuleringRequest
@@ -46,8 +46,8 @@ class UtbetalingService(val simuleringService: SimuleringService,
 
     private fun simuleringMetrics(result: SimuleringResult) {
         if (result.status == Status.OK) {
-            meterRegistry.counter(SIMULERING_UTBETALT_TOTAL_BELOP).increment(result.mottaker!!.totalBelop.toDouble())
-            meterRegistry.gauge(SIMULERING_UTBETALT_BELOP, result.mottaker!!.totalBelop)
+            meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(result.mottaker!!.totalBelop.toDouble())
+            meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, result.mottaker!!.totalBelop)
         }
         meterRegistry.counter(SIMULERING, "status", result.status.name).increment()
     }
