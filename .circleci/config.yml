@@ -49,8 +49,6 @@ jobs:
               echo "export DOCKER_TAG=$DOCKER_TAG" >> $BASH_ENV
               docker push $DOCKER_TAG
             fi
-  deploy:
-    steps:
       - run:
           name: deploy to preprod
           command: |
