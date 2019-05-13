@@ -41,9 +41,9 @@ jobs:
           command: |
             set -e
             if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
-              export DOCKER_IMG_NAME=navikt/spenn
               export COMMIT_SHORT=$(git rev-parse --short HEAD)
-              export DOCKER_TAG=$DOCKER_IMG_NAME:$COMMIT_SHORT
+              export RELEASE_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec | cut -f 1 -d "-")
+              export DOCKER_TAG=navikt/spenn:$RELEASE_VERSION.$CIRCLE_BUILD_NUM-$COMMIT_SHORT
               docker build . -t $DOCKER_TAG
               echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
               echo "export DOCKER_TAG=$DOCKER_TAG" >> $BASH_ENV
