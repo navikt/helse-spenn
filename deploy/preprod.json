@@ -20,11 +20,11 @@
       },
       {
         "name": "SECURITYTOKENSERVICE_URL",
-        "value": "https://sts-t4.test.local/SecurityTokenServiceProvider/"
+        "value": "https://sts-q1.preprod.local/SecurityTokenServiceProvider/"
       },
       {
         "name": "SIMULERING_SERVICE_URL",
-        "value": "https://ztest.test.local:9128/cics/services/simulerFpServiceWSBinding"
+        "value": "https://ztest.test.local:9110/cics/services/simulerFpServiceWSBinding"
       }
     ],
     "image": "${DOCKER_TAG}",
