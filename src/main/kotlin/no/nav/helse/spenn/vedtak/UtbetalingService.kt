@@ -47,7 +47,7 @@ class UtbetalingService(val simuleringService: SimuleringService,
     private fun simuleringMetrics(result: SimuleringResult) {
         if (result.status == Status.OK) {
             meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(result.mottaker!!.totalBelop.toDouble())
-            meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, result.mottaker!!.totalBelop)
+            meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, result.mottaker.totalBelop)
         }
         meterRegistry.counter(SIMULERING, "status", result.status.name).increment()
     }
