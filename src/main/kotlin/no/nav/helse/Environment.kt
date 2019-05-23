@@ -4,66 +4,66 @@ import org.springframework.beans.factory.annotation.Value
 
 class Environment {
 
-    val appId: String = "spenn-1"
+    val appId = "spenn-1"
 
     @Value("\${KAFKA_USERNAME}")
-    lateinit var kafkaUsername: String
+    val kafkaUsername: String = ""
 
     @Value("\${KAFKA_PASSWORD}")
-    lateinit var kafkaPassword: String
+    val kafkaPassword: String= ""
 
     @Value("\${STS_SOAP_USERNAME}")
-    lateinit var stsUsername: String
+    val stsUsername: String= ""
 
     @Value("\${STS_SOAP_PASSWORD}")
-    lateinit var stsPassword: String
+    val stsPassword: String= ""
 
     @Value("\${SECURITYTOKENSERVICE_URL}")
-    lateinit var stsUrl: String
+    val stsUrl: String= ""
 
     @Value("\${KAFKA_BOOTSTRAP_SERVERS}")
-    lateinit var bootstrapServersUrl: String
+    val bootstrapServersUrl: String= ""
 
     @Value("\${NAV_TRUSTSTORE_PATH}")
-    lateinit var navTruststorePath: String
+    val navTruststorePath: String= ""
 
     @Value("\${SPARKEL_BASE_URL:http://sparkel}")
-    lateinit var sparkelBaseUrl: String
+    val sparkelBaseUrl: String= ""
 
     @Value("\${SECURITY_TOKEN_SERVICE_REST_URL}")
-    lateinit var stsRestUrl: String
+    val stsRestUrl: String= ""
 
     @Value("\${STS_REST_USERNAME}")
-    lateinit var stsRestUsername: String
+    val stsRestUsername: String= ""
 
     @Value("\${STS_REST_PASSWORD}")
-    lateinit var stsRestPassword: String
+    val stsRestPassword: String= ""
 
     @Value("\${PLAIN_TEXT_KAFKA}")
-    lateinit var plainTextKafka: String
+    val plainTextKafka: String= ""
 
     @Value("\${NAV_TRUSTSTORE_PASSWORD}")
-    lateinit var navTruststorePassword: String
+    val navTruststorePassword: String= ""
 
     @Value("\${SIMULERING_SERVICE_URL}")
-    lateinit var simuleringServiceUrl: String
+    val simuleringServiceUrl: String= ""
 
     @Value("\${MQ_HOSTNAME}")
-    lateinit var mqHostname: String
+    val mqHostname: String= ""
 
     @Value("\${MQ_CHANNEL}")
-    lateinit var mqChannel: String
+    val mqChannel: String= ""
 
     @Value("\${MQ_PORT}")
-    lateinit var mqPort: String
+    val mqPort: String= ""
 
     @Value("\${MQ_QUEUE_MANAGER}")
-    lateinit var queueManager: String
+    val queueManager: String= ""
 
     @Value("\${MQ_USERNAME}")
-    lateinit var mqUsername: String
+    val mqUsername: String= ""
 
     @Value("\${MQ_PASSWORD}")
-    lateinit var mqPassword: String
+    val mqPassword: String= ""
 
 }
