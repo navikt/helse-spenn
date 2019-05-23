@@ -1,31 +1,69 @@
 package no.nav.helse
 
-data class Environment(
-        val appId: String = "spenn-1",
-        val kafkaUsername: String? = getEnvVarOptional("KAFKA_USERNAME"),
-        val kafkaPassword: String? = getEnvVarOptional("KAFKA_PASSWORD"),
-        val stsUsername: String? = getEnvVarOptional("STS_SOAP_USERNAME"),
-        val stsPassword: String? = getEnvVarOptional("STS_SOAP_PASSWORD"),
-        val stsUrl: String? = getEnvVarOptional("SECURITYTOKENSERVICE_URL"),
-        val bootstrapServersUrl: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS"),
-        val navTruststorePath: String? = getEnvVarOptional("NAV_TRUSTSTORE_PATH"),
-        val sparkelBaseUrl: String = getEnvVar("SPARKEL_BASE_URL", "http://sparkel"),
-        val stsRestUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_REST_URL"),
-        val stsRestUsername: String = getEnvVar("STS_REST_USERNAME"),
-        val stsRestPassword: String = getEnvVar("STS_REST_PASSWORD"),
-        val plainTextKafka: String? = getEnvVarOptional("PLAIN_TEXT_KAFKA"),
-        val navTruststorePassword: String? = getEnvVarOptional("NAV_TRUSTSTORE_PASSWORD"),
-        val simuleringServiceUrl: String? = getEnvVarOptional("SIMULERING_SERVICE_URL"),
-        val mqHostname: String? = getEnvVarOptional("MQ_HOSTNAME", "localhost"),
-        val mqChannel: String? = getEnvVarOptional("MQ_CHANNEL", "who_knows"),
-        val mqPort: String = getEnvVar("MQ_PORT", "1414"),
-        val queueManager: String? = getEnvVarOptional("MQ_QUEUE_MANAGER", "MQQM"),
-        val mqUsername: String = getEnvVar("MQ_USERNAME", "rabbit"),
-        val mqPassword: String = getEnvVar("MQ_PASSWORD", "rabbit")
+import org.springframework.beans.factory.annotation.Value
 
-)
+class Environment {
 
-private fun getEnvVarOptional(varName: String, defaultValue: String? = null) = System.getenv(varName) ?: defaultValue
+    val appId: String = "spenn-1"
 
-private fun getEnvVar(varName: String, defaultValue: String? = null) =
-        getEnvVarOptional(varName, defaultValue) ?: throw Exception("mangler verdi for $varName")
+    @Value("\${KAFKA_USERNAME}")
+    lateinit var kafkaUsername: String
+
+    @Value("\${KAFKA_PASSWORD}")
+    lateinit var kafkaPassword: String
+
+    @Value("\${STS_SOAP_USERNAME}")
+    lateinit var stsUsername: String
+
+    @Value("\${STS_SOAP_PASSWORD}")
+    lateinit var stsPassword: String
+
+    @Value("\${SECURITYTOKENSERVICE_URL}")
+    lateinit var stsUrl: String
+
+    @Value("\${KAFKA_BOOTSTRAP_SERVERS}")
+    lateinit var bootstrapServersUrl: String
+
+    @Value("\${NAV_TRUSTSTORE_PATH}")
+    lateinit var navTruststorePath: String
+
+    @Value("\${SPARKEL_BASE_URL:http://sparkel}")
+    lateinit var sparkelBaseUrl: String
+
+    @Value("\${SECURITY_TOKEN_SERVICE_REST_URL}")
+    lateinit var stsRestUrl: String
+
+    @Value("\${STS_REST_USERNAME}")
+    lateinit var stsRestUsername: String
+
+    @Value("\${STS_REST_PASSWORD}")
+    lateinit var stsRestPassword: String
+
+    @Value("\${PLAIN_TEXT_KAFKA}")
+    lateinit var plainTextKafka: String
+
+    @Value("\${NAV_TRUSTSTORE_PASSWORD}")
+    lateinit var navTruststorePassword: String
+
+    @Value("\${SIMULERING_SERVICE_URL}")
+    lateinit var simuleringServiceUrl: String
+
+    @Value("\${MQ_HOSTNAME}")
+    lateinit var mqHostname: String
+
+    @Value("\${MQ_CHANNEL}")
+    lateinit var mqChannel: String
+
+    @Value("\${MQ_PORT}")
+    lateinit var mqPort: String
+
+    @Value("\${MQ_QUEUE_MANAGER}")
+    lateinit var queueManager: String
+
+    @Value("\${MQ_USERNAME}")
+    lateinit var mqUsername: String
+
+    @Value("\${MQ_PASSWORD}")
+    lateinit var mqPassword: String
+
+}
