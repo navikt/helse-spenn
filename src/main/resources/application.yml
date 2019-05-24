@@ -21,6 +21,10 @@ spring:
     continue-on-error: true
   jooq:
     sql-dialect: H2
+
+jms.mq:
+  enabled: false
+
 ibm:
   mq:
     queue-manager: ${MQ_QUEUE_MANAGER:QM1}
@@ -28,6 +32,7 @@ ibm:
     conn-name: ${MQ_CONN_NAME:localhost(1414)}
     user: ${MQ_USER:admin}
     password: ${MQ_PASSWORD:passw0rd}
+
 oppdrag:
   queue:
     mottak: DEV.QUEUE.1

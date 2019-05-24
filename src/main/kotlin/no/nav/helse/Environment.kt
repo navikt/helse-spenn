@@ -39,7 +39,7 @@ class Environment {
     @Value("\${STS_REST_PASSWORD}")
     val stsRestPassword: String= ""
 
-    @Value("\${PLAIN_TEXT_KAFKA}")
+    @Value("\${PLAIN_TEXT_KAFKA:false}")
     val plainTextKafka: String= ""
 
     @Value("\${NAV_TRUSTSTORE_PASSWORD}")
@@ -47,23 +47,5 @@ class Environment {
 
     @Value("\${SIMULERING_SERVICE_URL}")
     val simuleringServiceUrl: String= ""
-
-    @Value("\${MQ_HOSTNAME}")
-    val mqHostname: String= ""
-
-    @Value("\${MQ_CHANNEL}")
-    val mqChannel: String= ""
-
-    @Value("\${MQ_PORT}")
-    val mqPort: String= ""
-
-    @Value("\${MQ_QUEUE_MANAGER}")
-    val queueManager: String= ""
-
-    @Value("\${MQ_USERNAME}")
-    val mqUsername: String= ""
-
-    @Value("\${MQ_PASSWORD}")
-    val mqPassword: String= ""
 
 }
