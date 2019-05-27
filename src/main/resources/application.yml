@@ -7,20 +7,20 @@ management:
       path-mapping:
         prometheus: /internal/metrics
 
-#spring:
-#  datasource:
-#    platform: postgres
-#    url: jdbc:postgresql://localhost:5432/${OPPDRAG_DB_NAVN}
-#    username: postgres
-#    password:
-#    driverClassName: org.postgresql.Driver
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    platform: h2
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     continue-on-error: true
-  jooq:
-    sql-dialect: H2
+  hikari:
+    minimum-idle: 1
+    maximum-pool-size: 5
+  application:
+    name: spenn
+
+
+vault.postgres:
+  role: default
+  backend: database
 
 jms.mq:
   enabled: false

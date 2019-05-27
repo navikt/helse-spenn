@@ -19,9 +19,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-@DataJdbcTest
-@ImportAutoConfiguration(classes = arrayOf(JooqAutoConfiguration::class))
-@ComponentScan(basePackages = arrayOf("no.nav.helse.spenn.dao"))
+@DataJdbcTest(properties = ["VAULT_ENABLED=false",
+    "spring.cloud.vault.enabled=false",
+    "spring.test.database.replace=none"])
+@ImportAutoConfiguration(classes = [JooqAutoConfiguration::class])
+@ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
 class OppdragStateRepositoryTest {
 
     @Autowired lateinit var repository: OppdragStateRepository

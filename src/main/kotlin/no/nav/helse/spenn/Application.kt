@@ -1,9 +1,8 @@
-package no.nav.helse
+package no.nav.helse.spenn
 
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.context.annotation.ComponentScan
 
 @SpringBootApplication(scanBasePackages = arrayOf("no.nav.helse"))
 class Application

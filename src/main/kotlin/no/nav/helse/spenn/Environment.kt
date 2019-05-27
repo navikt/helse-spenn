@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav.helse.spenn
 
 import org.springframework.beans.factory.annotation.Value
 

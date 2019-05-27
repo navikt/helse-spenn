@@ -1,9 +1,6 @@
-package no.nav.helse
+package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
