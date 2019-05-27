@@ -1,0 +1,16 @@
+spring.cloud.vault:
+  uri: http://localhost:8200
+  scheme: http
+  connection-timeout: 5000
+  read-timeout: 15000
+  application-name: spenn
+  enabled: true
+  database:
+    enabled: true
+    role: default
+    backend: database
+  config:
+    order: -10
+    lifecycle.enabled: true
+
+  authentication: TOKEN
