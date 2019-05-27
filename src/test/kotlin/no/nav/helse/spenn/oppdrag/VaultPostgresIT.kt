@@ -23,6 +23,8 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
 import java.util.function.Consumer
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 
 @SpringBootTest(properties = [
@@ -94,7 +96,11 @@ class VaultPostgresIT {
         val utbetaling = vedtak.tilUtbetaling()
         val state = OppdragStateDTO(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
                 utbetalingsOppdrag = utbetaling)
-        service.fetchOppdragStateByStatus(OppdragStateStatus.FERDIG)
+        val saved = service.saveOppdragState(state)
+        assertNotNull(saved)
+        val fetched = service.fetchOppdragStateByStatus(OppdragStateStatus.STARTET)
+        assertNotNull(fetched)
+        assertEquals(fetched.size,1)
     }
 
 

@@ -267,11 +267,12 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.testcontainers</groupId>
-         <artifactId>junit-jupiter</artifactId>
-         <version>${testcontainers.version}</version>
+         <groupId>org.jooq</groupId>
+         <artifactId>jooq-codegen-maven</artifactId>
+         <version>${jooq.version}</version>
          <scope>test</scope>
       </dependency>
+
    </dependencies>
 
    <build>
@@ -346,17 +347,42 @@
             <groupId>org.jooq</groupId>
             <artifactId>jooq-codegen-maven</artifactId>
             <version>${jooq.version}</version>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>generate</goal>
+                  </goals>
+               </execution>
+            </executions>
+
             <dependencies>
-            <dependency>
-               <groupId>com.sun.xml.bind</groupId>
-               <artifactId>jaxb-core</artifactId>
-               <version>${jaxb-core.version}</version>
-            </dependency>
-            <dependency>
-               <groupId>com.sun.xml.bind</groupId>
-               <artifactId>jaxb-impl</artifactId>
-               <version>${jaxb-impl.version}</version>
-            </dependency>
+               <dependency>
+                  <groupId>org.postgresql</groupId>
+                  <artifactId>postgresql</artifactId>
+                  <version>${postgresql.version}</version>
+               </dependency>
+
+               <dependency>
+                  <groupId>org.testcontainers</groupId>
+                  <artifactId>testcontainers</artifactId>
+                  <version>${testcontainers.version}</version>
+               </dependency>
+
+               <dependency>
+                  <groupId>org.testcontainers</groupId>
+                  <artifactId>postgresql</artifactId>
+                  <version>${testcontainers.version}</version>
+               </dependency>
+               <dependency>
+                  <groupId>com.sun.xml.bind</groupId>
+                  <artifactId>jaxb-core</artifactId>
+                  <version>${jaxb-core.version}</version>
+               </dependency>
+               <dependency>
+                  <groupId>com.sun.xml.bind</groupId>
+                  <artifactId>jaxb-impl</artifactId>
+                  <version>${jaxb-impl.version}</version>
+               </dependency>
                <dependency>
                   <groupId>javax.activation</groupId>
                   <artifactId>activation</artifactId>
@@ -364,20 +390,28 @@
                </dependency>
             </dependencies>
 
-            <executions>
-               <execution>
-                  <id>jooq-codegen</id>
-                  <phase>generate-sources</phase>
-                  <goals>
-                     <goal>generate</goal>
-                  </goals>
-                  <configuration>
-                     <skip>
-                     </skip>
-                     <configurationFile>${basedir}/src/main/resources/jooq.xml</configurationFile>
-                  </configuration>
-               </execution>
-            </executions>
+            <configuration>
+               <jdbc>
+                  <driver>org.testcontainers.jdbc.ContainerDatabaseDriver</driver>
+                  <url>jdbc:tc:postgresql:11-alpine://testcontainers/database?TC_INITSCRIPT=file:${basedir}/src/main/resources/db/migration/V1__base_ddl.sql</url>
+               </jdbc>
+               <generator>
+                  <database>
+                     <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                     <includes>.*</includes>
+                     <excludes>SHEDLOCK</excludes>
+                     <schemata>
+                        <schema>
+                           <inputSchema>public</inputSchema>
+                        </schema>
+                     </schemata>
+                  </database>
+                  <target>
+                     <packageName>no.nav.helse.spenn.jooq</packageName>
+                     <directory>target/generated-sources/jooq</directory>
+                  </target>
+               </generator>
+            </configuration>
          </plugin>
          <plugin>
             <groupId>com.github.spotbugs</groupId>
