@@ -17,7 +17,7 @@ jobs:
           name: install openjdk-11
           command: |
             set -e
-            mkdir ~/.apt-cache
+            mkdir -p ~/.apt-cache
             sudo rm -rf /var/cache/apt/archives
             sudo ln -s ~/.apt-cache /var/cache/apt/archives && mkdir -p ~/.apt-cache/partial
             sudo add-apt-repository ppa:openjdk-r/ppa
