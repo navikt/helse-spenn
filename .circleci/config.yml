@@ -3,10 +3,11 @@
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
 version: 2
+executorType: machine
 jobs:
   build:
-    docker:
-      - image: circleci/openjdk:11-jdk
+#    docker:
+#      - image: circleci/openjdk:11-jdk
     working_directory: ~/spenn
     environment:
       MAVEN_OPTS: -Xmx512m
