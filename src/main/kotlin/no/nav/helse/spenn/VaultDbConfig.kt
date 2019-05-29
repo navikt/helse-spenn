@@ -13,14 +13,15 @@ import org.springframework.vault.core.lease.event.SecretLeaseCreatedEvent
 import javax.annotation.PostConstruct
 
 @Configuration
-@ConditionalOnProperty(name = arrayOf("spring.datasource.url"))
-class VaultDbConfig(val container: SecretLeaseContainer, val dataSource: HikariDataSource) {
+@ConditionalOnProperty(name = ["spring.cloud.vault.enabled"], havingValue="true")
+class VaultDbConfig(val container: SecretLeaseContainer,
+                    val dataSource: HikariDataSource,
+                    @Value("\${vault.postgres.backend}")
+                    val vaultPostgresBackend: String,
+                    @Value("\${vault.postgres.role}")
+                    val vaultPostgresRole: String) {
 
-    val LOG = LoggerFactory.getLogger(VaultDbConfig::class.java)
-    @Value("\${vault.postgres.backend}")
-    lateinit var vaultPostgresBackend: String
-    @Value("\${vault.postgres.role}")
-    lateinit var vaultPostgresRole: String
+    private val LOG = LoggerFactory.getLogger(VaultDbConfig::class.java)
 
     @PostConstruct
     fun init() {
@@ -29,7 +30,7 @@ class VaultDbConfig(val container: SecretLeaseContainer, val dataSource: HikariD
         val secret = RequestedSecret.rotating("$vaultPostgresBackend/creds/$vaultPostgresRole")
         container.addLeaseListener {
             if (it.source.equals(secret) && it is SecretLeaseCreatedEvent) {
-                LOG.info("Rotating creds for path: " + it.source.path)
+                LOG.info("Rotating creds for path: ${it.source.path}")
                 val username = it.secrets.get("username").toString()
                 val password = it.secrets.get("password").toString()
                 dataSource.username = username

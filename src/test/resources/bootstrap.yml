@@ -4,7 +4,7 @@ spring.cloud.vault:
   connection-timeout: 5000
   read-timeout: 15000
   application-name: spenn
-  enabled: true
+  enabled: ${VAULT_ENABLED:false}
   database:
     enabled: true
     role: default
