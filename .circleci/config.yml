@@ -3,9 +3,9 @@
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
 version: 2
-executorType: machine
 jobs:
   build:
+    machine: true
 #    docker:
 #      - image: circleci/openjdk:11-jdk
     working_directory: ~/spenn
@@ -13,8 +13,8 @@ jobs:
       MAVEN_OPTS: -Xmx512m
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+#      - setup_remote_docker:
+#          docker_layer_caching: true
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
