@@ -9,7 +9,7 @@
    <logger name="no.nav" level="DEBUG" />
    <logger name="org.jooq.Constants" level="ERROR" />
 
-   4<!-- remember to remove this when we go prod  -->
+   <!-- remember to remove this when we go prod  -->
    <logger name="org.springframework.jms.listener.DefaultMessageListenerContainer" level="OFF" />
 
    <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener" level="OFF" />
