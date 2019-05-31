@@ -2,10 +2,12 @@
     <generator>
         <database>
             <name>org.jooq.meta.extensions.ddl.DDLDatabase</name>
+
+            <inputSchema>PUBLIC</inputSchema>
+            <outputSchema>public</outputSchema>
             <includes>.*</includes>
             <excludes>SHEDLOCK</excludes>
             <properties>
-
                 <!-- Specify the location of your SQL script.
                      You may use ant-style file matching, e.g. /path/**/to/*.sql
 

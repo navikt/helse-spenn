@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.oppslag
 
-import no.nav.helse.Environment
+import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.vedtak.AktørTilFnrMapper
 import no.nav.helse.spenn.vedtak.Fodselsnummer
 import org.slf4j.LoggerFactory

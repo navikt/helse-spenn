@@ -8,8 +8,11 @@
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
    <logger name="no.nav" level="DEBUG" />
    <logger name="org.jooq.Constants" level="ERROR" />
+
    <!-- remember to remove this when we go prod  -->
    <logger name="org.springframework.jms.listener.DefaultMessageListenerContainer" level="OFF" />
+
+   <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener" level="OFF" />
    <root level="INFO">
       <appender-ref ref="STDOUT"/>
    </root>

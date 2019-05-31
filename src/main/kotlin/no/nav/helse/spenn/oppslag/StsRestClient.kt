@@ -2,7 +2,7 @@ package no.nav.helse.spenn.oppslag
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import no.nav.helse.Environment
+import no.nav.helse.spenn.Environment
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.ExchangeFilterFunctions

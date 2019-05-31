@@ -3,7 +3,7 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.Environment
+import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.metrics.VEDTAK
 import org.apache.kafka.clients.CommonClientConfigs

@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.Environment
+import no.nav.helse.spenn.Environment
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12

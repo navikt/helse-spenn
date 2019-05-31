@@ -5,15 +5,38 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: circleci/openjdk:11-jdk
+    machine: true
     working_directory: ~/spenn
     environment:
       MAVEN_OPTS: -Xmx512m
     steps:
+      - restore_cache:
+          keys:
+            - openjdk-11
+      - run:
+          name: install openjdk-11
+          command: |
+            set -e
+            mkdir -p ~/.apt-cache
+            sudo rm -rf /var/cache/apt/archives
+            sudo ln -s ~/.apt-cache /var/cache/apt/archives && mkdir -p ~/.apt-cache/partial
+            sudo add-apt-repository ppa:openjdk-r/ppa
+            sudo apt update -q
+            sudo apt install -qy openjdk-11-jdk
+            sudo update-java-alternatives -s java-1.11.0-openjdk-amd64
+      - save_cache:
+          paths:
+            - ~/.apt-cache
+          key: openjdk-11
+      - run:
+          name: install maven
+          command: |
+            set -e
+            wget https://www-us.apache.org/dist/maven/maven-3/3.6.1/binaries/apache-maven-3.6.1-bin.tar.gz -P /tmp
+            sudo tar xf /tmp/apache-maven-*.tar.gz -C /usr/local
+            sudo rm /usr/local/apache-maven
+            sudo ln -s /usr/local/apache-maven-3.6.1 /usr/local/apache-maven
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
