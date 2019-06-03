@@ -20,11 +20,11 @@
       },
       {
         "name": "SECURITYTOKENSERVICE_URL",
-        "value": "https://noprod/"
+        "value": "https://sts.adeo.no/SecurityTokenServiceProvider/"
       },
       {
         "name": "SIMULERING_SERVICE_URL",
-        "value": "https://noprod/"
+        "value": "https://zprod.adeo.no:9154/cics/services/simulerFpServiceWSBinding"
       }
     ],
     "image": "${DOCKER_TAG}",
