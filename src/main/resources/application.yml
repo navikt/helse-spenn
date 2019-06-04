@@ -17,11 +17,6 @@ spring:
   application:
     name: spenn
 
-
-vault.postgres:
-  role: default
-  backend: database
-
 jms.mq:
   enabled: false
 

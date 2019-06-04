@@ -1,9 +1,12 @@
 package no.nav.helse.spenn
 
 import com.zaxxer.hikari.HikariDataSource
+import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.vault.core.lease.LeaseEndpoints
 
@@ -16,9 +19,9 @@ import javax.annotation.PostConstruct
 @ConditionalOnProperty(name = ["spring.cloud.vault.enabled"], havingValue="true")
 class VaultDbConfig(val container: SecretLeaseContainer,
                     val dataSource: HikariDataSource,
-                    @Value("\${vault.postgres.backend}")
+                    @Value("\${spring.cloud.vault.database.backend}")
                     val vaultPostgresBackend: String,
-                    @Value("\${vault.postgres.role}")
+                    @Value("\${spring.cloud.vault.database.role}")
                     val vaultPostgresRole: String) {
 
     private val LOG = LoggerFactory.getLogger(VaultDbConfig::class.java)
@@ -41,5 +44,6 @@ class VaultDbConfig(val container: SecretLeaseContainer,
         }
         container.addRequestedSecret(secret)
     }
+
 
 }

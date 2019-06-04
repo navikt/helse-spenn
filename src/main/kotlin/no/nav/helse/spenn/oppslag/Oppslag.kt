@@ -11,7 +11,6 @@ import java.util.*
 
 @Component
 class FnrOppslag(val env: Environment, val stsRestClient: StsRestClient): AktørTilFnrMapper {
-    private val log = LoggerFactory.getLogger(FnrOppslag::class.java.name)
     override fun tilFnr(aktørId: String): Fodselsnummer {
         val bearer = stsRestClient.token()
         val webClient = WebClient.builder().baseUrl(env.sparkelBaseUrl).build()

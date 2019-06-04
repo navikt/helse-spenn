@@ -1,20 +1,25 @@
 spring.cloud.vault:
-  uri: ${VAULT_URI:https://vault.adeo.no}
+  uri: https://vault.adeo.no
   connection-timeout: 5000
   read-timeout: 15000
-  enabled: ${VAULT_ENABLED:false}
+  application-name: spenn
+  enabled: false
+  database:
+    enabled: true
+    role: helse-spenn-oppdrag-admin
+    backend: postgresql/preprod-fss
   config:
     order: -10
     lifecycle.enabled: true
 
-  authentication: KUBERNETES
+  authentication: TOKEN
   kubernetes:
     role: spenn
-    kubernetes-path: ${VAULT_KUBERNETES_PATH:kubernetes/preprod/fss}
+    kubernetes-path: kubernetes/preprod/fss
     service-account-token-file: /var/run/secrets/kubernetes.io/serviceaccount/token
 
   generic:
     enabled: true
-    backend: ${VAULT_KUBERNETES_BACKEND:kv/preprod/fss}
+    backend: kv/preprod/fss
     application-name: spenn/default
     default-context: spenn/default
