@@ -9,24 +9,7 @@
     "namespace": "default"
   },
   "spec": {
-    "env": [
-      {
-        "name": "KAFKA_BOOTSTRAP_SERVERS",
-        "value": "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443"
-      },
-      {
-        "name": "SECURITY_TOKEN_SERVICE_REST_URL",
-        "value": "http://security-token-service"
-      },
-      {
-        "name": "SECURITYTOKENSERVICE_URL",
-        "value": "https://sts-q1.preprod.local/SecurityTokenServiceProvider/"
-      },
-      {
-        "name": "SIMULERING_SERVICE_URL",
-        "value": "https://ztest.test.local:9110/cics/services/simulerFpServiceWSBinding"
-      }
-    ],
+    "env": [],
     "image": "${DOCKER_TAG}",
     "ingresses": [
       "https://spenn.nais.preprod.local"
