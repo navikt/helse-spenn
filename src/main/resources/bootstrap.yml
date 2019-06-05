@@ -12,10 +12,10 @@ spring.cloud.vault:
     order: -10
     lifecycle.enabled: true
 
-  authentication: TOKEN
+  authentication: KUBERNETES
   kubernetes:
     role: spenn
-    kubernetes-path: kubernetes/preprod/fss
+    kubernetes-path: ${VAULT_KUBERNETES_PATH:kubernetes/preprod/fss}
     service-account-token-file: /var/run/secrets/kubernetes.io/serviceaccount/token
 
   generic:
