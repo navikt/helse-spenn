@@ -1,5 +1,6 @@
 package no.nav.helse.spenn
 
+import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
@@ -8,6 +9,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
+import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.core.lease.LeaseEndpoints
 
 import org.springframework.vault.core.lease.SecretLeaseContainer
@@ -22,9 +25,13 @@ class VaultDbConfig(val container: SecretLeaseContainer,
                     @Value("\${spring.cloud.vault.database.backend}")
                     val vaultPostgresBackend: String,
                     @Value("\${spring.cloud.vault.database.role}")
-                    val vaultPostgresRole: String) {
-
-    private val LOG = LoggerFactory.getLogger(VaultDbConfig::class.java)
+                    val vaultPostgresRole: String,
+                    val vaultTemplate: VaultTemplate,
+                    @Value("\${spring.datasource.url}")
+                    val jdbcURL: String) {
+    companion object {
+        private val LOG = LoggerFactory.getLogger(VaultDbConfig::class.java)
+    }
 
     @PostConstruct
     fun init() {
@@ -45,5 +52,23 @@ class VaultDbConfig(val container: SecretLeaseContainer,
         container.addRequestedSecret(secret)
     }
 
+    @Bean
+    fun flywayMigrationStrategy(): FlywayMigrationStrategy = FlywayMigrationStrategy {
+        LOG.info("init flyway migration strategy")
+        val response = vaultTemplate.read("$vaultPostgresBackend/creds/helse-spenn-oppdrag-admin")
+        val hikariConfig = HikariConfig().apply {
+            jdbcUrl = jdbcURL
+            maximumPoolSize=1
+            minimumIdle=1
+            username = response.data?.get("username").toString()
+            password = response.data?.get("password").toString()
+        }
+        val flyDS = HikariDataSource(hikariConfig)
+        Flyway.configure().dataSource(flyDS)
+                .initSql("SET ROLE \"helse-spenn-oppdrag-admin\"")
+                .load()
+                .migrate()
+        flyDS.close()
+    }
 
 }

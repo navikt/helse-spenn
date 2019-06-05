@@ -1,12 +1,12 @@
 spring.cloud.vault:
-  uri: https://vault.adeo.no
+  uri: http://localhost:8200
   connection-timeout: 5000
   read-timeout: 15000
   application-name: spenn
   enabled: false
   database:
     enabled: true
-    role: helse-spenn-oppdrag-admin
+    role: helse-spenn-oppdrag-user
     backend: postgresql/preprod-fss
   config:
     order: -10
