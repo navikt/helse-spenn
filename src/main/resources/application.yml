@@ -11,12 +11,12 @@ spring:
   datasource:
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     continue-on-error: true
-  hikari:
-    minimum-idle: 1
-    maximum-pool-size: 5
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
   application:
     name: spenn
-
+    
 jms.mq:
   enabled: false
 
