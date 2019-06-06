@@ -1,0 +1,34 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:11-alpine
+    environment:
+      - "POSTGRES_DB=helse-spenn-oppdrag"
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./scripts/spenn/postgresql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+  vault:
+    privileged: true
+    environment:
+      - "VAULT_DEV_ROOT_TOKEN_ID=token123"
+      - "VAULT_TOKEN=token123"
+      - "VAULT_ADDR=http://127.0.0.1:8200/"
+    image: vault:1.1.0
+    ports:
+      - "8200:8200"
+    depends_on:
+      - postgres
+  vault_init:
+    environment:
+      - "VAULT_DEV_ROOT_TOKEN_ID=token123"
+      - "VAULT_TOKEN=token123"
+      - "VAULT_ADDR=http://vault:8200/"
+    image: vault:1.1.0
+    depends_on:
+      - vault
+    volumes:
+      - ./scripts/spenn:/spenn
+    command: ["./spenn/vault/vault_postgresql.sh"]
