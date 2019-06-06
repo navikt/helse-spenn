@@ -13,28 +13,21 @@ import org.springframework.jms.core.JmsTemplate
 import javax.jms.ConnectionFactory;
 
 @Configuration
-@ConditionalOnProperty(name=arrayOf("jms.mq.enabled"), havingValue = "true")
-class JmsConfig() {
+@ConditionalOnProperty(name= ["jms.mq.enabled"], havingValue = "true")
+class JmsConfig(@Value("\${MQ_HOSTNAME}")
+                val mqHostname: String,
+                @Value("\${MQ_CHANNEL}")
+                val mqChannel: String,
+                @Value("\${MQ_PORT}")
+                val mqPort: String,
+                @Value("\${MQ_QUEUE_MANAGER}")
+                val queueManager: String,
+                @Value("\${MQ_USERNAME}")
+                val mqUsername: String,
+                @Value("\${MQ_PASSWORD}")
+                val mqPassword: String) {
 
 	private final val UTF_8_WITH_PUA = 1208
-
-    @Value("\${MQ_HOSTNAME}")
-    val mqHostname: String= ""
-
-    @Value("\${MQ_CHANNEL}")
-    val mqChannel: String= ""
-
-    @Value("\${MQ_PORT}")
-    val mqPort: String= ""
-
-    @Value("\${MQ_QUEUE_MANAGER}")
-    val queueManager: String= ""
-
-    @Value("\${MQ_USERNAME}")
-    val mqUsername: String= ""
-
-    @Value("\${MQ_PASSWORD}")
-    val mqPassword: String= ""
 
 	@Bean
 	fun wmqConnectionFactory():ConnectionFactory {
