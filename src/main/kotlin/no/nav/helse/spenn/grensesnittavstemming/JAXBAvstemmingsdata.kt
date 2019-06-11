@@ -15,12 +15,12 @@ import javax.xml.transform.stream.StreamSource
 class JAXBAvstemmingsdata {
 
     private final val jaxbContext:JAXBContext = JAXBContext.newInstance(AvstemmingSkjemaConstants.JAXB_CLASS)
-    val unmarshaller:Unmarshaller = jaxbContext.createUnmarshaller()
-    val marshaller:Marshaller = jaxbContext.createMarshaller().apply {
+    private val unmarshaller:Unmarshaller = jaxbContext.createUnmarshaller()
+    private val marshaller:Marshaller = jaxbContext.createMarshaller().apply {
         setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
     }
 
-    val xmlInputFactory = XMLInputFactory.newInstance().apply {
+    private val xmlInputFactory = XMLInputFactory.newInstance().apply {
         setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
         setProperty(XMLInputFactory.SUPPORT_DTD, false)
     }
