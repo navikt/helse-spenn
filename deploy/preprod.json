@@ -47,6 +47,9 @@
       }
     },
     "secrets": true,
+    "vault": {
+      "enabled": true
+    },
     "team": "tbd"
   }
 }
