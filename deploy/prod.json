@@ -46,7 +46,6 @@
         "memory": "256Mi"
       }
     },
-    "secrets": true,
     "vault": {
       "enabled": true
     },
