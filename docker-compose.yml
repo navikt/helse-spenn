@@ -11,21 +11,28 @@ services:
     volumes:
       - ./scripts/spenn/postgresql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
   vault:
+    networks:
+      default:
+        aliases:
+          - vault
     privileged: true
     environment:
       - "VAULT_DEV_ROOT_TOKEN_ID=token123"
       - "VAULT_TOKEN=token123"
-      - "VAULT_ADDR=http://127.0.0.1:8200/"
+      - "VAULT_ADDR=http://vault:8200"
     image: vault:1.1.0
     ports:
       - "8200:8200"
     depends_on:
       - postgres
+    volumes:
+      - ./scripts/spenn:/spenn
+    command: ["./spenn/wait_for.sh", "postgres:5432", "docker-entrypoint.sh server -dev"]
   vault_init:
     environment:
       - "VAULT_DEV_ROOT_TOKEN_ID=token123"
       - "VAULT_TOKEN=token123"
-      - "VAULT_ADDR=http://vault:8200/"
+      - "VAULT_ADDR=http://vault:8200"
     image: vault:1.1.0
     depends_on:
       - vault

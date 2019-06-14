@@ -237,11 +237,23 @@
          <groupId>org.springframework.cloud</groupId>
          <artifactId>spring-cloud-starter-vault-config</artifactId>
          <version>${spring.cloud.version}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>com.puppycrawl.tools</groupId>
+               <artifactId>checkstyle</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.springframework.cloud</groupId>
          <artifactId>spring-cloud-vault-config-databases</artifactId>
          <version>${spring.cloud.version}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>com.puppycrawl.tools</groupId>
+               <artifactId>checkstyle</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.postgresql</groupId>
