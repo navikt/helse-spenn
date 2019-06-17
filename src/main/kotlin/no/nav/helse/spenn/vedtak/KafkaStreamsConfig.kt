@@ -87,7 +87,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
     @Bean
     fun streamConsumer(env: Environment, kafkaStreams: KafkaStreams) : StreamConsumer {
         val consumer = StreamConsumer(env.appId, kafkaStreams)
-        //consumer.start()
+        consumer.start()
         return consumer
     }
 
