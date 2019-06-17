@@ -15,7 +15,7 @@ class FnrOppslag(val env: Environment, val stsRestClient: StsRestClient): Aktør
         val bearer = stsRestClient.token()
         val webClient = WebClient.builder().baseUrl(env.sparkelBaseUrl).build()
         return webClient.get()
-                .uri("api/aktor/$aktørId/fnr")
+                .uri("/api/aktor/$aktørId/fnr")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer $bearer")
                 .header("Nav-Call-Id", UUID.randomUUID().toString())
