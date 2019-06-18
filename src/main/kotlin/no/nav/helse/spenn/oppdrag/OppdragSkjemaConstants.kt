@@ -15,9 +15,7 @@ class OppdragSkjemaConstants {
         val JAXB_CLASS = Oppdrag::class.java
         const val SP_ENHET = "4151"
         const val BOS = "BOS"
-        const val KOMPONENT_KODE = "SPREFAG-IOP"
         const val APP = "SPENN"
-        const val SP = "SP"
 
         @JvmStatic
         fun toXMLDate(dato : LocalDate) : XMLGregorianCalendar {
@@ -35,6 +33,15 @@ class OppdragSkjemaConstants {
 
 }
 
+enum class FagOmraadekode(val kode: String) {
+    SYKEPENGER("SP"),
+    SYKEPENGER_REFUSJON("SPREF")
+}
+
+enum class KlassifiseringsKode(val kode: String) {
+    SPREFAG_IOP("SPREFAG-IOP")
+}
+
 enum class AksjonsKode(val kode: String) {
     OPPDATER("1"),
     SIMULERING("S")
@@ -46,11 +53,6 @@ enum class EndringsKode(val kode : String) {
     ENDRING("ENDR")
 }
 
-// TODO finner ut hvilken kode vi skal bruke her
-enum class FagOmrådeKode(val kode : String) {
-    HELSE("HELSE")
-}
-
 enum class UtbetalingsfrekvensKode(val kode : String ) {
     DAGLIG("DAG"),
     UKENTLIG("UKE"),
@@ -59,11 +61,8 @@ enum class UtbetalingsfrekvensKode(val kode : String ) {
     ENGANGSUTBETALING("ENG")
 }
 
-/*
-   Kode-komponent definerer hvilket system som har sendt data til Oppdrag.
- */
 enum class KomponentKode(val kode: String) {
-    VLSP("VLSP") // finner ut
+    SYKEPENGER("SP")
 }
 
 enum class BilagsTypeKode(val kode: String) {
