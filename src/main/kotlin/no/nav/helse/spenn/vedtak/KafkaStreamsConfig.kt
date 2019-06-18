@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.metrics.VEDTAK
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -53,11 +54,13 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                 .mapValues { _, vedtak -> vedtak.tilUtbetaling(aktørTilFnrMapper) }
                 .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
                 .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
-                                            OppdragStateDTO(soknadId = UUID.fromString(key), utbetalingsOppdrag = utbetaling ))}
+                        OppdragStateDTO(soknadId = UUID.fromString(key),
+                                utbetalingsOppdrag = utbetaling))}
                 .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}
 
         return builder.build()
     }
+
 
 
     fun <K : Any, V : Any> StreamsBuilder.consumeTopic(topic: Topic<K, V>): KStream<K, V> {

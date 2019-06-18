@@ -7,6 +7,7 @@ import no.nav.helse.spenn.metrics.SIMULERING
 import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.oppdrag.OppdragMQSender
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.toOppdrag
 import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
@@ -40,14 +41,14 @@ class UtbetalingService(val simuleringService: SimuleringService,
     private fun callSimulering(oppdrag: OppdragStateDTO): SimuleringResult {
         if (oppdrag.utbetalingsOppdrag.utbetalingsLinje.isNotEmpty()) {
             return simuleringService
-                    .simulerOppdrag(oppdrag.utbetalingsOppdrag.toSimuleringRequest(oppdrag.id.toString()))
+                    .simulerOppdrag(oppdrag.toSimuleringRequest())
         }
         return SimuleringResult(status=Status.FEIL,feilMelding = "Tomt vedtak")
     }
 
     fun sendUtbetalingOppdragMQ(oppdrag: OppdragStateDTO) {
         log.info("sender til Oppdragsystemet for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
-        oppdragSender.sendOppdrag(oppdrag.utbetalingsOppdrag.toOppdrag(oppdrag.id.toString()))
+        oppdragSender.sendOppdrag(oppdrag.toOppdrag())
 
     }
 
