@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter
 
 private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory()
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+private val avStemmingsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
 private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
 fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
@@ -30,7 +31,7 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
 
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.NY.kode
-        kodeFagomraade = OppdragSkjemaConstants.SP
+        kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = id.toString()
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = OppdragSkjemaConstants.toFnrOrOrgnr(utbetalingsOppdrag.oppdragGjelder)
@@ -67,7 +68,7 @@ private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : Oppdragsli
 
     return  Oppdragslinje().apply {
         kodeEndringLinje = EndringsKode.NY.kode
-        kodeKlassifik = OppdragSkjemaConstants.KOMPONENT_KODE
+        kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = oppdragslinje.datoFom.format(formatter)
         datoVedtakTom = oppdragslinje.datoTom.format(formatter)
         delytelseId = oppdragslinje.id
@@ -95,7 +96,7 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
     val oppdrag110 = objectFactory.createOppdrag110().apply {
         kodeAksjon = utbetalingsOppdrag.operasjon.kode
         kodeEndring = EndringsKode.NY.kode
-        kodeFagomraade = OppdragSkjemaConstants.SP
+        kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = id.toString()
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = OppdragSkjemaConstants.toFnrOrOrgnr(utbetalingsOppdrag.oppdragGjelder)
@@ -103,8 +104,8 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         saksbehId = OppdragSkjemaConstants.APP
         avstemming115 = objectFactory.createAvstemming115().apply {
             this.nokkelAvstemming = avstemmingsnokkel.toString()
-            this.kodeKomponent = "SP"
-            this.tidspktMelding = avstemmingsnokkel.toString()
+            this.kodeKomponent = KomponentKode.SYKEPENGER.kode
+            this.tidspktMelding = created.format(avStemmingsFormatter).toString()
         }
         oppdragsEnhet120.add(oppdragsEnhet)
         utbetalingsOppdrag.utbetalingsLinje.forEach {
@@ -130,7 +131,7 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje) : OppdragsLinje150 {
 
     return  objectFactory.createOppdragsLinje150().apply {
         kodeEndringLinje = EndringsKode.NY.kode
-        kodeKlassifik = OppdragSkjemaConstants.KOMPONENT_KODE
+        kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = OppdragSkjemaConstants.toXMLDate(oppdragslinje.datoFom)
         datoVedtakTom = OppdragSkjemaConstants.toXMLDate(oppdragslinje.datoTom)
         delytelseId = oppdragslinje.id

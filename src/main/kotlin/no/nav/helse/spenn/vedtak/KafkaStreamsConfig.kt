@@ -47,7 +47,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
         val builder = StreamsBuilder()
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{ key: String, node ->
+                .peek{ key: String, _ ->
                     log.info("soknad id ${key}")
                 }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
