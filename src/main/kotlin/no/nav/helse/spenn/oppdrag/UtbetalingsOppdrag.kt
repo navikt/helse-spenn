@@ -57,7 +57,7 @@ fun UtbetalingsOppdrag.toSimuleringRequest(oppdragId : String): SimulerBeregning
 
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.NY.kode
-        kodeFagomraade = FagOmraadekode.SPREF.kode
+        kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = oppdragId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)
@@ -123,7 +123,7 @@ fun UtbetalingsOppdrag.toOppdrag(oppdragId: String): Oppdrag {
     val oppdrag110 = objectFactory.createOppdrag110().apply {
         kodeAksjon = operasjon.kode
         kodeEndring = EndringsKode.NY.kode
-        kodeFagomraade = FagOmraadekode.SPREF.kode
+        kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = oppdragId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)

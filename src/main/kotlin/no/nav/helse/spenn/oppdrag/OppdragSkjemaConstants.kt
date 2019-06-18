@@ -34,8 +34,8 @@ class OppdragSkjemaConstants {
 }
 
 enum class FagOmraadekode(val kode: String) {
-    SP("SP"), //bruker er mottaker
-    SPREF("SPREF") // refusjon til arbeidsgiver
+    SYKEPENGER("SP"),
+    SYKEPENGER_REFUSJON("SPREF")
 }
 
 enum class KlassifiseringsKode(val kode: String) {
@@ -62,7 +62,7 @@ enum class UtbetalingsfrekvensKode(val kode : String ) {
 }
 
 enum class KomponentKode(val kode: String) {
-    SP("SP")
+    SYKEPENGER("SP")
 }
 
 enum class BilagsTypeKode(val kode: String) {
