@@ -8,8 +8,7 @@ class AvstemmingXMLMappingTest {
 
     @Test
     fun testThatJAXBAvstemmingsdataIsAlive() {
-        val avstemmingsdata = AvstemmingMapper().lagAvstemmingsdataFelles()
-
+        val avstemmingsdata = AvstemmingMapper.objectFactory.createAvstemmingsdata()
         val generertXml = JAXBAvstemmingsdata().fromAvstemmingsdataToXml(avstemmingsdata)
 
         assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
