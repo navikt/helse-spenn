@@ -27,7 +27,7 @@ services:
       - postgres
     volumes:
       - ./scripts/spenn:/spenn
-    command: ["./spenn/wait_for.sh", "postgres:5432", "docker-entrypoint.sh server -dev"]
+    command: ["/spenn/wait_for.sh", "postgres:5432", "docker-entrypoint.sh server -dev"]
   vault_init:
     environment:
       - "VAULT_DEV_ROOT_TOKEN_ID=token123"
@@ -38,7 +38,7 @@ services:
       - vault
     volumes:
       - ./scripts/spenn:/spenn
-    command: ["./spenn/wait_for.sh","vault:8200", "./spenn/vault/vault_postgresql.sh"]
+    command: ["/spenn/wait_for.sh","vault:8200", "./spenn/vault/vault_postgresql.sh"]
   mq:
     image: ibmcom/mq
     ports:

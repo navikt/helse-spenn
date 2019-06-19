@@ -1,4 +1,5 @@
 #!/bin/sh
+sleep 1
 TIMEOUT=30
 HOST=$(printf "%s\n" "$1"| cut -d : -f 1)
 PORT=$(printf "%s\n" "$1"| cut -d : -f 2)
