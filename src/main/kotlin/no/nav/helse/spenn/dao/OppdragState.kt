@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.dao
 
-import no.nav.system.os.entiteter.oppdragskjema.Avstemmingsnokkel
 import java.time.LocalDateTime
 import java.util.*
 
