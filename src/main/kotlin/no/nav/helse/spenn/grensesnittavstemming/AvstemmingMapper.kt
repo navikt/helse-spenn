@@ -2,7 +2,7 @@ package no.nav.helse.spenn.grensesnittavstemming
 
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
-import no.nav.helse.spenn.vedtak.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
