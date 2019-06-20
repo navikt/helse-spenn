@@ -7,6 +7,7 @@ import java.io.StringWriter
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
+import java.util.*
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 
@@ -17,9 +18,11 @@ class SimulerOppdragTest {
         val enOppdragsLinje = UtbetalingsLinje(id = "1234567890", datoFom = LocalDate.now().minusWeeks(2),
                 datoTom = LocalDate.now(), sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.MÅNEDLIG,
                 utbetalesTil = "123456789", grad = BigInteger.valueOf(100))
-        val utbetalingsOppdrag = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
+        val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "123456789", utbetalingsLinje = listOf(enOppdragsLinje))
-        val simuleringRequest = utbetalingsOppdrag.toSimuleringRequest("2019040808450")
+        val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
+                utbetalingsOppdrag = utbetaling)
+        val simuleringRequest = oppdragState.toSimuleringRequest()
         val jaxbContext = JAXBContext.newInstance(SimulerBeregningRequest::class.java)
         val marshaller = jaxbContext.createMarshaller()
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)

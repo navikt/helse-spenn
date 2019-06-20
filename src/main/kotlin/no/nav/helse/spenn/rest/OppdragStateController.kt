@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.rest
 
 import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.vedtak.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

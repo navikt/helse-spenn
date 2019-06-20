@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.oppdrag.*
+
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -9,6 +9,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
+import java.util.*
 
 @SpringBootTest
 class MQOppdragIT {
@@ -37,10 +38,8 @@ class MQOppdragIT {
 
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
-        mqSender.sendOppdrag(utbetaling.toOppdrag(oppdragId="fagsystemId"))
-        while (true) {
-            Thread.sleep(1000)
-        }
+        val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
+                utbetalingsOppdrag = utbetaling)
+        mqSender.sendOppdrag(oppdragState.toOppdrag())
     }
-
 }

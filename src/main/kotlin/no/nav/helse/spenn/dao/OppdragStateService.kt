@@ -2,7 +2,7 @@ package no.nav.helse.spenn.dao
 
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.simulering.SimuleringResult
-import no.nav.helse.spenn.vedtak.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,7 +21,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
     }
 
     @Transactional(readOnly = true)
-    fun fetchOppdragState(soknadId: UUID):  OppdragStateDTO {
+    fun fetchOppdragState(soknadId: UUID): OppdragStateDTO {
         return toDTO(repository.findBySoknadId(soknadId))
     }
 
@@ -56,7 +56,8 @@ class OppdragStateService(val repository: OppdragStateRepository) {
                 oppdragResponse = entity.oppdragResponse,
                 simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
                 modified = entity.modified,
-                created = entity.created)
+                created = entity.created,
+                avstemmingsnokkel = entity.id)
     }
 
 }
