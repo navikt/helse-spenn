@@ -24,19 +24,20 @@ import javax.xml.bind.Marshaller
 @Service
 class SimuleringService(val simulerFpService: SimulerFpService) {
 
-    private val log = LoggerFactory.getLogger(SimuleringService::class.java)
-
+    companion object {
+        private val log = LoggerFactory.getLogger(SimuleringService::class.java)
+    }
 
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         disableCnCheck(simulerFpService)
         dumpXML(simulerRequest)
-        try {
+        return try {
             val response = simulerFpService.simulerBeregning(simulerRequest)
-            return mapResponseToResultat(response.response)
+            mapResponseToResultat(response.response)
         }
         catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
-            return SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
+            SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
         }
 
     }
@@ -47,7 +48,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
         val stringWriter = StringWriter()
         marshaller.marshal(type, stringWriter)
-        log.info(stringWriter.toString())
+        log.debug(stringWriter.toString())
     }
 
     private fun mapResponseToResultat(response: SimulerBeregningResponse) : SimuleringResult {

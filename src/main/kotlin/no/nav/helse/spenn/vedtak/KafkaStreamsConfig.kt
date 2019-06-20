@@ -46,12 +46,12 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
         val builder = StreamsBuilder()
 
         builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{ key: String, _ ->
+                .peek{ key: String, node ->
                     log.info("soknad id ${key}")
-                    meterRegistry.counter(VEDTAK).increment()
                 }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
                 .mapValues { _, vedtak -> vedtak.tilUtbetaling(aktørTilFnrMapper) }
+                .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
                 .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
                                             OppdragStateDTO(soknadId = UUID.fromString(key), utbetalingsOppdrag = utbetaling ))}
                 .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}
@@ -87,7 +87,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
     @Bean
     fun streamConsumer(env: Environment, kafkaStreams: KafkaStreams) : StreamConsumer {
         val consumer = StreamConsumer(env.appId, kafkaStreams)
-        //consumer.start()
+        consumer.start()
         return consumer
     }
 

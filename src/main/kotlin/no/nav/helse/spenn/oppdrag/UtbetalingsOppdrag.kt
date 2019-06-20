@@ -10,8 +10,6 @@ import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.
 
 import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.APP
 import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.BOS
-import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.KOMPONENT_KODE
-import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.SP
 import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.SP_ENHET
 import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.toFnrOrOrgnr
 import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants.Companion.toXMLDate
@@ -59,7 +57,7 @@ fun UtbetalingsOppdrag.toSimuleringRequest(oppdragId : String): SimulerBeregning
 
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.NY.kode
-        kodeFagomraade = SP
+        kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = oppdragId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)
@@ -71,6 +69,7 @@ fun UtbetalingsOppdrag.toSimuleringRequest(oppdragId : String): SimulerBeregning
             if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
             oppdragslinje.add(mapToOppdragslinje150(it))
         }
+
     }
     return grensesnittFactory.createSimulerBeregningRequest().apply {
         this.request = simFactory.createSimulerBeregningRequest().apply {
@@ -96,7 +95,7 @@ private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : Oppdragsli
 
     return  Oppdragslinje().apply {
         kodeEndringLinje = EndringsKode.NY.kode
-        kodeKlassifik = OppdragSkjemaConstants.KOMPONENT_KODE
+        kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = oppdragslinje.datoFom.format(formatter)
         datoVedtakTom = oppdragslinje.datoTom.format(formatter)
         delytelseId = oppdragslinje.id
@@ -124,7 +123,7 @@ fun UtbetalingsOppdrag.toOppdrag(oppdragId: String): Oppdrag {
     val oppdrag110 = objectFactory.createOppdrag110().apply {
         kodeAksjon = operasjon.kode
         kodeEndring = EndringsKode.NY.kode
-        kodeFagomraade = SP
+        kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = oppdragId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = toFnrOrOrgnr(oppdragGjelder)
@@ -154,7 +153,7 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje) : OppdragsLinje150 {
 
     return  objectFactory.createOppdragsLinje150().apply {
         kodeEndringLinje = EndringsKode.NY.kode
-        kodeKlassifik = KOMPONENT_KODE
+        kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = toXMLDate(oppdragslinje.datoFom)
         datoVedtakTom = toXMLDate(oppdragslinje.datoTom)
         delytelseId = oppdragslinje.id

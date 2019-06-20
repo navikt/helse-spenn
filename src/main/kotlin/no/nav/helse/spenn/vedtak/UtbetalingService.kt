@@ -21,14 +21,14 @@ class UtbetalingService(val simuleringService: SimuleringService,
                         val oppdragSender: OppdragMQSender,
                         val oppdragStateService: OppdragStateService,
                         val meterRegistry: MeterRegistry) {
-
-    private val log = LoggerFactory.getLogger(UtbetalingService::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(UtbetalingService::class.java)
+    }
 
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
         log.info("simulering for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
-        val result = simuleringService
-                .simulerOppdrag(oppdrag.utbetalingsOppdrag.toSimuleringRequest(oppdrag.id.toString()))
-        oppdrag.status = when(result.status) {
+        val result = callSimulering(oppdrag)
+        oppdrag.status = when (result.status) {
             Status.OK -> OppdragStateStatus.SIMULERING_OK
             else -> OppdragStateStatus.FEIL
         }
@@ -37,6 +37,13 @@ class UtbetalingService(val simuleringService: SimuleringService,
         return oppdragStateService.saveOppdragState(oppdrag)
     }
 
+    private fun callSimulering(oppdrag: OppdragStateDTO): SimuleringResult {
+        if (oppdrag.utbetalingsOppdrag.utbetalingsLinje.isNotEmpty()) {
+            return simuleringService
+                    .simulerOppdrag(oppdrag.utbetalingsOppdrag.toSimuleringRequest(oppdrag.id.toString()))
+        }
+        return SimuleringResult(status=Status.FEIL,feilMelding = "Tomt vedtak")
+    }
 
     fun sendUtbetalingOppdragMQ(oppdrag: OppdragStateDTO) {
         log.info("sender til Oppdragsystemet for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")

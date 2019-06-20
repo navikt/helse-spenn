@@ -20,6 +20,9 @@ spring:
 jms.mq:
   enabled: false
 
+scheduler:
+  enabled: false
+
 ibm:
   mq:
     queue-manager: ${MQ_QUEUE_MANAGER:QM1}

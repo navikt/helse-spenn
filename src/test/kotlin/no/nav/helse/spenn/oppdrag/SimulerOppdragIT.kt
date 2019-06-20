@@ -15,8 +15,7 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
 
-@SpringBootTest(classes = arrayOf(AppConfig::class, CxfAutoConfiguration::class,
-        SimuleringConfig::class, SimuleringService::class))
+@SpringBootTest(classes = [AppConfig::class, CxfAutoConfiguration::class, SimuleringConfig::class, SimuleringService::class])
 class SimulerOppdragIT {
 
     private val log = LoggerFactory.getLogger(SimulerOppdragIT::class.java)
