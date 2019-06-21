@@ -87,19 +87,18 @@ jobs:
                    -H "Accept: application/vnd.github.ant-man-preview+json" \
                    https://api.github.com/repos/navikt/helse-spenn/deployments
             fi
-# disabled to test simulering in q1
-#      - run:
-#          name: deploy to prod
-#          command: |
-#            set -e
-#            if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
-#              echo "deploying $DOCKER_TAG to prod"
-#              PROD_NAISERATOR=$(cat deploy/prod.json | jq '.spec.image="'$DOCKER_TAG'"' -c)
-#              PROD_DEPLOYMENT=$(cat deploy/deployreq.json | jq '.payload.kubernetes.resources += ['$PROD_NAISERATOR']')
-#              PROD_DEPLOYMENT=$(echo $PROD_DEPLOYMENT | jq '.environment = "prod-fss"')
-#              curl -i -n \
-#                   -X POST \
-#                   -d "$PROD_DEPLOYMENT" \
-#                   -H "Accept: application/vnd.github.ant-man-preview+json" \
-#                   https://api.github.com/repos/navikt/helse-spenn/deployments
-#            fi
+      - run:
+          name: deploy to prod
+          command: |
+            set -e
+            if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
+              echo "deploying $DOCKER_TAG to prod"
+              PROD_NAISERATOR=$(cat deploy/prod.json | jq '.spec.image="'$DOCKER_TAG'"' -c)
+              PROD_DEPLOYMENT=$(cat deploy/deployreq.json | jq '.payload.kubernetes.resources += ['$PROD_NAISERATOR']')
+              PROD_DEPLOYMENT=$(echo $PROD_DEPLOYMENT | jq '.environment = "prod-fss"')
+              curl -i -n \
+                   -X POST \
+                   -d "$PROD_DEPLOYMENT" \
+                   -H "Accept: application/vnd.github.ant-man-preview+json" \
+                   https://api.github.com/repos/navikt/helse-spenn/deployments
+            fi
