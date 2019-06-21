@@ -117,43 +117,13 @@ class AvstemmingMapper(
         }
 
 
-    internal fun lagDetaljdataFraKvittering(kvitteringsRespons: Oppdrag) {
-        kvitteringsRespons.mmel.alvorlighetsgrad
-        kvitteringsRespons.mmel.kodeMelding
-        kvitteringsRespons.mmel.beskrMelding
-        kvitteringsRespons.oppdrag110.fagsystemId // = OppdragState.id
-        val behandlingId = kvitteringsRespons.oppdrag110.oppdragsLinje150.first().henvisning // FPSAK.fraOppdragLinje150 bruker Long.valueOf
-
-    }
-/*
-    private fun opprettDetalj(avstemmingsdata: Avstemmingsdata, oppdrag110: Oppdrag110, detaljType: DetaljType, alvorlighetsgrad: String) {
-        val kvittering = oppdrag110.getOppdragKvittering()
-        val meldingKode = if (kvittering != null) kvittering!!.getMeldingKode() else null
-        val beskrMelding = if (kvittering != null) kvittering!!.getBeskrMelding() else null
-        val detaljdata = objectFactory.createDetaljdata()
-        detaljdata.detaljType = detaljType
-        detaljdata.offnr = oppdrag110.oppdragGjelderId
-        detaljdata.avleverendeTransaksjonNokkel = oppdrag110.fagsystemId.toString()
-        detaljdata.meldingKode = meldingKode
-        detaljdata.alvorlighetsgrad = alvorlighetsgrad
-        detaljdata.tekstMelding = beskrMelding
-        detaljdata.tidspunkt = oppdrag110.avstemming115.getTidspnktMelding()
-        avstemmingsdata.detalj.add(detaljdata)
-
-
-        oppdragsliste.first().utbetalingsOppdrag.oppdragGjelder
-
-    }*/
-
     private fun lagDatameldinger() {
 
     }
 
     private fun lagStartmelding() = lagAvstemmingsdataFelles(AksjonType.START)
 
-
     private fun lagSluttmelding() = lagAvstemmingsdataFelles(AksjonType.AVSL)
-
 
     internal fun lagAvstemmingsdataFelles(aksjonType: AksjonType): Avstemmingsdata =
             objectFactory.createAvstemmingsdata().apply {
@@ -161,9 +131,8 @@ class AvstemmingMapper(
             }
 
 
-    @Deprecated("returnerer bare oppdrag.id inntill vi har dedikert avstemmingsnøkkel på plass")
-    private inline fun avstemmingsnøkkelFor(oppdrag: OppdragStateDTO) : Long =
-        oppdrag.id?:throw Exception("oppdrag uten id: $oppdrag")
+    private inline fun avstemmingsnøkkelFor(oppdrag: OppdragStateDTO) =
+            oppdrag.avstemmingsnokkel?:throw Exception("oppdrag uten avstemmingsnøkkel: ${oppdrag.id}")
 
 
     private fun tilAksjonsdata(aksjonType: AksjonType): Aksjonsdata {
