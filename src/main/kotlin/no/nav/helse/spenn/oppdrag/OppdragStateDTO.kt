@@ -11,5 +11,5 @@ data class OppdragStateDTO (val id: Long? = null, val soknadId: UUID, val create
                             val modified: LocalDateTime = LocalDateTime.now(),
                             val utbetalingsOppdrag: UtbetalingsOppdrag, var status: OppdragStateStatus = OppdragStateStatus.STARTET,
                             var oppdragResponse: String? = null, var simuleringResult: SimuleringResult? = null,
-                            val avstemmingsnokkel: Long? = id )
+                            val avstemmingsNokkel: String)
 

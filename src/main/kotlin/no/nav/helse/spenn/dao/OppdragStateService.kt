@@ -44,7 +44,9 @@ class OppdragStateService(val repository: OppdragStateRepository) {
                 created = dto.created,
                 simuleringResult = defaultObjectMapper.writeValueAsString(dto.simuleringResult),
                 status = dto.status,
-                oppdragResponse = defaultObjectMapper.writeValueAsString(dto.oppdragResponse)
+                oppdragResponse = defaultObjectMapper.writeValueAsString(dto.oppdragResponse),
+                avstemmingsNokkel = dto.avstemmingsNokkel
+
         )
     }
 
@@ -57,7 +59,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
                 simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
                 modified = entity.modified,
                 created = entity.created,
-                avstemmingsnokkel = entity.id)
+                avstemmingsNokkel = entity.avstemmingsNokkel)
     }
 
 }
