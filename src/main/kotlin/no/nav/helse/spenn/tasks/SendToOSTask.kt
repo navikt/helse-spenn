@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
+
 @Component
 @ConditionalOnProperty(name = arrayOf("scheduler.enabled"), havingValue = "true")
 class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingService: UtbetalingService) {
@@ -33,3 +34,5 @@ class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingS
     }
 
 }
+
+

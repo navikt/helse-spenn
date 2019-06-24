@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 @RequestMapping("/api/v1/oppdragstate")
 class OppdragStateController(val oppdragStateService: OppdragStateService) {
 
-    @GetMapping("/{soknadId}", produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE) )
+    @GetMapping("/{soknadId}", produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     fun getBySoknadId(@PathVariable soknadId: UUID): ResponseEntity<OppdragStateDTO> {
         try {
             return ResponseEntity.ok(oppdragStateService.fetchOppdragState(soknadId))

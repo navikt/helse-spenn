@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
+import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -21,7 +22,7 @@ class SimulerOppdragTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "123456789", utbetalingsLinje = listOf(enOppdragsLinje))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling)
+                utbetalingsOppdrag = utbetaling, avstemmingsNokkel = createAvstemmingsnokkel())
         val simuleringRequest = oppdragState.toSimuleringRequest()
         val jaxbContext = JAXBContext.newInstance(SimulerBeregningRequest::class.java)
         val marshaller = jaxbContext.createMarshaller()

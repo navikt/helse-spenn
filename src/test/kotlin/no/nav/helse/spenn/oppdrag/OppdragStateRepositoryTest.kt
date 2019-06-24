@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.spenn.dao.OppdragState
 import no.nav.helse.spenn.dao.OppdragStateRepository
 import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
@@ -34,14 +35,16 @@ class OppdragStateRepositoryTest {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling()
+        val avstem = createAvstemmingsnokkel()
         val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
-               utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
+               utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling),
+                avstemmingsNokkel = avstem)
         val dbState = repository.insert(state)
         assertNotNull(dbState.created)
         assertNotNull(dbState.modified)
         assertEquals(soknadKey,dbState.soknadId)
         assertEquals(OppdragStateStatus.STARTET, dbState.status)
-
+        assertEquals(avstem, dbState.avstemmingsNokkel)
 
         val update = repository.update(OppdragState(
                 id=dbState.id,
@@ -51,7 +54,8 @@ class OppdragStateRepositoryTest {
                 status = OppdragStateStatus.FERDIG,
                 created = dbState.created,
                 modified = dbState.modified,
-                simuleringResult = dbState.simuleringResult))
+                simuleringResult = dbState.simuleringResult,
+                avstemmingsNokkel = createAvstemmingsnokkel()))
 
         assertEquals(OppdragStateStatus.FERDIG, update.status)
         assertTrue(update.modified.isAfter(dbState.modified))
