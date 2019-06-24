@@ -26,6 +26,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                     .set(STATUS, oppdragstate.status.name)
                     .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
                     .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
+                    .set(AVSTEMMINGSNOKKEL, oppdragstate.avstemmingsNokkel)
                     .returning()
                     .fetchOne()
                     .id
@@ -74,6 +75,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                     .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
                     .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
                     .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
+                    .set(AVSTEMMINGSNOKKEL, oppdragstate.avstemmingsNokkel)
                     .where(ID.equal(oppdragstate.id))
                     .execute()
         }
@@ -97,7 +99,7 @@ private fun OppdragstateRecord?.toOppdragState(): OppdragState {
     if (this==null) throw OppdragStateNotFound()
     return OppdragState(id=id, soknadId = soknadId, created = created.toLocalDateTime(), modified = modified.toLocalDateTime(),
             utbetalingsOppdrag = utbetalingsoppdrag, oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
-            simuleringResult = simuleringresult)
+            simuleringResult = simuleringresult, avstemmingsNokkel = avstemmingsnokkel)
 }
 
 

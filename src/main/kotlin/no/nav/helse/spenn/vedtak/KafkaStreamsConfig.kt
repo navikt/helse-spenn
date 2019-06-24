@@ -24,7 +24,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.random.Random
 
 @Configuration
 class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
@@ -55,7 +58,8 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                 .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
                 .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
                         OppdragStateDTO(soknadId = UUID.fromString(key),
-                                utbetalingsOppdrag = utbetaling))}
+                                utbetalingsOppdrag = utbetaling,
+                                avstemmingsNokkel = createAvstemmingsnokkel()))}
                 .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}
 
         return builder.build()
@@ -90,7 +94,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
     @Bean
     fun streamConsumer(env: Environment, kafkaStreams: KafkaStreams) : StreamConsumer {
         val consumer = StreamConsumer(env.appId, kafkaStreams)
-        consumer.start()
+        //consumer.start()
         return consumer
     }
 
@@ -143,3 +147,9 @@ data class Topic<K, V>(
         val valueSerde: Serde<V>
 )
 
+
+private val avStemmingsnokkelFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
+
+fun createAvstemmingsnokkel(): String {
+    return LocalDateTime.now().format(avStemmingsnokkelFormatter)+"_"+ Random.nextInt()
+}

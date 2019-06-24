@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter
 
 private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory()
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-private val avStemmingsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
+private val tidspunktFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
 private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
 fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
@@ -103,9 +103,9 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
         saksbehId = OppdragSkjemaConstants.APP
         avstemming115 = objectFactory.createAvstemming115().apply {
-            this.nokkelAvstemming = avstemmingsnokkel.toString()
+            this.nokkelAvstemming = avstemmingsNokkel
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
-            this.tidspktMelding = created.format(avStemmingsFormatter).toString()
+            this.tidspktMelding = modified.format(tidspunktFormatter).toString()
         }
         oppdragsEnhet120.add(oppdragsEnhet)
         utbetalingsOppdrag.utbetalingsLinje.forEach {

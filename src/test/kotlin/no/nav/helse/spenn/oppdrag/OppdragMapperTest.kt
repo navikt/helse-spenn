@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
+import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.StringWriter
@@ -21,7 +22,8 @@ class OppdragMapperTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(enOppdragsLinje))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling)
+                utbetalingsOppdrag = utbetaling,
+                avstemmingsNokkel = createAvstemmingsnokkel())
         val oppdrag = oppdragState.toOppdrag()
         val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
         val marshaller = jaxbContext.createMarshaller()

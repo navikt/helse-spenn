@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
 
+import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -39,7 +40,8 @@ class MQOppdragIT {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling)
+                utbetalingsOppdrag = utbetaling,
+                avstemmingsNokkel = createAvstemmingsnokkel())
         mqSender.sendOppdrag(oppdragState.toOppdrag())
     }
 }

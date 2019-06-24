@@ -4,6 +4,7 @@ import no.nav.helse.spenn.AppConfig
 
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.junit.jupiter.api.Test
@@ -34,7 +35,7 @@ class SimulerOppdragIT {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling)
+                utbetalingsOppdrag = utbetaling, avstemmingsNokkel = createAvstemmingsnokkel())
         val simulerOppdrag = simuleringService.simulerOppdrag(oppdragState.toSimuleringRequest())
         log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simulerOppdrag))
     }
@@ -62,7 +63,7 @@ class SimulerOppdragIT {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling)
+                utbetalingsOppdrag = utbetaling, avstemmingsNokkel = createAvstemmingsnokkel())
         log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simuleringService.simulerOppdrag(
                 oppdragState.toSimuleringRequest())))
 
