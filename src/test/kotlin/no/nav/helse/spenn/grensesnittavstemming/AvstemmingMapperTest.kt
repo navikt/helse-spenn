@@ -14,6 +14,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.test.assertEquals
 
@@ -35,8 +36,8 @@ class AvstemmingMapperTest {
 
         val sjekkAksjon = fun(aksjon: Aksjonsdata, expectedType: AksjonType) {
             assertEquals(expectedType, aksjon.aksjonType)
-            assertEquals(oppdragsliste.map { "${it.avstemmingsnokkel}" }.min(), aksjon.nokkelFom)
-            assertEquals(oppdragsliste.map { "${it.avstemmingsnokkel}" }.max(), aksjon.nokkelTom)
+            assertEquals(oppdragsliste.map { "${it.avstemmingsNokkel}" }.min(), aksjon.nokkelFom)
+            assertEquals(oppdragsliste.map { "${it.avstemmingsNokkel}" }.max(), aksjon.nokkelTom)
             //oppdragsliste.map { it.utbetalingsOppdrag.utbetalingsLinje.first().}
         }
 
@@ -111,10 +112,11 @@ class AvstemmingMapperTest {
                            alvorlighetsgrad: String = "00",
                            dagSats: Long = 1345) : OppdragStateDTO {
         val soknadId = UUID.randomUUID()
+        val now = LocalDateTime.now()
         return OppdragStateDTO(
                 id = oppdragIdSequence++,
-                created = LocalDateTime.now(),
-                modified = LocalDateTime.now(),
+                created = now,
+                modified = now,
                 oppdragResponse = lagOppdragResponseXml(soknadId.toString(), status, alvorlighetsgrad),
                 simuleringResult = null,
                 soknadId = soknadId,
@@ -131,9 +133,8 @@ class AvstemmingMapperTest {
                                 satsTypeKode = SatsTypeKode.DAGLIG,
                                 utbetalesTil = "999988887"
                         ))
-                )
-
-
+                ),
+                avstemmingsNokkel = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")) + "_" + Random().nextInt().toString()
         )
     }
 
