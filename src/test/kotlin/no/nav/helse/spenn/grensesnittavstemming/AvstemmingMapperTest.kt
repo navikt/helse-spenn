@@ -2,10 +2,7 @@ package no.nav.helse.spenn.grensesnittavstemming
 
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.*
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Aksjonsdata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.DetaljType
+import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.Oppdrag110
@@ -23,22 +20,33 @@ class AvstemmingMapperTest {
     private var oppdragIdSequence = 1L
     private var utbetalingsLinjeIdSequence = 1L
 
+    private val tidspunktFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
+    private val testoppdragsliste1 = listOf(
+            lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1000),
+            lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "08", dagSats = 1000),
+            lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "04", dagSats = 1100),
+            lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "12", dagSats = 1200),
+            lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1300),
+            lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1400),
+            lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1550),
+            lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1660)
+    )
+
     @Test
     fun testAvstemmingsXml() {
-        val oppdragsliste = listOf(
-                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1000),
-                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "08", dagSats = 1000),
-                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "04", dagSats = 1100),
-                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "12", dagSats = 1200),
-                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1300),
-                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1400)
-        )
+        val oppdragsliste = testoppdragsliste1
 
         val sjekkAksjon = fun(aksjon: Aksjonsdata, expectedType: AksjonType) {
             assertEquals(expectedType, aksjon.aksjonType)
+            assertEquals(KildeType.AVLEV, aksjon.kildeType)
+            assertEquals(AvstemmingType.GRSN, aksjon.avstemmingType)
+            assertEquals("SP", aksjon.avleverendeKomponentKode)
+            assertEquals("OS", aksjon.mottakendeKomponentKode)
+            assertEquals("SPREF", aksjon.underkomponentKode)
             assertEquals(oppdragsliste.map { "${it.avstemmingsNokkel}" }.min(), aksjon.nokkelFom)
             assertEquals(oppdragsliste.map { "${it.avstemmingsNokkel}" }.max(), aksjon.nokkelTom)
-            //oppdragsliste.map { it.utbetalingsOppdrag.utbetalingsLinje.first().}
+            assertEquals(oppdragsliste.map { it.modified.format(tidspunktFormatter) }.max(), aksjon.tidspunktAvstemmingTom)
+            assertEquals("SPA", aksjon.brukerId)
         }
 
         val mapper = AvstemmingMapper(oppdragsliste, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
@@ -51,25 +59,73 @@ class AvstemmingMapperTest {
 
         meldinger[1].let {
             sjekkAksjon(it.aksjon, AksjonType.DATA)
+            sjekkDetaljerForTestoppdragsliste1(it.detalj)
+            it.total.let {
+                assertEquals(Fortegn.T, it.fortegn)
+                assertEquals(oppdragsliste.size, it.totalAntall)
+                assertEquals(oppdragsliste.map {
+                    it.utbetalingsOppdrag.utbetalingsLinje.map {
+                        it.sats.toLong()
+                    }.sum()
+                }.sum(), it.totalBelop.toLong())
+            }
+            it.periode.let {
+                assertEquals(oppdragsliste.map { it.created }.min()!!.format(DateTimeFormatter.ofPattern("yyyyMMddHH")),
+                        it.datoAvstemtFom)
+                assertEquals(oppdragsliste.map { it.created }.max()!!.format(DateTimeFormatter.ofPattern("yyyyMMddHH")),
+                        it.datoAvstemtTom)
+            }
+            it.grunnlag.let {
+                val ferdige = oppdragsliste.filter { it.status == OppdragStateStatus.FERDIG }
+                assertEquals(ferdige.map { satsSum(it)}.sum(), it.godkjentBelop.toLong())
+                assertEquals(ferdige.size, it.godkjentAntall)
+                assertEquals(Fortegn.T, it.godkjentFortegn)
+
+                val avviste = oppdragsliste.filter {
+                    it.status == OppdragStateStatus.FEIL && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad in listOf("08", "12"))
+                }
+                assertEquals(avviste.map { satsSum(it) }.sum(), it.avvistBelop.toLong())
+                assertEquals(avviste.size, it.avvistAntall)
+                assertEquals(Fortegn.T, it.avvistFortegn)
+
+                val godkjentMedVarsel = oppdragsliste.filter {
+                    it.status == OppdragStateStatus.FEIL && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "04")
+                }
+                assertEquals(godkjentMedVarsel.map { satsSum(it) }.sum(), it.varselBelop.toLong())
+                assertEquals(godkjentMedVarsel.size, it.varselAntall)
+                assertEquals(Fortegn.T, it.varselFortegn)
+
+                val mangler = oppdragsliste.filter {
+                    it.status == OppdragStateStatus.SENDT_OS
+                }
+                assertEquals(mangler.map { satsSum(it) }.sum(), it.manglerBelop.toLong())
+                assertEquals(mangler.size, it.manglerAntall)
+                assertEquals(Fortegn.T, it.manglerFortegn)
+            }
         }
     }
 
     @Test
     fun testOpprettDetaljdata() {
-        val oppdragsliste = listOf(
-                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1000),
-                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "08", dagSats = 1000),
-                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "04", dagSats = 1100),
-                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "12", dagSats = 1200),
-                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1300),
-                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1400)
-        )
-        val mapper = AvstemmingMapper(oppdragsliste, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
+        val mapper = AvstemmingMapper(testoppdragsliste1, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
 
         val detaljer = mapper.opprettDetaljdata()
 
-        assertEquals(3, detaljer.size)
+        sjekkDetaljerForTestoppdragsliste1(detaljer)
+    }
 
+    /////////////////////
+    /////////////////////
+    /////////////////////
+
+    private fun satsSum(oppdrag: OppdragStateDTO) =
+        oppdrag.utbetalingsOppdrag.utbetalingsLinje.map {
+            it.sats.toLong()
+        }.sum()
+
+    fun sjekkDetaljerForTestoppdragsliste1(detaljer: List<Detaljdata>) {
+        assertEquals(5, detaljer.size)
+        val oppdragsliste = testoppdragsliste1
         oppdragsliste.get(1).let { oppdrag ->
             detaljer.get(0).let { detalj ->
                 assertEquals("08", detalj.alvorlighetsgrad)
@@ -92,7 +148,26 @@ class AvstemmingMapperTest {
                 assertEquals(DetaljType.AVVI, detalj.detaljType)
             }
         }
+
+        oppdragsliste.get(6).let { oppdrag ->
+            detaljer.get(3).let { detalj ->
+                assertEquals(oppdrag.id.toString(), detalj.avleverendeTransaksjonNokkel)
+                assertEquals(DetaljType.MANG, detalj.detaljType)
+            }
+        }
+
+        oppdragsliste.get(7).let { oppdrag ->
+            detaljer.get(4).let { detalj ->
+                assertEquals(oppdrag.id.toString(), detalj.avleverendeTransaksjonNokkel)
+                assertEquals(DetaljType.MANG, detalj.detaljType)
+            }
+        }
     }
+
+    internal fun getKvitteringsMelding(oppdrag: OppdragStateDTO) : Oppdrag? =
+            oppdrag.oppdragResponse?.let {
+                JAXBOppdrag().toOppdrag(it)
+            }
 
     private fun lagOppdragResponseXml(soknadId:String, status: OppdragStateStatus, alvorlighetsgrad: String) : String? {
         if (status == OppdragStateStatus.SENDT_OS) {
@@ -112,7 +187,7 @@ class AvstemmingMapperTest {
                            alvorlighetsgrad: String = "00",
                            dagSats: Long = 1345) : OppdragStateDTO {
         val soknadId = UUID.randomUUID()
-        val now = LocalDateTime.now()
+        val now = LocalDateTime.now().plusDays(oppdragIdSequence)
         return OppdragStateDTO(
                 id = oppdragIdSequence++,
                 created = now,
@@ -134,7 +209,7 @@ class AvstemmingMapperTest {
                                 utbetalesTil = "999988887"
                         ))
                 ),
-                avstemmingsNokkel = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")) + "_" + Random().nextInt().toString()
+                avstemmingsNokkel = now.format(tidspunktFormatter) + "_" + Random().nextInt().toString()
         )
     }
 
