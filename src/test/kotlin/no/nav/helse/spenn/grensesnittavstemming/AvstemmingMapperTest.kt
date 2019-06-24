@@ -3,6 +3,8 @@ package no.nav.helse.spenn.grensesnittavstemming
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
+import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Aksjonsdata
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.DetaljType
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -20,19 +22,36 @@ class AvstemmingMapperTest {
     private var oppdragIdSequence = 1L
     private var utbetalingsLinjeIdSequence = 1L
 
-    /*@Test
-    fun test1() {
+    @Test
+    fun testAvstemmingsXml() {
         val oppdragsliste = listOf(
                 lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1000),
-                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1100)
+                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "08", dagSats = 1000),
+                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "04", dagSats = 1100),
+                lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "12", dagSats = 1200),
+                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1300),
+                lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1400)
         )
-        val mapper = AvstemmingMapper(oppdragsliste, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
-        val avstemmingsmeldinger = mapper.lagAvstemmingsMeldinger()
 
-        assertEquals(AksjonType.START, avstemmingsmeldinger[0].aksjon.aksjonType)
-        assertEquals(AksjonType.DATA, avstemmingsmeldinger[1].aksjon.aksjonType)
-        assertEquals(AksjonType.AVSL, avstemmingsmeldinger[2].aksjon.aksjonType)
-    }*/
+        val sjekkAksjon = fun(aksjon: Aksjonsdata, expectedType: AksjonType) {
+            assertEquals(expectedType, aksjon.aksjonType)
+            assertEquals(oppdragsliste.map { "${it.avstemmingsnokkel}" }.min(), aksjon.nokkelFom)
+            assertEquals(oppdragsliste.map { "${it.avstemmingsnokkel}" }.max(), aksjon.nokkelTom)
+            //oppdragsliste.map { it.utbetalingsOppdrag.utbetalingsLinje.first().}
+        }
+
+        val mapper = AvstemmingMapper(oppdragsliste, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
+        val xmlMeldinger = mapper.lagXmlMeldinger()
+        //println(xmlMeldinger)
+        val meldinger = xmlMeldinger.map { JAXBAvstemmingsdata().toAvstemmingsdata(it) }
+        assertEquals(3, meldinger.size)
+        sjekkAksjon(meldinger.first().aksjon, AksjonType.START)
+        sjekkAksjon(meldinger.last().aksjon, AksjonType.AVSL)
+
+        meldinger[1].let {
+            sjekkAksjon(it.aksjon, AksjonType.DATA)
+        }
+    }
 
     @Test
     fun testOpprettDetaljdata() {
