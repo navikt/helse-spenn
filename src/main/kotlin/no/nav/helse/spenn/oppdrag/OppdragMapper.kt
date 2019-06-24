@@ -103,7 +103,7 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
         saksbehId = OppdragSkjemaConstants.APP
         avstemming115 = objectFactory.createAvstemming115().apply {
-            this.nokkelAvstemming = avstemmingsNokkel.toString()
+            this.nokkelAvstemming = avstemmingsNokkel
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
             this.tidspktMelding = modified.format(tidspunktFormatter).toString()
         }
