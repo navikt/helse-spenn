@@ -14,5 +14,6 @@ Depends on:
 ### Running in dev or localhost
 
 ```
+mvn clean install
 docker-compose up 
 ```
