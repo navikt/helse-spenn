@@ -31,7 +31,7 @@ class UtbetalingService(val simuleringService: SimuleringService,
         val result = callSimulering(oppdrag)
         oppdrag.status = when (result.status) {
             Status.OK -> OppdragStateStatus.SIMULERING_OK
-            else -> OppdragStateStatus.FEIL
+            else -> OppdragStateStatus.SIMULERING_FEIL
         }
         oppdrag.simuleringResult = result
         simuleringMetrics(result)

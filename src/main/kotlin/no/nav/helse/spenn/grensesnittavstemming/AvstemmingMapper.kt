@@ -136,7 +136,7 @@ class AvstemmingMapper(
                         this.tidspunkt = tidspunktMelding(oppdrag)
                     }
                 OppdragStateStatus.FERDIG -> null
-                OppdragStateStatus.SIMULERING_OK, OppdragStateStatus.STARTET -> {
+                OppdragStateStatus.SIMULERING_OK, OppdragStateStatus.STARTET, OppdragStateStatus.SIMULERING_FEIL -> {
                     log.error("Uventet status: ${oppdrag.status} på oppdragId=${oppdrag.id}. Håndterer som om 'ferdig'")
                     null
                 }
