@@ -176,7 +176,7 @@ class AvstemmingMapper(
 
 
     private fun avstemmingsnøkkelFor(oppdrag: OppdragStateDTO) =
-            oppdrag.avstemmingsNokkel?:throw Exception("oppdrag uten avstemmingsnøkkel: ${oppdrag.id}")
+            oppdrag.avstemming?.nokkel?:throw Exception("oppdrag uten avstemmingsnøkkel: ${oppdrag.id}")
 
 
     //.oppdrag110.avstemming115.tidspktMelding

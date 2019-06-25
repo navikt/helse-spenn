@@ -7,7 +7,9 @@ data class OppdragState(val id: Long? = null, val soknadId: UUID, val created: L
                         val modified: LocalDateTime = LocalDateTime.now(),
                         val utbetalingsOppdrag: String, val status: OppdragStateStatus = OppdragStateStatus.STARTET,
                         val oppdragResponse: String? = null, val simuleringResult: String? = null,
-                        val avstemmingsNokkel: String)
+                        val avstemming: Avstemming? = null)
+
+data class Avstemming(val nokkel: LocalDateTime = LocalDateTime.now(), val avstemt: Boolean = false)
 
 enum class OppdragStateStatus {
     STARTET,

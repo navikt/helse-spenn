@@ -27,7 +27,7 @@ class UtbetalingService(val simuleringService: SimuleringService,
     }
 
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
-        log.info("simulering for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
+        log.info("simulering for ${oppdrag.soknadId}")
         val result = callSimulering(oppdrag)
         oppdrag.status = when (result.status) {
             Status.OK -> OppdragStateStatus.SIMULERING_OK

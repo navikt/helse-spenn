@@ -20,10 +20,10 @@ class OppdragStateService(val repository: OppdragStateRepository) {
         return toDTO(repository.update(toEntity(dto)))
     }
 
-    @Transactional(readOnly = true)
-    fun fetchOppdragState(soknadId: UUID): OppdragStateDTO {
-        return toDTO(repository.findBySoknadId(soknadId))
-    }
+//    @Transactional(readOnly = true)
+//    fun fetchOppdragState(soknadId: UUID): OppdragStateDTO {
+//        return toDTO(repository.findBySoknadId(soknadId))
+//    }
 
 
     @Transactional(readOnly = true)
@@ -44,8 +44,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
                 created = dto.created,
                 simuleringResult = defaultObjectMapper.writeValueAsString(dto.simuleringResult),
                 status = dto.status,
-                oppdragResponse = defaultObjectMapper.writeValueAsString(dto.oppdragResponse),
-                avstemmingsNokkel = dto.avstemmingsNokkel
+                oppdragResponse = defaultObjectMapper.writeValueAsString(dto.oppdragResponse)
 
         )
     }
@@ -58,8 +57,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
                 oppdragResponse = entity.oppdragResponse,
                 simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
                 modified = entity.modified,
-                created = entity.created,
-                avstemmingsNokkel = entity.avstemmingsNokkel)
+                created = entity.created)
     }
 
 }

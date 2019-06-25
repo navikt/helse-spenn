@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.helse.spenn.dao.Avstemming
 import no.nav.helse.spenn.dao.OppdragState
 import no.nav.helse.spenn.dao.OppdragStateRepository
 import no.nav.helse.spenn.dao.OppdragStateStatus
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.ComponentScan
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @DataJdbcTest(properties = ["VAULT_ENABLED=false",
@@ -35,16 +37,14 @@ class OppdragStateRepositoryTest {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling()
-        val avstem = createAvstemmingsnokkel()
         val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
-               utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling),
-                avstemmingsNokkel = avstem)
+               utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
         val dbState = repository.insert(state)
         assertNotNull(dbState.created)
         assertNotNull(dbState.modified)
         assertEquals(soknadKey,dbState.soknadId)
         assertEquals(OppdragStateStatus.STARTET, dbState.status)
-        assertEquals(avstem, dbState.avstemmingsNokkel)
+        assertNull(dbState.avstemming)
 
         val update = repository.update(OppdragState(
                 id=dbState.id,
@@ -55,8 +55,9 @@ class OppdragStateRepositoryTest {
                 created = dbState.created,
                 modified = dbState.modified,
                 simuleringResult = dbState.simuleringResult,
-                avstemmingsNokkel = createAvstemmingsnokkel()))
+                avstemming = Avstemming()))
 
+        assertNotNull(update.avstemming)
         assertEquals(OppdragStateStatus.FERDIG, update.status)
         assertTrue(update.modified.isAfter(dbState.modified))
     }
