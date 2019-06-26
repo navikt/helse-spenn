@@ -169,7 +169,7 @@ class AvstemmingMapperTest {
                 JAXBOppdrag().toOppdrag(it)
             }
 
-    private fun lagOppdragResponseXml(soknadId:String, status: OppdragStateStatus, alvorlighetsgrad: String) : String? {
+    private fun lagOppdragResponseXml(fagsystemId:String, status: OppdragStateStatus, alvorlighetsgrad: String) : String? {
         if (status == OppdragStateStatus.SENDT_OS) {
             return null
         }
@@ -179,7 +179,7 @@ class AvstemmingMapperTest {
         kvittering.mmel.alvorlighetsgrad = alvorlighetsgrad
         kvittering.mmel.beskrMelding = "Beskrivelse"
         kvittering.oppdrag110 = Oppdrag110()
-        kvittering.oppdrag110.fagsystemId = soknadId
+        kvittering.oppdrag110.fagsystemId = fagsystemId
         return JAXBOppdrag().fromOppdragToXml(kvittering)
     }
 
@@ -193,7 +193,7 @@ class AvstemmingMapperTest {
                 id = newId,
                 created = now,
                 modified = now,
-                oppdragResponse = lagOppdragResponseXml(soknadId.toString(), status, alvorlighetsgrad),
+                oppdragResponse = lagOppdragResponseXml(newId.toString(), status, alvorlighetsgrad),
                 simuleringResult = null,
                 soknadId = soknadId,
                 status = status,
