@@ -134,9 +134,10 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                 }
                 else {
                     jooq.update(this)
-                        .set(NOKKEL, avstemming.nokkel.toTimeStamp())
-                        .set(AVSTEMT, avstemming.avstemt)
-                        .where(ID.equal(oppdragstateId))
+                            .set(OPPDRAGSTATE_ID, oppdragstateId)
+                            .set(NOKKEL, avstemming.nokkel.toTimeStamp())
+                            .set(AVSTEMT, avstemming.avstemt)
+                            .where(ID.equal(avstemming.id))
                         .execute()
                 }
             }
