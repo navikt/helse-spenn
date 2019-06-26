@@ -16,7 +16,7 @@ import java.util.*
 import kotlin.test.assertEquals
 
 class AvstemmingMapperTest {
-
+    // TODO Roy will fix this
 //    private var oppdragIdSequence = 1L
 //    private var utbetalingsLinjeIdSequence = 1L
 //
