@@ -58,6 +58,8 @@ class OppdragStateRepositoryTest {
                 avstemming = Avstemming()))
 
         assertNotNull(update.avstemming)
+        assertNotNull(update.avstemming?.nokkel)
+        println("avstemmingId: ${update.avstemming?.id} avstemmingnokkel: ${update.avstemming?.nokkel}")
         assertEquals(OppdragStateStatus.FERDIG, update.status)
         assertTrue(update.modified.isAfter(dbState.modified))
     }

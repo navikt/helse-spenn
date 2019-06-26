@@ -3,6 +3,7 @@ package no.nav.helse.spenn.tasks
 import net.javacrumbs.shedlock.core.SchedulerLock
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component
 
 
 @Component
-@ConditionalOnProperty(name = arrayOf("scheduler.enabled"), havingValue = "true")
+@ConditionalOnProperty(name = ["scheduler.enabled"], havingValue = "true")
 class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingService: UtbetalingService) {
 
     private val log = LoggerFactory.getLogger(SendToOSTask::class.java)
@@ -23,9 +24,9 @@ class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingS
         log.info("We are sending ${oppdragList.size} to OS")
         oppdragList.forEach {
             try {
+                val updated = it.copy(status = OppdragStateStatus.SENDT_OS, avstemming = AvstemmingDTO())
                 utbetalingService.sendUtbetalingOppdragMQ(it)
-                it.status = OppdragStateStatus.SENDT_OS
-                oppdragStateService.saveOppdragState(it)
+                oppdragStateService.saveOppdragState(updated)
             }
             catch(e: Exception) {
                 log.error("Got exeption while sending ${it.soknadId}", e)

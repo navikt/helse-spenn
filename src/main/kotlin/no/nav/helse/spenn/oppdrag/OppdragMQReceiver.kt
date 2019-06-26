@@ -26,10 +26,9 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
     private fun handleResponse(oppdrag : Oppdrag, xml: String) {
         log.info("OppdragResponse for ${oppdrag.oppdrag110.fagsystemId}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
         val state = oppdragStateService.fetchOppdragStateById(oppdrag.oppdrag110.fagsystemId.toLong())
-        state.oppdragResponse = xml
-        state.status = mapStatus(oppdrag)
-        meterRegistry.counter(OPPDRAG, "status", state.status.name).increment()
-        oppdragStateService.saveOppdragState(state)
+        val updated = state.copy(oppdragResponse = xml, status = mapStatus(oppdrag))
+        meterRegistry.counter(OPPDRAG, "status", updated.status.name).increment()
+        oppdragStateService.saveOppdragState(updated)
     }
 
     private fun mapStatus(oppdrag: Oppdrag): OppdragStateStatus {
