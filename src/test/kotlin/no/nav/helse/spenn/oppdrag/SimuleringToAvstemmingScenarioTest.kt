@@ -45,14 +45,22 @@ class SimuleringToAvstemmingScenarioTest {
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.SIMULERING_OK))
+        val another = service.saveOppdragState(OppdragStateDTO(
+                soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
+                simuleringResult = SimuleringResult(status = Status.OK),
+                status = OppdragStateStatus.SIMULERING_OK
+        ))
         assertNotNull(simulering)
         val sendToOSTask = SendToOSTask(oppdragStateService = service, utbetalingService = utbetalingServiceMock)
         sendToOSTask.sendToOS()
         val avstemtList = service.fetchOppdragStateByAvstemtAndStatus(false, OppdragStateStatus.SENDT_OS)
-        assertTrue(avstemtList.size>=1)
+        assertTrue(avstemtList.size>=2)
         val avstemming = avstemtList.get(0).avstemming
         assertNotNull(avstemming)
-        println("avstemming: ${avstemming.id} nøkkel: ${avstemming.nokkel} avstemt: ${avstemming.avstemt}")
+        println("avstemming: ${avstemming.id} oppdragstateId: ${avstemming.oppdragStateId} nøkkel: ${avstemming.nokkel} avstemt: ${avstemming.avstemt}")
+        val avstemming2 = avstemtList.get(1).avstemming
+        assertNotNull(avstemming2)
+        println("avstemming: ${avstemming2.id} oppdragstateId: ${avstemming2.oppdragStateId} nøkkel: ${avstemming2.nokkel} avstemt: ${avstemming2.avstemt}")
 
     }
 
