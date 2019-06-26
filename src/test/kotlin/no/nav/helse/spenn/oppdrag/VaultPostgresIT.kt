@@ -95,7 +95,7 @@ class VaultPostgresIT {
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling()
         val state = OppdragStateDTO(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
-                utbetalingsOppdrag = utbetaling, avstemmingsNokkel = createAvstemmingsnokkel())
+                utbetalingsOppdrag = utbetaling)
         val saved = service.saveOppdragState(state)
         assertNotNull(saved)
         val fetched = service.fetchOppdragStateByStatus(OppdragStateStatus.STARTET)

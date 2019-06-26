@@ -27,15 +27,16 @@ class UtbetalingService(val simuleringService: SimuleringService,
     }
 
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
-        log.info("simulering for ${oppdrag.soknadId} fagsystemId ${oppdrag.id}")
+        log.info("simulering for ${oppdrag.soknadId}")
         val result = callSimulering(oppdrag)
-        oppdrag.status = when (result.status) {
+
+        val status = when (result.status) {
             Status.OK -> OppdragStateStatus.SIMULERING_OK
             else -> OppdragStateStatus.SIMULERING_FEIL
         }
-        oppdrag.simuleringResult = result
         simuleringMetrics(result)
-        return oppdragStateService.saveOppdragState(oppdrag)
+        val updated = oppdrag.copy(simuleringResult = result, status = status)
+        return oppdragStateService.saveOppdragState(updated)
     }
 
     private fun callSimulering(oppdrag: OppdragStateDTO): SimuleringResult {

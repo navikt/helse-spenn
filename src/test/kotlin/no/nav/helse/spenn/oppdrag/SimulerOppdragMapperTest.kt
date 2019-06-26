@@ -22,7 +22,7 @@ class SimulerOppdragTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "123456789", utbetalingsLinje = listOf(enOppdragsLinje))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling, avstemmingsNokkel = createAvstemmingsnokkel())
+                utbetalingsOppdrag = utbetaling)
         val simuleringRequest = oppdragState.toSimuleringRequest()
         val jaxbContext = JAXBContext.newInstance(SimulerBeregningRequest::class.java)
         val marshaller = jaxbContext.createMarshaller()

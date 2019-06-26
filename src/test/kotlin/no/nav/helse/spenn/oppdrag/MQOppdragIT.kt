@@ -40,8 +40,7 @@ class MQOppdragIT {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling,
-                avstemmingsNokkel = createAvstemmingsnokkel())
+                utbetalingsOppdrag = utbetaling)
         mqSender.sendOppdrag(oppdragState.toOppdrag())
     }
 }

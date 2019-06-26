@@ -55,12 +55,12 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                 }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
                 .mapValues { _, vedtak -> vedtak.tilUtbetaling(aktørTilFnrMapper) }
-                .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
                 .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
                         OppdragStateDTO(soknadId = UUID.fromString(key),
-                                utbetalingsOppdrag = utbetaling,
-                                avstemmingsNokkel = createAvstemmingsnokkel()))}
+                                utbetalingsOppdrag = utbetaling))}
                 .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}
+                .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
+
 
         return builder.build()
     }
@@ -151,5 +151,5 @@ data class Topic<K, V>(
 private val avStemmingsnokkelFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
 
 fun createAvstemmingsnokkel(): String {
-    return LocalDateTime.now().format(avStemmingsnokkelFormatter)+"_"+ Random.nextInt()
+    return LocalDateTime.now().format(avStemmingsnokkelFormatter)
 }
