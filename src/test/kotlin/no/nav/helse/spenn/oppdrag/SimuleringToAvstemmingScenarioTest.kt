@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.context.annotation.ComponentScan
 import java.util.*
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
 
@@ -60,6 +61,7 @@ class SimuleringToAvstemmingScenarioTest {
         println("avstemming: ${avstemming.id} oppdragstateId: ${avstemming.oppdragStateId} nøkkel: ${avstemming.nokkel} avstemt: ${avstemming.avstemt}")
         val avstemming2 = avstemtList.get(1).avstemming
         assertNotNull(avstemming2)
+        assertNotEquals(avstemming.oppdragStateId, avstemming2.oppdragStateId)
         println("avstemming: ${avstemming2.id} oppdragstateId: ${avstemming2.oppdragStateId} nøkkel: ${avstemming2.nokkel} avstemt: ${avstemming2.avstemt}")
 
     }
