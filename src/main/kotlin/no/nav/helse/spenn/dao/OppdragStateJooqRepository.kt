@@ -6,15 +6,17 @@ import org.springframework.stereotype.Repository
 import no.nav.helse.spenn.jooq.Tables.OPPDRAGSTATE
 import no.nav.helse.spenn.jooq.tables.records.AvstemmingRecord
 import no.nav.helse.spenn.jooq.tables.records.OppdragstateRecord
+import org.jooq.Record
+import org.jooq.SelectOnConditionStep
 import org.jooq.impl.DSL.currentTimestamp
 import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.LocalDateTime
+import java.util.*
 
 
 @Repository
 class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
-
 
     @Transactional(readOnly = false)
     override fun insert(oppdragstate: OppdragState): OppdragState {
@@ -35,27 +37,25 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(id)
     }
 
-//    @Transactional(readOnly = false)
-//    override fun delete(id: Long): OppdragState {
-//        val delete = findById(id)
-//        jooq.delete(OPPDRAGSTATE)
-//                .where(OPPDRAGSTATE.ID.equal(id))
-//                .execute()
-//        return delete
-//    }
-//
-//    @Transactional(readOnly = true)
-//    override fun findAll(): List<OppdragState> {
-//        return jooq.selectFrom(OPPDRAGSTATE)
-//                .fetchInto(OppdragstateRecord::class.java)
-//                .map { it.toOppdragState() }
-//    }
+    @Transactional(readOnly = false)
+    override fun delete(id: Long): OppdragState {
+        val delete = findById(id)
+        jooq.delete(OPPDRAGSTATE)
+                .where(OPPDRAGSTATE.ID.equal(id))
+                .execute()
+        return delete
+    }
+
+
+    @Transactional(readOnly = true)
+    override fun findAll(): List<OppdragState> {
+        return selectOppdragStateLeftJoinAvstemmingOnCondition()
+                .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
+    }
 
     @Transactional(readOnly = true)
     override fun findById(id: Long?): OppdragState {
-        return jooq.select().from(OPPDRAGSTATE)
-                .leftJoin(AVSTEMMING)
-                .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.ID))
+        return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.ID.equal(id))
                 .fetchOne()
                 .map {
@@ -65,12 +65,11 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
 
     @Transactional(readOnly = true)
     override fun findAllByStatus(status: OppdragStateStatus): List<OppdragState> {
-        return jooq.select().from(OPPDRAGSTATE)
-                .leftJoin(AVSTEMMING)
-                .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.ID))
+        return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.STATUS.equal(status.name))
                 .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
     }
+
 
     @Transactional(readOnly = false)
     override fun update(oppdragstate: OppdragState): OppdragState {
@@ -89,19 +88,37 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(oppdragstate.id)
     }
 
-//    @Transactional(readOnly = true)
-//    override fun findBySoknadId(soknadId: UUID): OppdragState {
-//        return jooq.selectFrom(OPPDRAGSTATE)
-//                .where(OPPDRAGSTATE.SOKNAD_ID.equal(soknadId))
-//                .fetchOne()
-//                .toOppdragState()
-//    }
+    @Transactional(readOnly = true)
+    override fun findBySoknadId(soknadId: UUID): OppdragState {
+        return selectOppdragStateLeftJoinAvstemmingOnCondition()
+                .where(OPPDRAGSTATE.SOKNAD_ID.equal(soknadId))
+                .fetchOne()
+                .map {
+                    it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))
+                }
+    }
+
+    override fun findAllByAvstemtAndStatus(avstemt: Boolean, status:OppdragStateStatus): List<OppdragState> {
+        return selectOppdragStateLeftJoinAvstemmingOnCondition()
+                .where(OPPDRAGSTATE.STATUS.equal(status.name).and(AVSTEMMING.AVSTEMT.equal(avstemt)))
+                .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))}
+
+    }
+
+
+
+    private fun selectOppdragStateLeftJoinAvstemmingOnCondition(): SelectOnConditionStep<Record> {
+        return jooq.select().from(OPPDRAGSTATE)
+                .leftJoin(AVSTEMMING)
+                .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.OPPDRAGSTATE_ID))
+    }
+
 
     private fun insert(avstemming: Avstemming?, oppdragstateId: Long) {
         if (avstemming!=null) {
              with(AVSTEMMING) {
                 jooq.insertInto(this)
-                    .set(ID, oppdragstateId)
+                    .set(OPPDRAGSTATE_ID, oppdragstateId)
                     .set(NOKKEL, avstemming.nokkel.toTimeStamp())
                     .set(AVSTEMT, avstemming.avstemt)
                     .execute()
@@ -112,13 +129,15 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     private fun update(avstemming: Avstemming?, oppdragstateId: Long) {
         if (avstemming!=null) {
             with(AVSTEMMING) {
-                val row = jooq.update(this)
+                if (avstemming.id == null) {
+                    insert(avstemming, oppdragstateId)
+                }
+                else {
+                    jooq.update(this)
                         .set(NOKKEL, avstemming.nokkel.toTimeStamp())
                         .set(AVSTEMT, avstemming.avstemt)
                         .where(ID.equal(oppdragstateId))
                         .execute()
-                if (row==0) {
-                    insert(avstemming, oppdragstateId)
                 }
             }
         }
@@ -130,16 +149,16 @@ fun LocalDateTime?.toTimeStamp(): Timestamp? {
 }
 
 private fun OppdragstateRecord?.toOppdragState(avstemmingRecord: AvstemmingRecord): OppdragState {
-    if (this==null) throw OppdragStateNotFound()
-    return OppdragState(id=id, soknadId = soknadId, created = created.toLocalDateTime(), modified = modified.toLocalDateTime(),
-            utbetalingsOppdrag = utbetalingsoppdrag, oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
-            simuleringResult = simuleringresult,
-            avstemming = avstemmingRecord.toAvstemming())
+    if (this?.id == null) throw OppdragStateNotFound()
+    return OppdragState(id=id, soknadId = soknadId, created = created.toLocalDateTime(),
+            modified = modified.toLocalDateTime(), utbetalingsOppdrag = utbetalingsoppdrag,
+            oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
+            simuleringResult = simuleringresult, avstemming = avstemmingRecord.toAvstemming())
 }
 
 private fun AvstemmingRecord?.toAvstemming(): Avstemming? {
-    if (this==null) return null
-    return Avstemming(nokkel = nokkel.toLocalDateTime(), avstemt = avstemt)
+    if (this?.id == null) return null
+    return Avstemming(id = id, oppdragstateId = oppdragstateId, nokkel = nokkel.toLocalDateTime(), avstemt = avstemt)
 }
 
 
