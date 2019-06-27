@@ -74,7 +74,7 @@ services:
       - "SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/helse-spenn-oppdrag"
       - "SPRING_CLOUD_VAULT_ENABLED=true"
       - "SPRING_CLOUD_VAULT_URI=http://vault:8200"
-      - "KAFKA_BOOTSTRAP_SERVERS=kafka:9020"
+      - "KAFKA_BOOTSTRAP_SERVERS=kafka:19020"
       - "SECURITY_TOKEN_SERVICE_REST_URL=http://localhost:8080"
       - "SECURITYTOKENSERVICE_URL=http://localhost:8888"
       - "SIMULERING_SERVICE_URL=http//localhost:9110"
