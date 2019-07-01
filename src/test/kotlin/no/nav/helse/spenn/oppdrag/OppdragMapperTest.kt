@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.StringWriter

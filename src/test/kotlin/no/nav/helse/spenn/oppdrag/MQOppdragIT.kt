@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
 
-import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
