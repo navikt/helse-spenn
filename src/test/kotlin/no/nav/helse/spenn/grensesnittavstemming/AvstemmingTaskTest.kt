@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
@@ -67,7 +68,7 @@ class AvstemmingTaskTest {
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling()
 
-        service.saveOppdragState(OppdragStateDTO(
+        val oppdrag1 = service.saveOppdragState(OppdragStateDTO(
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
@@ -76,14 +77,14 @@ class AvstemmingTaskTest {
                         avstemt = false,
                         nokkel = LocalDateTime.now().minusHours(2)
                 )))
-        service.saveOppdragState(OppdragStateDTO(
+        val oppdrag2 = service.saveOppdragState(OppdragStateDTO(
                 soknadId = soknadKey2, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
                 avstemming = AvstemmingDTO(
                         id = 124L,
                         avstemt = false,
-                        nokkel = LocalDateTime.now().minusHours(2)
+                        nokkel = LocalDateTime.now().minusHours(2).plusMinutes(1)
                 )))
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
@@ -108,9 +109,13 @@ class AvstemmingTaskTest {
         }
         assertEquals(AksjonType.AVSL, sendteMeldinger.last().aksjon.aksjonType)
 
-        assertTrue(loglog.list.filter {
-                it.level == Level.INFO && it.message.startsWith("Sender avstemmingsmeldinger med avleverendeAvstemmingId=")
-        }.isNotEmpty(), "Det skal logges avleverendeAvstemmingId på INFO-nivå")
+        val loggMeldinger = loglog.list.filter {
+            it.level == Level.INFO && it.message.startsWith("Sender avstemmingsmeldinger med avleverendeAvstemmingId=")
+        }
+        assertEquals(1, loggMeldinger.size, "Det skal logges en linje med avleverendeAvstemmingId på INFO-nivå")
+        println("nokkelFom=${oppdrag1.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}")
+        assertTrue(loggMeldinger.first().message.contains("nokkelFom=${oppdrag1.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
+        assertTrue(loggMeldinger.first().message.contains("nokkelTom=${oppdrag2.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
 
         assertTrue(service.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now()).isEmpty(),
                 "Det skal ikke være igjen noen ikke-avstemte meldinger")

@@ -31,7 +31,8 @@ class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
             log.info("Ingen avstemmingsmeldinger å sende. Returnerer...")
             return
         }
-        log.info("Sender avstemmingsmeldinger med avleverendeAvstemmingId=${meldinger.first().aksjon.avleverendeAvstemmingId}")
+        log.info("Sender avstemmingsmeldinger med avleverendeAvstemmingId=${meldinger.first().aksjon.avleverendeAvstemmingId}, "+
+                "nokkelFom=${mapper.avstemmingsnokkelFom()}, nokkelTom=${mapper.avstemmingsnokkelTom()}")
 
         meldinger.forEachIndexed { i, melding ->
             try {

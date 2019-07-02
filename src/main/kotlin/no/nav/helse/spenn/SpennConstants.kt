@@ -14,4 +14,4 @@ enum class KvitteringTransaksjonStatus(val kode : String) {
     AVVIST_TEKNISK_FEIL("12")
 }
 
-val avstemmingsnokkelFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
+val avstemmingsnokkelFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
