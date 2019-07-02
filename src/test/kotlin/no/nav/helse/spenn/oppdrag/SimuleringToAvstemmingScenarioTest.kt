@@ -1,8 +1,11 @@
 package no.nav.helse.spenn.oppdrag
 
+
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.helse.spenn.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.dao.toEntity
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
 import no.nav.helse.spenn.tasks.SendToOSTask
@@ -19,8 +22,6 @@ import org.springframework.context.annotation.ComponentScan
 import java.util.*
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
-
-
 import kotlin.test.assertTrue
 
 @DataJdbcTest(properties = ["VAULT_ENABLED=false",
@@ -32,6 +33,8 @@ class SimuleringToAvstemmingScenarioTest {
 
     @Autowired
     lateinit var service: OppdragStateService
+    @Autowired
+    lateinit var repository: OppdragStateJooqRepository
 
     val utbetalingServiceMock = Mockito.mock(UtbetalingService::class.java)
 
@@ -42,11 +45,16 @@ class SimuleringToAvstemmingScenarioTest {
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling()
 
+        @Suppress("UNUSED_VARIABLE") val alleredeFerdigDummyOppdragForAtIdSekvenserIkkeSkalVaereISync = service.saveOppdragState(OppdragStateDTO(
+                soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
+                simuleringResult = SimuleringResult(status = Status.OK),
+                status = OppdragStateStatus.FERDIG
+        ))
         val simulering = service.saveOppdragState(OppdragStateDTO(
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.SIMULERING_OK))
-        val another = service.saveOppdragState(OppdragStateDTO(
+        @Suppress("UNUSED_VARIABLE") val another = service.saveOppdragState(OppdragStateDTO(
                 soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.SIMULERING_OK
@@ -56,14 +64,20 @@ class SimuleringToAvstemmingScenarioTest {
         sendToOSTask.sendToOS()
         val avstemtList = service.fetchOppdragStateByAvstemtAndStatus(false, OppdragStateStatus.SENDT_OS)
         assertTrue(avstemtList.size>=2)
-        val avstemming = avstemtList.get(0).avstemming
+        val avstemming = avstemtList[0].avstemming
         assertNotNull(avstemming)
         println("avstemming: ${avstemming.id} oppdragstateId: ${avstemming.oppdragStateId} nøkkel: ${avstemming.nokkel} avstemt: ${avstemming.avstemt}")
-        val avstemming2 = avstemtList.get(1).avstemming
+        val avstemming2 = avstemtList[1].avstemming
         assertNotNull(avstemming2)
         assertNotEquals(avstemming.oppdragStateId, avstemming2.oppdragStateId)
         println("avstemming: ${avstemming2.id} oppdragstateId: ${avstemming2.oppdragStateId} nøkkel: ${avstemming2.nokkel} avstemt: ${avstemming2.avstemt}")
 
+        val avstemt1 = avstemtList[0].let {
+            it.copy(avstemming = it.avstemming!!.copy(avstemt = true))
+        }
+        assertNotEquals(avstemt1.id, avstemt1.avstemming!!.id, "hvis oppdragstate.id er i synk med avstemming.id KAN det være vi ikke får testet det vi vil teste")
+        repository.update(toEntity(avstemt1))
+        assertTrue(service.fetchOppdragStateById(avstemt1.id!!).avstemming!!.avstemt)
     }
 
 }

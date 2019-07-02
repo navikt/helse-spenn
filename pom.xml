@@ -438,7 +438,7 @@
                         <database>
                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
                             <includes>.*</includes>
-                            <excludes>shedlock</excludes>
+                            <excludes>shedlock|flyway.*</excludes>
                             <schemata>
                                 <schema>
                                     <inputSchema>public</inputSchema>

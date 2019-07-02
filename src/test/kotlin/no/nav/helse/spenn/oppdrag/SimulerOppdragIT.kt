@@ -4,7 +4,6 @@ import no.nav.helse.spenn.AppConfig
 
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.vedtak.createAvstemmingsnokkel
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.junit.jupiter.api.Test
