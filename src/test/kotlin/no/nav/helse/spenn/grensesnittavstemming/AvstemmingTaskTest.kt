@@ -113,7 +113,6 @@ class AvstemmingTaskTest {
             it.level == Level.INFO && it.message.startsWith("Sender avstemmingsmeldinger med avleverendeAvstemmingId=")
         }
         assertEquals(1, loggMeldinger.size, "Det skal logges en linje med avleverendeAvstemmingId på INFO-nivå")
-        println("nokkelFom=${oppdrag1.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}")
         assertTrue(loggMeldinger.first().message.contains("nokkelFom=${oppdrag1.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
         assertTrue(loggMeldinger.first().message.contains("nokkelTom=${oppdrag2.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
 
