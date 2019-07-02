@@ -52,13 +52,13 @@ class AvstemmingMapper(
 
     companion object {
         internal val objectFactory = ObjectFactory()
-        private const val SAKSBEHANDLERS_BRUKER_ID = "SPA" // TODO: Dobbelsjekk med øko at dette er greit
+        private const val SAKSBEHANDLERS_BRUKER_ID = "SPA"
 
         private val tidspunktFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS") // TODO: Duplisert fra OppdragMapper: trekk ut ?
 
         private fun tidspunktMelding(oppdrag: OppdragStateDTO) = oppdrag.avstemming!!.nokkel.format(tidspunktFormatter)
 
-        private val DETALJER_PR_MELDING = 70 // ref: fpsak.grensesnittavtemmingsMapper
+        private val DETALJER_PR_MELDING = 70
 
         /**
          * Kopiert fra FPSAK:GrensesnittavstemmingMapper (TODO: Sjekk om dette er nødvendig)
@@ -163,8 +163,6 @@ class AvstemmingMapper(
             oppdrag.avstemming?.nokkel?:throw Exception("oppdrag uten avstemmingsnøkkel: ${oppdrag.id}")
 
 
-    //.oppdrag110.avstemming115.tidspktMelding
-
     private fun tilAksjonsdata(aksjonType: AksjonType): Aksjonsdata {
         val aksjonsdata = objectFactory.createAksjonsdata()
         aksjonsdata.aksjonType = aksjonType
@@ -175,7 +173,7 @@ class AvstemmingMapper(
         aksjonsdata.underkomponentKode = fagområde.kode
         aksjonsdata.nokkelFom = oppdragslisteNokkelFom.value.toString()
         aksjonsdata.nokkelTom = oppdragslisteNokkelTom.value.toString()
-        aksjonsdata.tidspunktAvstemmingTom = tidspunktAvstemmingTom.value //?.let {tilSpesialkodetDatoOgKlokkeslett(it)}
+        aksjonsdata.tidspunktAvstemmingTom = tidspunktAvstemmingTom.value
         aksjonsdata.avleverendeAvstemmingId = avstemmingId
         aksjonsdata.brukerId = SAKSBEHANDLERS_BRUKER_ID
 
@@ -211,7 +209,7 @@ class AvstemmingMapper(
             val belop = getBelop(oppdrag)
             val kvittering = getKvitteringsMelding(oppdrag)
             val alvorlighetsgrad = kvittering?.mmel?.alvorlighetsgrad
-            if (oppdrag.status == OppdragStateStatus.SENDT_OS) /*or kvittering is null?*/ {
+            if (oppdrag.status == OppdragStateStatus.SENDT_OS) {
                 manglerBelop += belop
                 manglerAntall++
             } else if ("00" == alvorlighetsgrad) {
