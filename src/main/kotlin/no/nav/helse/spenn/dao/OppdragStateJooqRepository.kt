@@ -105,7 +105,9 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     }
 
     override fun findAllNotAvstemtWithAvstemmingsnokkelNotAfter(avstemmingsnokkelMax: LocalDateTime): List<OppdragState> {
-        return selectOppdragStateJoinAvstemmingOnCondition()
+        return jooq.select().from(OPPDRAGSTATE)
+                .join(AVSTEMMING)
+                .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.OPPDRAGSTATE_ID))
                 .where(AVSTEMMING.AVSTEMT.equal(false))
                 .and(AVSTEMMING.NOKKEL.isNotNull)
                 .and(AVSTEMMING.NOKKEL.le(avstemmingsnokkelMax.toTimeStamp()))
@@ -118,11 +120,6 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                 .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.OPPDRAGSTATE_ID))
     }
 
-    private fun selectOppdragStateJoinAvstemmingOnCondition(): SelectOnConditionStep<Record> {
-        return jooq.select().from(OPPDRAGSTATE)
-                .join(AVSTEMMING)
-                .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.OPPDRAGSTATE_ID))
-    }
 
     private fun insert(avstemming: Avstemming?, oppdragstateId: Long) {
         if (avstemming!=null) {
