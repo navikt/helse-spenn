@@ -35,3 +35,7 @@ oppdrag:
   queue:
     mottak: DEV.QUEUE.1
     send: DEV.QUEUE.1
+
+avstemming:
+  queue:
+    send: DEV.QUEUE.1

@@ -17,7 +17,6 @@ import java.util.*
 
 @Repository
 class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
-
     @Transactional(readOnly = false)
     override fun insert(oppdragstate: OppdragState): OppdragState {
         val id =  with(OPPDRAGSTATE) {
@@ -105,7 +104,13 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
 
     }
 
-
+    override fun findAllNotAvstemtWithAvstemmingsnokkelNotAfter(avstemmingsnokkelMax: LocalDateTime): List<OppdragState> {
+        return selectOppdragStateJoinAvstemmingOnCondition()
+                .where(AVSTEMMING.AVSTEMT.equal(false))
+                .and(AVSTEMMING.NOKKEL.isNotNull)
+                .and(AVSTEMMING.NOKKEL.le(avstemmingsnokkelMax.toTimeStamp()))
+                .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))}
+    }
 
     private fun selectOppdragStateLeftJoinAvstemmingOnCondition(): SelectOnConditionStep<Record> {
         return jooq.select().from(OPPDRAGSTATE)
@@ -113,6 +118,11 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                 .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.OPPDRAGSTATE_ID))
     }
 
+    private fun selectOppdragStateJoinAvstemmingOnCondition(): SelectOnConditionStep<Record> {
+        return jooq.select().from(OPPDRAGSTATE)
+                .join(AVSTEMMING)
+                .on(OPPDRAGSTATE.ID.equal(AVSTEMMING.OPPDRAGSTATE_ID))
+    }
 
     private fun insert(avstemming: Avstemming?, oppdragstateId: Long) {
         if (avstemming!=null) {

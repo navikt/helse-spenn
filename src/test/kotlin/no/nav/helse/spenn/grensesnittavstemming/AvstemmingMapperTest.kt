@@ -16,7 +16,9 @@ import java.util.*
 import kotlin.test.assertEquals
 
 class AvstemmingMapperTest {
-    // TODO Roy will fix this
+
+    private val jaxbAvstemming = JAXBAvstemmingsdata()
+
     private var oppdragIdSequence = 1L
     private var utbetalingsLinjeIdSequence = 1L
 
@@ -31,6 +33,13 @@ class AvstemmingMapperTest {
             lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1550),
             lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1660)
     )
+
+    @Test
+    fun avstemmingMapperBørTakleTomListe() {
+        val mapper = AvstemmingMapper(emptyList(), ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
+        val meldinger = mapper.lagAvstemmingsMeldinger()
+        assertEquals(0, meldinger.size)
+    }
 
     @Test
     fun testAvstemmingsXml() {
@@ -50,7 +59,7 @@ class AvstemmingMapperTest {
         }
 
         val mapper = AvstemmingMapper(oppdragsliste, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
-        val xmlMeldinger = mapper.lagXmlMeldinger()
+        val xmlMeldinger = mapper.lagAvstemmingsMeldinger().map { jaxbAvstemming.fromAvstemmingsdataToXml(it) }
         //println(xmlMeldinger)
         val meldinger = xmlMeldinger.map { JAXBAvstemmingsdata().toAvstemmingsdata(it) }
         assertEquals(3, meldinger.size)

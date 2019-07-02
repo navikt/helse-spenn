@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.dao
 
+import java.time.LocalDateTime
 import java.util.*
-
 
 interface OppdragStateRepository {
 
@@ -14,6 +14,8 @@ interface OppdragStateRepository {
     fun findAllByStatus(status: OppdragStateStatus): List<OppdragState>
 
     fun findAllByAvstemtAndStatus(avstemt: Boolean, status: OppdragStateStatus): List<OppdragState>
+
+    fun findAllNotAvstemtWithAvstemmingsnokkelNotAfter(avstemmingsnokkelMax: LocalDateTime): List<OppdragState>
 
     fun findById(id: Long?): OppdragState
 

@@ -1,14 +1,14 @@
 package no.nav.helse.spenn.dao
 
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.simulering.SimuleringResult
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
-import org.h2.engine.Right
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class OppdragStateService(val repository: OppdragStateRepository) {
@@ -38,6 +38,11 @@ class OppdragStateService(val repository: OppdragStateRepository) {
     }
 
     @Transactional(readOnly = true)
+    fun fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(avstemmingsnokkelMax: LocalDateTime): List<OppdragStateDTO> {
+        return repository.findAllNotAvstemtWithAvstemmingsnokkelNotAfter(avstemmingsnokkelMax).map { toDTO(it) }
+    }
+
+    @Transactional(readOnly = true)
     fun fetchOppdragStateById(id: Long): OppdragStateDTO {
         return toDTO(repository.findById(id))
     }
@@ -53,7 +58,7 @@ fun toEntity(dto: OppdragStateDTO): OppdragState {
             created = dto.created,
             simuleringResult = defaultObjectMapper.writeValueAsString(dto.simuleringResult),
             status = dto.status,
-            oppdragResponse = defaultObjectMapper.writeValueAsString(dto.oppdragResponse),
+            oppdragResponse = dto.oppdragResponse,
             avstemming = toAvstemmingEntity(dto.avstemming)
 
     )

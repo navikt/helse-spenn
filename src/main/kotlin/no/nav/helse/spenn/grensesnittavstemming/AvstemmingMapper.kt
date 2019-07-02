@@ -27,8 +27,7 @@ enum class ØkonomiKodeFagområde(val kode: String) {
 class AvstemmingMapper(
         private val oppdragsliste:List<OppdragStateDTO>,
         private val fagområde:ØkonomiKodeFagområde,
-        private val jaxbOppdrag : JAXBOppdrag = JAXBOppdrag(),
-        private val jaxbAvstemmingsdata : JAXBAvstemmingsdata = JAXBAvstemmingsdata()
+        private val jaxbOppdrag : JAXBOppdrag = JAXBOppdrag()
 ) {
 
     private val oppdragSorterByAvstemmingsnøkkel = Comparator<OppdragStateDTO>{ a, b ->
@@ -38,13 +37,13 @@ class AvstemmingMapper(
             else -> 0
         }
     }
-    private val oppdragslisteSortedByAvstemmingsnøkkel = oppdragsliste.sortedWith(oppdragSorterByAvstemmingsnøkkel)
-    private val oppdragMedLavestAvstemmingsnøkkel = oppdragslisteSortedByAvstemmingsnøkkel.first()
-    private val oppdragMedHøyestAvstemmingsnøkkel = oppdragslisteSortedByAvstemmingsnøkkel.last()
+    private val oppdragslisteSortedByAvstemmingsnøkkel = lazy {oppdragsliste.sortedWith(oppdragSorterByAvstemmingsnøkkel)}
+    private val oppdragMedLavestAvstemmingsnøkkel = lazy { oppdragslisteSortedByAvstemmingsnøkkel.value.first() }
+    private val oppdragMedHøyestAvstemmingsnøkkel = lazy { oppdragslisteSortedByAvstemmingsnøkkel.value.last() }
 
-    private val oppdragslisteNokkelFom = avstemmingsnøkkelFor(oppdragMedLavestAvstemmingsnøkkel)
-    private val oppdragslisteNokkelTom = avstemmingsnøkkelFor(oppdragMedHøyestAvstemmingsnøkkel)
-    private val tidspunktAvstemmingTom = oppdragsliste.map { tidspunktMelding(it) }.max()
+    private val oppdragslisteNokkelFom = lazy { avstemmingsnøkkelFor(oppdragMedLavestAvstemmingsnøkkel.value) }
+    private val oppdragslisteNokkelTom = lazy { avstemmingsnøkkelFor(oppdragMedHøyestAvstemmingsnøkkel.value) }
+    private val tidspunktAvstemmingTom = lazy { oppdragsliste.map { tidspunktMelding(it) }.max() }
     private val avstemmingId = encodeUUIDBase64(UUID.randomUUID())
 
 
@@ -57,16 +56,10 @@ class AvstemmingMapper(
 
         private val tidspunktFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS") // TODO: Duplisert fra OppdragMapper: trekk ut ?
 
-        private fun tidspunktMelding(oppdrag: OppdragStateDTO) = oppdrag.modified.format(tidspunktFormatter)  // TODO: created vs modified ? bruk oppdragDTO.avstemming115.tidspunktMelding (?) / Finn riktig verdi (fpsak bruker senestAvstemming115.getTidspnktMelding())
+        private fun tidspunktMelding(oppdrag: OppdragStateDTO) = oppdrag.avstemming!!.nokkel.format(tidspunktFormatter)
 
         private val DETALJER_PR_MELDING = 70 // ref: fpsak.grensesnittavtemmingsMapper
 
-        /**
-         * ref: FPSAK:ØkonomistøtteUtils
-         */
-        /*private fun tilSpesialkodetDatoOgKlokkeslett(dt: LocalDateTime): String =
-            dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS"))
-*/
         /**
          * Kopiert fra FPSAK:GrensesnittavstemmingMapper (TODO: Sjekk om dette er nødvendig)
          */
@@ -99,9 +92,11 @@ class AvstemmingMapper(
 
     }
 
-    internal fun lagAvstemmingsMeldinger() : List<Avstemmingsdata> {
-        throw Exception("UGH!")
-    }
+    internal fun lagAvstemmingsMeldinger() : List<Avstemmingsdata> =
+            if (oppdragsliste.isEmpty())
+                emptyList()
+            else
+                (listOf(lagStartmelding()) + lagDatameldinger() + listOf(lagSluttmelding()))
 
     internal fun getKvitteringsMelding(oppdrag: OppdragStateDTO) : Oppdrag? =
         oppdrag.oppdragResponse?.let {
@@ -114,24 +109,18 @@ class AvstemmingMapper(
                 OppdragStateStatus.SENDT_OS, OppdragStateStatus.FEIL ->
                     objectFactory.createDetaljdata().apply {
                         val kvittering = getKvitteringsMelding(oppdrag)
-                        this.detaljType = if (oppdrag.status == OppdragStateStatus.SENDT_OS || kvittering == null) {
-                            if (!(oppdrag.status == OppdragStateStatus.SENDT_OS && kvittering == null)) {
-                                log.error("inkonsistente data på oppdragId=${oppdrag.id}: status=${oppdrag.status} kvitteringFinnes=${kvittering!=null}")
-                            }
+                        this.detaljType = if (oppdrag.status == OppdragStateStatus.SENDT_OS) {
                             DetaljType.MANG
                         } else {
-                            this.meldingKode = kvittering.mmel.kodeMelding
+                            this.meldingKode = kvittering!!.mmel.kodeMelding
                             this.alvorlighetsgrad = kvittering.mmel.alvorlighetsgrad
                             this.tekstMelding = kvittering.mmel.beskrMelding
-                            if (kvittering.oppdrag110?.fagsystemId != oppdrag.id.toString()) {
-                                log.error("mismatch mellom fagsystemid fra kvittering.oppdrag110 (${kvittering.oppdrag110?.fagsystemId}) og fra OppdragStateDTO (${oppdrag.id})")
-                            }
                             if (kvittering.mmel.alvorlighetsgrad == "04")
                                 DetaljType.VARS
                             else
                                 DetaljType.AVVI
                         }
-                        this.offnr = oppdrag.utbetalingsOppdrag.oppdragGjelder //detaljdata.setOffnr(oppdrag110.getOppdragGjelderId());
+                        this.offnr = oppdrag.utbetalingsOppdrag.oppdragGjelder
                         this.avleverendeTransaksjonNokkel = oppdrag.id.toString()
                         this.tidspunkt = tidspunktMelding(oppdrag)
                     }
@@ -142,11 +131,6 @@ class AvstemmingMapper(
                 }
             }
         }
-
-
-    fun lagXmlMeldinger() : List<String> =
-        (listOf(lagStartmelding()) + lagDatameldinger() + listOf(lagSluttmelding()))
-                .map { jaxbAvstemmingsdata.fromAvstemmingsdataToXml(it) }
 
     internal fun lagStartmelding() = lagAvstemmingsdataFelles(AksjonType.START)
 
@@ -189,9 +173,9 @@ class AvstemmingMapper(
         aksjonsdata.avleverendeKomponentKode = ØkonomiKodekomponent.SYKEPENGEBEHANDLING.kodekomponent
         aksjonsdata.mottakendeKomponentKode = ØkonomiKodekomponent.OPPDRAGSSYSTEMET.kodekomponent
         aksjonsdata.underkomponentKode = fagområde.kode
-        aksjonsdata.nokkelFom = oppdragslisteNokkelFom.toString()
-        aksjonsdata.nokkelTom = oppdragslisteNokkelTom.toString()
-        aksjonsdata.tidspunktAvstemmingTom = tidspunktAvstemmingTom //?.let {tilSpesialkodetDatoOgKlokkeslett(it)}
+        aksjonsdata.nokkelFom = oppdragslisteNokkelFom.value.toString()
+        aksjonsdata.nokkelTom = oppdragslisteNokkelTom.value.toString()
+        aksjonsdata.tidspunktAvstemmingTom = tidspunktAvstemmingTom.value //?.let {tilSpesialkodetDatoOgKlokkeslett(it)}
         aksjonsdata.avleverendeAvstemmingId = avstemmingId
         aksjonsdata.brukerId = SAKSBEHANDLERS_BRUKER_ID
 
@@ -209,8 +193,8 @@ class AvstemmingMapper(
 
     private fun opprettPeriodedata(): Periodedata {
         val periodedata = objectFactory.createPeriodedata()
-        periodedata.datoAvstemtFom = tilPeriodeData(tidspunktMelding(oppdragMedLavestAvstemmingsnøkkel))
-        periodedata.datoAvstemtTom = tilPeriodeData(tidspunktMelding(oppdragMedHøyestAvstemmingsnøkkel))
+        periodedata.datoAvstemtFom = tilPeriodeData(tidspunktMelding(oppdragMedLavestAvstemmingsnøkkel.value))
+        periodedata.datoAvstemtTom = tilPeriodeData(tidspunktMelding(oppdragMedHøyestAvstemmingsnøkkel.value))
         return periodedata
     }
 
