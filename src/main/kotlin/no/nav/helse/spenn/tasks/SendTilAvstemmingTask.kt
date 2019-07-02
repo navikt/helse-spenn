@@ -1,9 +1,9 @@
 package no.nav.helse.spenn.tasks
 
 import net.javacrumbs.shedlock.core.SchedulerLock
+import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.grensesnittavstemming.AvstemmingMapper
-import no.nav.helse.spenn.grensesnittavstemming.ØkonomiKodeFagområde
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -24,7 +24,7 @@ class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
     fun sendTilAvstemming() {
         val oppdragList = oppdragStateService.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now().minusHours(1))
         log.info("Fant ${oppdragList.size} oppdrag som skal sendes til avstemming")
-        val mapper = AvstemmingMapper(oppdragList, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
+        val mapper = AvstemmingMapper(oppdragList, FagOmraadekode.SYKEPENGER_REFUSJON)
         val meldinger = mapper.lagAvstemmingsMeldinger()
 
         if (meldinger.isEmpty()) {

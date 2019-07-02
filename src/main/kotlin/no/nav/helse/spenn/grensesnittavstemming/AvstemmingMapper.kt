@@ -1,5 +1,8 @@
 package no.nav.helse.spenn.grensesnittavstemming
 
+import no.nav.helse.spenn.FagOmraadekode
+import no.nav.helse.spenn.KvitteringTransaksjonStatus
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
@@ -19,14 +22,9 @@ enum class ØkonomiKodekomponent(val kodekomponent : String) {
     OPPDRAGSSYSTEMET("OS")
 }
 
-enum class ØkonomiKodeFagområde(val kode: String) {
-    SYKEPENGER("SP"),
-    SYKEPENGER_REFUSJON_ARBEIDSGIVER("SPREF")
-}
-
 class AvstemmingMapper(
         private val oppdragsliste:List<OppdragStateDTO>,
-        private val fagområde:ØkonomiKodeFagområde,
+        private val fagområde:FagOmraadekode,
         private val jaxbOppdrag : JAXBOppdrag = JAXBOppdrag()
 ) {
 
@@ -54,9 +52,7 @@ class AvstemmingMapper(
         internal val objectFactory = ObjectFactory()
         private const val SAKSBEHANDLERS_BRUKER_ID = "SPA"
 
-        private val tidspunktFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS") // TODO: Duplisert fra OppdragMapper: trekk ut ?
-
-        private fun tidspunktMelding(oppdrag: OppdragStateDTO) = oppdrag.avstemming!!.nokkel.format(tidspunktFormatter)
+        private fun tidspunktMelding(oppdrag: OppdragStateDTO) = oppdrag.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)
 
         private val DETALJER_PR_MELDING = 70
 
@@ -84,7 +80,7 @@ class AvstemmingMapper(
         }
 
         private fun tilPeriodeData(localDateTimeString: String): String =
-                LocalDateTime.parse(localDateTimeString, tidspunktFormatter)
+                LocalDateTime.parse(localDateTimeString, avstemmingsnokkelFormatter)
                         .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
 
         private fun getBelop(oppdrag: OppdragStateDTO): Long =
@@ -115,7 +111,7 @@ class AvstemmingMapper(
                             this.meldingKode = kvittering!!.mmel.kodeMelding
                             this.alvorlighetsgrad = kvittering.mmel.alvorlighetsgrad
                             this.tekstMelding = kvittering.mmel.beskrMelding
-                            if (kvittering.mmel.alvorlighetsgrad == "04")
+                            if (kvittering.mmel.alvorlighetsgrad == KvitteringTransaksjonStatus.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
                                 DetaljType.VARS
                             else
                                 DetaljType.AVVI
@@ -212,10 +208,10 @@ class AvstemmingMapper(
             if (oppdrag.status == OppdragStateStatus.SENDT_OS) {
                 manglerBelop += belop
                 manglerAntall++
-            } else if ("00" == alvorlighetsgrad) {
+            } else if (KvitteringTransaksjonStatus.OK.kode == alvorlighetsgrad) {
                 godkjentBelop += belop
                 godkjentAntall++
-            } else if ("04" == alvorlighetsgrad) {
+            } else if (KvitteringTransaksjonStatus.AKSEPTERT_MEN_NOE_ER_FEIL.kode == alvorlighetsgrad) {
                 varselBelop += belop
                 varselAntall++
             } else {
