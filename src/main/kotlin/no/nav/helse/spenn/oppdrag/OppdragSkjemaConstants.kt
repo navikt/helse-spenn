@@ -33,11 +33,6 @@ class OppdragSkjemaConstants {
 
 }
 
-enum class FagOmraadekode(val kode: String) {
-    SYKEPENGER("SP"),
-    SYKEPENGER_REFUSJON("SPREF")
-}
-
 enum class KlassifiseringsKode(val kode: String) {
     SPREFAG_IOP("SPREFAG-IOP")
 }
@@ -89,13 +84,6 @@ enum class SatsTypeKode(val kode : String ) {
             return UKJENT
         }
     }
-}
-
-enum class KvitteringTransaksjonStatus(val kode : String) {
-    OK("00"),
-    AKSEPTERT_MEN_NOE_ER_FEIL("04"),
-    AVVIST_FUNKSJONELLE_FEIL("08"),
-    AVVIST_TEKNISK_FEIL("12")
 }
 
 enum class GradTypeKode(val kode: String ) {

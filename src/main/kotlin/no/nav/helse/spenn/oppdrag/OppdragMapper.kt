@@ -1,5 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
+import no.nav.helse.spenn.FagOmraadekode
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
@@ -17,7 +19,6 @@ import java.time.format.DateTimeFormatter
 private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory()
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
-val avstemmingsnokkelFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
 
 fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
     var simulerFom = LocalDate.MAX

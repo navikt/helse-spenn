@@ -36,8 +36,6 @@ oppdrag:
     mottak: DEV.QUEUE.1
     send: DEV.QUEUE.1
 
-kafka:
-  offset-reset:
-    enabled: true
-    # 01.05.2019 (preprod har ok data)
-    timestamp-millis: 1556661600000
+avstemming:
+  queue:
+    send: DEV.QUEUE.1

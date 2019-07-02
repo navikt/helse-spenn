@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.grensesnittavstemming
 
+import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
@@ -16,7 +17,9 @@ import java.util.*
 import kotlin.test.assertEquals
 
 class AvstemmingMapperTest {
-    // TODO Roy will fix this
+
+    private val jaxbAvstemming = JAXBAvstemmingsdata()
+
     private var oppdragIdSequence = 1L
     private var utbetalingsLinjeIdSequence = 1L
 
@@ -31,6 +34,13 @@ class AvstemmingMapperTest {
             lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1550),
             lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1660)
     )
+
+    @Test
+    fun avstemmingMapperBørTakleTomListe() {
+        val mapper = AvstemmingMapper(emptyList(), FagOmraadekode.SYKEPENGER_REFUSJON)
+        val meldinger = mapper.lagAvstemmingsMeldinger()
+        assertEquals(0, meldinger.size)
+    }
 
     @Test
     fun testAvstemmingsXml() {
@@ -49,8 +59,8 @@ class AvstemmingMapperTest {
             assertEquals("SPA", aksjon.brukerId)
         }
 
-        val mapper = AvstemmingMapper(oppdragsliste, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
-        val xmlMeldinger = mapper.lagXmlMeldinger()
+        val mapper = AvstemmingMapper(oppdragsliste, FagOmraadekode.SYKEPENGER_REFUSJON)
+        val xmlMeldinger = mapper.lagAvstemmingsMeldinger().map { jaxbAvstemming.fromAvstemmingsdataToXml(it) }
         //println(xmlMeldinger)
         val meldinger = xmlMeldinger.map { JAXBAvstemmingsdata().toAvstemmingsdata(it) }
         assertEquals(3, meldinger.size)
@@ -107,7 +117,7 @@ class AvstemmingMapperTest {
 
     @Test
     fun testOpprettDetaljdata() {
-        val mapper = AvstemmingMapper(testoppdragsliste1, ØkonomiKodeFagområde.SYKEPENGER_REFUSJON_ARBEIDSGIVER)
+        val mapper = AvstemmingMapper(testoppdragsliste1, FagOmraadekode.SYKEPENGER_REFUSJON)
 
         val detaljer = mapper.opprettDetaljdata()
 
