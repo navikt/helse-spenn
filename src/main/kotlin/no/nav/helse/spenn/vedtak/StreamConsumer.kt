@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory
 class StreamConsumer(val consumerName: String,
                      val streams: KafkaStreams) {
 
-    private val log = LoggerFactory.getLogger(consumerName)
+    companion object {
+        private val log = LoggerFactory.getLogger(StreamConsumer::class.java)
+    }
 
     fun start() {
         addShutdownHook()

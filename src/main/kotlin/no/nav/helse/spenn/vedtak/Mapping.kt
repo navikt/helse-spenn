@@ -6,25 +6,20 @@ import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppslag.AktørTilFnrMapper
 import java.math.BigDecimal
 
 import java.time.LocalDate
 import java.util.*
 
+
 typealias Fodselsnummer = String
 
-interface AktørTilFnrMapper {
-    fun tilFnr(aktørId: String): Fodselsnummer
-}
 
-private class DummyAktørMapper() : AktørTilFnrMapper {
-    override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
-}
-
-fun Vedtak.tilUtbetaling(mapper: AktørTilFnrMapper = DummyAktørMapper()): UtbetalingsOppdrag = UtbetalingsOppdrag(
+fun Vedtak.tilUtbetaling(fodselsnummer: Fodselsnummer): UtbetalingsOppdrag = UtbetalingsOppdrag(
         vedtak = defaultObjectMapper.convertValue(this, JsonNode::class.java),
         operasjon = AksjonsKode.OPPDATER,
-        oppdragGjelder = mapper.tilFnr(aktørId),
+        oppdragGjelder = fodselsnummer,
         utbetalingsLinje = lagLinjer()
 )
 
