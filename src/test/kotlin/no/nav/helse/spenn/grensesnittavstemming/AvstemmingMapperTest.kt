@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.grensesnittavstemming
 
 import no.nav.helse.spenn.FagOmraadekode
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
@@ -53,9 +54,9 @@ class AvstemmingMapperTest {
             assertEquals("SP", aksjon.avleverendeKomponentKode)
             assertEquals("OS", aksjon.mottakendeKomponentKode)
             assertEquals("SPREF", aksjon.underkomponentKode)
-            assertEquals(oppdragsliste.map { "${it.avstemming!!.nokkel}" }.min(), aksjon.nokkelFom)
-            assertEquals(oppdragsliste.map { "${it.avstemming!!.nokkel}" }.max(), aksjon.nokkelTom)
-            assertEquals(oppdragsliste.map { it.modified.format(tidspunktFormatter) }.max(), aksjon.tidspunktAvstemmingTom)
+            assertEquals(oppdragsliste.map { it.avstemming!!.nokkel.format(avstemmingsnokkelFormatter) }.min(), aksjon.nokkelFom)
+            assertEquals(oppdragsliste.map { it.avstemming!!.nokkel.format(avstemmingsnokkelFormatter) }.max(), aksjon.nokkelTom)
+            //assertEquals(oppdragsliste.map { it.modified.format(tidspunktFormatter) }.max(), aksjon.tidspunktAvstemmingTom) // TODO: Utgår?
             assertEquals("SPA", aksjon.brukerId)
         }
 

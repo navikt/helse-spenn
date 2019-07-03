@@ -41,10 +41,12 @@ class AvstemmingMapper(
 
     private val oppdragslisteNokkelFom = lazy { avstemmingsnøkkelFor(oppdragMedLavestAvstemmingsnøkkel.value) }
     private val oppdragslisteNokkelTom = lazy { avstemmingsnøkkelFor(oppdragMedHøyestAvstemmingsnøkkel.value) }
-    private val tidspunktAvstemmingTom = lazy { oppdragsliste.map { tidspunktMelding(it) }.max() }
+    // private val tidspunktAvstemmingTom = lazy { oppdragsliste.map { tidspunktMelding(it) }.max() } // TODO: Utgår ?
     private val avstemmingId = encodeUUIDBase64(UUID.randomUUID())
 
+    fun avstemmingsnokkelFom() = oppdragslisteNokkelFom.value
 
+    fun avstemmingsnokkelTom() = oppdragslisteNokkelTom.value
 
     private val log = LoggerFactory.getLogger(AvstemmingMapper::class.java)
 
@@ -156,8 +158,7 @@ class AvstemmingMapper(
 
 
     private fun avstemmingsnøkkelFor(oppdrag: OppdragStateDTO) =
-            oppdrag.avstemming?.nokkel?:throw Exception("oppdrag uten avstemmingsnøkkel: ${oppdrag.id}")
-
+            oppdrag.avstemming!!.nokkel!!.format(avstemmingsnokkelFormatter)
 
     private fun tilAksjonsdata(aksjonType: AksjonType): Aksjonsdata {
         val aksjonsdata = objectFactory.createAksjonsdata()
@@ -169,7 +170,7 @@ class AvstemmingMapper(
         aksjonsdata.underkomponentKode = fagområde.kode
         aksjonsdata.nokkelFom = oppdragslisteNokkelFom.value.toString()
         aksjonsdata.nokkelTom = oppdragslisteNokkelTom.value.toString()
-        aksjonsdata.tidspunktAvstemmingTom = tidspunktAvstemmingTom.value
+        //aksjonsdata.tidspunktAvstemmingTom = tidspunktAvstemmingTom.value // TODO: Utgår ? : "Feltet Tidspkt-avstemming-tom skal brukes ved konsistensavstemming" ref: APP030 Interface Spesifikasjoner Avstemming ver 004, side 12
         aksjonsdata.avleverendeAvstemmingId = avstemmingId
         aksjonsdata.brukerId = SAKSBEHANDLERS_BRUKER_ID
 
