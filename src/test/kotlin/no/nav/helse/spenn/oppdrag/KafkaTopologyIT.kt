@@ -9,6 +9,7 @@ import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.*
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
+import org.apache.kafka.streams.KafkaStreams
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 
@@ -25,8 +26,11 @@ import java.util.*
 import java.util.function.Consumer
 import org.mockito.Mockito.*
 import org.mockito.stubbing.Answer
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBeans
 import javax.annotation.PostConstruct
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 import kotlin.test.fail
 
@@ -46,6 +50,9 @@ import kotlin.test.fail
     "PLAIN_TEXT_KAFKA=true"])
 @MockBean(classes= [SimuleringService::class, UtbetalingService::class])
 class KafkaTopologyIT {
+
+    @Autowired
+    lateinit var streamConsumer: StreamConsumer
 
     companion object {
         var portBinding = Consumer<CreateContainerCmd> { e -> e.withPortBindings(PortBinding(Ports.Binding.bindPort(9092), ExposedPort(9093)))}
@@ -88,7 +95,7 @@ class KafkaTopologyIT {
 
     @Test
     fun testSpennTopology() {
-
+        assertEquals(KafkaStreams.State.RUNNING, streamConsumer.state(), "Kafka stream should be running")
     }
 }
 

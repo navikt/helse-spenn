@@ -24,7 +24,9 @@ class StreamConsumer(val consumerName: String,
     }
 
 
-
+    fun state(): KafkaStreams.State? {
+        return streams.state()
+    }
     private fun addShutdownHook() {
         streams.setStateListener { newState, oldState ->
             log.info("From state={} to state={}", oldState, newState)
