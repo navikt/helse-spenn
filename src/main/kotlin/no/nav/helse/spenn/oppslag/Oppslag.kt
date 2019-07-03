@@ -27,6 +27,7 @@ class FnrOppslag(val env: Environment, val stsRestClient: StsRestClient): Aktør
 }
 
 @Component
+@Profile(value=["test", "default"])
 class DummyAktørMapper() : AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
 }
