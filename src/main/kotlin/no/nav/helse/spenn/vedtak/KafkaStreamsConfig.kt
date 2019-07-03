@@ -7,6 +7,8 @@ import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.metrics.VEDTAK
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppslag.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
@@ -26,14 +28,21 @@ import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+
+import org.springframework.dao.DuplicateKeyException
 import java.io.File
 import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
 
+
 @Configuration
+@AutoConfigureAfter(FlywayAutoConfiguration::class)
 class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                          val oppdragStateService: OppdragStateService,
                          val meterRegistry: MeterRegistry,
@@ -119,17 +128,26 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                     log.info("soknad id ${key}")
                 }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> vedtak.tilUtbetaling(aktørTilFnrMapper) }
-                .mapValues { key: String, utbetaling -> oppdragStateService.saveOppdragState(
-                        OppdragStateDTO(soknadId = UUID.fromString(key),
-                                utbetalingsOppdrag = utbetaling))}
-                .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag)}
+                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktørId),vedtak) }
+                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
+                .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
+                .filter { _, value ->  value != null}
+                .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag!!)}
                 .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
-
 
         return builder.build()
     }
 
+    private fun saveInitialOppdragState(key: String, utbetaling: UtbetalingsOppdrag): OppdragStateDTO? {
+        return try { oppdragStateService.saveOppdragState(
+                OppdragStateDTO(soknadId = UUID.fromString(key),
+                        utbetalingsOppdrag = utbetaling))
+        }
+        catch (e: DuplicateKeyException) {
+            log.warn("skipping duplicate for key ${key}")
+            return null
+        }
+    }
 
 
     fun <K : Any, V : Any> StreamsBuilder.consumeTopic(topic: Topic<K, V>): KStream<K, V> {
@@ -157,10 +175,11 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
     }
 
     @Bean
-    fun streamConsumer(kafkaStreams: KafkaStreams) : StreamConsumer {
-        val consumer = StreamConsumer(env.appId, kafkaStreams)
-        consumer.start()
-        return consumer
+    fun streamConsumer(kafkaStreams: KafkaStreams, flywayMigrationInitializer: FlywayMigrationInitializer?) : StreamConsumer {
+        if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
+        val streamConsumer = StreamConsumer(env.appId, kafkaStreams)
+        streamConsumer.start()
+        return streamConsumer
     }
 
 

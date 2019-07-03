@@ -25,8 +25,8 @@ class SendToOSTask(val oppdragStateService: OppdragStateService, val utbetalingS
         oppdragList.forEach {
             try {
                 val updated = it.copy(status = OppdragStateStatus.SENDT_OS, avstemming = AvstemmingDTO())
-                utbetalingService.sendUtbetalingOppdragMQ(it)
                 oppdragStateService.saveOppdragState(updated)
+                utbetalingService.sendUtbetalingOppdragMQ(updated)
             }
             catch(e: Exception) {
                 log.error("Got exeption while sending ${it.soknadId}", e)
