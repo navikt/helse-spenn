@@ -14,12 +14,10 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.dao.DuplicateKeyException
 
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @DataJdbcTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
@@ -35,7 +33,7 @@ class OppdragStateRepositoryTest {
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling()
+        val utbetaling = vedtak.tilUtbetaling("12345678901")
         val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
                utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
         val dbState = repository.insert(state)
@@ -61,6 +59,7 @@ class OppdragStateRepositoryTest {
         println("avstemmingId: ${update.avstemming?.id} avstemmingnokkel: ${update.avstemming?.nokkel}")
         assertEquals(OppdragStateStatus.FERDIG, update.status)
         assertTrue(update.modified.isAfter(dbState.modified))
+        assertFailsWith<DuplicateKeyException>{repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))}
     }
 
 }

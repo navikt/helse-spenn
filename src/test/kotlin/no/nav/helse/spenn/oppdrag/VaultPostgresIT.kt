@@ -92,7 +92,7 @@ class VaultPostgresIT {
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling()
+        val utbetaling = vedtak.tilUtbetaling("12345678901")
         val state = OppdragStateDTO(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
                 utbetalingsOppdrag = utbetaling)
         val saved = service.saveOppdragState(state)

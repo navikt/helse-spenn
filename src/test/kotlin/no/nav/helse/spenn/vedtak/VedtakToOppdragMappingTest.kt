@@ -30,11 +30,11 @@ class VedtakToOppdragMappingTest {
         val målbilde = UtbetalingsOppdrag(
                 vedtak = defaultObjectMapper.convertValue(vedtak, JsonNode::class.java),
                 operasjon = AksjonsKode.OPPDATER,
-                oppdragGjelder = "some_dummy_fnr",
+                oppdragGjelder = "12345678901",
                 utbetalingsLinje = listOf(oppdragsLinje)
         )
 
-        val faktisk = vedtak.tilUtbetaling(LocalFnrMapper())
+        val faktisk = vedtak.tilUtbetaling("12345678901")
         Assertions.assertEquals(målbilde, faktisk)
     }
 
@@ -53,8 +53,4 @@ class VedtakToOppdragMappingTest {
                 ))
         )
     }
-}
-
-class LocalFnrMapper : AktørTilFnrMapper {
-    override fun tilFnr(aktørId: String): Fodselsnummer = "some_dummy_fnr"
 }
