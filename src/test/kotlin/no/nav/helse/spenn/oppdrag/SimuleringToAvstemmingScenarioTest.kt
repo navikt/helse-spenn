@@ -43,9 +43,9 @@ class SimuleringToAvstemmingScenarioTest {
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling()
+        val utbetaling = vedtak.tilUtbetaling("12345678901")
 
-        @Suppress("UNUSED_VARIABLE") val alleredeFerdigDummyOppdragForAtIdSekvenserIkkeSkalVaereISync = service.saveOppdragState(OppdragStateDTO(
+        service.saveOppdragState(OppdragStateDTO(
                 soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG
@@ -54,7 +54,7 @@ class SimuleringToAvstemmingScenarioTest {
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.SIMULERING_OK))
-        @Suppress("UNUSED_VARIABLE") val another = service.saveOppdragState(OppdragStateDTO(
+        service.saveOppdragState(OppdragStateDTO(
                 soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.SIMULERING_OK

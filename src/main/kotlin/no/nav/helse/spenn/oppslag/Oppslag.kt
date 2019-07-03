@@ -1,15 +1,15 @@
 package no.nav.helse.spenn.oppslag
 
 import no.nav.helse.spenn.Environment
-import no.nav.helse.spenn.vedtak.AktørTilFnrMapper
 import no.nav.helse.spenn.vedtak.Fodselsnummer
-import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 
 @Component
+@Profile(value=["preprod", "prod"])
 class FnrOppslag(val env: Environment, val stsRestClient: StsRestClient): AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer {
         val bearer = stsRestClient.token()
@@ -25,3 +25,14 @@ class FnrOppslag(val env: Environment, val stsRestClient: StsRestClient): Aktør
     }
 
 }
+
+@Component
+class DummyAktørMapper() : AktørTilFnrMapper {
+    override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
+}
+
+
+interface AktørTilFnrMapper {
+    fun tilFnr(aktørId: String): Fodselsnummer
+}
+
