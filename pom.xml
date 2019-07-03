@@ -38,7 +38,7 @@
         <ibm.mq.version>2.1.2</ibm.mq.version>
         <spring.cloud.version>2.1.1.RELEASE</spring.cloud.version>
         <postgres.version>42.2.5</postgres.version>
-        <testcontainers.version>1.11.2</testcontainers.version>
+        <testcontainers.version>1.11.3</testcontainers.version>
     </properties>
 
     <repositories>
@@ -278,6 +278,13 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-codegen-maven</artifactId>
