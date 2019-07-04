@@ -4,6 +4,7 @@ import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.apache.kafka.streams.KafkaStreams
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -14,6 +15,9 @@ import java.util.*
 class HealthStatusController(val streams: KafkaStreams, val oppdragStateService: OppdragStateService,
                              val utbetalingService: UtbetalingService) {
 
+    companion object {
+        private val LOG = LoggerFactory.getLogger(HealthStatusController::class.java)
+    }
     @GetMapping("/internal/isAlive")
     fun isAlive(): String {
         return "ALIVE"
@@ -36,7 +40,12 @@ class HealthStatusController(val streams: KafkaStreams, val oppdragStateService:
     @GetMapping("/internal/simulering/{soknadId}")
     fun simulering(@PathVariable soknadId: UUID): ResponseEntity<OppdragStateDTO> {
         val oppdrag = oppdragStateService.fetchOppdragState(soknadId)
-        utbetalingService.runSimulering(oppdrag)
+        try {
+            utbetalingService.runSimulering(oppdrag)
+        }
+        catch(e: Exception) {
+            LOG.error("feil i simulering",e)
+        }
         return ResponseEntity.ok(oppdrag)
     }
 }
