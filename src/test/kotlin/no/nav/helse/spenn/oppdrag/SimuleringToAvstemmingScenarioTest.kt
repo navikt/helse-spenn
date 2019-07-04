@@ -2,6 +2,10 @@ package no.nav.helse.spenn.oppdrag
 
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.MockClock
+import io.micrometer.core.instrument.simple.SimpleConfig
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
@@ -14,6 +18,7 @@ import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
@@ -36,7 +41,8 @@ class SimuleringToAvstemmingScenarioTest {
     @Autowired
     lateinit var repository: OppdragStateJooqRepository
 
-    val utbetalingServiceMock = Mockito.mock(UtbetalingService::class.java)
+    val mockUtbetalingService = mock(UtbetalingService::class.java)
+    val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     @Test
     fun afterSimuleringSendToOS() {
@@ -60,17 +66,16 @@ class SimuleringToAvstemmingScenarioTest {
                 status = OppdragStateStatus.SIMULERING_OK
         ))
         assertNotNull(simulering)
-        val sendToOSTask = SendToOSTask(oppdragStateService = service, utbetalingService = utbetalingServiceMock)
+        val sendToOSTask = SendToOSTask(oppdragStateService = service, utbetalingService = mockUtbetalingService,
+                meterRegistry = mockMeterRegistry)
         sendToOSTask.sendToOS()
         val avstemtList = service.fetchOppdragStateByAvstemtAndStatus(false, OppdragStateStatus.SENDT_OS)
         assertTrue(avstemtList.size>=2)
         val avstemming = avstemtList[0].avstemming
         assertNotNull(avstemming)
-        println("avstemming: ${avstemming.id} oppdragstateId: ${avstemming.oppdragStateId} nøkkel: ${avstemming.nokkel} avstemt: ${avstemming.avstemt}")
         val avstemming2 = avstemtList[1].avstemming
         assertNotNull(avstemming2)
         assertNotEquals(avstemming.oppdragStateId, avstemming2.oppdragStateId)
-        println("avstemming: ${avstemming2.id} oppdragstateId: ${avstemming2.oppdragStateId} nøkkel: ${avstemming2.nokkel} avstemt: ${avstemming2.avstemt}")
 
         val avstemt1 = avstemtList[0].let {
             it.copy(avstemming = it.avstemming!!.copy(avstemt = true))
