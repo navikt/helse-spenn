@@ -1,13 +1,18 @@
 package no.nav.helse.spenn.rest
 
+import no.nav.helse.spenn.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.apache.kafka.streams.KafkaStreams
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import java.util.*
 
 @RestController
-class HealthStatusController(val streams: KafkaStreams) {
+class HealthStatusController(val streams: KafkaStreams, val oppdragStateService: OppdragStateService,
+                             val utbetalingService: UtbetalingService) {
 
     @GetMapping("/internal/isAlive")
     fun isAlive(): String {
@@ -16,10 +21,10 @@ class HealthStatusController(val streams: KafkaStreams) {
 
     @GetMapping("/internal/isReady")
     fun isReady(): ResponseEntity<String> {
-        return if (streams.state().isRunning)
-            ResponseEntity.ok("READY")
-        else
-            ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Kafka state is not running")
+        //return if (streams.state().isRunning)
+            return ResponseEntity.ok("READY")
+        //else
+        //    ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Kafka state is not running")
     }
 
     @GetMapping("/internal/dependsOn")
@@ -28,4 +33,10 @@ class HealthStatusController(val streams: KafkaStreams) {
         return "Kafka state ${streams.state().name}"
     }
 
+    @GetMapping("/internal/simulering/{soknadId}")
+    fun simulering(@PathVariable soknadId: UUID): ResponseEntity<OppdragStateDTO> {
+        val oppdrag = oppdragStateService.fetchOppdragState(soknadId)
+        utbetalingService.runSimulering(oppdrag)
+        return ResponseEntity.ok(oppdrag)
+    }
 }
