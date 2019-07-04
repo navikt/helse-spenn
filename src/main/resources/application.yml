@@ -42,6 +42,6 @@ avstemming:
 
 kafka:
   offset-reset:
-    enabled: false
-    # 01.05.2019 (preprod har ok data)
-    timestamp-millis: 1556661600000
+    enabled: true
+    # 01.06.2019
+    timestamp-millis: 1559340000000
