@@ -26,22 +26,15 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
     fun sendToOS() {
         val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_OK)
         log.info("We are sending ${oppdragList.size} to OS")
-        var ok=0
-        var feil=0
+
         oppdragList.forEach {
-            try {
-                val updated = it.copy(status = OppdragStateStatus.SENDT_OS, avstemming = AvstemmingDTO())
-                oppdragStateService.saveOppdragState(updated)
-                utbetalingService.sendUtbetalingOppdragMQ(updated)
-                ok++
-            }
-            catch(e: Exception) {
-                log.error("Got exeption while sending ${it.soknadId}", e)
-                feil++
-            }
+            val updated = it.copy(status = OppdragStateStatus.SENDT_OS, avstemming = AvstemmingDTO())
+            oppdragStateService.saveOppdragState(updated)
+            utbetalingService.sendUtbetalingOppdragMQ(updated)
+            meterRegistry.counter(SENDT_TIL_OS,"status","ok").increment()
+
         }
-        meterRegistry.counter(SENDT_TIL_OS,"status","ok").increment(ok.toDouble())
-        meterRegistry.counter(SENDT_TIL_OS, "status", "feil").increment(feil.toDouble())
+
     }
 
 }

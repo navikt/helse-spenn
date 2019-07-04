@@ -43,8 +43,7 @@ import javax.annotation.PostConstruct
 
 @Configuration
 @AutoConfigureAfter(FlywayAutoConfiguration::class)
-class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
-                         val oppdragStateService: OppdragStateService,
+class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                          val meterRegistry: MeterRegistry,
                          val aktørTilFnrMapper: AktørTilFnrMapper,
                          val env: Environment,
@@ -132,7 +131,6 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                 .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
                 .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
                 .filter { _, value ->  value != null}
-                .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag!!)}
                 .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
 
         return builder.build()

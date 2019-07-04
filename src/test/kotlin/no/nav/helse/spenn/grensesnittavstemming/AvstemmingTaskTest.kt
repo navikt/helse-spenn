@@ -23,9 +23,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
-import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
+import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.jms.core.JmsTemplate
 import java.time.LocalDateTime
@@ -34,10 +32,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@DataJdbcTest(properties = ["VAULT_ENABLED=false",
+@JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
     "spring.test.database.replace=none"])
-@ImportAutoConfiguration(classes = [JooqAutoConfiguration::class])
 @ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
 class AvstemmingTaskTest {
 
