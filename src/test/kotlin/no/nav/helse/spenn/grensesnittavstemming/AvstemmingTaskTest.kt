@@ -94,7 +94,7 @@ class AvstemmingTaskTest {
                 soknadId = soknadKey3, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FEIL,
-                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "04"),
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FEIL, "04"),
                 avstemming = AvstemmingDTO(
                         id = 125L,
                         avstemt = false,
