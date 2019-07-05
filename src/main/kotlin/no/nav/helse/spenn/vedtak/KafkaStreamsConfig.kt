@@ -176,7 +176,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
     fun streamConsumer(kafkaStreams: KafkaStreams, flywayMigrationInitializer: FlywayMigrationInitializer?) : StreamConsumer {
         if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
         val streamConsumer = StreamConsumer(env.appId, kafkaStreams)
-        streamConsumer.start()
+        //streamConsumer.start()
         return streamConsumer
     }
 
