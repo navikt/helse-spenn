@@ -65,6 +65,7 @@ class AvstemmingTaskTest {
     fun testAtDetSendesLoggesOgOppdateresAvstemminger() {
         val soknadKey = UUID.randomUUID()
         val soknadKey2 = UUID.randomUUID()
+        val soknadKey3 = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling("12345678901")
@@ -73,6 +74,7 @@ class AvstemmingTaskTest {
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "00"),
                 avstemming = AvstemmingDTO(
                         id = 123L,
                         avstemt = false,
@@ -82,10 +84,21 @@ class AvstemmingTaskTest {
                 soknadId = soknadKey2, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "00"),
                 avstemming = AvstemmingDTO(
                         id = 124L,
                         avstemt = false,
                         nokkel = LocalDateTime.now().minusHours(2).plusMinutes(1)
+                )))
+        val oppdrag3 = service.saveOppdragState(OppdragStateDTO(
+                soknadId = soknadKey3, utbetalingsOppdrag = utbetaling,
+                simuleringResult = SimuleringResult(status = Status.OK),
+                status = OppdragStateStatus.FEIL,
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "04"),
+                avstemming = AvstemmingDTO(
+                        id = 125L,
+                        avstemt = false,
+                        nokkel = LocalDateTime.now().minusHours(2).plusMinutes(2)
                 )))
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
@@ -105,8 +118,12 @@ class AvstemmingTaskTest {
         assertEquals(AksjonType.START, sendteMeldinger.first().aksjon.aksjonType)
         sendteMeldinger[1].apply {
             assertEquals(AksjonType.DATA, this.aksjon.aksjonType)
-            assertEquals(2, this.total.totalAntall)
-            assertEquals(utbetaling.utbetalingsLinje.first().sats.toLong() * 2, this.total.totalBelop.toLong())
+            assertEquals(3, this.total.totalAntall)
+            assertEquals(2, this.grunnlag.godkjentAntall)
+            assertEquals(1, this.grunnlag.varselAntall)
+            assertEquals(0, this.grunnlag.avvistAntall)
+            assertEquals(0, this.grunnlag.manglerAntall)
+            assertEquals(utbetaling.utbetalingsLinje.first().sats.toLong() * 3, this.total.totalBelop.toLong())
         }
         assertEquals(AksjonType.AVSL, sendteMeldinger.last().aksjon.aksjonType)
 
@@ -116,7 +133,7 @@ class AvstemmingTaskTest {
         }
         assertEquals(1, loggMeldinger.size, "Det skal logges en linje med avleverendeAvstemmingId på INFO-nivå")
         assertTrue(loggMeldinger.first().message.contains("nokkelFom=${oppdrag1.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
-        assertTrue(loggMeldinger.first().message.contains("nokkelTom=${oppdrag2.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
+        assertTrue(loggMeldinger.first().message.contains("nokkelTom=${oppdrag3.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
 
         assertTrue(service.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now()).isEmpty(),
                 "Det skal ikke være igjen noen ikke-avstemte meldinger")
