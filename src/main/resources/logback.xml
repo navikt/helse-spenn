@@ -6,7 +6,8 @@
       </encoder>
    </appender>
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
-   <logger name="no.nav" level="DEBUG" />
+   <logger name="no.nav" level="INFO" />
+
    <logger name="org.jooq.Constants" level="ERROR" />
 
    <!-- remember to remove this when we go prod  -->

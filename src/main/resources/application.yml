@@ -22,6 +22,10 @@ jms.mq:
 
 scheduler:
   enabled: false
+  tasks:
+    simulering: true
+    avstemming: false
+    oppdrag: false
 
 ibm:
   mq:
@@ -43,5 +47,8 @@ avstemming:
 kafka:
   offset-reset:
     enabled: false
-    # 01.05.2019 (preprod har ok data)
-    timestamp-millis: 1556661600000
+    # 01.06.2019
+    timestamp-millis: 1559340000000
+  stream:
+    vedtak:
+      enabled: false
