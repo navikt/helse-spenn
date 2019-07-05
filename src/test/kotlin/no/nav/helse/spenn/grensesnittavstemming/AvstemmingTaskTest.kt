@@ -5,6 +5,9 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.micrometer.core.instrument.MockClock
+import io.micrometer.core.instrument.simple.SimpleConfig
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
@@ -40,6 +43,7 @@ class AvstemmingTaskTest {
 
     @Autowired
     lateinit var service: OppdragStateService
+    val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     @BeforeEach
     fun beforeEach() {
@@ -53,7 +57,7 @@ class AvstemmingTaskTest {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
             }
         }
-        val sendTilAvstemmingTask = SendTilAvstemmingTask(service, MockSender())
+        val sendTilAvstemmingTask = SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry)
         sendTilAvstemmingTask.sendTilAvstemming()
     }
 
@@ -94,7 +98,7 @@ class AvstemmingTaskTest {
 
         val loglog = createLogAppender()
 
-        SendTilAvstemmingTask(service, MockSender())
+        SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry)
                 .sendTilAvstemming()
 
         assertEquals(3, sendteMeldinger.size)
