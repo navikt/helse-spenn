@@ -2,7 +2,7 @@ package no.nav.helse.spenn.oppslag
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import no.nav.helse.spenn.Environment
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.ExchangeFilterFunctions
@@ -11,13 +11,15 @@ import java.time.LocalDateTime
 
 
 @Component
-class StsRestClient(val env: Environment) {
+class StsRestClient(@Value("\${SECURITY_TOKEN_SERVICE_REST_URL}") val stsRestUrl: String,
+                    @Value("\${STS_REST_USERNAME}") val stsRestUsername: String,
+                    @Value("\${STS_REST_PASSWORD}") val stsRestPassword: String) {
     private var cachedOidcToken: Token? = null
 
     fun token(): String {
         if (Token.shouldRenew(cachedOidcToken))  {
-           val webClient = WebClient.builder().baseUrl(env.stsRestUrl)
-                   .filter(ExchangeFilterFunctions.basicAuthentication(env.stsRestUsername, env.stsRestPassword))
+           val webClient = WebClient.builder().baseUrl(stsRestUrl)
+                   .filter(ExchangeFilterFunctions.basicAuthentication(stsRestUsername, stsRestPassword))
                    .build()
             cachedOidcToken = webClient.get().uri("/rest/v1/sts/token?grant_type=client_credentials&scope=openid")
                     .accept(MediaType.APPLICATION_JSON)

@@ -13,10 +13,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @EnableTransactionManagement
 @EnableScheduling
 class AppConfig {
-    @Bean
-    fun appEnv(): Environment {
-        return Environment()
-    }
 
     @Bean
     fun objectMapper(): ObjectMapper {
