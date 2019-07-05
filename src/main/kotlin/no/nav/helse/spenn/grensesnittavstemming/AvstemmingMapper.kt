@@ -158,7 +158,7 @@ class AvstemmingMapper(
 
 
     private fun avstemmingsnøkkelFor(oppdrag: OppdragStateDTO) =
-            oppdrag.avstemming!!.nokkel!!.format(avstemmingsnokkelFormatter)
+            oppdrag.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)
 
     private fun tilAksjonsdata(aksjonType: AksjonType): Aksjonsdata {
         val aksjonsdata = objectFactory.createAksjonsdata()

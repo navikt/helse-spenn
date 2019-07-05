@@ -43,13 +43,13 @@ import javax.annotation.PostConstruct
 
 @Configuration
 @AutoConfigureAfter(FlywayAutoConfiguration::class)
-class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
-                         val oppdragStateService: OppdragStateService,
+class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                          val meterRegistry: MeterRegistry,
                          val aktørTilFnrMapper: AktørTilFnrMapper,
                          val env: Environment,
                          @Value("\${kafka.offset-reset.timestamp-millis}") val timeStampMillis: Long,
-                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String) {
+                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String,
+                         @Value("\${kafka.stream.vedtak.enabled:true}") val streamVedtak: Boolean) {
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
@@ -132,7 +132,6 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                 .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
                 .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
                 .filter { _, value ->  value != null}
-                .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag!!)}
                 .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
 
         return builder.build()
@@ -178,7 +177,7 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
     fun streamConsumer(kafkaStreams: KafkaStreams, flywayMigrationInitializer: FlywayMigrationInitializer?) : StreamConsumer {
         if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
         val streamConsumer = StreamConsumer(env.appId, kafkaStreams)
-        //streamConsumer.start()
+        if (streamVedtak) streamConsumer.start()
         return streamConsumer
     }
 
