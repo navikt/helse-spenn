@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 
 
 @Component
-@ConditionalOnProperty(name = ["scheduler.enabled"], havingValue = "true")
+@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.oppdrag"], havingValue = "true")
 class SendToOSTask(val oppdragStateService: OppdragStateService,
                    val utbetalingService: UtbetalingService,
                    val meterRegistry: MeterRegistry) {

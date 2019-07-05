@@ -48,7 +48,8 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                          val aktørTilFnrMapper: AktørTilFnrMapper,
                          val env: Environment,
                          @Value("\${kafka.offset-reset.timestamp-millis}") val timeStampMillis: Long,
-                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String) {
+                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String,
+                         @Value("\${kafka.stream.vedtak.enabled:true}") val streamVedtak: Boolean) {
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
@@ -176,7 +177,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
     fun streamConsumer(kafkaStreams: KafkaStreams, flywayMigrationInitializer: FlywayMigrationInitializer?) : StreamConsumer {
         if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
         val streamConsumer = StreamConsumer(env.appId, kafkaStreams)
-        //streamConsumer.start()
+        if (streamVedtak) streamConsumer.start()
         return streamConsumer
     }
 

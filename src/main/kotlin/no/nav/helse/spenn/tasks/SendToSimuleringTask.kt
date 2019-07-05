@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.simulering"], havingValue = "true")
+@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
 class SendToSimuleringTask(val utbetalingService: UtbetalingService,
                        val oppdragStateService: OppdragStateService,
                        val meterRegistry: MeterRegistry) {

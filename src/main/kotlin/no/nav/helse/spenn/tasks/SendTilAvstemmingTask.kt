@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 
 
 @Component
-@ConditionalOnProperty(name = ["scheduler.enabled"], havingValue = "true")
+@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.avstemming"], havingValue = "true")
 class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
                         val avstemmingMQSender: AvstemmingMQSender) {
 

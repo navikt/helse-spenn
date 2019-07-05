@@ -22,6 +22,10 @@ jms.mq:
 
 scheduler:
   enabled: false
+  tasks:
+    simulering: true
+    avstemming: false
+    oppdrag: false
 
 ibm:
   mq:
@@ -45,3 +49,6 @@ kafka:
     enabled: false
     # 01.06.2019
     timestamp-millis: 1559340000000
+  stream:
+    vedtak:
+      enabled: false
