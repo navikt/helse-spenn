@@ -12,10 +12,10 @@ import org.apache.cxf.frontend.ClientProxy
 import org.apache.cxf.transport.http.HTTPConduit
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaaDetaljer
-import org.apache.cxf.binding.soap.SoapFault
 import java.time.LocalDate
 
 import org.slf4j.LoggerFactory
+
 
 import org.springframework.stereotype.Service
 import java.io.StringWriter
@@ -24,6 +24,7 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
+import javax.xml.ws.soap.SOAPFaultException
 
 @Service
 class SimuleringService(val simulerFpService: SimulerFpService) {
@@ -44,9 +45,9 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
             log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
             SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
         }
-        catch (e: SoapFault) {
+        catch (e: SOAPFaultException) {
             log.error("Got soap exception", e)
-            log.error("reason ${e.reason} code ${e.code} message: ${e.message}")
+            log.error("fault ${e.fault} code: ${e.fault.faultCode} message: ${e.fault.faultString}")
             throw e
         }
 
