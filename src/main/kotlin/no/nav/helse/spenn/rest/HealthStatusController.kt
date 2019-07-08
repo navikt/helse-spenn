@@ -38,14 +38,15 @@ class HealthStatusController(val streams: KafkaStreams, val oppdragStateService:
     }
 
     @GetMapping("/internal/simulering/{soknadId}")
-    fun simulering(@PathVariable soknadId: UUID): ResponseEntity<OppdragStateDTO> {
+    fun simulering(@PathVariable soknadId: UUID): ResponseEntity<String> {
         val oppdrag = oppdragStateService.fetchOppdragState(soknadId)
         try {
-            utbetalingService.runSimulering(oppdrag)
+            val result = utbetalingService.runSimulering(oppdrag)
+            return ResponseEntity.ok("Result of simulering ${result.simuleringResult?.status} feilmelding ${result.simuleringResult?.feilMelding}")
         }
         catch(e: Exception) {
             LOG.error("feil i simulering",e)
+            return ResponseEntity.badRequest().body("bad request")
         }
-        return ResponseEntity.ok(oppdrag)
     }
 }

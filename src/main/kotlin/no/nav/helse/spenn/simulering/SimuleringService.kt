@@ -16,15 +16,10 @@ import java.time.LocalDate
 
 import org.slf4j.LoggerFactory
 
-
 import org.springframework.stereotype.Service
 import java.io.StringWriter
-import java.security.cert.X509Certificate
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
-import javax.xml.ws.soap.SOAPFaultException
 
 @Service
 class SimuleringService(val simulerFpService: SimulerFpService) {
@@ -38,17 +33,11 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         dumpXML(simulerRequest)
         return try {
             val response = simulerFpService.simulerBeregning(simulerRequest)
-            dumpXML(response)
             mapResponseToResultat(response.response)
         }
         catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
             SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
-        }
-        catch (e: SOAPFaultException) {
-            log.error("Got soap exception", e)
-            log.error("fault ${e.fault} code: ${e.fault.faultCode} message: ${e.fault.faultString}")
-            throw e
         }
 
     }
@@ -66,9 +55,9 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         val simulering = response.simulering
 
         return SimuleringResult(status = Status.OK, mottaker =
-                Mottaker(gjelderId = simulering.gjelderId, gjelderNavn = simulering.gjelderNavn.trim(),
-                        datoBeregnet = simulering.datoBeregnet, totalBelop = simulering.belop,
-                        periodeList = mapPeriodeList(simulering.beregningsPeriode)))
+        Mottaker(gjelderId = simulering.gjelderId, gjelderNavn = simulering.gjelderNavn.trim(),
+                datoBeregnet = simulering.datoBeregnet, totalBelop = simulering.belop,
+                periodeList = mapPeriodeList(simulering.beregningsPeriode)))
     }
 
     private fun mapPeriodeList(beregningsPeriode: List<BeregningsPeriode>): List<Periode> {
@@ -91,31 +80,11 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
 
     private fun disableCnCheck(port: SimulerFpService) {
         val client = ClientProxy.getClient(port)
-        val tmpTrust = Array<TrustManager>(1){
-            TmpTrustManager()
-        }
         val conduit = client.conduit as HTTPConduit
         conduit.tlsClientParameters = TLSClientParameters().apply {
             isDisableCNCheck = true
-            secureSocketProtocol = "TLS"
-            keyManagers = arrayOfNulls(0)
-            trustManagers = tmpTrust
-
         }
     }
-}
 
-private class TmpTrustManager : X509TrustManager {
 
-    override fun getAcceptedIssuers(): Array<X509Certificate?> {
-        return arrayOfNulls<X509Certificate>(0)
-    }
-
-    override fun checkClientTrusted(certs: Array<X509Certificate>,
-                                    authType: String) {
-    }
-
-    override fun checkServerTrusted(certs: Array<X509Certificate>,
-                                    authType: String) {
-    }
 }
