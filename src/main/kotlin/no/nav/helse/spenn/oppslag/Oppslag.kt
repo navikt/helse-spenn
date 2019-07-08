@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppslag
 
-import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.vedtak.Fodselsnummer
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -10,10 +10,12 @@ import java.util.*
 
 @Component
 @Profile(value=["preprod", "prod"])
-class FnrOppslag(val env: Environment, val stsRestClient: StsRestClient): AktørTilFnrMapper {
+class FnrOppslag(val stsRestClient: StsRestClient,
+                @Value("\${SPARKEL_BASE_URL:http://sparkel}") val sparkelBaseUrl: String): AktørTilFnrMapper {
+
     override fun tilFnr(aktørId: String): Fodselsnummer {
         val bearer = stsRestClient.token()
-        val webClient = WebClient.builder().baseUrl(env.sparkelBaseUrl).build()
+        val webClient = WebClient.builder().baseUrl(sparkelBaseUrl).build()
         return webClient.get()
                 .uri("/api/aktor/$aktørId/fnr")
                 .accept(MediaType.APPLICATION_JSON)

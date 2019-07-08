@@ -3,7 +3,6 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.metrics.VEDTAK
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
@@ -43,13 +42,19 @@ import javax.annotation.PostConstruct
 
 @Configuration
 @AutoConfigureAfter(FlywayAutoConfiguration::class)
-class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
-                         val oppdragStateService: OppdragStateService,
+class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                          val meterRegistry: MeterRegistry,
                          val aktørTilFnrMapper: AktørTilFnrMapper,
-                         val env: Environment,
+                         @Value("\${KAFKA_BOOTSTRAP_SERVERS}") val bootstrapServersUrl: String,
+                         @Value("\${KAFKA_APP_ID:spenn-1}")val appId: String,
+                         @Value("\${KAFKA_USERNAME}") val kafkaUsername: String,
+                         @Value("\${KAFKA_PASSWORD}") val kafkaPassword: String,
+                         @Value("\${NAV_TRUSTSTORE_PATH}") val navTruststorePath: String,
+                         @Value("\${NAV_TRUSTSTORE_PASSWORD}") val navTruststorePassword: String,
+                         @Value("\${PLAIN_TEXT_KAFKA:false}") val plainTextKafka: String,
                          @Value("\${kafka.offset-reset.timestamp-millis}") val timeStampMillis: Long,
-                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String) {
+                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String,
+                         @Value("\${kafka.stream.vedtak.enabled:true}") val streamVedtak: Boolean) {
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
@@ -60,20 +65,20 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
         if ("true" == offsetReset) {
             log.info("Running offset reset of ${VEDTAK_SYKEPENGER.name} to ${timeStampMillis}")
             val configProperties = Properties()
-            configProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, env.bootstrapServersUrl)
+            configProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServersUrl)
             configProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
             configProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-            configProperties.put(ConsumerConfig.GROUP_ID_CONFIG, env.appId)
+            configProperties.put(ConsumerConfig.GROUP_ID_CONFIG, appId)
             configProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,false)
             configProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest")
-            if ("false" == env.plainTextKafka) {
+            if ("false" == plainTextKafka) {
                 configProperties.put(SaslConfigs.SASL_MECHANISM, "PLAIN")
                 configProperties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
                 configProperties.put(SaslConfigs.SASL_JAAS_CONFIG,
-                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${env.kafkaUsername}\" password=\"${env.kafkaPassword}\";")
+                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${kafkaUsername}\" password=\"${kafkaPassword}\";")
                 configProperties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL")
-                configProperties.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, File(env.navTruststorePath).absolutePath)
-                configProperties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, env.navTruststorePassword)
+                configProperties.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, File(navTruststorePath).absolutePath)
+                configProperties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, navTruststorePassword)
             }
             val offsetConsumer = KafkaConsumer<String, String>(configProperties)
             offsetConsumer.subscribe(listOf(VEDTAK_SYKEPENGER.name),  object: ConsumerRebalanceListener {
@@ -113,9 +118,9 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
 
     @Bean
     fun kafkaStreams(topology: Topology) : KafkaStreams {
-        val streamConfig = if ("true" == env.plainTextKafka) streamConfigPlainTextKafka() else streamConfig(env.appId, env.bootstrapServersUrl,
-                env.kafkaUsername to env.kafkaPassword,
-                env.navTruststorePath to env.navTruststorePassword)
+        val streamConfig = if ("true" == plainTextKafka) streamConfigPlainTextKafka() else streamConfig(appId, bootstrapServersUrl,
+                kafkaUsername to kafkaPassword,
+                navTruststorePath to navTruststorePassword)
         return KafkaStreams(topology, streamConfig)
     }
 
@@ -132,7 +137,6 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
                 .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
                 .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
                 .filter { _, value ->  value != null}
-                .mapValues { _, oppdrag -> utbetalingService.runSimulering(oppdrag!!)}
                 .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
 
         return builder.build()
@@ -177,16 +181,16 @@ class KafkaStreamsConfig(val utbetalingService: UtbetalingService,
     @Bean
     fun streamConsumer(kafkaStreams: KafkaStreams, flywayMigrationInitializer: FlywayMigrationInitializer?) : StreamConsumer {
         if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
-        val streamConsumer = StreamConsumer(env.appId, kafkaStreams)
-        //streamConsumer.start()
+        val streamConsumer = StreamConsumer(appId, kafkaStreams)
+        if (streamVedtak) streamConsumer.start()
         return streamConsumer
     }
 
 
     private fun streamConfigPlainTextKafka(): Properties = Properties().apply {
         log.warn("Using kafka plain text config only works in development!")
-        put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, env.bootstrapServersUrl)
-        put(StreamsConfig.APPLICATION_ID_CONFIG, env.appId)
+        put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServersUrl)
+        put(StreamsConfig.APPLICATION_ID_CONFIG, appId)
         put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndFailExceptionHandler::class.java)
     }

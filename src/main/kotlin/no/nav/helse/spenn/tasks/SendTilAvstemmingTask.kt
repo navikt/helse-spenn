@@ -1,9 +1,11 @@
 package no.nav.helse.spenn.tasks
 
+import io.micrometer.core.instrument.MeterRegistry
 import net.javacrumbs.shedlock.core.SchedulerLock
 import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.grensesnittavstemming.AvstemmingMapper
+import no.nav.helse.spenn.metrics.AVSTEMMING
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -13,9 +15,10 @@ import java.time.LocalDateTime
 
 
 @Component
-@ConditionalOnProperty(name = ["scheduler.enabled"], havingValue = "true")
+@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.avstemming"], havingValue = "true")
 class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
-                        val avstemmingMQSender: AvstemmingMQSender) {
+                            val avstemmingMQSender: AvstemmingMQSender,
+                            val meterRegistry: MeterRegistry) {
 
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
 
@@ -43,6 +46,17 @@ class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
                 return
             }
         }
+        try {
+            meldinger[1].grunnlag.apply {
+                meterRegistry.counter(AVSTEMMING, "type", "godkjent").increment(this.godkjentAntall.toDouble())
+                meterRegistry.counter(AVSTEMMING, "type", "avvist").increment(this.avvistAntall.toDouble())
+                meterRegistry.counter(AVSTEMMING, "type", "mangler").increment(this.manglerAntall.toDouble())
+                meterRegistry.counter(AVSTEMMING, "type", "varsel").increment(this.varselAntall.toDouble())
+            }
+        } catch (e : Exception) {
+            log.error("Error registering metrics", e)
+        }
+
 
         oppdragList.forEach {
             val newState = it.copy(avstemming = it.avstemming!!.copy(avstemt = true))

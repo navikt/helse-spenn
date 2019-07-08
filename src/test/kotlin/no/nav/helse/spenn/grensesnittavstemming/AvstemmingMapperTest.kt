@@ -129,6 +129,22 @@ class AvstemmingMapperTest {
     /////////////////////
     /////////////////////
 
+    companion object {
+        internal fun lagOppdragResponseXml(fagsystemId:String, status: OppdragStateStatus, alvorlighetsgrad: String) : String? {
+            if (status == OppdragStateStatus.SENDT_OS) {
+                return null
+            }
+            val kvittering = Oppdrag()
+            kvittering.mmel = Mmel()
+            kvittering.mmel.kodeMelding = "Melding"
+            kvittering.mmel.alvorlighetsgrad = alvorlighetsgrad
+            kvittering.mmel.beskrMelding = "Beskrivelse"
+            kvittering.oppdrag110 = Oppdrag110()
+            kvittering.oppdrag110.fagsystemId = fagsystemId
+            return JAXBOppdrag().fromOppdragToXml(kvittering)
+        }
+    }
+
     private fun satsSum(oppdrag: OppdragStateDTO) =
         oppdrag.utbetalingsOppdrag.utbetalingsLinje.map {
             it.sats.toLong()
@@ -180,19 +196,6 @@ class AvstemmingMapperTest {
                 JAXBOppdrag().toOppdrag(it)
             }
 
-    private fun lagOppdragResponseXml(fagsystemId:String, status: OppdragStateStatus, alvorlighetsgrad: String) : String? {
-        if (status == OppdragStateStatus.SENDT_OS) {
-            return null
-        }
-        val kvittering = Oppdrag()
-        kvittering.mmel = Mmel()
-        kvittering.mmel.kodeMelding = "Melding"
-        kvittering.mmel.alvorlighetsgrad = alvorlighetsgrad
-        kvittering.mmel.beskrMelding = "Beskrivelse"
-        kvittering.oppdrag110 = Oppdrag110()
-        kvittering.oppdrag110.fagsystemId = fagsystemId
-        return JAXBOppdrag().fromOppdragToXml(kvittering)
-    }
 
     private fun lagOppdrag(status: OppdragStateStatus = OppdragStateStatus.FERDIG,
                            alvorlighetsgrad: String = "00",

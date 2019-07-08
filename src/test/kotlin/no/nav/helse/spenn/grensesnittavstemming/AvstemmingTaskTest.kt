@@ -5,6 +5,9 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.micrometer.core.instrument.MockClock
+import io.micrometer.core.instrument.simple.SimpleConfig
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
@@ -23,9 +26,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
-import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
-import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
+import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.jms.core.JmsTemplate
 import java.time.LocalDateTime
@@ -34,15 +35,15 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@DataJdbcTest(properties = ["VAULT_ENABLED=false",
+@JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
     "spring.test.database.replace=none"])
-@ImportAutoConfiguration(classes = [JooqAutoConfiguration::class])
 @ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
 class AvstemmingTaskTest {
 
     @Autowired
     lateinit var service: OppdragStateService
+    val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     @BeforeEach
     fun beforeEach() {
@@ -56,7 +57,7 @@ class AvstemmingTaskTest {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
             }
         }
-        val sendTilAvstemmingTask = SendTilAvstemmingTask(service, MockSender())
+        val sendTilAvstemmingTask = SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry)
         sendTilAvstemmingTask.sendTilAvstemming()
     }
 
@@ -64,6 +65,7 @@ class AvstemmingTaskTest {
     fun testAtDetSendesLoggesOgOppdateresAvstemminger() {
         val soknadKey = UUID.randomUUID()
         val soknadKey2 = UUID.randomUUID()
+        val soknadKey3 = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
         val utbetaling = vedtak.tilUtbetaling("12345678901")
@@ -72,6 +74,7 @@ class AvstemmingTaskTest {
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "00"),
                 avstemming = AvstemmingDTO(
                         id = 123L,
                         avstemt = false,
@@ -81,10 +84,21 @@ class AvstemmingTaskTest {
                 soknadId = soknadKey2, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "00"),
                 avstemming = AvstemmingDTO(
                         id = 124L,
                         avstemt = false,
                         nokkel = LocalDateTime.now().minusHours(2).plusMinutes(1)
+                )))
+        val oppdrag3 = service.saveOppdragState(OppdragStateDTO(
+                soknadId = soknadKey3, utbetalingsOppdrag = utbetaling,
+                simuleringResult = SimuleringResult(status = Status.OK),
+                status = OppdragStateStatus.FEIL,
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FEIL, "04"),
+                avstemming = AvstemmingDTO(
+                        id = 125L,
+                        avstemt = false,
+                        nokkel = LocalDateTime.now().minusHours(2).plusMinutes(2)
                 )))
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
@@ -97,15 +111,19 @@ class AvstemmingTaskTest {
 
         val loglog = createLogAppender()
 
-        SendTilAvstemmingTask(service, MockSender())
+        SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry)
                 .sendTilAvstemming()
 
         assertEquals(3, sendteMeldinger.size)
         assertEquals(AksjonType.START, sendteMeldinger.first().aksjon.aksjonType)
         sendteMeldinger[1].apply {
             assertEquals(AksjonType.DATA, this.aksjon.aksjonType)
-            assertEquals(2, this.total.totalAntall)
-            assertEquals(utbetaling.utbetalingsLinje.first().sats.toLong() * 2, this.total.totalBelop.toLong())
+            assertEquals(3, this.total.totalAntall)
+            assertEquals(2, this.grunnlag.godkjentAntall)
+            assertEquals(1, this.grunnlag.varselAntall)
+            assertEquals(0, this.grunnlag.avvistAntall)
+            assertEquals(0, this.grunnlag.manglerAntall)
+            assertEquals(utbetaling.utbetalingsLinje.first().sats.toLong() * 3, this.total.totalBelop.toLong())
         }
         assertEquals(AksjonType.AVSL, sendteMeldinger.last().aksjon.aksjonType)
 
@@ -115,7 +133,7 @@ class AvstemmingTaskTest {
         }
         assertEquals(1, loggMeldinger.size, "Det skal logges en linje med avleverendeAvstemmingId på INFO-nivå")
         assertTrue(loggMeldinger.first().message.contains("nokkelFom=${oppdrag1.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
-        assertTrue(loggMeldinger.first().message.contains("nokkelTom=${oppdrag2.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
+        assertTrue(loggMeldinger.first().message.contains("nokkelTom=${oppdrag3.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)}"))
 
         assertTrue(service.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now()).isEmpty(),
                 "Det skal ikke være igjen noen ikke-avstemte meldinger")

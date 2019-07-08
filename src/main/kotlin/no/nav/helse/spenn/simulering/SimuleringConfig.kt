@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.spenn.Environment
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12
@@ -17,10 +16,14 @@ import org.apache.cxf.ws.policy.attachment.reference.RemoteReferenceResolver
 import org.apache.cxf.ws.security.SecurityConstants
 import org.apache.cxf.ws.security.trust.STSClient
 import org.apache.neethi.Policy
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 
 @Configuration
-class SimuleringConfig(val appEnv: Environment) {
+class SimuleringConfig(@Value("\${SIMULERING_SERVICE_URL}") val simuleringServiceUrl: String,
+                       @Value("\${SECURITYTOKENSERVICE_URL}") val stsUrl: String,
+                       @Value("\${STS_SOAP_USERNAME}") val stsUsername: String,
+                       @Value("\${STS_SOAP_PASSWORD}") val stsPassword: String) {
     private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerFpServiceWSBinding.wsdl"
     private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
     private val SERVICE = QName(NAMESPACE, "simulerFpService")
@@ -31,7 +34,7 @@ class SimuleringConfig(val appEnv: Environment) {
     @Bean
     fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
         val factory = JaxWsProxyFactoryBean().apply {
-            address = appEnv.simuleringServiceUrl
+            address = simuleringServiceUrl
             wsdlURL = WSDL
             serviceName = SERVICE
             endpointName = PORT
@@ -44,10 +47,10 @@ class SimuleringConfig(val appEnv: Environment) {
                 isEnableAppliesTo = false
                 isAllowRenewing = false
 
-                location = appEnv.stsUrl
+                location = stsUrl
                 properties = mapOf(
-                        SecurityConstants.USERNAME to appEnv.stsUsername,
-                        SecurityConstants.PASSWORD to appEnv.stsPassword
+                        SecurityConstants.USERNAME to stsUsername,
+                        SecurityConstants.PASSWORD to stsPassword
                 )
                 setPolicy(bus.resolvePolicy(STS_CLIENT_AUTHENTICATION_POLICY))
             }
