@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory
 
 import org.springframework.stereotype.Service
 import java.io.StringWriter
+import java.security.cert.X509Certificate
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 
@@ -33,6 +36,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         dumpXML(simulerRequest)
         return try {
             val response = simulerFpService.simulerBeregning(simulerRequest)
+            dumpXML(response)
             mapResponseToResultat(response.response)
         }
         catch (e: SimulerBeregningFeilUnderBehandling) {
@@ -80,11 +84,31 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
 
     private fun disableCnCheck(port: SimulerFpService) {
         val client = ClientProxy.getClient(port)
+        val tmpTrust = Array<TrustManager>(1){
+            TmpTrustManager()
+        }
         val conduit = client.conduit as HTTPConduit
         conduit.tlsClientParameters = TLSClientParameters().apply {
             isDisableCNCheck = true
+            secureSocketProtocol = "TLS"
+            keyManagers = arrayOfNulls(0)
+            trustManagers = tmpTrust
+
         }
     }
+}
 
+private class TmpTrustManager : X509TrustManager {
 
+    override fun getAcceptedIssuers(): Array<X509Certificate?> {
+        return arrayOfNulls<X509Certificate>(0)
+    }
+
+    override fun checkClientTrusted(certs: Array<X509Certificate>,
+                                    authType: String) {
+    }
+
+    override fun checkServerTrusted(certs: Array<X509Certificate>,
+                                    authType: String) {
+    }
 }
