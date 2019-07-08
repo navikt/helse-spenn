@@ -16,6 +16,7 @@ import org.apache.cxf.ws.policy.attachment.reference.RemoteReferenceResolver
 import org.apache.cxf.ws.security.SecurityConstants
 import org.apache.cxf.ws.security.trust.STSClient
 import org.apache.neethi.Policy
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 
@@ -31,8 +32,13 @@ class SimuleringConfig(@Value("\${SIMULERING_SERVICE_URL}") val simuleringServic
     private val STS_CLIENT_AUTHENTICATION_POLICY = "classpath:untPolicy.xml"
     private val STS_SAML_POLICY = "classpath:requestSamlPolicy.xml"
 
+    companion object {
+        private val log = LoggerFactory.getLogger(SimuleringConfig::class.java)
+    }
+
     @Bean
     fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
+        log.info("using simuleringservice url ${simuleringServiceUrl}")
         val factory = JaxWsProxyFactoryBean().apply {
             address = simuleringServiceUrl
             wsdlURL = WSDL

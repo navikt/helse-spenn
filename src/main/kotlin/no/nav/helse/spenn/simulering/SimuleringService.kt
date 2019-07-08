@@ -12,6 +12,7 @@ import org.apache.cxf.frontend.ClientProxy
 import org.apache.cxf.transport.http.HTTPConduit
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaaDetaljer
+import org.apache.cxf.binding.soap.SoapFault
 import java.time.LocalDate
 
 import org.slf4j.LoggerFactory
@@ -42,6 +43,11 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
             SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
+        }
+        catch (e: SoapFault) {
+            log.error("Got soap exception", e)
+            log.error("reason ${e.reason} code ${e.code} message: ${e.message}")
+            throw e
         }
 
     }
