@@ -51,4 +51,4 @@ kafka:
     timestamp-millis: 1559340000000
   stream:
     vedtak:
-      enabled: false
+      enabled: true
