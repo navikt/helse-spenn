@@ -33,8 +33,8 @@ class OppdragStateService(val repository: OppdragStateRepository) {
     }
 
     @Transactional(readOnly = true)
-    fun fetchOppdragStateByStatus(status: OppdragStateStatus): List<OppdragStateDTO> {
-        return repository.findAllByStatus(status).map { toDTO(it) }
+    fun fetchOppdragStateByStatus(status: OppdragStateStatus, limit: Int): List<OppdragStateDTO> {
+        return repository.findAllByStatus(status, limit).map { toDTO(it) }
     }
 
     @Transactional(readOnly = true)

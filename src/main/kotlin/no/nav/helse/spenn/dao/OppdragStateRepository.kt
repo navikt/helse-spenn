@@ -11,7 +11,7 @@ interface OppdragStateRepository {
 
     fun findAll(): List<OppdragState>
 
-    fun findAllByStatus(status: OppdragStateStatus): List<OppdragState>
+    fun findAllByStatus(status: OppdragStateStatus, limit: Int): List<OppdragState>
 
     fun findAllByAvstemtAndStatus(avstemt: Boolean, status: OppdragStateStatus): List<OppdragState>
 

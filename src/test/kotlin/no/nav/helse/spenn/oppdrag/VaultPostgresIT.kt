@@ -97,7 +97,7 @@ class VaultPostgresIT {
                 utbetalingsOppdrag = utbetaling)
         val saved = service.saveOppdragState(state)
         assertNotNull(saved)
-        val fetched = service.fetchOppdragStateByStatus(OppdragStateStatus.STARTET)
+        val fetched = service.fetchOppdragStateByStatus(OppdragStateStatus.STARTET,100)
         assertNotNull(fetched)
         assertEquals(fetched.size,1)
     }

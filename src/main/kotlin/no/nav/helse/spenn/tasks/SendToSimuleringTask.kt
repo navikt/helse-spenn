@@ -11,6 +11,7 @@ import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.Status
 import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -19,7 +20,8 @@ import org.springframework.stereotype.Component
 @ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
 class SendToSimuleringTask(val utbetalingService: UtbetalingService,
                        val oppdragStateService: OppdragStateService,
-                       val meterRegistry: MeterRegistry) {
+                       val meterRegistry: MeterRegistry,
+                       @Value("\${scheduler.tasks.simulering.limit:100}") val limit: Int = 100) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(SendToSimuleringTask::class.java)
@@ -29,7 +31,7 @@ class SendToSimuleringTask(val utbetalingService: UtbetalingService,
     @SchedulerLock(name = "sendToSimulering")
     fun sendSimulering() {
         LOG.info("Running SendToSimulering task")
-        val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.STARTET)
+        val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, limit)
         LOG.info("Got ${oppdragList.size} items for simulering")
         oppdragList.forEach {
             val updated = oppdragStateService.saveOppdragState(utbetalingService.runSimulering(it))

@@ -63,9 +63,10 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     }
 
     @Transactional(readOnly = true)
-    override fun findAllByStatus(status: OppdragStateStatus): List<OppdragState> {
+    override fun findAllByStatus(status: OppdragStateStatus, limit: Int): List<OppdragState> {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.STATUS.equal(status.name))
+                .limit(limit)
                 .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
     }
 
@@ -152,7 +153,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     }
 }
 
-fun LocalDateTime?.toTimeStamp(): Timestamp? {
+private fun LocalDateTime?.toTimeStamp(): Timestamp? {
    return  if (this != null ) Timestamp.valueOf(this) else null
 }
 

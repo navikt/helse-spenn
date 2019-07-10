@@ -8,6 +8,7 @@ import no.nav.helse.spenn.metrics.SENDT_TIL_OS
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -17,14 +18,15 @@ import org.springframework.stereotype.Component
 @ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.oppdrag"], havingValue = "true")
 class SendToOSTask(val oppdragStateService: OppdragStateService,
                    val utbetalingService: UtbetalingService,
-                   val meterRegistry: MeterRegistry) {
+                   val meterRegistry: MeterRegistry,
+                   @Value("\${scheduler.tasks.oppdrag.limit}") val limit: Int = 100) {
 
     private val log = LoggerFactory.getLogger(SendToOSTask::class.java)
 
     @Scheduled(cron = "59 * * * * *")
     @SchedulerLock(name = "sendToOS")
     fun sendToOS() {
-        val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_OK)
+        val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_OK,limit)
         log.info("We are sending ${oppdragList.size} to OS")
 
         oppdragList.forEach {
