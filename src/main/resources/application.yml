@@ -21,7 +21,7 @@ jms.mq:
   enabled: false
 
 scheduler:
-  enabled: false
+  enabled: true
   tasks:
     simulering: true
     avstemming: false
