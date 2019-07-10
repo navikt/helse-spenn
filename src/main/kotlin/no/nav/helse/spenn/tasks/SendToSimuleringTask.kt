@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.util.concurrent.atomic.AtomicLong
+import javax.annotation.PostConstruct
 
 @Component
 @ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
@@ -23,10 +25,18 @@ class SendToSimuleringTask(val utbetalingService: UtbetalingService,
                        val meterRegistry: MeterRegistry,
                        @Value("\${scheduler.tasks.simulering.limit:100}") val limit: Int = 100) {
 
+    private val maksBelopGauge = AtomicLong(0)
+
     companion object {
         private val LOG = LoggerFactory.getLogger(SendToSimuleringTask::class.java)
     }
 
+    @PostConstruct
+    fun init() {
+        LOG.info("init gauge maksBeløp")
+        meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, maksBelopGauge)
+    }
+    
     @Scheduled(cron = "30 * * * * *")
     @SchedulerLock(name = "sendToSimulering")
     fun sendSimulering() {
@@ -44,7 +54,7 @@ class SendToSimuleringTask(val utbetalingService: UtbetalingService,
         if (oppdrag.simuleringResult != null) {
             if (oppdrag.simuleringResult.status == Status.OK) {
                 meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(oppdrag.simuleringResult.mottaker!!.totalBelop.toDouble())
-                meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, oppdrag.simuleringResult.mottaker.totalBelop)
+                maksBelopGauge.set(oppdrag.simuleringResult.mottaker.totalBelop.toLong())
             }
             meterRegistry.counter(SIMULERING, "status", oppdrag.simuleringResult.status.name).increment()
         }
