@@ -137,7 +137,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
                 .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
                 .filter { _, value ->  value != null}
-                .peek {_,_ -> meterRegistry.counter(VEDTAK).increment() }
+                .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
 
         return builder.build()
     }
@@ -149,6 +149,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         }
         catch (e: DuplicateKeyException) {
             log.warn("skipping duplicate for key ${key}")
+            meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
             return null
         }
     }
