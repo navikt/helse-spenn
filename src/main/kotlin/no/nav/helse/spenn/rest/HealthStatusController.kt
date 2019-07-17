@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.rest
 
 import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
@@ -42,7 +41,8 @@ class HealthStatusController(val streams: KafkaStreams, val oppdragStateService:
         val oppdrag = oppdragStateService.fetchOppdragState(soknadId)
         try {
             val result = utbetalingService.runSimulering(oppdrag)
-            return ResponseEntity.ok("Result of simulering ${result.simuleringResult?.status} feilmelding ${result.simuleringResult?.feilMelding}")
+            return ResponseEntity.ok("Result of simulering ${result.simuleringResult?.status} med utbetalt beløp: ${result.simuleringResult?.mottaker?.totalBelop}" +
+                    "feilmelding ${result.simuleringResult?.feilMelding}")
         }
         catch(e: Exception) {
             LOG.error("feil i simulering",e)
