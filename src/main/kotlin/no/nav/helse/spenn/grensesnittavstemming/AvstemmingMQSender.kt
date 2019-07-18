@@ -1,12 +1,13 @@
 package no.nav.helse.spenn.oppdrag
 
 
+import com.ibm.mq.jms.MQQueue
+import com.ibm.msg.client.wmq.WMQConstants
 import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jms.core.JmsTemplate
-import org.springframework.jms.core.MessageCreator
 import org.springframework.stereotype.Component
 
 
@@ -21,12 +22,9 @@ class AvstemmingMQSender(val jmsTemplate: JmsTemplate,
         val xmlMelding = jaxb.fromAvstemmingsdataToXml(avstemmingsMelding)
         log.debug("sending $xmlMelding")
         log.debug("QUEUE: $sendqueue")
-        jmsTemplate.send(sendqueue, createMessage(xmlMelding))
-    }
-
-    private fun createMessage(message: String): MessageCreator {
-        return MessageCreator {
-            it.createTextMessage(message)
+        val queue = MQQueue(sendqueue).apply {
+            targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
         }
+        jmsTemplate.convertAndSend(queue, xmlMelding)
     }
 }
