@@ -1,6 +1,7 @@
 package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock
 import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @EnableJms
 @EnableTransactionManagement
 @EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "PT2M")
 class AppConfig {
 
     @Bean
