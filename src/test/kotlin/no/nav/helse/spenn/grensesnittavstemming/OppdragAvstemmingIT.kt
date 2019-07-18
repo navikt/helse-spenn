@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.stereotype.Repository
-
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
 import java.util.*
+import kotlin.test.assertNotNull
 
 @Repository
 class MyRepo(val jooq: DSLContext) {
@@ -33,7 +33,7 @@ class OppdragAvstemmingIT {
 
     @Test
     fun sendOppdragTilOS() {
-        db.setOppdragSequence(101006L) // Oppdater manuelt for hver kjøring utifra faktisk siste som ble sendt til OS
+        db.setOppdragSequence(101014L) // Oppdater manuelt for hver kjøring utifra faktisk siste som ble sendt til OS
 
         val fom1 = LocalDate.of(2019, Month.JANUARY, 1)
         val tom1 = LocalDate.of(2019, Month.JANUARY, 12)
@@ -71,6 +71,9 @@ class OppdragAvstemmingIT {
 
         println("henter ut oppdrag, forhåpentligvis med respons")
         val oppdragStateHopefullyWithResponse = service.fetchOppdragStateById(oppdragState.id!!)
+
+        assertNotNull(oppdragStateHopefullyWithResponse.oppdragResponse)
+
         val oppdragListe = listOf(oppdragStateHopefullyWithResponse)
 
         val mapper = AvstemmingMapper(oppdragListe, FagOmraadekode.SYKEPENGER_REFUSJON)
