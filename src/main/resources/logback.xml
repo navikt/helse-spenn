@@ -12,6 +12,8 @@
    <!-- remember to remove this when we go prod  -->
    <logger name="org.springframework.jms.listener.DefaultMessageListenerContainer" level="OFF" />
 
+   <logger name="org.apache.cxf.ws.addressing" level="ERROR" />
+
    <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener" level="OFF" />
 
    <root level="INFO">
