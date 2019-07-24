@@ -15,6 +15,8 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.util.Assert
 import org.springframework.vault.authentication.ClientAuthentication
 import org.springframework.vault.authentication.KubernetesAuthentication
@@ -34,6 +36,7 @@ import java.time.Duration
 @AutoConfigureBefore(value = [VaultBootstrapConfiguration::class])
 @ConditionalOnProperty(name = ["spring.cloud.vault.enabled"], matchIfMissing = true)
 @EnableConfigurationProperties(VaultProperties::class)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 class VaultConfiguration(private val applicationContext: ConfigurableApplicationContext,
                                   private val vaultProperties: VaultProperties,
                                   endpointProvider: ObjectProvider<VaultEndpointProvider>) : InitializingBean {
