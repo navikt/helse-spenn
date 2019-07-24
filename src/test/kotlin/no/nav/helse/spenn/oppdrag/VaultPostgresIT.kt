@@ -27,11 +27,17 @@ import kotlin.test.assertNotNull
 
 
 @SpringBootTest(properties = [
+    "spring.profiles.active=preprod",
+    "spring.cloud.vault.uri=http://localhost:8200",
+    "spring.cloud.vault.scheme=http",
+    "spring.cloud.vault.enabled=true",
+    "spring.cloud.vault.authentication=TOKEN",
     "spring.cloud.vault.token=token123",
+    "spring.cloud.vault.database.enabled=true",
+    "spring.cloud.vault.database.role=default",
+    "spring.cloud.vault.database.backend=database",
     "spring.datasource.url=jdbc:postgresql://localhost:5432/testdb",
     "spring.test.database.replace=none",
-    "VAULT_ENABLED=true",
-    "VAULT_URI=http://localhost:8200",
     "KAFKA_BOOTSTRAP_SERVERS=localhost:9020",
     "SECURITY_TOKEN_SERVICE_REST_URL=localhost:8080",
     "SECURITYTOKENSERVICE_URL=localhost:8888",
