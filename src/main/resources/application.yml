@@ -52,3 +52,9 @@ kafka:
   stream:
     vedtak:
       enabled: true
+
+#no.nav.security.oidc:
+#  expirythreshold: 1
+#  issuer.ourissuer:
+#    discoveryurl: ${JWT_DISCOVERY_URL}
+#    accepted_audience: ${JWT_ACCEPTED_AUDIENCE:spenn}
