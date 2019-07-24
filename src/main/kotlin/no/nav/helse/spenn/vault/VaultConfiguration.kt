@@ -14,6 +14,7 @@ import org.springframework.cloud.vault.config.VaultProperties
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.util.Assert
 import org.springframework.vault.authentication.ClientAuthentication
 import org.springframework.vault.authentication.KubernetesAuthentication
@@ -87,6 +88,7 @@ class VaultConfiguration(private val applicationContext: ConfigurableApplication
     }
 
     @Bean
+    @Primary
     fun clientAuthentication(): ClientAuthentication {
 
         return when (this.vaultProperties.authentication) {

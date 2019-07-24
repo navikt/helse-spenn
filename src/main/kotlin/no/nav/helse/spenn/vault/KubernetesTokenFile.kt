@@ -36,7 +36,7 @@ class KubernetesTokenFile(private val resource: Resource) : KubernetesJwtSupplie
 
     companion object {
 
-        private val LOG = LoggerFactory.getLogger(KubernetesServiceAccountTokenFile::class.java)
+        private val LOG = LoggerFactory.getLogger(KubernetesTokenFile::class.java)
 
         val DEFAULT_KUBERNETES_SERVICE_ACCOUNT_TOKEN_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
