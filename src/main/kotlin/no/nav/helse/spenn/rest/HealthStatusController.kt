@@ -2,6 +2,7 @@ package no.nav.helse.spenn.rest
 
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.vedtak.UtbetalingService
+import no.nav.security.oidc.api.Unprotected
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
+@Unprotected
 class HealthStatusController(val streams: KafkaStreams, val oppdragStateService: OppdragStateService,
                              val utbetalingService: UtbetalingService) {
 
