@@ -26,7 +26,6 @@ import java.util.*
 ], combineWithOr = true)
 @RestController
 @RequestMapping("/api/v1")
-@Profile(value = ["!prod"])
 class OppdragStateController(val oppdragStateService: OppdragStateService) {
 
     companion object {
