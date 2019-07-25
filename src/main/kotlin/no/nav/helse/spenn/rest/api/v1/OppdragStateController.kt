@@ -44,5 +44,4 @@ class OppdragStateController(val oppdragStateService: OppdragStateService) {
         LOG.info("Rest retrieve for id: ${id}")
         return oppdragStateService.fetchOppdragStateById(id)
     }
-
 }
