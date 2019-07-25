@@ -49,4 +49,5 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
     }
 
     private fun currentNavIdent() = oidcRequestContextHolder.oidcValidationContext.getClaims("ourissuer").get("NAVident")
+
 }
