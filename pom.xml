@@ -39,6 +39,7 @@
         <spring.cloud.version>2.1.2.RELEASE</spring.cloud.version>
         <postgres.version>42.2.5</postgres.version>
         <testcontainers.version>1.11.3</testcontainers.version>
+        <tokensupport.version>0.2.18</tokensupport.version>
     </properties>
 
     <repositories>
@@ -296,6 +297,24 @@
             <version>${jooq.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>no.nav.security</groupId>
+            <artifactId>oidc-spring-support</artifactId>
+            <version>${tokensupport.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.security</groupId>
+            <artifactId>oidc-test-support</artifactId>
+            <version>${tokensupport.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.19.0</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 
