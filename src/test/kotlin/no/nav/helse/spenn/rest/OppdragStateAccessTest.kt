@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
@@ -17,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import java.util.*
 import kotlin.test.assertEquals
 
 @WebMvcTest(properties = [
@@ -71,8 +73,44 @@ class OppdragStateAccessTest {
     }
 
     @Test
-    fun test1() {
+    fun missingNavIdentInJWTshouldGive401() {
         val jwt = JwtTokenGenerator.createSignedJWT("testuser")
+        val requestBuilder = MockMvcRequestBuilders
+                .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer ${jwt.serialize()}")
+
+        val result = mockMvc.perform(requestBuilder).andReturn()
+        assertEquals(401, result.response.status)
+    }
+
+    @Test
+    fun nonWhitelistedNavIdentInJWTshouldGive401() {
+        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", navIdent = "X112233"))
+        val requestBuilder = MockMvcRequestBuilders
+                .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer ${jwt.serialize()}")
+
+        val result = mockMvc.perform(requestBuilder).andReturn()
+        assertEquals(401, result.response.status)
+    }
+
+    @Test
+    fun unknownIssuerInJWTshouldGive401_evenWithWhitelistedNavIdent() {
+        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", issuer = "someUnknownISsuer", navIdent = "G153965"))
+        val requestBuilder = MockMvcRequestBuilders
+                .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer ${jwt.serialize()}")
+
+        val result = mockMvc.perform(requestBuilder).andReturn()
+        assertEquals(401, result.response.status)
+    }
+
+    @Test
+    fun whitelistedNavIdentInJWTshouldGive200() {
+        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", navIdent = "G153965"))
         val requestBuilder = MockMvcRequestBuilders
                 .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
                 .accept(MediaType.APPLICATION_JSON)
@@ -82,6 +120,30 @@ class OppdragStateAccessTest {
         assertEquals(200, result.response.status)
     }
 
+    fun buildClaimSet(subject: String,
+                      issuer: String = JwtTokenGenerator.ISS,
+                      audience: String = JwtTokenGenerator.AUD,
+                      authLevel: String = JwtTokenGenerator.ACR,
+                      expiry: Long = JwtTokenGenerator.EXPIRY,
+                      issuedAt: Date = Date(),
+                      navIdent: String? = null): JWTClaimsSet {
+        val builder = JWTClaimsSet.Builder()
+                .subject(subject)
+                .issuer(issuer)
+                .audience(audience)
+                .jwtID(UUID.randomUUID().toString())
+                .claim("acr", authLevel)
+                .claim("ver", "1.0")
+                .claim("nonce", "myNonce")
+                .claim("auth_time", issuedAt)
+                .notBeforeTime(issuedAt)
+                .issueTime(issuedAt)
+                .expirationTime(Date(issuedAt.time + expiry))
+        if (navIdent != null) {
+            builder.claim("NAVident", navIdent)
+        }
+        return builder.build()
+    }
 
 
 }
