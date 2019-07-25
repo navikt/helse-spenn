@@ -44,7 +44,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
     @GetMapping("/oppdrag/{id}")
     fun getOpppdragStateById(@PathVariable id: Long): OppdragStateDTO {
         LOG.info("Rest retrieve for id: ${id}")
-        AUDIT_LOG.info("Bruker=\"${currentNavIdent()}\" slår opp oppdragId=\"${id}\"")
+        AUDIT_LOG.info("Bruker=${currentNavIdent()} slår opp oppdragId=${id}")
         return oppdragStateService.fetchOppdragStateById(id)
     }
 
