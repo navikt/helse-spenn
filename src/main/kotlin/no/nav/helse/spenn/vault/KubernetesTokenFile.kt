@@ -11,7 +11,6 @@ import org.springframework.core.io.Resource
 import org.springframework.util.Assert
 import org.springframework.util.StreamUtils
 import org.springframework.vault.VaultException
-import org.springframework.vault.authentication.KubernetesServiceAccountTokenFile
 
 
 class KubernetesTokenFile(private val resource: Resource) : KubernetesJwtSupplier {

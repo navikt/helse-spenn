@@ -4,6 +4,8 @@ spring.cloud.vault:
   read-timeout: 15000
   application-name: spenn
   enabled: false
+  reactive:
+    enabled: false
   database:
     enabled: true
     role: helse-spenn-oppdrag-user
