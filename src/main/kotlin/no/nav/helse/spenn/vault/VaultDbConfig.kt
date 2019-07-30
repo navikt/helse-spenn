@@ -40,13 +40,14 @@ class VaultDbConfig(val container: SecretLeaseContainer,
         val secret = RequestedSecret.rotating("$vaultPostgresBackend/creds/$vaultPostgresRole")
         container.addLeaseListener {
             if (it.source.equals(secret) && it is SecretLeaseCreatedEvent) {
-                LOG.info("Rotating creds for path: ${it.source.path}")
+                LOG.info("Rotating creds for path: ${it.source.path} with lease duration: ${it.lease?.leaseDuration}")
                 val username = it.secrets.get("username").toString()
                 val password = it.secrets.get("password").toString()
                 dataSource.username = username
                 dataSource.password = password
                 dataSource.hikariConfigMXBean.setUsername(username)
                 dataSource.hikariConfigMXBean.setPassword(password)
+                dataSource.hikariPoolMXBean.softEvictConnections()
             }
         }
         container.addRequestedSecret(secret)
