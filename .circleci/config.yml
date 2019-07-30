@@ -39,7 +39,8 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
-      - run: ./mvnw clean install
+      - run: docker-compose rm -f postgresql-flyway-migrate.yml rm -f
+      - run: ./mvnw install
       - run:
           name: github creds
           command: |
