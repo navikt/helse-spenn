@@ -318,8 +318,109 @@
 
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>jooq</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.dkanejs.maven.plugins</groupId>
+                        <artifactId>docker-compose-maven-plugin</artifactId>
+                        <version>2.4.0</version>
+                        <executions>
+                            <execution>
+                                <id>up</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>up</goal>
+                                </goals>
+                                <configuration>
+                                    <composeFile>${project.basedir}/postgresql-flyway-migrate.yml</composeFile>
+                                    <detachedMode>true</detachedMode>
+                                    <awaitCmd>sleep</awaitCmd>
+                                    <awaitCmdArgs>10</awaitCmdArgs>
+                                    <awaitTimeout>11</awaitTimeout>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>down</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>down</goal>
+                                </goals>
+                                <configuration>
+                                    <composeFile>${project.basedir}/postgresql-flyway-migrate.yml</composeFile>
+                                    <removeVolumes>true</removeVolumes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.jooq</groupId>
+                        <artifactId>jooq-codegen-maven</artifactId>
+                        <version>${jooq.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.postgresql</groupId>
+                                <artifactId>postgresql</artifactId>
+                                <version>${postgresql.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>com.sun.xml.bind</groupId>
+                                <artifactId>jaxb-core</artifactId>
+                                <version>${jaxb-core.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>com.sun.xml.bind</groupId>
+                                <artifactId>jaxb-impl</artifactId>
+                                <version>${jaxb-impl.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>javax.activation</groupId>
+                                <artifactId>activation</artifactId>
+                                <version>${activation.version}</version>
+                            </dependency>
+                        </dependencies>
+
+                        <configuration>
+                            <jdbc>
+                                <driver>org.postgresql.Driver</driver>
+                                <url>jdbc:postgresql://localhost:5432/helse-spenn-oppdrag</url>
+                                <user>postgres</user>
+                                <password>postgres</password>
+                            </jdbc>
+                            <generator>
+                                <database>
+                                    <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                                    <includes>.*</includes>
+                                    <excludes>shedlock|flyway.*</excludes>
+                                    <schemata>
+                                        <schema>
+                                            <inputSchema>public</inputSchema>
+                                        </schema>
+                                    </schemata>
+                                </database>
+                                <target>
+                                    <packageName>no.nav.helse.spenn.jooq</packageName>
+                                    <directory>src/main/java</directory>
+                                </target>
+                            </generator>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
-        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
         <plugins>
             <plugin>
@@ -393,100 +494,6 @@
             </plugin>
 
             <plugin>
-                <groupId>com.dkanejs.maven.plugins</groupId>
-                <artifactId>docker-compose-maven-plugin</artifactId>
-                <version>2.4.0</version>
-                <executions>
-                    <execution>
-                        <id>up</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>up</goal>
-                        </goals>
-                        <configuration>
-                            <composeFile>${project.basedir}/postgresql-flyway-migrate.yml</composeFile>
-                            <detachedMode>true</detachedMode>
-                            <awaitCmd>sleep</awaitCmd>
-                            <awaitCmdArgs>10</awaitCmdArgs>
-                            <awaitTimeout>11</awaitTimeout>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>down</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>down</goal>
-                        </goals>
-                        <configuration>
-                            <composeFile>${project.basedir}/postgresql-flyway-migrate.yml</composeFile>
-                            <removeVolumes>true</removeVolumes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-codegen-maven</artifactId>
-                <version>${jooq.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${postgresql.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                        <version>${jaxb-core.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                        <version>${jaxb-impl.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                        <version>${activation.version}</version>
-                    </dependency>
-                </dependencies>
-
-                <configuration>
-                    <jdbc>
-                        <driver>org.postgresql.Driver</driver>
-                        <url>jdbc:postgresql://localhost:5432/helse-spenn-oppdrag</url>
-                        <user>postgres</user>
-                        <password>postgres</password>
-                    </jdbc>
-                    <generator>
-                        <database>
-                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
-                            <includes>.*</includes>
-                            <excludes>shedlock|flyway.*</excludes>
-                            <schemata>
-                                <schema>
-                                    <inputSchema>public</inputSchema>
-                                </schema>
-                            </schemata>
-                        </database>
-                        <target>
-                            <packageName>no.nav.helse.spenn.jooq</packageName>
-                            <directory>target/generated-sources/jooq</directory>
-                        </target>
-                    </generator>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>3.1.11</version>
@@ -526,9 +533,9 @@
                         <configuration>
                             <sourceDirs>
                                 <source>src/main/kotlin</source>
+                                <source>src/main/java</source>
                                 <source>target/generated-sources/wsimport</source>
                                 <source>target/generated-sources/xsd2java</source>
-                                <source>target/generated-sources/jooq</source>
                             </sourceDirs>
                         </configuration>
                     </execution>
@@ -608,7 +615,6 @@
         </plugins>
         <finalName>helse-spenn</finalName>
     </build>
-
     <licenses>
         <license>
             <name>MIT License</name>
