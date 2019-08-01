@@ -407,8 +407,8 @@
                             <composeFile>${project.basedir}/postgresql-flyway-migrate.yml</composeFile>
                             <detachedMode>true</detachedMode>
                             <awaitCmd>sleep</awaitCmd>
-                            <awaitCmdArgs>2</awaitCmdArgs>
-                            <awaitTimeout>5</awaitTimeout>
+                            <awaitCmdArgs>5</awaitCmdArgs>
+                            <awaitTimeout>10</awaitTimeout>
                         </configuration>
                     </execution>
                     <execution>
