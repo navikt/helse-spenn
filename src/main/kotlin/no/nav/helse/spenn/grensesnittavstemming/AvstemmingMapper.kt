@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.grensesnittavstemming
 
 import no.nav.helse.spenn.FagOmraadekode
-import no.nav.helse.spenn.KvitteringTransaksjonStatus
+import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
@@ -113,7 +113,7 @@ class AvstemmingMapper(
                             this.meldingKode = kvittering!!.mmel.kodeMelding
                             this.alvorlighetsgrad = kvittering.mmel.alvorlighetsgrad
                             this.tekstMelding = kvittering.mmel.beskrMelding
-                            if (kvittering.mmel.alvorlighetsgrad == KvitteringTransaksjonStatus.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
+                            if (kvittering.mmel.alvorlighetsgrad == KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
                                 DetaljType.VARS
                             else
                                 DetaljType.AVVI
@@ -209,10 +209,10 @@ class AvstemmingMapper(
             if (oppdrag.status == OppdragStateStatus.SENDT_OS) {
                 manglerBelop += belop
                 manglerAntall++
-            } else if (KvitteringTransaksjonStatus.OK.kode == alvorlighetsgrad) {
+            } else if (KvitteringAlvorlighetsgrad.OK.kode == alvorlighetsgrad) {
                 godkjentBelop += belop
                 godkjentAntall++
-            } else if (KvitteringTransaksjonStatus.AKSEPTERT_MEN_NOE_ER_FEIL.kode == alvorlighetsgrad) {
+            } else if (KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL.kode == alvorlighetsgrad) {
                 varselBelop += belop
                 varselAntall++
             } else {

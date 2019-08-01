@@ -5,6 +5,7 @@ import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.metrics.OPPDRAG
 
 import org.springframework.jms.annotation.JmsListener
@@ -32,8 +33,12 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
     }
 
     private fun mapStatus(oppdrag: Oppdrag): OppdragStateStatus {
-        when(oppdrag.mmel.alvorlighetsgrad) {
-            "00" -> return OppdragStateStatus.FERDIG
+        when(KvitteringAlvorlighetsgrad.valueOf(oppdrag.mmel.alvorlighetsgrad)) {
+            KvitteringAlvorlighetsgrad.OK -> return OppdragStateStatus.FERDIG
+            KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL -> {
+                log.warn("Akseptert men noe er feil for ${oppdrag.oppdrag110.fagsystemId} melding ${oppdrag.mmel.beskrMelding}")
+                return OppdragStateStatus.FERDIG
+            }
         }
         log.error("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId} ${oppdrag.mmel.beskrMelding}")
         return OppdragStateStatus.FEIL

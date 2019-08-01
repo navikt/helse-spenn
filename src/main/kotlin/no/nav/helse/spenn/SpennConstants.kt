@@ -7,7 +7,7 @@ enum class FagOmraadekode(val kode: String) {
     SYKEPENGER_REFUSJON("SPREF")
 }
 
-enum class KvitteringTransaksjonStatus(val kode : String) {
+enum class KvitteringAlvorlighetsgrad(val kode : String) {
     OK("00"),
     AKSEPTERT_MEN_NOE_ER_FEIL("04"),
     AVVIST_FUNKSJONELLE_FEIL("08"),
