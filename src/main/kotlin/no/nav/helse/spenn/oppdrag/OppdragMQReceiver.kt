@@ -14,7 +14,21 @@ import org.springframework.stereotype.Component
 @Component
 class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: OppdragStateService, val meterRegistry: MeterRegistry) {
 
-    private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
+
+        internal fun mapStatus(oppdrag: Oppdrag): OppdragStateStatus {
+            when(KvitteringAlvorlighetsgrad.fromKode(oppdrag.mmel.alvorlighetsgrad)) {
+                KvitteringAlvorlighetsgrad.OK -> return OppdragStateStatus.FERDIG
+                KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL -> {
+                    log.warn("Akseptert men noe er feil for ${oppdrag.oppdrag110.fagsystemId} melding ${oppdrag.mmel.beskrMelding}")
+                    return OppdragStateStatus.FERDIG
+                }
+            }
+            log.error("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId} ${oppdrag.mmel.beskrMelding}")
+            return OppdragStateStatus.FEIL
+        }
+    }
 
     @JmsListener(destination = "\${oppdrag.queue.mottak}")
     fun receiveOppdragResponse(response: String) {
@@ -30,17 +44,5 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
         val updated = state.copy(oppdragResponse = xml, status = mapStatus(oppdrag))
         meterRegistry.counter(OPPDRAG, "status", updated.status.name).increment()
         oppdragStateService.saveOppdragState(updated)
-    }
-
-    private fun mapStatus(oppdrag: Oppdrag): OppdragStateStatus {
-        when(KvitteringAlvorlighetsgrad.fromKode(oppdrag.mmel.alvorlighetsgrad)) {
-            KvitteringAlvorlighetsgrad.OK -> return OppdragStateStatus.FERDIG
-            KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL -> {
-                log.warn("Akseptert men noe er feil for ${oppdrag.oppdrag110.fagsystemId} melding ${oppdrag.mmel.beskrMelding}")
-                return OppdragStateStatus.FERDIG
-            }
-        }
-        log.error("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId} ${oppdrag.mmel.beskrMelding}")
-        return OppdragStateStatus.FEIL
     }
 }
