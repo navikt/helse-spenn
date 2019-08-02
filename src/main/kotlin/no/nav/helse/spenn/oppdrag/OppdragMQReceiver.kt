@@ -33,7 +33,7 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
     }
 
     private fun mapStatus(oppdrag: Oppdrag): OppdragStateStatus {
-        when(KvitteringAlvorlighetsgrad.valueOf(oppdrag.mmel.alvorlighetsgrad)) {
+        when(KvitteringAlvorlighetsgrad.fromKode(oppdrag.mmel.alvorlighetsgrad)) {
             KvitteringAlvorlighetsgrad.OK -> return OppdragStateStatus.FERDIG
             KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL -> {
                 log.warn("Akseptert men noe er feil for ${oppdrag.oppdrag110.fagsystemId} melding ${oppdrag.mmel.beskrMelding}")
