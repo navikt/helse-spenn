@@ -28,7 +28,7 @@ class AvstemmingMapperTest {
     private val testoppdragsliste1 = listOf(
             lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1000),
             lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "08", dagSats = 1000),
-            lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "04", dagSats = 1100),
+            lagOppdrag(status = OppdragStateStatus.FERDIG, alvorlighetsgrad = "04", dagSats = 1100),
             lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "12", dagSats = 1200),
             lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1300),
             lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1400),
@@ -87,7 +87,7 @@ class AvstemmingMapperTest {
                         it.datoAvstemtTom)
             }
             it.grunnlag.let {
-                val ferdige = oppdragsliste.filter { it.status == OppdragStateStatus.FERDIG }
+                val ferdige = oppdragsliste.filter { it.status == OppdragStateStatus.FERDIG && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "00") }
                 assertEquals(ferdige.map { satsSum(it)}.sum(), it.godkjentBelop.toLong())
                 assertEquals(ferdige.size, it.godkjentAntall)
                 assertEquals(Fortegn.T, it.godkjentFortegn)
@@ -100,7 +100,7 @@ class AvstemmingMapperTest {
                 assertEquals(Fortegn.T, it.avvistFortegn)
 
                 val godkjentMedVarsel = oppdragsliste.filter {
-                    it.status == OppdragStateStatus.FEIL && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "04")
+                    it.status == OppdragStateStatus.FERDIG && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "04")
                 }
                 assertEquals(godkjentMedVarsel.map { satsSum(it) }.sum(), it.varselBelop.toLong())
                 assertEquals(godkjentMedVarsel.size, it.varselAntall)
@@ -130,8 +130,8 @@ class AvstemmingMapperTest {
     /////////////////////
 
     companion object {
-        internal fun lagOppdragResponseXml(fagsystemId:String, status: OppdragStateStatus, alvorlighetsgrad: String) : String? {
-            if (status == OppdragStateStatus.SENDT_OS) {
+        internal fun lagOppdragResponseXml(fagsystemId:String, manglerRespons:Boolean=false, alvorlighetsgrad: String) : String? {
+            if (manglerRespons) {
                 return null
             }
             val kvittering = Oppdrag()
@@ -207,7 +207,9 @@ class AvstemmingMapperTest {
                 id = newId,
                 created = now,
                 modified = now,
-                oppdragResponse = lagOppdragResponseXml(newId.toString(), status, alvorlighetsgrad),
+                oppdragResponse = lagOppdragResponseXml(newId.toString(),
+                        status == OppdragStateStatus.SENDT_OS,
+                        alvorlighetsgrad),
                 simuleringResult = null,
                 soknadId = soknadId,
                 status = status,

@@ -74,7 +74,7 @@ class AvstemmingTaskTest {
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
-                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "00"),
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
                 avstemming = AvstemmingDTO(
                         id = 123L,
                         avstemt = false,
@@ -84,7 +84,7 @@ class AvstemmingTaskTest {
                 soknadId = soknadKey2, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
-                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FERDIG, "00"),
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
                 avstemming = AvstemmingDTO(
                         id = 124L,
                         avstemt = false,
@@ -93,8 +93,8 @@ class AvstemmingTaskTest {
         val oppdrag3 = service.saveOppdragState(OppdragStateDTO(
                 soknadId = soknadKey3, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.FEIL,
-                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", OppdragStateStatus.FEIL, "04"),
+                status = OppdragStateStatus.FERDIG,
+                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "04"),
                 avstemming = AvstemmingDTO(
                         id = 125L,
                         avstemt = false,
@@ -124,6 +124,11 @@ class AvstemmingTaskTest {
             assertEquals(0, this.grunnlag.avvistAntall)
             assertEquals(0, this.grunnlag.manglerAntall)
             assertEquals(utbetaling.utbetalingsLinje.first().sats.toLong() * 3, this.total.totalBelop.toLong())
+
+            assertEquals(1, this.detalj.size)
+            assertEquals("04", this.detalj.first().alvorlighetsgrad)
+            assertEquals(oppdrag3.id.toString(), this.detalj.first().avleverendeTransaksjonNokkel)
+
         }
         assertEquals(AksjonType.AVSL, sendteMeldinger.last().aksjon.aksjonType)
 

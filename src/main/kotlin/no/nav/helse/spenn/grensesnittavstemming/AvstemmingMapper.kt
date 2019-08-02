@@ -101,31 +101,40 @@ class AvstemmingMapper(
             jaxbOppdrag.toOppdrag(it)
         }
 
-    internal fun opprettDetaljdata() : List<Detaljdata> =
-        oppdragsliste.mapNotNull { oppdrag ->
+    private fun avstemmingsDetaljtypeForOppdrag(oppdrag: OppdragStateDTO) : DetaljType? =
             when (oppdrag.status) {
-                OppdragStateStatus.SENDT_OS, OppdragStateStatus.FEIL ->
-                    objectFactory.createDetaljdata().apply {
-                        val kvittering = getKvitteringsMelding(oppdrag)
-                        this.detaljType = if (oppdrag.status == OppdragStateStatus.SENDT_OS) {
-                            DetaljType.MANG
-                        } else {
-                            this.meldingKode = kvittering!!.mmel.kodeMelding
-                            this.alvorlighetsgrad = kvittering.mmel.alvorlighetsgrad
-                            this.tekstMelding = kvittering.mmel.beskrMelding
-                            if (kvittering.mmel.alvorlighetsgrad == KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
-                                DetaljType.VARS
-                            else
-                                DetaljType.AVVI
-                        }
-                        this.offnr = oppdrag.utbetalingsOppdrag.oppdragGjelder
-                        this.avleverendeTransaksjonNokkel = oppdrag.id.toString()
-                        this.tidspunkt = tidspunktMelding(oppdrag)
-                    }
-                OppdragStateStatus.FERDIG -> null
+                OppdragStateStatus.SENDT_OS -> DetaljType.MANG
+                OppdragStateStatus.FEIL -> DetaljType.AVVI
                 OppdragStateStatus.SIMULERING_OK, OppdragStateStatus.STARTET, OppdragStateStatus.SIMULERING_FEIL -> {
                     log.error("Uventet status: ${oppdrag.status} på oppdragId=${oppdrag.id}. Håndterer som om 'ferdig'")
                     null
+                }
+                OppdragStateStatus.FERDIG -> {
+                    val kvittering = getKvitteringsMelding(oppdrag)
+                    if (kvittering!!.mmel.alvorlighetsgrad == KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
+                        DetaljType.VARS
+                    else
+                        null
+                }
+            }
+
+    internal fun opprettDetaljdata() : List<Detaljdata> =
+        oppdragsliste.mapNotNull { oppdrag ->
+            val detaljTypeForOppdrag = avstemmingsDetaljtypeForOppdrag(oppdrag)
+            if (detaljTypeForOppdrag == null) {
+                null
+            } else {
+                objectFactory.createDetaljdata().apply {
+                    this.detaljType = detaljTypeForOppdrag
+                    this.offnr = oppdrag.utbetalingsOppdrag.oppdragGjelder
+                    this.avleverendeTransaksjonNokkel = oppdrag.id.toString()
+                    this.tidspunkt = tidspunktMelding(oppdrag)
+                    if (detaljType in listOf(DetaljType.AVVI, DetaljType.VARS)) {
+                        val kvittering = getKvitteringsMelding(oppdrag)
+                        this.meldingKode = kvittering!!.mmel.kodeMelding
+                        this.alvorlighetsgrad = kvittering.mmel.alvorlighetsgrad
+                        this.tekstMelding = kvittering.mmel.beskrMelding
+                    }
                 }
             }
         }
