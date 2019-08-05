@@ -24,10 +24,15 @@ import kotlin.test.assertEquals
 // I prod/Q, sett med env-variabler slik:
 // NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE=aud-localhost
 // NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL=http://localhost:33333/.well-known/openid-configuration
+// API_ACCESS_REQUIREDGROUP=12345678-abcd-abcd-eeff-1234567890ab
 // og eventuelt: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_PROXY_URL=http://someproxy:8080
+
+const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
+
 @WebMvcTest(properties = [
     "no.nav.security.oidc.issuer.ourissuer.accepted_audience=aud-localhost",
-    "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration"])
+    "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
+    "api.access.requiredgroup=$requiredGroupMembership"])
 class OppdragStateAccessTest {
 
     @Autowired
@@ -39,6 +44,8 @@ class OppdragStateAccessTest {
     lateinit var healthStatusController: HealthStatusController
     @MockBean
     lateinit var oppdragStateService: OppdragStateService
+
+    //val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().port(33333))
@@ -77,7 +84,7 @@ class OppdragStateAccessTest {
     }
 
     @Test
-    fun missingNavIdentInJWTshouldGive401() {
+    fun missingGroupsClaimInJWTshouldGive401() {
         val jwt = JwtTokenGenerator.createSignedJWT("testuser")
         val requestBuilder = MockMvcRequestBuilders
                 .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
@@ -89,8 +96,8 @@ class OppdragStateAccessTest {
     }
 
     @Test
-    fun nonWhitelistedNavIdentInJWTshouldGive401() {
-        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", navIdent = "X112233"))
+    fun notHavingTheRightGroupInJWTshouldGive401() {
+        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", groups = listOf("someBadGroupOID")))
         val requestBuilder = MockMvcRequestBuilders
                 .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
                 .accept(MediaType.APPLICATION_JSON)
@@ -101,8 +108,21 @@ class OppdragStateAccessTest {
     }
 
     @Test
-    fun unknownIssuerInJWTshouldGive401_evenWithWhitelistedNavIdent() {
-        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", issuer = "someUnknownISsuer", navIdent = "G153965"))
+    fun notHavingTheRightGroupInJWT_whenGettingByOppdragId_shouldGive401() {
+        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", groups = listOf("someBadGroupOID")))
+        val requestBuilder = MockMvcRequestBuilders
+                .get("/api/v1/oppdrag/1")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer ${jwt.serialize()}")
+
+        val result = mockMvc.perform(requestBuilder).andReturn()
+        assertEquals(401, result.response.status)
+    }
+
+
+    @Test
+    fun unknownIssuerInJWTshouldGive401_evenWithOkGroupmembership() {
+        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", issuer = "someUnknownISsuer", groups = listOf(requiredGroupMembership)))
         val requestBuilder = MockMvcRequestBuilders
                 .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
                 .accept(MediaType.APPLICATION_JSON)
@@ -113,8 +133,8 @@ class OppdragStateAccessTest {
     }
 
     @Test
-    fun whitelistedNavIdentInJWTshouldGive200() {
-        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", navIdent = "G153965"))
+    fun correctGroupMembershipInJWTshouldGive200() {
+        val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", groups = listOf(requiredGroupMembership)))
         val requestBuilder = MockMvcRequestBuilders
                 .get("/api/v1/oppdrag/soknad/5a18a938-b747-4ab2-bb35-5d338dea15c8")
                 .accept(MediaType.APPLICATION_JSON)
@@ -130,7 +150,8 @@ class OppdragStateAccessTest {
                       authLevel: String = JwtTokenGenerator.ACR,
                       expiry: Long = JwtTokenGenerator.EXPIRY,
                       issuedAt: Date = Date(),
-                      navIdent: String? = null): JWTClaimsSet {
+                      navIdent: String? = null,
+                      groups: List<String>? = null): JWTClaimsSet {
         val builder = JWTClaimsSet.Builder()
                 .subject(subject)
                 .issuer(issuer)
@@ -145,6 +166,9 @@ class OppdragStateAccessTest {
                 .expirationTime(Date(issuedAt.time + expiry))
         if (navIdent != null) {
             builder.claim("NAVident", navIdent)
+        }
+        if (groups != null) {
+            builder.claim("groups", groups)
         }
         return builder.build()
     }
