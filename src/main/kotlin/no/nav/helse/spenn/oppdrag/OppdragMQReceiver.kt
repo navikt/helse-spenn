@@ -12,7 +12,10 @@ import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component
 
 @Component
-class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: OppdragStateService, val meterRegistry: MeterRegistry) {
+class OppdragMQReceiver(val jaxb : JAXBOppdrag,
+                        val oppdragStateService: OppdragStateService,
+                        val meterRegistry: MeterRegistry,
+                        val statusProducer: OppdragStateKafkaProducer) {
 
     companion object {
         private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
@@ -44,5 +47,8 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag, val oppdragStateService: Oppdrag
         val updated = state.copy(oppdragResponse = xml, status = mapStatus(oppdrag))
         meterRegistry.counter(OPPDRAG, "status", updated.status.name).increment()
         oppdragStateService.saveOppdragState(updated)
+        if (updated.status == OppdragStateStatus.FERDIG) {
+            statusProducer.send(OppdragFerdigInfo(updated.soknadId.toString()))
+        }
     }
 }
