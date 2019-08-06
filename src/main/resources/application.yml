@@ -40,6 +40,11 @@ oppdrag:
     mottak: DEV.QUEUE.1
     send: DEV.QUEUE.1
 
+
+oppdragstate:
+  topic:
+    send: spenn-oppdrag-status
+
 avstemming:
   queue:
     send: DEV.QUEUE.1
