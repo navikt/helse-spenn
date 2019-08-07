@@ -27,6 +27,8 @@ class JAXBOppdrag {
 
     fun toOppdrag (oppdragXML : String) : Oppdrag {
         val source = StreamSource(StringReader(oppdragXML))
+        xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
+        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)
         val unmarshal = unmarshaller.unmarshal(xmlInputFactory.createXMLStreamReader(source),
                 OppdragSkjemaConstants.JAXB_CLASS)
         return unmarshal.value

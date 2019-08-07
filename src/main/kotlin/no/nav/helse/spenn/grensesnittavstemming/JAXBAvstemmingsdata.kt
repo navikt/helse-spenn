@@ -27,6 +27,8 @@ class JAXBAvstemmingsdata {
 
     fun toAvstemmingsdata (avstemmingsdataXML : String) : Avstemmingsdata {
         val source = StreamSource(StringReader(avstemmingsdataXML))
+        xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
+        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)
         val unmarshal = unmarshaller.unmarshal(xmlInputFactory.createXMLStreamReader(source),
                 AvstemmingSkjemaConstants.JAXB_CLASS)
         return unmarshal.value
