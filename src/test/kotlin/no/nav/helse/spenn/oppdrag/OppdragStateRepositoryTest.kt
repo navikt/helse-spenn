@@ -15,6 +15,8 @@ import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 import java.util.*
 import kotlin.test.*
@@ -29,6 +31,7 @@ class OppdragStateRepositoryTest {
     @Autowired lateinit var repository: OppdragStateRepository
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
     fun crudOppdragState() {
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
