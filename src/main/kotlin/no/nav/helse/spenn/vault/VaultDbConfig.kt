@@ -47,14 +47,14 @@ class VaultDbConfig(val container: SecretLeaseContainer,
                 dataSource.password = password
                 dataSource.hikariConfigMXBean.setUsername(username)
                 dataSource.hikariConfigMXBean.setPassword(password)
-                dataSource.hikariPoolMXBean.softEvictConnections()
+                //dataSource.hikariPoolMXBean.softEvictConnections()
             }
         }
         container.addRequestedSecret(secret)
     }
 
     @Bean
-    @Profile(value= ["preprod","prod"])
+    @Profile(value= ["preprod", "prod", "integration"])
     fun flywayMigrationStrategy(): FlywayMigrationStrategy = FlywayMigrationStrategy {
         LOG.info("init flyway migration strategy")
         val response = vaultTemplate.read("$vaultPostgresBackend/creds/helse-spenn-oppdrag-admin")

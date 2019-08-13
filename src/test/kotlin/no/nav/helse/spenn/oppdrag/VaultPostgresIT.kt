@@ -27,7 +27,7 @@ import kotlin.test.assertNotNull
 
 
 @SpringBootTest(properties = [
-    "spring.profiles.active=preprod",
+    "spring.profiles.active=integration",
     "spring.cloud.vault.uri=http://localhost:8200",
     "spring.cloud.vault.scheme=http",
     "spring.cloud.vault.enabled=true",

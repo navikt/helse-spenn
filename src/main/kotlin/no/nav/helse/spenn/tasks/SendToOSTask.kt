@@ -10,16 +10,18 @@ import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 
 @Component
+@Profile(value=["!prod"])
 @ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.oppdrag"], havingValue = "true")
 class SendToOSTask(val oppdragStateService: OppdragStateService,
                    val utbetalingService: UtbetalingService,
                    val meterRegistry: MeterRegistry,
-                   @Value("\${scheduler.tasks.oppdrag.limit}") val limit: Int = 100) {
+                   @Value("\${scheduler.tasks.oppdrag.limit:100}") val limit: Int = 100) {
 
     private val log = LoggerFactory.getLogger(SendToOSTask::class.java)
 

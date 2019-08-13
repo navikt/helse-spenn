@@ -16,7 +16,7 @@ import java.util.*
 @RequestMapping("/api/v1")
 class OppdragStateController(val oppdragStateService: OppdragStateService,
                              val oidcRequestContextHolder: OIDCRequestContextHolder,
-                             @Value("\${api.access.requiredgroup}") val requiredGroupMembership: String ) {
+                             @Value("\${api.access.requiredgroup:group1}") val requiredGroupMembership: String ) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(OppdragStateController::class.java)
