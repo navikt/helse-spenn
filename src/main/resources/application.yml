@@ -18,22 +18,23 @@ spring:
     name: spenn
     
 jms.mq:
-  enabled: false
+  enabled: true
 
 scheduler:
   enabled: true
   tasks:
     simulering: true
     avstemming: false
-    oppdrag: false
+    oppdrag: true
 
 ibm:
   mq:
     queue-manager: ${MQ_QUEUE_MANAGER:QM1}
     channel: ${MQ_CHANNEL:DEV.ADMIN.SVRCONN}
-    conn-name: ${MQ_CONN_NAME:localhost(1414)}
+    conn-name: ${MQ_HOSTNAME:localhost(1414)}
     user: ${MQ_USER:admin}
     password: ${MQ_PASSWORD:passw0rd}
+
 
 oppdrag:
   queue:

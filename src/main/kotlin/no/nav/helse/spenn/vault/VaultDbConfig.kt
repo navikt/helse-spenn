@@ -54,7 +54,7 @@ class VaultDbConfig(val container: SecretLeaseContainer,
     }
 
     @Bean
-    @Profile(value= ["preprod","prod"])
+    @Profile(value= ["preprod", "prod", "integration"])
     fun flywayMigrationStrategy(): FlywayMigrationStrategy = FlywayMigrationStrategy {
         LOG.info("init flyway migration strategy")
         val response = vaultTemplate.read("$vaultPostgresBackend/creds/helse-spenn-oppdrag-admin")

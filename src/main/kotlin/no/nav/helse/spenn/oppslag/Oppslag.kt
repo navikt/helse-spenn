@@ -29,7 +29,7 @@ class FnrOppslag(val stsRestClient: StsRestClient,
 }
 
 @Component
-@Profile(value=["test", "default"])
+@Profile(value=["test", "default", "integration"])
 class DummyAktørMapper() : AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
 }
