@@ -24,7 +24,7 @@ class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
 
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
 
-    @Scheduled(cron = "0 0 21 * * *")
+    @Scheduled(cron = "0 0 13 * * *")
     @SchedulerLock(name = "sendTilAvstemming")
     fun sendTilAvstemming() {
         val oppdragList = oppdragStateService.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now().minusHours(1))
