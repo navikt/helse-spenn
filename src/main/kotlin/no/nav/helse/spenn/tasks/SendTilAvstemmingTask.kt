@@ -9,12 +9,14 @@ import no.nav.helse.spenn.metrics.AVSTEMMING
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 
 @Component
+@Profile(value=["!prod"])
 @ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.avstemming"], havingValue = "true")
 class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
                             val avstemmingMQSender: AvstemmingMQSender,

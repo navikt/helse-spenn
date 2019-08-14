@@ -24,7 +24,7 @@ scheduler:
   enabled: true
   tasks:
     simulering: true
-    avstemming: false
+    avstemming: true
     oppdrag: true
 
 ibm:
