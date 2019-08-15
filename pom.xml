@@ -378,7 +378,7 @@
                             <dependency>
                                 <groupId>org.postgresql</groupId>
                                 <artifactId>postgresql</artifactId>
-                                <version>${postgresql.version}</version>
+                                <version>${postgres.version}</version>
                             </dependency>
                             <dependency>
                                 <groupId>com.sun.xml.bind</groupId>
