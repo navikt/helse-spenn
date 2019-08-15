@@ -37,7 +37,7 @@ class SendToSimuleringTask(val utbetalingService: UtbetalingService,
         meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, maksBelopGauge)
     }
     
-    @Scheduled(cron = "30 * * * * *")
+    @Scheduled(cron = "30 * 7-21 * * ?")
     @SchedulerLock(name = "sendToSimulering")
     fun sendSimulering() {
         LOG.info("Running SendToSimulering task")
