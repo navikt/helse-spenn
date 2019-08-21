@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.oppslag
+package no.nav.helse.spenn.vedtak.fnr
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty

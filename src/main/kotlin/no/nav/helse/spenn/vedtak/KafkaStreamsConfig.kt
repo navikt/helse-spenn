@@ -7,7 +7,7 @@ import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.metrics.VEDTAK
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.oppslag.AktørTilFnrMapper
+import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
