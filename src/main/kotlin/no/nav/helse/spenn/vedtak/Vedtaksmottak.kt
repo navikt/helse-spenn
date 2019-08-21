@@ -60,6 +60,24 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
     }
 
+    @Bean
+    fun mottakslogikk() : Topology {
+        val builder = StreamsBuilder()
+
+        builder.consumeTopic(VEDTAK_SYKEPENGER)
+                .peek{ key: String, _ ->
+                    log.info("soknad id ${key}")
+                }
+                .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
+                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktørId),vedtak) }
+                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
+                .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
+                .filter { _, value ->  value != null}
+                .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
+
+        return builder.build()
+    }
+
     @PostConstruct
     fun offsetReset() {
         if ("true" == offsetReset) {
@@ -122,24 +140,6 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 kafkaUsername to kafkaPassword,
                 navTruststorePath to navTruststorePassword)
         return KafkaStreams(topology, streamConfig)
-    }
-
-    @Bean
-    fun kafkaStreamTopology() : Topology {
-        val builder = StreamsBuilder()
-
-        builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{ key: String, _ ->
-                    log.info("soknad id ${key}")
-                }
-                .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktørId),vedtak) }
-                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
-                .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
-                .filter { _, value ->  value != null}
-                .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
-
-        return builder.build()
     }
 
     private fun saveInitialOppdragState(key: String, utbetaling: UtbetalingsOppdrag): OppdragStateDTO? {
