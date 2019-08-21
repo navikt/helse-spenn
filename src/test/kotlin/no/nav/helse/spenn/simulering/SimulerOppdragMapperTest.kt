@@ -1,5 +1,6 @@
-package no.nav.helse.spenn.oppdrag
+package no.nav.helse.spenn.simulering
 
+import no.nav.helse.spenn.oppdrag.*
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

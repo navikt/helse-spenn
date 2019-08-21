@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.tasks
+package no.nav.helse.spenn.simulering
 
 import io.micrometer.core.instrument.MeterRegistry
 import net.javacrumbs.shedlock.core.SchedulerLock
@@ -8,8 +8,6 @@ import no.nav.helse.spenn.metrics.SIMULERING
 import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
-import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.simulering.Status
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
