@@ -1,5 +1,4 @@
-package no.nav.helse.spenn.oppdrag
-
+package no.nav.helse.spenn.overforing
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
@@ -7,10 +6,11 @@ import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
-import no.nav.helse.spenn.tasks.SendToOSTask
-import no.nav.helse.spenn.vedtak.UtbetalingService
+import no.nav.helse.spenn.overforing.SendToOSTask
+import no.nav.helse.spenn.overforing.UtbetalingService
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test

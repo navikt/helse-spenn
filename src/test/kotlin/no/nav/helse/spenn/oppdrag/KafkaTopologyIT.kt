@@ -4,33 +4,20 @@ import com.github.dockerjava.api.command.CreateContainerCmd
 import com.github.dockerjava.api.model.ExposedPort
 import com.github.dockerjava.api.model.PortBinding
 import com.github.dockerjava.api.model.Ports
-import no.nav.helse.spenn.AppConfig
-import no.nav.helse.spenn.simulering.SimuleringConfig
+import no.nav.helse.spenn.overforing.UtbetalingService
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.*
-import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.apache.kafka.streams.KafkaStreams
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 
 import org.junit.jupiter.api.Test
-import org.mockito.Answers
-import org.mockito.ArgumentMatchers
-import org.mockito.Mock
-import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils
 import java.util.*
 import java.util.function.Consumer
-import org.mockito.Mockito.*
-import org.mockito.stubbing.Answer
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBeans
-import javax.annotation.PostConstruct
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 import kotlin.test.fail
 

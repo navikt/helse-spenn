@@ -1,6 +1,5 @@
-package no.nav.helse.spenn.vedtak
+package no.nav.helse.spenn.overforing
 
-import no.nav.helse.spenn.oppdrag.OppdragMQSender
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.toOppdrag
 import org.slf4j.LoggerFactory

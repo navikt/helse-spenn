@@ -4,6 +4,7 @@ package no.nav.helse.spenn.grensesnittavstemming
 import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.overforing.OppdragMQSender
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
