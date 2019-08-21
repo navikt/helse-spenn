@@ -1,18 +1,11 @@
 package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import no.nav.helse.spenn.defaultObjectMapper
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.LoggerFactory
-
-val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
-                                          .registerModule(JavaTimeModule())
-                                          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
 private val strings = Serdes.String()
 private val json = Serdes.serdeFrom(JsonSerializer(), JsonDeserializer())

@@ -5,7 +5,7 @@ import no.nav.helse.spenn.dao.Avstemming
 import no.nav.helse.spenn.dao.OppdragState
 import no.nav.helse.spenn.dao.OppdragStateRepository
 import no.nav.helse.spenn.dao.OppdragStateStatus
-import no.nav.helse.spenn.vedtak.defaultObjectMapper
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
