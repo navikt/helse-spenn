@@ -8,8 +8,8 @@ import no.nav.helse.spenn.metrics.SIMULERING
 import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.Status
-import no.nav.helse.spenn.vedtak.UtbetalingService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -20,7 +20,7 @@ import javax.annotation.PostConstruct
 
 @Component
 @ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
-class SendToSimuleringTask(val utbetalingService: UtbetalingService,
+class SendToSimuleringTask(val simuleringService: SimuleringService,
                        val oppdragStateService: OppdragStateService,
                        val meterRegistry: MeterRegistry,
                        @Value("\${scheduler.tasks.simulering.limit:100}") val limit: Int = 100) {
@@ -44,10 +44,9 @@ class SendToSimuleringTask(val utbetalingService: UtbetalingService,
         val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, limit)
         LOG.info("Got ${oppdragList.size} items for simulering")
         oppdragList.forEach {
-            val updated = oppdragStateService.saveOppdragState(utbetalingService.runSimulering(it))
+            val updated = oppdragStateService.saveOppdragState(simuleringService.runSimulering(it))
             simuleringMetrics(updated)
         }
-
     }
 
     private fun simuleringMetrics(oppdrag: OppdragStateDTO) {
@@ -59,5 +58,4 @@ class SendToSimuleringTask(val utbetalingService: UtbetalingService,
             meterRegistry.counter(SIMULERING, "status", oppdrag.simuleringResult.status.name).increment()
         }
     }
-
 }

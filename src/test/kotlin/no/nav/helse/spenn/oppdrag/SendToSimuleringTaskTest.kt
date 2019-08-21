@@ -11,60 +11,60 @@ import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.Status
 import no.nav.helse.spenn.tasks.SendToSimuleringTask
-import no.nav.helse.spenn.vedtak.UtbetalingService
-import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-import org.springframework.context.annotation.ComponentScan
+import org.mockito.Mockito.*
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
 
-@JooqTest(properties = ["VAULT_ENABLED=false",
-    "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
 class SendToSimuleringTaskTest {
 
-    @Autowired
-    lateinit var service: OppdragStateService
-
+    val mockPersistence = mock(OppdragStateService::class.java)
     val mockSimuleringService = mock(SimuleringService::class.java)
-    val utbetalingService = UtbetalingService(simuleringService = mockSimuleringService,
-            oppdragSender = mock(OppdragMQSender::class.java))
     val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
-
-
 
     @Test
     fun sendToSimulering() {
-        val sendToSimuleringTask = SendToSimuleringTask(utbetalingService = utbetalingService,
-                meterRegistry = mockMeterRegistry, oppdragStateService = service)
+        val sendToSimuleringTask = SendToSimuleringTask(simuleringService = mockSimuleringService,
+                meterRegistry = mockMeterRegistry, oppdragStateService = mockPersistence)
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
         val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
 
-        service.saveOppdragState(OppdragStateDTO(
-                soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling))
-        service.saveOppdragState(OppdragStateDTO(
-                soknadId = soknadKey, utbetalingsOppdrag = utbetaling))
-        service.saveOppdragState(OppdragStateDTO(
-                soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
-                simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.SIMULERING_OK
-        ))
-        `when`(mockSimuleringService.simulerOppdrag(any())).thenReturn(SimuleringResult(status=Status.OK, mottaker = Mottaker(datoBeregnet = "",totalBelop = BigDecimal.TEN, gjelderId = "", gjelderNavn = "", periodeList = emptyList())))
+        `when`(mockPersistence.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, 100)).thenReturn(listOf(oppdragEn, oppdragTo))
+        `when`(mockSimuleringService.runSimulering(oppdragEn)).thenReturn(simulertOppdragEn)
+        `when`(mockSimuleringService.runSimulering(oppdragTo)).thenReturn(simulertOppdragTo)
+        `when`(mockPersistence.saveOppdragState(simulertOppdragEn)).thenReturn(simulertOppdragEn)
+        `when`(mockPersistence.saveOppdragState(simulertOppdragTo)).thenReturn(simulertOppdragTo)
+
         sendToSimuleringTask.sendSimulering()
-        assertEquals(service.fetchOppdragState(soknadKey).status, OppdragStateStatus.SIMULERING_OK, "Simulering should now be ok")
+
+        verify(mockPersistence, times(2)).saveOppdragState(any())
     }
 
     fun <T> any(): T = Mockito.any<T>()
-
-
 }
+
+val oppdragEn = OppdragStateDTO(
+        id = 1L,
+        status = OppdragStateStatus.STARTET,
+        simuleringResult = null,
+        oppdragResponse = null,
+        modified = LocalDateTime.now(),
+        created = LocalDateTime.now(),
+        avstemming = null,
+        soknadId = UUID.randomUUID(),
+        utbetalingsOppdrag = UtbetalingsOppdrag(
+                vedtak = null,
+                utbetalingsLinje = emptyList(),
+                oppdragGjelder = "someone",
+                operasjon = AksjonsKode.SIMULERING
+        )
+)
+val simuleringsResultat = SimuleringResult(status = Status.OK, mottaker = Mottaker(datoBeregnet = "", gjelderId = "", gjelderNavn = "", periodeList = emptyList(), totalBelop = BigDecimal.TEN), feilMelding = "")
+val simulertOppdragEn = oppdragEn.copy(simuleringResult = simuleringsResultat)
+val oppdragTo = oppdragEn.copy(id = 2L, soknadId = UUID.randomUUID())
+val simulertOppdragTo = oppdragTo.copy(simuleringResult = simuleringsResultat)
