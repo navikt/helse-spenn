@@ -16,7 +16,6 @@ import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
-import no.nav.helse.spenn.tasks.SendTilAvstemmingTask
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
