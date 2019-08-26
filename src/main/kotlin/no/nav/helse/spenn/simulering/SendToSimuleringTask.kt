@@ -4,9 +4,9 @@ import io.micrometer.core.instrument.MeterRegistry
 import net.javacrumbs.shedlock.core.SchedulerLock
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
-import no.nav.helse.spenn.metrics.SIMULERING
-import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_BELOP
-import no.nav.helse.spenn.metrics.SIMULERING_UTBETALT_MAKS_BELOP
+import no.nav.helse.spenn.appsupport.SIMULERING
+import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_BELOP
+import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

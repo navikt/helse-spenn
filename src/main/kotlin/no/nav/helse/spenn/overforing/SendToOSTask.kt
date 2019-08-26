@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import net.javacrumbs.shedlock.core.SchedulerLock
 import no.nav.helse.spenn.dao.OppdragStateService
 import no.nav.helse.spenn.dao.OppdragStateStatus
-import no.nav.helse.spenn.metrics.SENDT_TIL_OS
+import no.nav.helse.spenn.appsupport.SENDT_TIL_OS
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

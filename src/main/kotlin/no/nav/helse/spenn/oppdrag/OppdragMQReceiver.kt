@@ -6,7 +6,7 @@ import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
-import no.nav.helse.spenn.metrics.OPPDRAG
+import no.nav.helse.spenn.appsupport.OPPDRAG
 
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component
