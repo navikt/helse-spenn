@@ -1,11 +1,11 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import no.nav.helse.spenn.dao.Avstemming
-import no.nav.helse.spenn.dao.OppdragState
-import no.nav.helse.spenn.dao.OppdragStateRepository
-import no.nav.helse.spenn.dao.OppdragStateStatus
-import no.nav.helse.spenn.vedtak.defaultObjectMapper
+import no.nav.helse.spenn.oppdrag.dao.Avstemming
+import no.nav.helse.spenn.oppdrag.dao.OppdragState
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateRepository
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ import kotlin.test.*
     "spring.cloud.vault.enabled=false",
     "spring.test.database.replace=none"])
 @ImportAutoConfiguration(classes = [JooqAutoConfiguration::class])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
+@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateRepositoryTest {
 
     @Autowired lateinit var repository: OppdragStateRepository

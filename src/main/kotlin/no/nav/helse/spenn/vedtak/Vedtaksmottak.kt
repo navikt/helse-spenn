@@ -3,11 +3,11 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.metrics.VEDTAK
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.oppslag.AktørTilFnrMapper
+import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
@@ -58,6 +58,24 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
+    }
+
+    @Bean
+    fun mottakslogikk() : Topology {
+        val builder = StreamsBuilder()
+
+        builder.consumeTopic(VEDTAK_SYKEPENGER)
+                .peek{ key: String, _ ->
+                    log.info("soknad id ${key}")
+                }
+                .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
+                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktørId),vedtak) }
+                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
+                .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
+                .filter { _, value ->  value != null}
+                .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
+
+        return builder.build()
     }
 
     @PostConstruct
@@ -122,24 +140,6 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 kafkaUsername to kafkaPassword,
                 navTruststorePath to navTruststorePassword)
         return KafkaStreams(topology, streamConfig)
-    }
-
-    @Bean
-    fun kafkaStreamTopology() : Topology {
-        val builder = StreamsBuilder()
-
-        builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{ key: String, _ ->
-                    log.info("soknad id ${key}")
-                }
-                .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktørId),vedtak) }
-                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
-                .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
-                .filter { _, value ->  value != null}
-                .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
-
-        return builder.build()
     }
 
     private fun saveInitialOppdragState(key: String, utbetaling: UtbetalingsOppdrag): OppdragStateDTO? {

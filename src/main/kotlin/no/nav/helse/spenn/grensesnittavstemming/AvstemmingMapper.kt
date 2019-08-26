@@ -3,7 +3,7 @@ package no.nav.helse.spenn.grensesnittavstemming
 import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*

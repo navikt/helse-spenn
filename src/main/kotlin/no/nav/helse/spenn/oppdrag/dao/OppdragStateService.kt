@@ -1,10 +1,10 @@
-package no.nav.helse.spenn.dao
+package no.nav.helse.spenn.oppdrag.dao
 
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.simulering.SimuleringResult
-import no.nav.helse.spenn.vedtak.defaultObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime

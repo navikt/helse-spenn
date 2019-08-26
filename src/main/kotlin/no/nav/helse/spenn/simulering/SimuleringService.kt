@@ -1,7 +1,10 @@
 package no.nav.helse.spenn.simulering
 
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType
+import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
@@ -26,6 +29,23 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
 
     companion object {
         private val log = LoggerFactory.getLogger(SimuleringService::class.java)
+    }
+
+    fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
+        log.info("simulering for ${oppdrag.soknadId}")
+        val result = callSimulering(oppdrag)
+        val status = when (result.status) {
+            Status.OK -> OppdragStateStatus.SIMULERING_OK
+            else -> OppdragStateStatus.SIMULERING_FEIL
+        }
+        return oppdrag.copy(simuleringResult = result, status = status)
+    }
+
+    private fun callSimulering(oppdrag: OppdragStateDTO): SimuleringResult {
+        if (oppdrag.utbetalingsOppdrag.utbetalingsLinje.isNotEmpty()) {
+            return simulerOppdrag(oppdrag.toSimuleringRequest())
+        }
+        return SimuleringResult(status=Status.FEIL,feilMelding = "Tomt vedtak")
     }
 
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {

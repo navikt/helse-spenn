@@ -9,14 +9,13 @@ import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
-import no.nav.helse.spenn.tasks.SendTilAvstemmingTask
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
@@ -38,7 +37,7 @@ import kotlin.test.assertTrue
 @JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
     "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
+@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class AvstemmingTaskTest {
 
     @Autowired

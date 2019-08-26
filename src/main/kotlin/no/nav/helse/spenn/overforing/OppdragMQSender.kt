@@ -1,6 +1,7 @@
-package no.nav.helse.spenn.oppdrag
+package no.nav.helse.spenn.overforing
 
 
+import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

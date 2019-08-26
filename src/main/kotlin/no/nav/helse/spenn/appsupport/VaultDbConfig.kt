@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.vault
+package no.nav.helse.spenn.appsupport
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.dao
+package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.jooq.Tables.AVSTEMMING
 import org.jooq.DSLContext

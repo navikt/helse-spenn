@@ -1,34 +1,24 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.micrometer.core.instrument.MockClock
-import io.micrometer.core.instrument.simple.SimpleConfig
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
-import no.nav.helse.spenn.simulering.Mottaker
-import no.nav.helse.spenn.simulering.SimuleringResult
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.simulering.Status
-import no.nav.helse.spenn.tasks.SendToSimuleringTask
-import no.nav.helse.spenn.vedtak.UtbetalingService
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.annotation.ComponentScan
-import java.math.BigDecimal
 import java.util.*
 import kotlin.test.assertEquals
 
 @JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
     "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
+@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateServiceTest {
 
     @Autowired

@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.rest
 
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.vedtak.UtbetalingService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.security.oidc.api.Unprotected
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
@@ -15,7 +15,7 @@ import java.util.*
 @RestController
 @Unprotected
 class HealthStatusController(val streams: KafkaStreams, val oppdragStateService: OppdragStateService,
-                             val utbetalingService: UtbetalingService) {
+                             val simuleringService: SimuleringService) {
 
     private var stateCount = 0
 
@@ -51,7 +51,7 @@ class HealthStatusController(val streams: KafkaStreams, val oppdragStateService:
     fun simulering(@PathVariable soknadId: UUID): ResponseEntity<String> {
         val oppdrag = oppdragStateService.fetchOppdragState(soknadId)
         try {
-            val result = utbetalingService.runSimulering(oppdrag)
+            val result = simuleringService.runSimulering(oppdrag)
             return ResponseEntity.ok("Result of simulering ${result.simuleringResult?.status} med utbetalt beløp: ${result.simuleringResult?.mottaker?.totalBelop}" +
                     "feilmelding ${result.simuleringResult?.feilMelding}")
         }
