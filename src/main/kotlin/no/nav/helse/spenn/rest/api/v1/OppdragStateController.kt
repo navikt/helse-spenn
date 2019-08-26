@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.rest.api.v1
 
 import no.nav.helse.spenn.dao.OppdragStateService
+import no.nav.helse.spenn.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.security.oidc.api.Protected
 import no.nav.security.oidc.context.OIDCRequestContextHolder
@@ -13,7 +14,7 @@ import java.util.*
 // NB: Sync tilgangsstyring med helse-spade
 @Protected
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/oppdrag")
 class OppdragStateController(val oppdragStateService: OppdragStateService,
                              val oidcRequestContextHolder: OIDCRequestContextHolder,
                              @Value("\${api.access.requiredgroup:group1}") val requiredGroupMembership: String ) {
@@ -23,7 +24,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
         private val AUDIT_LOG = LoggerFactory.getLogger("auditLogger")
     }
 
-    @GetMapping("/oppdrag/soknad/{soknadId}")
+    @GetMapping("/soknad/{soknadId}")
     fun getOppdragStateBySoknadId(@PathVariable soknadId: UUID): OppdragStateDTO {
         validateGroupMembership()
         LOG.info("Rest retrieve for soknadId: ${soknadId}")
@@ -31,12 +32,28 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
         return oppdragStateService.fetchOppdragState(soknadId)
     }
 
-    @GetMapping("/oppdrag/{id}")
+    @GetMapping("/{id}")
     fun getOpppdragStateById(@PathVariable id: Long): OppdragStateDTO {
         validateGroupMembership()
         LOG.info("Rest retrieve for id: ${id}")
         AUDIT_LOG.info("Bruker=${currentNavIdent()} slår opp oppdragId=${id}")
         return oppdragStateService.fetchOppdragStateById(id)
+    }
+
+    @PutMapping("/{id}")
+    fun updateOppdragState(@PathVariable id: Long, @RequestBody dto: OppdragStateDTO): OppdragStateDTO {
+        validateGroupMembership()
+        LOG.info("Rest update for id: ${id}")
+        AUDIT_LOG.info("Bruker=${currentNavIdent()} oppdaterer oppdragId=${id}")
+        return oppdragStateService.saveOppdragState(dto)
+    }
+
+    @GetMapping("/status/{status}")
+    fun getOppdragStateByStatus(@PathVariable status: OppdragStateStatus): List<OppdragStateDTO> {
+        validateGroupMembership()
+        LOG.info("Rest retrieve for status: ${status}")
+        AUDIT_LOG.info("Bruker=${currentNavIdent()} slår opp oppdrag på status=${status}")
+        return oppdragStateService.fetchOppdragStateByStatus(status)
     }
 
     private fun validateGroupMembership() {
