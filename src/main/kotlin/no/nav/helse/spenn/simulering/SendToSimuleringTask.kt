@@ -2,8 +2,8 @@ package no.nav.helse.spenn.simulering
 
 import io.micrometer.core.instrument.MeterRegistry
 import net.javacrumbs.shedlock.core.SchedulerLock
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.appsupport.SIMULERING
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_MAKS_BELOP
@@ -19,9 +19,9 @@ import javax.annotation.PostConstruct
 @Component
 @ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
 class SendToSimuleringTask(val simuleringService: SimuleringService,
-                       val oppdragStateService: OppdragStateService,
-                       val meterRegistry: MeterRegistry,
-                       @Value("\${scheduler.tasks.simulering.limit:100}") val limit: Int = 100) {
+                           val oppdragStateService: OppdragStateService,
+                           val meterRegistry: MeterRegistry,
+                           @Value("\${scheduler.tasks.simulering.limit:100}") val limit: Int = 100) {
 
     private val maksBelopGauge = AtomicLong(0)
 

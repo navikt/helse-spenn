@@ -3,7 +3,7 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag

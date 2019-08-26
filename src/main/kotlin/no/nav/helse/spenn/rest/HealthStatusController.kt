@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.rest
 
-import no.nav.helse.spenn.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.security.oidc.api.Unprotected
 import org.apache.kafka.streams.KafkaStreams

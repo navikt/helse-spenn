@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.rest.api.v1
 
-import no.nav.helse.spenn.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.security.oidc.api.Protected
 import no.nav.security.oidc.context.OIDCRequestContextHolder

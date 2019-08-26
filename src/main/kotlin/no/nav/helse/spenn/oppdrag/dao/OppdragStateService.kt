@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.dao
+package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO

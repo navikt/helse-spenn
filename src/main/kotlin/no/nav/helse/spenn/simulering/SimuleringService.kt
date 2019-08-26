@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType

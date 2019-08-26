@@ -4,13 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
-import no.nav.helse.spenn.overforing.SendToOSTask
-import no.nav.helse.spenn.overforing.UtbetalingService
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
@@ -26,7 +24,7 @@ import kotlin.test.assertTrue
 @JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
     "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
+@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class SendToOSTaskTest {
 
     @Autowired

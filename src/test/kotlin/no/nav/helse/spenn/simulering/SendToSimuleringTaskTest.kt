@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag

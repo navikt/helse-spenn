@@ -1,12 +1,12 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.appsupport.OPPDRAG
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Component

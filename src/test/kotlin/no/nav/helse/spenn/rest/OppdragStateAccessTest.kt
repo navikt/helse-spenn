@@ -5,7 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.nimbusds.jwt.JWTClaimsSet
-import no.nav.helse.spenn.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams

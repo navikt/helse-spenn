@@ -1,8 +1,8 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 @JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
     "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.dao"])
+@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateServiceTest {
 
     @Autowired
