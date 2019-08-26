@@ -5,8 +5,8 @@ import com.github.dockerjava.api.command.CreateContainerCmd
 import com.github.dockerjava.api.model.ExposedPort
 import com.github.dockerjava.api.model.PortBinding
 import com.github.dockerjava.api.model.Ports
-import no.nav.helse.spenn.dao.OppdragStateService
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test

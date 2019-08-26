@@ -2,11 +2,11 @@ package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.oppslag.AktørTilFnrMapper
 import java.math.BigDecimal
 
 import java.time.LocalDate

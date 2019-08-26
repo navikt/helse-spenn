@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.Oppdrag110

@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.vedtak.defaultObjectMapper
+import no.nav.helse.spenn.defaultObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate

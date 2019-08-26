@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.oppslag
+package no.nav.helse.spenn.vedtak.fnr
 
 import no.nav.helse.spenn.vedtak.Fodselsnummer
 import org.springframework.beans.factory.annotation.Value
@@ -11,7 +11,7 @@ import java.util.*
 @Component
 @Profile(value=["preprod", "prod"])
 class FnrOppslag(val stsRestClient: StsRestClient,
-                @Value("\${SPARKEL_BASE_URL:http://sparkel}") val sparkelBaseUrl: String): AktørTilFnrMapper {
+                 @Value("\${SPARKEL_BASE_URL:http://sparkel}") val sparkelBaseUrl: String): AktørTilFnrMapper {
 
     override fun tilFnr(aktørId: String): Fodselsnummer {
         val bearer = stsRestClient.token()

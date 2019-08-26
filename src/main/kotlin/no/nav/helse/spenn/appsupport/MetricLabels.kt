@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.metrics
+package no.nav.helse.spenn.appsupport
 
 
 val VEDTAK = "VEDTAK"
