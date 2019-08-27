@@ -44,7 +44,7 @@ oppdrag:
 
 oppdragstate:
   topic:
-    send: spenn-oppdrag-status
+    send: aapen-helse-sykepenger-utbetaling
 
 avstemming:
   queue:
