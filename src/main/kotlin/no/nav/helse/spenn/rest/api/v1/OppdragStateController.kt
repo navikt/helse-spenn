@@ -17,8 +17,7 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/oppdrag")
 class OppdragStateController(val oppdragStateService: OppdragStateService,
-                             val oidcRequestContextHolder: OIDCRequestContextHolder,
-                             @Value("\${api.access.requiredgroup:group1}") val requiredGroupMembership: String ) {
+                             val oidcRequestContextHolder: OIDCRequestContextHolder) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(OppdragStateController::class.java)
@@ -27,7 +26,6 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     @GetMapping("/soknad/{soknadId}")
     fun getOppdragStateBySoknadId(@PathVariable soknadId: UUID): OppdragStateDTO {
-        validateGroupMembership()
         LOG.info("Rest retrieve for soknadId: ${soknadId}")
         AUDIT_LOG.info("Bruker=${currentNavIdent()} slår opp søknadId=${soknadId}")
         return oppdragStateService.fetchOppdragState(soknadId)
@@ -35,7 +33,6 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     @GetMapping("/{id}")
     fun getOpppdragStateById(@PathVariable id: Long): OppdragStateDTO {
-        validateGroupMembership()
         LOG.info("Rest retrieve for id: ${id}")
         AUDIT_LOG.info("Bruker=${currentNavIdent()} slår opp oppdragId=${id}")
         return oppdragStateService.fetchOppdragStateById(id)
@@ -43,7 +40,6 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     @PutMapping("/{id}")
     fun updateOppdragState(@PathVariable id: Long, @RequestBody dto: OppdragStateDTO): OppdragStateDTO {
-        validateGroupMembership()
         LOG.info("Rest update for id: ${id}")
         AUDIT_LOG.info("Bruker=${currentNavIdent()} oppdaterer oppdragId=${id}")
         return oppdragStateService.saveOppdragState(dto)
@@ -51,22 +47,11 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     @GetMapping("/status/{status}")
     fun getOppdragStateByStatus(@PathVariable status: OppdragStateStatus): List<OppdragStateDTO> {
-        validateGroupMembership()
         LOG.info("Rest retrieve for status: ${status}")
         AUDIT_LOG.info("Bruker=${currentNavIdent()} slår opp oppdrag på status=${status}")
         return oppdragStateService.fetchOppdragStateByStatus(status)
     }
 
-    private fun validateGroupMembership() {
-        if (currentUserGroups() == null || (!currentUserGroups().contains(requiredGroupMembership))) {
-            LOG.debug("${currentNavIdent()} prøvde accessere API men mangler gruppen $requiredGroupMembership")
-            throw MissingGroupException("Missing group $requiredGroupMembership in JWT")
-        }
-    }
-
     private fun currentNavIdent() = oidcRequestContextHolder.oidcValidationContext.getClaims("ourissuer").get("NAVident")
-    private fun currentUserGroups() = oidcRequestContextHolder.oidcValidationContext.getClaims("ourissuer").getAsList("groups")
-}
 
-@ResponseStatus(HttpStatus.UNAUTHORIZED)
-private class MissingGroupException(message: String) : RuntimeException(message)
+}
