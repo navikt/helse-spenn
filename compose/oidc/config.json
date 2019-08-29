@@ -5,8 +5,10 @@
     {
       "client_id": "foo",
       "client_secret": "bar",
+      "grant_types": ["implicit"],
+      "response_types": ["id_token"],
       "redirect_uris": [
-        "http://localhost:9055/v1/authenticate/callback"
+        "https://spenn/v1/authenticate/callback"
       ]
     }
   ],
