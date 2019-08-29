@@ -27,8 +27,6 @@ import kotlin.test.assertEquals
 // API_ACCESS_REQUIREDGROUP=12345678-abcd-abcd-eeff-1234567890ab
 // og eventuelt: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_PROXY_URL=http://someproxy:8080
 
-const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
-
 @WebMvcTest(properties = [
     "no.nav.security.oidc.issuer.ourissuer.accepted_audience=aud-localhost",
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
@@ -144,34 +142,6 @@ class OppdragStateAccessTest {
         assertEquals(200, result.response.status)
     }
 
-    fun buildClaimSet(subject: String,
-                      issuer: String = JwtTokenGenerator.ISS,
-                      audience: String = JwtTokenGenerator.AUD,
-                      authLevel: String = JwtTokenGenerator.ACR,
-                      expiry: Long = JwtTokenGenerator.EXPIRY,
-                      issuedAt: Date = Date(),
-                      navIdent: String? = null,
-                      groups: List<String>? = null): JWTClaimsSet {
-        val builder = JWTClaimsSet.Builder()
-                .subject(subject)
-                .issuer(issuer)
-                .audience(audience)
-                .jwtID(UUID.randomUUID().toString())
-                .claim("acr", authLevel)
-                .claim("ver", "1.0")
-                .claim("nonce", "myNonce")
-                .claim("auth_time", issuedAt)
-                .notBeforeTime(issuedAt)
-                .issueTime(issuedAt)
-                .expirationTime(Date(issuedAt.time + expiry))
-        if (navIdent != null) {
-            builder.claim("NAVident", navIdent)
-        }
-        if (groups != null) {
-            builder.claim("groups", groups)
-        }
-        return builder.build()
-    }
 
 
 }
