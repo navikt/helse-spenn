@@ -14,7 +14,7 @@ services:
     command: ["/spenn/wait_for.sh", "postgres:5432","/flyway/flyway -url=jdbc:postgresql://postgres:5432/helse-spenn-oppdrag -schemas=public -user=postgres -password=postgres migrate"]
     volumes:
       - ./src/main/resources/db/migration:/flyway/sql
-      - ./scripts/spenn:/spenn
+      - ./compose/spenn:/spenn
     depends_on:
       - postgres
 
