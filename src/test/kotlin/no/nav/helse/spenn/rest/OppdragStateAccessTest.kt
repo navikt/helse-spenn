@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -27,12 +29,11 @@ import kotlin.test.assertEquals
 // API_ACCESS_REQUIREDGROUP=12345678-abcd-abcd-eeff-1234567890ab
 // og eventuelt: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_PROXY_URL=http://someproxy:8080
 
-const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
-
 @WebMvcTest(properties = [
     "no.nav.security.oidc.issuer.ourissuer.accepted_audience=aud-localhost",
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
     "api.access.requiredgroup=$requiredGroupMembership"])
+@Import(AuditSupport::class)
 class OppdragStateAccessTest {
 
     @Autowired
@@ -44,7 +45,6 @@ class OppdragStateAccessTest {
     lateinit var healthStatusController: HealthStatusController
     @MockBean
     lateinit var oppdragStateService: OppdragStateService
-
     //val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
     companion object {
@@ -144,34 +144,6 @@ class OppdragStateAccessTest {
         assertEquals(200, result.response.status)
     }
 
-    fun buildClaimSet(subject: String,
-                      issuer: String = JwtTokenGenerator.ISS,
-                      audience: String = JwtTokenGenerator.AUD,
-                      authLevel: String = JwtTokenGenerator.ACR,
-                      expiry: Long = JwtTokenGenerator.EXPIRY,
-                      issuedAt: Date = Date(),
-                      navIdent: String? = null,
-                      groups: List<String>? = null): JWTClaimsSet {
-        val builder = JWTClaimsSet.Builder()
-                .subject(subject)
-                .issuer(issuer)
-                .audience(audience)
-                .jwtID(UUID.randomUUID().toString())
-                .claim("acr", authLevel)
-                .claim("ver", "1.0")
-                .claim("nonce", "myNonce")
-                .claim("auth_time", issuedAt)
-                .notBeforeTime(issuedAt)
-                .issueTime(issuedAt)
-                .expirationTime(Date(issuedAt.time + expiry))
-        if (navIdent != null) {
-            builder.claim("NAVident", navIdent)
-        }
-        if (groups != null) {
-            builder.claim("groups", groups)
-        }
-        return builder.build()
-    }
 
 
 }
