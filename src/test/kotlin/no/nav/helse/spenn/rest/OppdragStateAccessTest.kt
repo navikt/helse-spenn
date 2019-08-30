@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -31,6 +33,7 @@ import kotlin.test.assertEquals
     "no.nav.security.oidc.issuer.ourissuer.accepted_audience=aud-localhost",
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
     "api.access.requiredgroup=$requiredGroupMembership"])
+@Import(AuditSupport::class)
 class OppdragStateAccessTest {
 
     @Autowired
@@ -42,7 +45,6 @@ class OppdragStateAccessTest {
     lateinit var healthStatusController: HealthStatusController
     @MockBean
     lateinit var oppdragStateService: OppdragStateService
-
     //val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
     companion object {

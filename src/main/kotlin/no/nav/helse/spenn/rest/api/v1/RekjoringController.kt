@@ -17,7 +17,7 @@ import java.util.*
 @Protected
 @RequestMapping("/api/v1/rekjoring")
 class RekjoringController(val oppdragStateService: OppdragStateService,
-                          val oidcRequestContextHolder: OIDCRequestContextHolder) {
+                          val audit: AuditSupport) {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(RekjoringController::class.java)
@@ -27,6 +27,7 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
     fun resetStateForRerun(@RequestParam(required = false, defaultValue = "") id: String,
                            @RequestParam(required = false, defaultValue = "") soknadId: String): List<String> {
         LOG.info("running reset state for rerun for: ${id} ${soknadId}")
+        audit.info("rekjører for  ${id} ${soknadId}")
         val idList = if (id.isNotEmpty()) id.split(",").map { it.toLong() } else listOf()
         val soknadList = if (soknadId.isNotEmpty()) soknadId.split(",").map { UUID.fromString(it) } else listOf()
         val oppdragList = idList.map { oppdragStateService.fetchOppdragStateById(it) }.union(soknadList.map{oppdragStateService.fetchOppdragState(it)})
@@ -39,6 +40,8 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
 
     @PutMapping("/all")
     fun resetAllErrorStateForRerun(@RequestParam(required = false, defaultValue = "false") includeSimulering: Boolean): List<String> {
+        LOG.info("running reset all oppdragstate that got FEIL")
+        audit.info("rekjører for alle oppdrag som har feil (og simulerfeil)")
         val feilList = if (includeSimulering) oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_FEIL)
                         .union(oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.FEIL))
                       else oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.FEIL)
