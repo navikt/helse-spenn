@@ -58,9 +58,9 @@ class OppdragAvstemmingIT {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
                 vedtak = Vedtak(
-                        søknadId = UUID.randomUUID(),
+                        soknadId = UUID.randomUUID(),
                         maksDato = LocalDate.now().plusYears(1),
-                        aktørId = "12341234",
+                        aktorId = "12341234",
                         vedtaksperioder = emptyList()
                 ))
 

@@ -2,7 +2,6 @@ package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
@@ -39,8 +38,8 @@ private fun Vedtak.lagLinjer(): List<UtbetalingsLinje> =
         }.flatten()
 
 fun JsonNode.tilVedtak(key: String): Vedtak =
-        Vedtak(søknadId = UUID.fromString(key),
-                aktørId = this.get("originalSøknad").get("aktorId").textValue(),
+        Vedtak(soknadId = UUID.fromString(key),
+                aktorId = this.get("originalSøknad").get("aktorId").textValue(),
                 vedtaksperioder = lagVedtaksperioder(this.get("vedtak").get("perioder")),
                 maksDato = this.get("avklarteVerdier").get("maksdato").get("fastsattVerdi").asLocalDate()
                 )

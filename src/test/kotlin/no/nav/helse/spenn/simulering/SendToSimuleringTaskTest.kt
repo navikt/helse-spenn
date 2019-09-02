@@ -58,9 +58,9 @@ val oppdragEn = OppdragStateDTO(
         soknadId = UUID.randomUUID(),
         utbetalingsOppdrag = UtbetalingsOppdrag(
                 vedtak = Vedtak(
-                        søknadId = UUID.randomUUID(),
+                        soknadId = UUID.randomUUID(),
                         maksDato = LocalDate.now().plusYears(1),
-                        aktørId = "12341234",
+                        aktorId = "12341234",
                         vedtaksperioder = emptyList()
                 ),
                 utbetalingsLinje = emptyList(),

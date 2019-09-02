@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.grensesnittavstemming
 
-import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
@@ -228,9 +227,9 @@ class AvstemmingMapperTest {
                                 utbetalesTil = "999988887"
                         )),
                         vedtak = Vedtak(
-                                søknadId = soknadId,
+                                soknadId = soknadId,
                                 maksDato = LocalDate.now().plusYears(1),
-                                aktørId = "12341234",
+                                aktorId = "12341234",
                                 vedtaksperioder = emptyList()
                         )
                 ),

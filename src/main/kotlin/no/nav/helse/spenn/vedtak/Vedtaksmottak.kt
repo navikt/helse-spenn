@@ -69,7 +69,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                     log.info("soknad id ${key}")
                 }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktørId),vedtak) }
+                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktorId),vedtak) }
                 .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
                 .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
                 .filter { _, value ->  value != null}

@@ -9,12 +9,10 @@ import java.io.StringWriter
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
-import javax.xml.datatype.DatatypeFactory
 import kotlin.test.assertNull
 
 class SimulerOppdragMapperTest {
@@ -32,9 +30,9 @@ class SimulerOppdragMapperTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "12121212345", utbetalingsLinje = listOf(enOppdragsLinje),
                 vedtak = Vedtak(
-                        søknadId = UUID.randomUUID(),
+                        soknadId = UUID.randomUUID(),
                         maksDato = maksDato,
-                        aktørId = "12341234",
+                        aktorId = "12341234",
                         vedtaksperioder = emptyList()
                 ))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),

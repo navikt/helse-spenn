@@ -28,9 +28,9 @@ class OppdragMapperTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "12121212345", utbetalingsLinje = listOf(enOppdragsLinje),
                 vedtak = Vedtak(
-                        søknadId = UUID.randomUUID(),
+                        soknadId = UUID.randomUUID(),
                         maksDato = maksDato,
-                        aktørId = "12341234",
+                        aktorId = "12341234",
                         vedtaksperioder = emptyList()
                 ))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),

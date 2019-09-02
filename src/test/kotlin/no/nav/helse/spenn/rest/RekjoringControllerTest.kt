@@ -57,9 +57,9 @@ class RekjoringControllerTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje),
                 vedtak = Vedtak(
-                        søknadId = UUID.randomUUID(),
+                        soknadId = UUID.randomUUID(),
                         maksDato = LocalDate.now().plusYears(1),
-                        aktørId = "12341234",
+                        aktorId = "12341234",
                         vedtaksperioder = emptyList()
                 ))
         val feil = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
