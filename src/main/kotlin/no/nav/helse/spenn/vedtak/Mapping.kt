@@ -16,7 +16,7 @@ typealias Fodselsnummer = String
 
 
 fun Vedtak.tilUtbetaling(fodselsnummer: Fodselsnummer): UtbetalingsOppdrag = UtbetalingsOppdrag(
-        vedtak = this, //defaultObjectMapper.convertValue(this, JsonNode::class.java),
+        vedtak = this,
         operasjon = AksjonsKode.OPPDATER,
         oppdragGjelder = fodselsnummer,
         utbetalingsLinje = lagLinjer()
