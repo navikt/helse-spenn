@@ -2,6 +2,7 @@ package no.nav.helse.spenn.oppdrag
 
 
 import no.nav.helse.spenn.overforing.OppdragMQSender
+import no.nav.helse.spenn.vedtak.Vedtak
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -38,7 +39,13 @@ class MQOppdragIT {
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
-                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
+                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
+                vedtak = Vedtak(
+                        søknadId = UUID.randomUUID(),
+                        maksDato = LocalDate.now().plusYears(1),
+                        aktørId = "12341234",
+                        vedtaksperioder = emptyList()
+                ))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
         mqSender.sendOppdrag(oppdragState.toOppdrag())

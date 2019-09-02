@@ -5,6 +5,7 @@ import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.overforing.OppdragMQSender
+import no.nav.helse.spenn.vedtak.Vedtak
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,7 +56,13 @@ class OppdragAvstemmingIT {
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
-                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
+                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
+                vedtak = Vedtak(
+                        søknadId = UUID.randomUUID(),
+                        maksDato = LocalDate.now().plusYears(1),
+                        aktørId = "12341234",
+                        vedtaksperioder = emptyList()
+                ))
 
         val oppdragStateNew = OppdragStateDTO(id = null, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)

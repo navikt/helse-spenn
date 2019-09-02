@@ -9,7 +9,8 @@ import java.util.*
 data class Vedtak (
         val søknadId: UUID,
         val aktørId: String,
-        val vedtaksperioder: List<Vedtaksperiode>
+        val vedtaksperioder: List<Vedtaksperiode>,
+        val maksDato : LocalDate
 )
 
 data class Vedtaksperiode(

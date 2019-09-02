@@ -29,7 +29,7 @@ class VedtakToOppdragMappingTest {
                 grad = BigInteger.valueOf(100)
         )
         val målbilde = UtbetalingsOppdrag(
-                vedtak = defaultObjectMapper.convertValue(vedtak, JsonNode::class.java),
+                vedtak = vedtak,
                 operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "12345678901",
                 utbetalingsLinje = listOf(oppdragsLinje)
@@ -51,7 +51,8 @@ class VedtakToOppdragMappingTest {
                                 mottager = "897654321",
                                 andel = 100
                         ))
-                ))
+                )),
+                maksDato = LocalDate.now().plusYears(1)
         )
     }
 }
