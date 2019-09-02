@@ -77,7 +77,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         return SimuleringResult(status = Status.OK, mottaker =
         Mottaker(gjelderId = simulering.gjelderId, gjelderNavn = simulering.gjelderNavn.trim(),
                 datoBeregnet = simulering.datoBeregnet, totalBelop = simulering.belop,
-                periodeList = mapPeriodeList(simulering.beregningsPeriode)))
+                periodeList = mapPeriodeList(simulering.beregningsPeriode), kodeFaggruppe = simulering.kodeFaggruppe))
     }
 
     private fun mapPeriodeList(beregningsPeriode: List<BeregningsPeriode>): List<Periode> {
@@ -94,7 +94,8 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
                 faktiskTom = LocalDate.parse(detaljer.faktiskTom), forfall = LocalDate.parse(stoppNivaa.forfall),
                 oppdragsId = stoppNivaa.oppdragsId, konto = detaljer.kontoStreng.trim(), utbetalesTilId = stoppNivaa.utbetalesTilId,
                 utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(), uforegrad = detaljer.uforeGrad,
-                utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse.trim()))
+                utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse.trim()), tilbakeforing = detaljer.isTilbakeforing,
+                behandlingsKode = detaljer.behandlingskode)
     }
 
 

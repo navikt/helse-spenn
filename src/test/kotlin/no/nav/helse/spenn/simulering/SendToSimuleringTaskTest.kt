@@ -61,7 +61,8 @@ val oppdragEn = OppdragStateDTO(
                 operasjon = AksjonsKode.SIMULERING
         )
 )
-val simuleringsResultat = SimuleringResult(status = Status.OK, mottaker = Mottaker(datoBeregnet = "", gjelderId = "", gjelderNavn = "", periodeList = emptyList(), totalBelop = BigDecimal.TEN), feilMelding = "")
+val simuleringsResultat = SimuleringResult(status = Status.OK, mottaker = Mottaker(datoBeregnet = "", gjelderId = "", gjelderNavn = "",
+        periodeList = emptyList(), totalBelop = BigDecimal.TEN, kodeFaggruppe = "KODE"), feilMelding = "")
 val simulertOppdragEn = oppdragEn.copy(simuleringResult = simuleringsResultat)
 val oppdragTo = oppdragEn.copy(id = 2L, soknadId = UUID.randomUUID())
 val simulertOppdragTo = oppdragTo.copy(simuleringResult = simuleringsResultat)
