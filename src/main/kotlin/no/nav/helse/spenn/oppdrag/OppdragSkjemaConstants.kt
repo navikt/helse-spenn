@@ -22,13 +22,6 @@ class OppdragSkjemaConstants {
             return DatatypeFactory.newInstance()
                     .newXMLGregorianCalendar(GregorianCalendar.from(dato.atStartOfDay(ZoneId.systemDefault())))
         }
-
-        /*@JvmStatic
-        fun toFnrOrOrgnr(fonr: String) : String {
-            if (fonr.length==9) return "00" + fonr
-            return fonr
-        }*/
-
     }
 
 }
