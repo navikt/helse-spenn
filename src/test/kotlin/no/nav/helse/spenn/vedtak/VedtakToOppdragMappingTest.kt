@@ -55,11 +55,9 @@ class VedtakToOppdragMappingTest {
 
     @Test
     fun testUUIDtoFagID() {
-
-            val uuid = UUID.randomUUID();
-            val fagId = uuid.toFagId()
-            println(fagId)
-            val decode = fagId.toUUID()
-            assertEquals(uuid, decode)
+        val uuid = UUID.randomUUID();
+        val fagId = uuid.toFagId()
+        val decode = fagId.toUUID()
+        assertEquals(uuid, decode)
     }
 }

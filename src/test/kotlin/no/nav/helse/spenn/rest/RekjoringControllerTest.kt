@@ -48,19 +48,6 @@ class RekjoringControllerTest {
 
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().port(33333))
-        val fom = LocalDate.of(2019, Month.APRIL, 2)
-        val tom = LocalDate.of(2019, Month.APRIL, 16)
-        val linje = UtbetalingsLinje(id = "1234567890", datoFom = fom,
-                datoTom = tom, sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.DAGLIG,
-                utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
-        val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
-        val feil = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling, status = OppdragStateStatus.FEIL)
-        val simulerFeil = feil.copy(id=2L, status=OppdragStateStatus.SIMULERING_FEIL, soknadId = UUID.randomUUID())
-        val ikkeFeil = feil.copy(id=3L, soknadId = UUID.randomUUID(), status = OppdragStateStatus.FERDIG)
-        val feil2 = feil.copy(4L, soknadId = UUID.randomUUID())
-
         @BeforeAll
         @JvmStatic
         fun before() {
@@ -73,6 +60,19 @@ class RekjoringControllerTest {
         fun after() {
             server.stop()
         }
+
+        val fom = LocalDate.of(2019, Month.APRIL, 2)
+        val tom = LocalDate.of(2019, Month.APRIL, 16)
+        val linje = UtbetalingsLinje(id = "1234567890", datoFom = fom,
+                datoTom = tom, sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.DAGLIG,
+                utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
+        val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
+                oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
+        val feil = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
+                utbetalingsOppdrag = utbetaling, status = OppdragStateStatus.FEIL)
+        val simulerFeil = feil.copy(id=2L, status=OppdragStateStatus.SIMULERING_FEIL, soknadId = UUID.randomUUID())
+        val ikkeFeil = feil.copy(id=3L, soknadId = UUID.randomUUID(), status = OppdragStateStatus.FERDIG)
+        val feil2 = feil.copy(4L, soknadId = UUID.randomUUID())
     }
 
     @Test
