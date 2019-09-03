@@ -6,9 +6,10 @@ import java.util.*
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Vedtak (
-        val søknadId: UUID,
-        val aktørId: String,
-        val vedtaksperioder: List<Vedtaksperiode>
+        val soknadId: UUID,
+        val aktorId: String,
+        val vedtaksperioder: List<Vedtaksperiode>,
+        val maksDato : LocalDate
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -7,6 +7,7 @@ import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
+import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.oidc.test.support.JwtTokenGenerator
@@ -19,7 +20,6 @@ import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
@@ -67,7 +67,13 @@ class RekjoringControllerTest {
                 datoTom = tom, sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
+                oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje),
+                vedtak = Vedtak(
+                        soknadId = UUID.randomUUID(),
+                        maksDato = LocalDate.now().plusYears(1),
+                        aktorId = "12341234",
+                        vedtaksperioder = emptyList()
+                ))
         val feil = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling, status = OppdragStateStatus.FEIL)
         val simulerFeil = feil.copy(id=2L, status=OppdragStateStatus.SIMULERING_FEIL, soknadId = UUID.randomUUID())

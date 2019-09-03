@@ -3,6 +3,10 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.AksjonsKode
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -27,7 +31,7 @@ class VedtakToOppdragMappingTest {
                 grad = BigInteger.valueOf(100)
         )
         val målbilde = UtbetalingsOppdrag(
-                vedtak = defaultObjectMapper.convertValue(vedtak, JsonNode::class.java),
+                vedtak = vedtak,
                 operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "12345678901",
                 utbetalingsLinje = listOf(oppdragsLinje)
@@ -39,8 +43,8 @@ class VedtakToOppdragMappingTest {
 
     private fun etEnkeltVedtak(): Vedtak {
         return Vedtak(
-                søknadId = UUID.randomUUID(),
-                aktørId = "en random aktørid",
+                soknadId = UUID.randomUUID(),
+                aktorId = "en random aktørid",
                 vedtaksperioder = listOf(Vedtaksperiode(
                         fom = LocalDate.of(2020, 1, 15),
                         tom = LocalDate.of(2020, 1, 30),
@@ -49,7 +53,8 @@ class VedtakToOppdragMappingTest {
                                 mottager = "897654321",
                                 andel = 100
                         ))
-                ))
+                )),
+                maksDato = LocalDate.now().plusYears(1)
         )
     }
 
