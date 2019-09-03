@@ -7,9 +7,10 @@ import java.util.*
  aggregert fra SPA sitt SykepengeVedtak-objekt
  */
 data class Vedtak (
-        val søknadId: UUID,
-        val aktørId: String,
-        val vedtaksperioder: List<Vedtaksperiode>
+        val soknadId: UUID,
+        val aktorId: String,
+        val vedtaksperioder: List<Vedtaksperiode>,
+        val maksDato : LocalDate
 )
 
 data class Vedtaksperiode(

@@ -5,15 +5,14 @@ import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
+import no.nav.system.os.entiteter.oppdragskjema.RefusjonsInfo
 import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
-import no.trygdeetaten.skjema.oppdrag.ObjectFactory
-import no.trygdeetaten.skjema.oppdrag.Oppdrag
-import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
-import no.trygdeetaten.skjema.oppdrag.TfradragTillegg
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import no.nav.helse.spenn.vedtak.tilVedtak
+import no.trygdeetaten.skjema.oppdrag.*
 
 
 private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory()
@@ -35,14 +34,19 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = id.toString()
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
-        oppdragGjelderId = OppdragSkjemaConstants.toFnrOrOrgnr(utbetalingsOppdrag.oppdragGjelder)
+        oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
         saksbehId = OppdragSkjemaConstants.APP
         enhet.add(oppdragsEnhet)
+        val vedtak = utbetalingsOppdrag.vedtak
         utbetalingsOppdrag.utbetalingsLinje.forEach {
             if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
             if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
-            oppdragslinje.add(mapToOppdragslinje150(it))
+            oppdragslinje.add(
+                    mapToSimuleringsOppdragslinje(
+                            oppdragslinje = it,
+                            maksDato = vedtak.maksDato)
+            )
         }
     }
     return grensesnittFactory.createSimulerBeregningRequest().apply {
@@ -58,7 +62,9 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
 
 }
 
-private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : Oppdragslinje {
+private fun mapToSimuleringsOppdragslinje(oppdragslinje : UtbetalingsLinje, maksDato : LocalDate) : Oppdragslinje {
+    val erRefusjonTilArbeidsgiver = true
+
     val grad = Grad().apply {
         typeGrad = GradTypeKode.UFØREGRAD.kode
         grad = oppdragslinje.grad
@@ -77,7 +83,17 @@ private fun mapToOppdragslinje150(oppdragslinje : UtbetalingsLinje) : Oppdragsli
         fradragTillegg = FradragTillegg.T
         typeSats = oppdragslinje.satsTypeKode.kode
         saksbehId = OppdragSkjemaConstants.APP
-        utbetalesTilId = OppdragSkjemaConstants.toFnrOrOrgnr(oppdragslinje.utbetalesTil)
+        if (erRefusjonTilArbeidsgiver) {
+            refusjonsInfo = RefusjonsInfo().apply {
+                assert(oppdragslinje.utbetalesTil.length == 9)
+                this.refunderesId = "00" + oppdragslinje.utbetalesTil
+                this.datoFom = datoVedtakFom
+                this.maksDato = maksDato.format(formatter)
+            }
+        } else {
+            assert(oppdragslinje.utbetalesTil.length == 11)
+            utbetalesTilId = oppdragslinje.utbetalesTil
+        }
         brukKjoreplan = "N"
         this.grad.add(grad)
         this.attestant.add(attestant)
@@ -100,7 +116,7 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = id.toString()
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
-        oppdragGjelderId = OppdragSkjemaConstants.toFnrOrOrgnr(utbetalingsOppdrag.oppdragGjelder)
+        oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
         saksbehId = OppdragSkjemaConstants.APP
         avstemming115 = objectFactory.createAvstemming115().apply {
@@ -109,8 +125,11 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
             this.tidspktMelding = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
         }
         oppdragsEnhet120.add(oppdragsEnhet)
+        val vedtak = utbetalingsOppdrag.vedtak
         utbetalingsOppdrag.utbetalingsLinje.forEach {
-            oppdragsLinje150.add(mapTolinje150(it))
+            oppdragsLinje150.add(mapTolinje150(
+                    oppdragslinje = it,
+                    maksDato = vedtak.maksDato))
         }
     }
 
@@ -121,7 +140,9 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
 
 }
 
-private fun mapTolinje150(oppdragslinje : UtbetalingsLinje) : OppdragsLinje150 {
+private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate) : OppdragsLinje150 {
+    val erRefusjonTilArbeidsgiver = true
+
     val grad = objectFactory.createGrad170().apply {
         typeGrad = GradTypeKode.UFØREGRAD.kode
         grad = oppdragslinje.grad
@@ -140,7 +161,17 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje) : OppdragsLinje150 {
         fradragTillegg = TfradragTillegg.T
         typeSats = oppdragslinje.satsTypeKode.kode
         saksbehId = OppdragSkjemaConstants.APP
-        utbetalesTilId = OppdragSkjemaConstants.toFnrOrOrgnr(oppdragslinje.utbetalesTil)
+        if (erRefusjonTilArbeidsgiver) {
+            refusjonsinfo156 = Refusjonsinfo156().apply {
+                assert(oppdragslinje.utbetalesTil.length == 9)
+                this.refunderesId = "00" + oppdragslinje.utbetalesTil
+                this.datoFom = datoVedtakFom
+                this.maksDato = OppdragSkjemaConstants.toXMLDate(maksDato)
+            }
+        } else {
+            assert(oppdragslinje.utbetalesTil.length == 11)
+            utbetalesTilId = oppdragslinje.utbetalesTil
+        }
         brukKjoreplan = "N"
         grad170.add(grad)
         attestant180.add(attestant)

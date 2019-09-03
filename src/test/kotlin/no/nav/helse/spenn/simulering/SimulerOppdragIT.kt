@@ -3,6 +3,7 @@ package no.nav.helse.spenn.simulering
 import no.nav.helse.spenn.AppConfig
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.vedtak.Vedtak
 
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.junit.jupiter.api.Test
@@ -31,7 +32,13 @@ class SimulerOppdragIT {
                 datoTom = tom, sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje))
+                oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje),
+                vedtak = Vedtak(
+                        soknadId = UUID.randomUUID(),
+                        maksDato = LocalDate.now().plusYears(1),
+                        aktorId = "12341234",
+                        vedtaksperioder = emptyList()
+                ))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
         val simulerOppdrag = simuleringService.simulerOppdrag(oppdragState.toSimuleringRequest())
@@ -59,7 +66,13 @@ class SimulerOppdragIT {
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
+                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
+                vedtak = Vedtak(
+                        soknadId = UUID.randomUUID(),
+                        maksDato = LocalDate.now().plusYears(1),
+                        aktorId = "12341234",
+                        vedtaksperioder = emptyList()
+                ))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
         log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simuleringService.simulerOppdrag(

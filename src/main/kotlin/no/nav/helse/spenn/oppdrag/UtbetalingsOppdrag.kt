@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.JsonNode
+import no.nav.helse.spenn.vedtak.Vedtak
 
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -9,7 +10,7 @@ import java.time.LocalDate
 
 
 data class UtbetalingsOppdrag(
-        val vedtak: JsonNode? = null,
+        val vedtak: Vedtak,
         val operasjon : AksjonsKode,
         val oppdragGjelder: String, // "angir hvem som saken/vedtaket er registrert på i fagrutinen"
         val utbetalingsLinje : List<UtbetalingsLinje>)

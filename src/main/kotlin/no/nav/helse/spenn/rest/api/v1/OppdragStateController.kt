@@ -23,7 +23,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
     @GetMapping("/soknad/{soknadId}")
     fun getOppdragStateBySoknadId(@PathVariable soknadId: UUID): OppdragStateDTO {
         LOG.info("Rest retrieve for soknadId: ${soknadId}")
-        audit.info("slår opp søknadId=${soknadId}")
+        audit.info("slår opp soknadId=${soknadId}")
         return oppdragStateService.fetchOppdragState(soknadId)
     }
 

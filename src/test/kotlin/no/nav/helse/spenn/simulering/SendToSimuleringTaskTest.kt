@@ -9,11 +9,13 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -55,7 +57,12 @@ val oppdragEn = OppdragStateDTO(
         avstemming = null,
         soknadId = UUID.randomUUID(),
         utbetalingsOppdrag = UtbetalingsOppdrag(
-                vedtak = null,
+                vedtak = Vedtak(
+                        soknadId = UUID.randomUUID(),
+                        maksDato = LocalDate.now().plusYears(1),
+                        aktorId = "12341234",
+                        vedtaksperioder = emptyList()
+                ),
                 utbetalingsLinje = emptyList(),
                 oppdragGjelder = "someone",
                 operasjon = AksjonsKode.SIMULERING
