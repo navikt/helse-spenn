@@ -78,12 +78,12 @@ class RekjoringControllerTest {
     @Test
     fun runresetStateTest() {
         given(oppdragStateService.fetchOppdragState(ikkeFeil.soknadId)).willReturn(ikkeFeil)
-        given(oppdragStateService.fetchOppdragStateById(1L)).willReturn(feil)
-        given(oppdragStateService.fetchOppdragStateById(2L)).willReturn(simulerFeil)
+        given(oppdragStateService.fetchOppdragState(feil.soknadId)).willReturn(feil)
+        given(oppdragStateService.fetchOppdragState(simulerFeil.soknadId)).willReturn(simulerFeil)
         given(oppdragStateService.fetchOppdragState(feil2.soknadId)).willReturn(feil2)
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", groups = listOf(requiredGroupMembership)))
         val requestBuilder = MockMvcRequestBuilders
-                .put("/api/v1/rekjoring?id=1,2&soknadId=${ikkeFeil.soknadId},${feil2.soknadId}")
+                .put("/api/v1/rekjoring?fagId=${feil.soknadId.toFagId()},${simulerFeil.soknadId.toFagId()}&soknadId=${ikkeFeil.soknadId},${feil2.soknadId}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer ${jwt.serialize()}")
         mockMvc.perform(requestBuilder)

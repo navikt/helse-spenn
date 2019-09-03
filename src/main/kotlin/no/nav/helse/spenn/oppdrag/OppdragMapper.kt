@@ -12,8 +12,10 @@ import no.trygdeetaten.skjema.oppdrag.ObjectFactory
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
 import no.trygdeetaten.skjema.oppdrag.TfradragTillegg
+import java.nio.ByteBuffer
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory()
@@ -33,7 +35,7 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
-        fagsystemId = id.toString()
+        fagsystemId = fagId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = OppdragSkjemaConstants.toFnrOrOrgnr(utbetalingsOppdrag.oppdragGjelder)
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
@@ -98,7 +100,7 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         kodeAksjon = utbetalingsOppdrag.operasjon.kode
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
-        fagsystemId = id.toString()
+        fagsystemId = fagId
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = OppdragSkjemaConstants.toFnrOrOrgnr(utbetalingsOppdrag.oppdragGjelder)
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
@@ -146,4 +148,15 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje) : OppdragsLinje150 {
         attestant180.add(attestant)
 
     }
+}
+
+fun UUID.toFagId(): String {
+    val byteBuf = ByteBuffer.wrap(ByteArray(16)).putLong(mostSignificantBits).putLong(leastSignificantBits)
+    val encodeToString = Base64.getUrlEncoder().encodeToString(byteBuf.array())
+    return encodeToString.substring(0, encodeToString.length-2)
+}
+
+fun String.toUUID(): UUID {
+    val buf = ByteBuffer.wrap(Base64.getUrlDecoder().decode(this.plus("=="))).asLongBuffer()
+    return UUID(buf.get(0), buf.get(1))
 }

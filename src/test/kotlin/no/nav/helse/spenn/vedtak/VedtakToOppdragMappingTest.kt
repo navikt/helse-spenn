@@ -2,16 +2,14 @@ package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.AksjonsKode
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
+import kotlin.test.assertEquals
 
 class VedtakToOppdragMappingTest {
 
@@ -53,5 +51,15 @@ class VedtakToOppdragMappingTest {
                         ))
                 ))
         )
+    }
+
+    @Test
+    fun testUUIDtoFagID() {
+
+            val uuid = UUID.randomUUID();
+            val fagId = uuid.toFagId()
+            println(fagId)
+            val decode = fagId.toUUID()
+            assertEquals(uuid, decode)
     }
 }

@@ -4,6 +4,7 @@ import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.toFagId
 import no.nav.helse.spenn.simulering.SimuleringResult
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -73,7 +74,8 @@ fun toDTO(entity: OppdragState): OppdragStateDTO {
             simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
             modified = entity.modified,
             created = entity.created,
-            avstemming = toAvstemmingDTO(entity.avstemming))
+            avstemming = toAvstemmingDTO(entity.avstemming),
+            fagId = entity.soknadId.toFagId())
 }
 
 fun toAvstemmingEntity(dto: AvstemmingDTO?): Avstemming? {
