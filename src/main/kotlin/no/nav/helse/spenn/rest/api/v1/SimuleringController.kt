@@ -20,8 +20,8 @@ class SimuleringController(val simuleringService: SimuleringService,
 
     @PostMapping()
     fun runSimulering(@RequestBody vedtak: Vedtak): SimuleringResult? {
-        val oppdrag = OppdragStateDTO(soknadId = vedtak.søknadId,
-                utbetalingsOppdrag = vedtak.tilUtbetaling(aktørTilFnrMapper.tilFnr(vedtak.aktørId)))
+        val oppdrag = OppdragStateDTO(soknadId = vedtak.soknadId,
+                utbetalingsOppdrag = vedtak.tilUtbetaling(aktørTilFnrMapper.tilFnr(vedtak.aktorId)))
         return simuleringService.runSimulering(oppdrag).simuleringResult
     }
 
