@@ -1,23 +1,28 @@
 package no.nav.helse.spenn.rest.api.v1
 
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.SimuleringResult
+import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.vedtak.Vedtak
+import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
+import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.security.oidc.api.Protected
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @Protected
 @RequestMapping("/api/v1/simulering")
-class SimuleringController(val oppdragStateService: OppdragStateService) {
+class SimuleringController(val simuleringService: SimuleringService,
+                           val aktørTilFnrMapper: AktørTilFnrMapper) {
 
-    @GetMapping("/{soknadId}")
-    fun getSimuleringBySoknadId(@PathVariable soknadId: UUID): SimuleringResult {
-        return TODO()
+    @PostMapping()
+    fun runSimulering(@RequestBody vedtak: Vedtak): SimuleringResult? {
+        val oppdrag = OppdragStateDTO(soknadId = vedtak.søknadId,
+                utbetalingsOppdrag = vedtak.tilUtbetaling(aktørTilFnrMapper.tilFnr(vedtak.aktørId)))
+        return simuleringService.runSimulering(oppdrag).simuleringResult
     }
 
-    @PostMapping("/{soknadId}")
-    fun runSimulering(@PathVariable soknadId: UUID): SimuleringResult {
-        return TODO()
-    }
 }

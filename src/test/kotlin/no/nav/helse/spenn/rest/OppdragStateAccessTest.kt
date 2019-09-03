@@ -7,6 +7,8 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
+import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
@@ -34,18 +36,13 @@ import kotlin.test.assertEquals
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
     "api.access.requiredgroup=$requiredGroupMembership"])
 @Import(AuditSupport::class)
+@MockBean(HealthStatusController::class, SimuleringService::class, KafkaStreams::class,
+        AktørTilFnrMapper::class, OppdragStateService::class)
 class OppdragStateAccessTest {
 
     @Autowired
     lateinit var mockMvc: MockMvc
 
-    @MockBean
-    lateinit var kafkaStreams: KafkaStreams
-    @MockBean
-    lateinit var healthStatusController: HealthStatusController
-    @MockBean
-    lateinit var oppdragStateService: OppdragStateService
-    //val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().port(33333))

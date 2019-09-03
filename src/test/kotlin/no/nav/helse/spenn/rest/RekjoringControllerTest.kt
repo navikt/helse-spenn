@@ -7,6 +7,8 @@ import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
+import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
 import org.hamcrest.Matchers.`is`
@@ -17,6 +19,7 @@ import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
@@ -34,15 +37,12 @@ import java.util.*
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
     "api.access.requiredgroup=$requiredGroupMembership"])
 @Import(AuditSupport::class)
+@MockBean(HealthStatusController::class, SimuleringService::class, KafkaStreams::class, AktørTilFnrMapper::class)
 class RekjoringControllerTest {
 
     @Autowired
     lateinit var mockMvc: MockMvc
 
-    @MockBean
-    lateinit var kafkaStreams: KafkaStreams
-    @MockBean
-    lateinit var healthStatusController: HealthStatusController
     @MockBean
     lateinit var oppdragStateService: OppdragStateService
 
