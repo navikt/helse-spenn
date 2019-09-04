@@ -2,8 +2,12 @@ package no.nav.helse.spenn.rest
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
+import no.nav.helse.spenn.vedtak.Fordeling
+import no.nav.helse.spenn.vedtak.Vedtak
+import no.nav.helse.spenn.vedtak.Vedtaksperiode
 import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
+import java.time.LocalDate
 import java.util.*
 
 const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
@@ -45,4 +49,21 @@ fun stubOIDCProvider() {
 
     WireMock.stubFor(WireMock.any(WireMock.urlPathEqualTo("/keys")).willReturn(
             WireMock.okJson(JwkGenerator.getJWKSet().toPublicJWKSet().toString())))
+}
+
+fun etEnkeltVedtak(): Vedtak {
+    return Vedtak(
+            soknadId = UUID.randomUUID(),
+            aktorId = "en random aktørid",
+            vedtaksperioder = listOf(Vedtaksperiode(
+                    fom = LocalDate.of(2020, 1, 15),
+                    tom = LocalDate.of(2020, 1, 30),
+                    dagsats = 1234,
+                    fordeling = listOf(Fordeling(
+                            mottager = "897654321",
+                            andel = 100
+                    ))
+            )),
+            maksDato = LocalDate.now().plusYears(1)
+    )
 }
