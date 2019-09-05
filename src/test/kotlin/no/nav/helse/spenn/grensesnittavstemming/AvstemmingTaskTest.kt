@@ -79,7 +79,7 @@ class AvstemmingTaskTest {
                         avstemt = false,
                         nokkel = LocalDateTime.now().minusHours(2)
                 )))
-        val oppdrag2 = service.saveOppdragState(OppdragStateDTO(
+        service.saveOppdragState(OppdragStateDTO(
                 soknadId = soknadKey2, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,

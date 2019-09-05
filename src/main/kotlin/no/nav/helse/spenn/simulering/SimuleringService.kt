@@ -7,6 +7,7 @@ import no.nav.helse.spenn.oppdrag.UtbetalingsType
 import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
+
 import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
@@ -72,32 +73,31 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
     }
 
     private fun mapResponseToResultat(response: SimulerBeregningResponse) : SimuleringResult {
-        val simulering = response.simulering
-
-        return SimuleringResult(status = Status.OK, mottaker =
-        Mottaker(gjelderId = simulering.gjelderId, gjelderNavn = simulering.gjelderNavn.trim(),
-                datoBeregnet = simulering.datoBeregnet, totalBelop = simulering.belop,
-                periodeList = mapPeriodeList(simulering.beregningsPeriode), kodeFaggruppe = simulering.kodeFaggruppe))
+        val beregning = response.simulering
+        return SimuleringResult(status = Status.OK, simulering = Simulering(
+                gjelderId = beregning.gjelderId, gjelderNavn = beregning.gjelderNavn, datoBeregnet = beregning.datoBeregnet,
+                totalBelop = beregning.belop, periodeList = beregning.beregningsPeriode.map {mapBeregningsPeriode(it)}))
     }
 
-    private fun mapPeriodeList(beregningsPeriode: List<BeregningsPeriode>): List<Periode> {
-        return beregningsPeriode.flatMap{ it.beregningStoppnivaa.flatMap{
-            it.beregningStoppnivaaDetaljer.map { detaljer ->
-                mapPeriode(it, detaljer)
-            }
-        }}
+    private fun mapBeregningsPeriode(periode: BeregningsPeriode): SimulertPeriode {
+        return SimulertPeriode(fom = LocalDate.parse(periode.periodeFom), tom = LocalDate.parse(periode.periodeTom),
+                utbetaling = periode.beregningStoppnivaa.map {mapBeregningStoppNivaa(it)})
     }
 
-    private fun mapPeriode(stoppNivaa: BeregningStoppnivaa, detaljer: BeregningStoppnivaaDetaljer): Periode {
-        return Periode(id = detaljer.delytelseId.trim(), belop = detaljer.belop, sats = detaljer.sats, typeSats = SatsTypeKode.fromKode(detaljer.typeSats.trim()),
-                antallSats = detaljer.antallSats, faktiskFom = LocalDate.parse(detaljer.faktiskFom),
-                faktiskTom = LocalDate.parse(detaljer.faktiskTom), forfall = LocalDate.parse(stoppNivaa.forfall),
-                oppdragsId = stoppNivaa.oppdragsId, konto = detaljer.kontoStreng.trim(), utbetalesTilId = stoppNivaa.utbetalesTilId,
-                utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(), uforegrad = detaljer.uforeGrad,
-                utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse.trim()), tilbakeforing = detaljer.isTilbakeforing,
-                behandlingsKode = detaljer.behandlingskode)
+    private fun mapBeregningStoppNivaa(stoppNivaa: BeregningStoppnivaa): Utbetaling {
+        return Utbetaling(fagSystemId = stoppNivaa.fagsystemId.trim(), utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(),
+                utbetalesTilId = stoppNivaa.utbetalesTilId, forfall = LocalDate.parse(stoppNivaa.forfall),
+                feilkonto = stoppNivaa.isFeilkonto,
+                detaljer = stoppNivaa.beregningStoppnivaaDetaljer.map {mapDetaljer(it)})
     }
 
+    private fun mapDetaljer(detaljer: BeregningStoppnivaaDetaljer): Detaljer {
+        return Detaljer(faktiskFom = LocalDate.parse(detaljer.faktiskFom), faktiskTom = LocalDate.parse(detaljer.faktiskTom),
+                uforegrad = detaljer.uforeGrad, antallSats = detaljer.antallSats, typeSats = SatsTypeKode.fromKode(detaljer.typeSats),
+                sats = detaljer.sats, belop = detaljer.belop, konto = detaljer.kontoStreng.trim(), tilbakeforing = detaljer.isTilbakeforing,
+                klassekode = detaljer.klassekode.trim(), klassekodeBeskrivelse = detaljer.klasseKodeBeskrivelse.trim(),
+                utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse), refunderesOrgNr = detaljer.refunderesOrgNr)
+    }
 
     private fun disableCnCheck(port: SimulerFpService) {
         val client = ClientProxy.getClient(port)
@@ -106,6 +106,5 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
             isDisableCNCheck = true
         }
     }
-
 
 }

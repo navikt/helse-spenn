@@ -31,7 +31,7 @@ class SendToSimuleringTaskTest {
                 meterRegistry = mockMeterRegistry, oppdragStateService = mockPersistence)
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
+        node.tilVedtak(soknadKey.toString())
 
         `when`(mockPersistence.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, 100)).thenReturn(listOf(oppdragEn, oppdragTo))
         `when`(mockSimuleringService.runSimulering(oppdragEn)).thenReturn(simulertOppdragEn)

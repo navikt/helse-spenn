@@ -3,6 +3,8 @@ package no.nav.helse.spenn.simulering
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType
+import no.nav.system.os.entiteter.beregningskjema.Beregning
+import no.nav.system.os.entiteter.oppdragskjema.Bilagstype
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -10,9 +12,11 @@ import java.time.LocalDate
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SimuleringResult(val status: Status,
                             val feilMelding: String = "",
+                            val simulering: Simulering? = null,
                             val mottaker: Mottaker? = null)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated("Replaced by Beregning")
 data class Mottaker(val gjelderId: String,
                     val gjelderNavn: String,
                     val datoBeregnet: String,
@@ -21,6 +25,7 @@ data class Mottaker(val gjelderId: String,
                     val periodeList: List<Periode>)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated("Replaced by BeregningsPeriode")
 data class Periode(val id: String,
                    val faktiskFom: LocalDate,
                    val faktiskTom: LocalDate,
@@ -37,6 +42,42 @@ data class Periode(val id: String,
                    val utbetalingsType: UtbetalingsType,
                    val tilbakeforing: Boolean,
                    val behandlingsKode: String = "")
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Simulering(val gjelderId: String,
+                     val gjelderNavn: String,
+                     val datoBeregnet: String,
+                     val totalBelop: BigDecimal,
+                     val periodeList: List<SimulertPeriode>)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class SimulertPeriode(val fom: LocalDate,
+                           val tom: LocalDate,
+                           val utbetaling: List<Utbetaling>)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Utbetaling(val fagSystemId: String,
+                              val utbetalesTilId: String,
+                              val utbetalesTilNavn: String,
+                              val forfall: LocalDate,
+                              val feilkonto: Boolean,
+                              val detaljer: List<Detaljer>)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Detaljer(val faktiskFom: LocalDate,
+                    val faktiskTom: LocalDate,
+                    val konto: String,
+                    val belop: BigDecimal,
+                    val tilbakeforing: Boolean,
+                    val sats: BigDecimal,
+                    val typeSats: SatsTypeKode,
+                    val antallSats: BigDecimal,
+                    val uforegrad: BigInteger,
+                    val klassekode: String,
+                    val klassekodeBeskrivelse: String,
+                    val utbetalingsType: UtbetalingsType,
+                    val refunderesOrgNr: String)
+
 
 enum class Status {
     OK,
