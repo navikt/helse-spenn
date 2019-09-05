@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType
 import no.nav.system.os.entiteter.beregningskjema.Beregning
@@ -10,6 +11,7 @@ import java.math.BigInteger
 import java.time.LocalDate
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class SimuleringResult(val status: Status,
                             val feilMelding: String = "",
                             val simulering: Simulering? = null,
@@ -21,7 +23,6 @@ data class Mottaker(val gjelderId: String,
                     val gjelderNavn: String,
                     val datoBeregnet: String,
                     val totalBelop: BigDecimal,
-                    val kodeFaggruppe: String = "",
                     val periodeList: List<Periode>)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -39,14 +40,12 @@ data class Periode(val id: String,
                    val typeSats: SatsTypeKode,
                    val antallSats: BigDecimal,
                    val uforegrad: BigInteger,
-                   val utbetalingsType: UtbetalingsType,
-                   val tilbakeforing: Boolean,
-                   val behandlingsKode: String = "")
+                   val utbetalingsType: UtbetalingsType)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Simulering(val gjelderId: String,
                      val gjelderNavn: String,
-                     val datoBeregnet: String,
+                     val datoBeregnet: LocalDate,
                      val totalBelop: BigDecimal,
                      val periodeList: List<SimulertPeriode>)
 

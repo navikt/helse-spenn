@@ -75,7 +75,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
     private fun mapResponseToResultat(response: SimulerBeregningResponse) : SimuleringResult {
         val beregning = response.simulering
         return SimuleringResult(status = Status.OK, simulering = Simulering(
-                gjelderId = beregning.gjelderId, gjelderNavn = beregning.gjelderNavn, datoBeregnet = beregning.datoBeregnet,
+                gjelderId = beregning.gjelderId, gjelderNavn = beregning.gjelderNavn, datoBeregnet = LocalDate.parse(beregning.datoBeregnet),
                 totalBelop = beregning.belop, periodeList = beregning.beregningsPeriode.map {mapBeregningsPeriode(it)}))
     }
 
@@ -93,7 +93,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
 
     private fun mapDetaljer(detaljer: BeregningStoppnivaaDetaljer): Detaljer {
         return Detaljer(faktiskFom = LocalDate.parse(detaljer.faktiskFom), faktiskTom = LocalDate.parse(detaljer.faktiskTom),
-                uforegrad = detaljer.uforeGrad, antallSats = detaljer.antallSats, typeSats = SatsTypeKode.fromKode(detaljer.typeSats),
+                uforegrad = detaljer.uforeGrad, antallSats = detaljer.antallSats, typeSats = SatsTypeKode.fromKode(detaljer.typeSats.trim()),
                 sats = detaljer.sats, belop = detaljer.belop, konto = detaljer.kontoStreng.trim(), tilbakeforing = detaljer.isTilbakeforing,
                 klassekode = detaljer.klassekode.trim(), klassekodeBeskrivelse = detaljer.klasseKodeBeskrivelse.trim(),
                 utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse), refunderesOrgNr = detaljer.refunderesOrgNr)

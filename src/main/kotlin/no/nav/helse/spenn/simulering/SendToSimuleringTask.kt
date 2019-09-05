@@ -50,8 +50,8 @@ class SendToSimuleringTask(val simuleringService: SimuleringService,
     private fun simuleringMetrics(oppdrag: OppdragStateDTO) {
         if (oppdrag.simuleringResult != null) {
             if (oppdrag.simuleringResult.status == Status.OK) {
-                meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(oppdrag.simuleringResult.mottaker!!.totalBelop.toDouble())
-                maksBelopGauge.set(oppdrag.simuleringResult.mottaker.totalBelop.toLong())
+                meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(oppdrag.simuleringResult.simulering!!.totalBelop.toDouble())
+                maksBelopGauge.set(oppdrag.simuleringResult.simulering.totalBelop.toLong())
             }
             meterRegistry.counter(SIMULERING, "status", oppdrag.simuleringResult.status.name).increment()
         }
