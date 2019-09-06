@@ -5,8 +5,6 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.toUUID
 import no.nav.security.oidc.api.Protected
-import no.nav.security.oidc.api.Unprotected
-import no.nav.security.oidc.context.OIDCRequestContextHolder
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping

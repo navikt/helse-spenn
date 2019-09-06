@@ -9,15 +9,10 @@ import no.nav.system.os.entiteter.oppdragskjema.RefusjonsInfo
 import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
-import no.trygdeetaten.skjema.oppdrag.ObjectFactory
-import no.trygdeetaten.skjema.oppdrag.Oppdrag
-import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
-import no.trygdeetaten.skjema.oppdrag.TfradragTillegg
 import java.nio.ByteBuffer
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
-import no.nav.helse.spenn.vedtak.tilVedtak
 import no.trygdeetaten.skjema.oppdrag.*
 
 

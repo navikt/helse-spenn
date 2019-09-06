@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType
-import no.nav.system.os.entiteter.beregningskjema.Beregning
-import no.nav.system.os.entiteter.oppdragskjema.Bilagstype
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
