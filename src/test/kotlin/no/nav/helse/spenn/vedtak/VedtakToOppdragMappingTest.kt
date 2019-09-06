@@ -1,8 +1,8 @@
 package no.nav.helse.spenn.vedtak
 
+import no.nav.helse.spenn.etEnkeltVedtak
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.rest.etEnkeltVedtak
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal

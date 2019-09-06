@@ -43,7 +43,4 @@ class OppdragStateServiceTest {
 
     }
 
-    fun <T> any(): T = Mockito.any<T>()
-
-
 }

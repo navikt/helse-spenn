@@ -3,12 +3,15 @@ package no.nav.helse.spenn.rest
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import no.nav.helse.spenn.buildClaimSet
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.requiredGroupMembership
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.stubOIDCProvider
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
@@ -53,7 +56,7 @@ class RekjoringControllerTest {
         fun before() {
             server.start()
             WireMock.configureFor(server.port())
-            stubOIDCProvider()
+            stubOIDCProvider(server)
         }
         @AfterAll
         @JvmStatic

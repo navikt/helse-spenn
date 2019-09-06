@@ -1,15 +1,15 @@
 package no.nav.helse.spenn.rest
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.nimbusds.jwt.JWTClaimsSet
+import no.nav.helse.spenn.buildClaimSet
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.requiredGroupMembership
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.stubOIDCProvider
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
-import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
 import org.junit.jupiter.api.AfterAll
@@ -22,7 +22,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import java.util.*
 import kotlin.test.assertEquals
 
 // I prod/Q, sett med env-variabler slik:
@@ -51,22 +50,12 @@ class OppdragStateAccessTest {
         fun before() {
             server.start()
             configureFor(server.port())
-            stubOIDCProvider()
+            stubOIDCProvider(server)
         }
         @AfterAll
         @JvmStatic
         fun after() {
             server.stop()
-        }
-
-        fun stubOIDCProvider() {
-            WireMock.stubFor(WireMock.any(WireMock.urlPathEqualTo("/.well-known/openid-configuration")).willReturn(
-                    WireMock.okJson("{\"jwks_uri\": \"${server.baseUrl()}/keys\", " +
-                            "\"subject_types_supported\": [\"pairwise\"], " +
-                            "\"issuer\": \"${JwtTokenGenerator.ISS}\"}")))
-
-            WireMock.stubFor(WireMock.any(WireMock.urlPathEqualTo("/keys")).willReturn(
-                    WireMock.okJson(JwkGenerator.getJWKSet().toPublicJWKSet().toString())))
         }
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.helse.spenn.any
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AksjonsKode
@@ -12,7 +13,6 @@ import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -44,7 +44,7 @@ class SendToSimuleringTaskTest {
         verify(mockPersistence, times(2)).saveOppdragState(any())
     }
 
-    fun <T> any(): T = Mockito.any<T>()
+
 }
 
 val oppdragEn = OppdragStateDTO(
