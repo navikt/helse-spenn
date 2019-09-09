@@ -1,15 +1,14 @@
 package no.nav.helse.spenn.vedtak
 
-import no.nav.helse.spenn.oppdrag.AksjonsKode
+import no.nav.helse.spenn.etEnkeltVedtak
+import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.time.LocalDate
 import java.util.*
+import kotlin.test.assertEquals
 
 class VedtakToOppdragMappingTest {
 
@@ -37,20 +36,11 @@ class VedtakToOppdragMappingTest {
         Assertions.assertEquals(målbilde, faktisk)
     }
 
-    private fun etEnkeltVedtak(): Vedtak {
-        return Vedtak(
-                soknadId = UUID.randomUUID(),
-                aktorId = "en random aktørid",
-                vedtaksperioder = listOf(Vedtaksperiode(
-                        fom = LocalDate.of(2020, 1, 15),
-                        tom = LocalDate.of(2020, 1, 30),
-                        dagsats = 1234,
-                        fordeling = listOf(Fordeling(
-                                mottager = "897654321",
-                                andel = 100
-                        ))
-                )),
-                maksDato = LocalDate.now().plusYears(1)
-        )
+    @Test
+    fun testUUIDtoFagID() {
+        val uuid = UUID.randomUUID();
+        val fagId = uuid.toFagId()
+        val decode = fagId.fromFagId()
+        assertEquals(uuid, decode)
     }
 }

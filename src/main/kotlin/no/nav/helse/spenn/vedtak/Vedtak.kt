@@ -1,11 +1,10 @@
 package no.nav.helse.spenn.vedtak
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import java.time.LocalDate
 import java.util.*
 
-/**
- aggregert fra SPA sitt SykepengeVedtak-objekt
- */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Vedtak (
         val soknadId: UUID,
         val aktorId: String,
@@ -13,6 +12,7 @@ data class Vedtak (
         val maksDato : LocalDate
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Vedtaksperiode(
         val fom: LocalDate,
         val tom: LocalDate,
@@ -21,6 +21,7 @@ data class Vedtaksperiode(
         val fordeling: List<Fordeling>
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Fordeling(
         val mottager: String,
         val andel: Int

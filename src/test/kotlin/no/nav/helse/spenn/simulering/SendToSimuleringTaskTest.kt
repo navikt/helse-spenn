@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.helse.spenn.any
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AksjonsKode
@@ -12,7 +13,6 @@ import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -31,7 +31,7 @@ class SendToSimuleringTaskTest {
                 meterRegistry = mockMeterRegistry, oppdragStateService = mockPersistence)
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
+        node.tilVedtak(soknadKey.toString())
 
         `when`(mockPersistence.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, 100)).thenReturn(listOf(oppdragEn, oppdragTo))
         `when`(mockSimuleringService.runSimulering(oppdragEn)).thenReturn(simulertOppdragEn)
@@ -44,7 +44,7 @@ class SendToSimuleringTaskTest {
         verify(mockPersistence, times(2)).saveOppdragState(any())
     }
 
-    fun <T> any(): T = Mockito.any<T>()
+
 }
 
 val oppdragEn = OppdragStateDTO(
@@ -68,7 +68,9 @@ val oppdragEn = OppdragStateDTO(
                 operasjon = AksjonsKode.SIMULERING
         )
 )
-val simuleringsResultat = SimuleringResult(status = Status.OK, mottaker = Mottaker(datoBeregnet = "", gjelderId = "", gjelderNavn = "", periodeList = emptyList(), totalBelop = BigDecimal.TEN), feilMelding = "")
+val simuleringsResultat = SimuleringResult(status = Status.OK,
+        simulering = Simulering(gjelderId = "",gjelderNavn = "",datoBeregnet = LocalDate.now(),
+                totalBelop = BigDecimal.TEN, periodeList = emptyList()), feilMelding = "")
 val simulertOppdragEn = oppdragEn.copy(simuleringResult = simuleringsResultat)
 val oppdragTo = oppdragEn.copy(id = 2L, soknadId = UUID.randomUUID())
 val simulertOppdragTo = oppdragTo.copy(simuleringResult = simuleringsResultat)

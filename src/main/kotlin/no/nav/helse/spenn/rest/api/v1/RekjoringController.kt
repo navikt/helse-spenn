@@ -3,9 +3,8 @@ package no.nav.helse.spenn.rest.api.v1
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.fromFagId
 import no.nav.security.oidc.api.Protected
-import no.nav.security.oidc.api.Unprotected
-import no.nav.security.oidc.context.OIDCRequestContextHolder
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -24,13 +23,13 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
     }
 
     @PutMapping
-    fun resetStateForRerun(@RequestParam(required = false, defaultValue = "") id: String,
+    fun resetStateForRerun(@RequestParam(required = false, defaultValue = "") fagId: String,
                            @RequestParam(required = false, defaultValue = "") soknadId: String): List<String> {
-        LOG.info("running reset state for rerun for: ${id} ${soknadId}")
-        audit.info("rekjører for  ${id} ${soknadId}")
-        val idList = if (id.isNotEmpty()) id.split(",").map { it.toLong() } else listOf()
+        LOG.info("running reset state for rerun for: ${fagId} ${soknadId}")
+        audit.info("rekjører for  ${fagId} ${soknadId}")
+        val fagIdList = if (fagId.isNotEmpty()) fagId.split(",").map { it.fromFagId() } else listOf()
         val soknadList = if (soknadId.isNotEmpty()) soknadId.split(",").map { UUID.fromString(it) } else listOf()
-        val oppdragList = idList.map { oppdragStateService.fetchOppdragStateById(it) }.union(soknadList.map{oppdragStateService.fetchOppdragState(it)})
+        val oppdragList = fagIdList.map { oppdragStateService.fetchOppdragState(it) }.union(soknadList.map{oppdragStateService.fetchOppdragState(it)})
         return oppdragList.filter {
             it.status == OppdragStateStatus.FEIL || it.status == OppdragStateStatus.SIMULERING_FEIL
         }.map {
