@@ -4,7 +4,7 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.oppdrag.toUUID
+import no.nav.helse.spenn.oppdrag.fromFagId
 import no.nav.security.oidc.api.Protected
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
@@ -39,7 +39,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
     fun getOppdragStateByFagId(@PathVariable fagId: String): OppdragStateDTO {
         LOG.info("Rest retrive for fagId: ${fagId}")
         audit.info("slår opp fagId=${fagId}")
-        return oppdragStateService.fetchOppdragState(fagId.toUUID())
+        return oppdragStateService.fetchOppdragState(fagId.fromFagId())
     }
 
     @PutMapping("/{id}")

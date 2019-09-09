@@ -186,7 +186,7 @@ fun UUID.toFagId(): String {
     return encodeToString.substring(0, encodeToString.length-2)
 }
 
-fun String.toUUID(): UUID {
+fun String.fromFagId(): UUID {
     val buf = ByteBuffer.wrap(Base64.getUrlDecoder().decode(this.plus("=="))).asLongBuffer()
     return UUID(buf.get(0), buf.get(1))
 }

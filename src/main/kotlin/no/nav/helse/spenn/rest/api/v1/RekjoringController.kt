@@ -3,7 +3,7 @@ package no.nav.helse.spenn.rest.api.v1
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.oppdrag.toUUID
+import no.nav.helse.spenn.oppdrag.fromFagId
 import no.nav.security.oidc.api.Protected
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.PutMapping
@@ -27,7 +27,7 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
                            @RequestParam(required = false, defaultValue = "") soknadId: String): List<String> {
         LOG.info("running reset state for rerun for: ${fagId} ${soknadId}")
         audit.info("rekjører for  ${fagId} ${soknadId}")
-        val fagIdList = if (fagId.isNotEmpty()) fagId.split(",").map { it.toUUID() } else listOf()
+        val fagIdList = if (fagId.isNotEmpty()) fagId.split(",").map { it.fromFagId() } else listOf()
         val soknadList = if (soknadId.isNotEmpty()) soknadId.split(",").map { UUID.fromString(it) } else listOf()
         val oppdragList = fagIdList.map { oppdragStateService.fetchOppdragState(it) }.union(soknadList.map{oppdragStateService.fetchOppdragState(it)})
         return oppdragList.filter {
