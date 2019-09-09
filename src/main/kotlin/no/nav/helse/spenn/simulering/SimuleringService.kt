@@ -75,7 +75,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
     private fun mapResponseToResultat(response: SimulerBeregningResponse) : SimuleringResult {
         val beregning = response.simulering
         return SimuleringResult(status = Status.OK, simulering = Simulering(
-                gjelderId = beregning.gjelderId, gjelderNavn = beregning.gjelderNavn, datoBeregnet = LocalDate.parse(beregning.datoBeregnet),
+                gjelderId = beregning.gjelderId, gjelderNavn = beregning.gjelderNavn.trim(), datoBeregnet = LocalDate.parse(beregning.datoBeregnet),
                 totalBelop = beregning.belop, periodeList = beregning.beregningsPeriode.map {mapBeregningsPeriode(it)}))
     }
 

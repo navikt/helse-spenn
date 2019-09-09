@@ -2,27 +2,36 @@ package no.nav.helse.spenn.simulering
 
 import no.nav.helse.spenn.AppConfig
 import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.etEnkeltVedtak
 import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.vedtak.Fordeling
 import no.nav.helse.spenn.vedtak.Vedtak
+import no.nav.helse.spenn.vedtak.Vedtaksperiode
+import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
+import no.nav.helse.spenn.vedtak.tilUtbetaling
 
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito.given
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
 import java.util.*
 
-@SpringBootTest(classes = [AppConfig::class, CxfAutoConfiguration::class, SimuleringConfig::class, SimuleringService::class])
+@SpringBootTest(classes = [CxfAutoConfiguration::class, SimuleringConfig::class, SimuleringService::class])
 class SimulerOppdragIT {
 
     private val log = LoggerFactory.getLogger(SimulerOppdragIT::class.java)
     @Autowired
     lateinit var simuleringService : SimuleringService
 
+    @MockBean
+    lateinit var aktørTilFnrMapper: AktørTilFnrMapper
 
     @Test
     fun simuleringOppdragEnOppdragslinje() {
@@ -75,8 +84,27 @@ class SimulerOppdragIT {
                 ))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
-        log.info(defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(simuleringService.simulerOppdrag(
+        println(defaultObjectMapper.writeValueAsString(simuleringService.simulerOppdrag(
                 oppdragState.toSimuleringRequest())))
+
+    }
+
+    @Test
+    fun vedTakToSimulering(){
+        given(aktørTilFnrMapper.tilFnr("123456789")).willReturn("21038014495")
+        val vedtak = Vedtak(aktorId = "123456789", maksDato = LocalDate.now().plusYears(1), soknadId = UUID.randomUUID(),
+                vedtaksperioder = listOf(Vedtaksperiode(
+                        fom = LocalDate.of(2019, Month.MARCH, 15),
+                        tom = LocalDate.of(2019,Month.APRIL, 12),
+                        dagsats = 1234,
+                        fordeling = listOf(Fordeling(
+                                mottager = "995816598",
+                                andel = 100
+                        )))))
+        println(defaultObjectMapper.writeValueAsString(vedtak))
+        val utbetaling = vedtak.tilUtbetaling(aktørTilFnrMapper.tilFnr("123456789"))
+
+        simuleringService.runSimulering(OppdragStateDTO(id=1L,soknadId = vedtak.soknadId, utbetalingsOppdrag = utbetaling))
 
     }
 
