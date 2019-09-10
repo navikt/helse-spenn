@@ -37,7 +37,7 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
-        saksbehId = OppdragSkjemaConstants.APP
+        saksbehId = utbetalingsOppdrag.vedtak.saksbehandler
         enhet.add(oppdragsEnhet)
         val vedtak = utbetalingsOppdrag.vedtak
         utbetalingsOppdrag.utbetalingsLinje.forEach {
@@ -46,7 +46,8 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
             oppdragslinje.add(
                     mapToSimuleringsOppdragslinje(
                             oppdragslinje = it,
-                            maksDato = vedtak.maksDato)
+                            maksDato = vedtak.maksDato,
+                            saksbehandler = vedtak.saksbehandler)
             )
         }
     }
@@ -63,7 +64,7 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
 
 }
 
-private fun mapToSimuleringsOppdragslinje(oppdragslinje : UtbetalingsLinje, maksDato : LocalDate) : Oppdragslinje {
+private fun mapToSimuleringsOppdragslinje(oppdragslinje : UtbetalingsLinje, maksDato : LocalDate, saksbehandler: String) : Oppdragslinje {
     val erRefusjonTilArbeidsgiver = true
 
     val grad = Grad().apply {
@@ -71,7 +72,7 @@ private fun mapToSimuleringsOppdragslinje(oppdragslinje : UtbetalingsLinje, maks
         grad = oppdragslinje.grad
     }
     val attestant = Attestant().apply {
-        attestantId = OppdragSkjemaConstants.APP
+        attestantId = saksbehandler
     }
 
     return  Oppdragslinje().apply {
@@ -83,7 +84,7 @@ private fun mapToSimuleringsOppdragslinje(oppdragslinje : UtbetalingsLinje, maks
         sats = oppdragslinje.sats
         fradragTillegg = FradragTillegg.T
         typeSats = oppdragslinje.satsTypeKode.kode
-        saksbehId = OppdragSkjemaConstants.APP
+        saksbehId = saksbehandler
         if (erRefusjonTilArbeidsgiver) {
             refusjonsInfo = RefusjonsInfo().apply {
                 assert(oppdragslinje.utbetalesTil.length == 9)
@@ -119,7 +120,7 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
-        saksbehId = OppdragSkjemaConstants.APP
+        saksbehId = utbetalingsOppdrag.vedtak.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
             this.nokkelAvstemming = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
@@ -130,7 +131,8 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         utbetalingsOppdrag.utbetalingsLinje.forEach {
             oppdragsLinje150.add(mapTolinje150(
                     oppdragslinje = it,
-                    maksDato = vedtak.maksDato))
+                    maksDato = vedtak.maksDato,
+                    saksbehandler = vedtak.saksbehandler))
         }
     }
 
@@ -141,7 +143,7 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
 
 }
 
-private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate) : OppdragsLinje150 {
+private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate, saksbehandler: String) : OppdragsLinje150 {
     val erRefusjonTilArbeidsgiver = true
 
     val grad = objectFactory.createGrad170().apply {
@@ -149,7 +151,7 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate)
         grad = oppdragslinje.grad
     }
     val attestant = objectFactory.createAttestant180().apply {
-        attestantId = OppdragSkjemaConstants.APP
+        attestantId = saksbehandler
     }
 
     return  objectFactory.createOppdragsLinje150().apply {
@@ -161,7 +163,7 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate)
         sats = oppdragslinje.sats
         fradragTillegg = TfradragTillegg.T
         typeSats = oppdragslinje.satsTypeKode.kode
-        saksbehId = OppdragSkjemaConstants.APP
+        saksbehId = saksbehandler
         if (erRefusjonTilArbeidsgiver) {
             refusjonsinfo156 = Refusjonsinfo156().apply {
                 assert(oppdragslinje.utbetalesTil.length == 9)

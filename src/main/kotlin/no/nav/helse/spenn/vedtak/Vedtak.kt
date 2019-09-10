@@ -9,7 +9,8 @@ data class Vedtak (
         val soknadId: UUID,
         val aktorId: String,
         val vedtaksperioder: List<Vedtaksperiode>,
-        val maksDato : LocalDate
+        val maksDato : LocalDate,
+        val saksbehandler: String = "SPA"
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
