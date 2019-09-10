@@ -2,6 +2,7 @@ package no.nav.helse.spenn.overforing
 
 import io.micrometer.core.instrument.MeterRegistry
 import net.javacrumbs.shedlock.core.SchedulerLock
+import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.appsupport.SENDT_TIL_OS
@@ -34,7 +35,7 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
             val updated = it.copy(status = OppdragStateStatus.SENDT_OS, avstemming = AvstemmingDTO())
             oppdragStateService.saveOppdragState(updated)
             utbetalingService.sendUtbetalingOppdragMQ(updated)
-            meterRegistry.counter(SENDT_TIL_OS,"status","ok").increment()
+            meterRegistry.counter(OPPDRAG,"status", OppdragStateStatus.SENDT_OS.name).increment()
 
         }
 
