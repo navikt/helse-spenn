@@ -38,7 +38,7 @@
         <shedlock.version>2.5.0</shedlock.version>
         <ibm.mq.version>2.1.2</ibm.mq.version>
         <spring.cloud.version>2.1.2.RELEASE</spring.cloud.version>
-        <postgres.version>42.2.6</postgres.version>
+        <postgres.version>42.2.7</postgres.version>
         <testcontainers.version>1.12.1</testcontainers.version>
         <tokensupport.version>0.2.18</tokensupport.version>
         <jooq.version>3.12.1</jooq.version>
