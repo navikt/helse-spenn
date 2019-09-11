@@ -2,11 +2,13 @@ package no.nav.helse.spenn.vedtak.fnr
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.vedtak.Fodselsnummer
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import java.lang.RuntimeException
 import java.util.*
 
 @Component
@@ -14,9 +16,20 @@ import java.util.*
 class AktorRegisteretClient(val stsRestClient: StsRestClient,
                             @Value("\${AKTORREGISTERET_BASE_URL:http://aktoerregisteret}")val aktorRegisteretUrl: String) : AktørTilFnrMapper {
 
+    companion object {
+        private val LOG = LoggerFactory.getLogger(AktorRegisteretClient::class.java)
+    }
 
     override fun tilFnr(aktorId: String): Fodselsnummer {
-        TODO()
+        val node = lookUp(aktorId).elements().next()
+        val identer = node["identer"]
+        if (identer.isNull) {
+            LOG.error("Could not lookup aktorId: ${aktorId}")
+            throw AktorRegisterException(node["feilmelding"].asText())
+        }
+        return identer.filter {
+            it["identgruppe"].textValue() == "NorskIdent"
+        }.first()["ident"].asText()
     }
 
     fun lookUp(aktorId: String): JsonNode {
@@ -33,7 +46,6 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
                 .bodyToMono(JsonNode::class.java).block()!!
 
     }
-
-
-
 }
+
+class AktorRegisterException(message: String?) : Exception(message)
