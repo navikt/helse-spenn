@@ -42,6 +42,7 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
                 utbetalingService.sendUtbetalingOppdragMQ(updated)
                 meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.SENDT_OS.name).increment()
             } else {
+                meterRegistry.counter(OPPDRAG, "status", "INSANE").increment()
                 log.error("oppdrag med soknadId=${it.soknadId} bestod ikke sanityCheck!")
             }
         }
