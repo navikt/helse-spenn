@@ -8,13 +8,12 @@ import org.springframework.context.annotation.Profile
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import java.lang.RuntimeException
 import java.util.*
 
 @Component
 @Profile(value=["preprod", "prod"])
 class AktorRegisteretClient(val stsRestClient: StsRestClient,
-                            @Value("\${AKTORREGISTERET_BASE_URL:http://aktoerregisteret}")val aktorRegisteretUrl: String) : AktørTilFnrMapper {
+                            @Value("\${AKTORREGISTERET_BASE_URL") val aktorRegisteretUrl: String) : AktørTilFnrMapper {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(AktorRegisteretClient::class.java)
@@ -25,7 +24,7 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
         val identer = node["identer"]
         if (identer.isNull) {
             LOG.error("Could not lookup aktorId: ${aktorId}")
-            throw AktorRegisterException(node["feilmelding"].asText())
+            throw AktorNotFoundException(node["feilmelding"].asText())
         }
         return identer.filter {
             it["identgruppe"].textValue() == "NorskIdent"
@@ -48,4 +47,15 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
     }
 }
 
-class AktorRegisterException(message: String?) : Exception(message)
+class AktorNotFoundException(message: String?) : Exception(message)
+
+@Component
+@Profile(value=["test", "default", "integration"])
+class DummyAktørMapper() : AktørTilFnrMapper {
+    override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
+}
+
+
+interface AktørTilFnrMapper {
+    fun tilFnr(aktørId: String): Fodselsnummer
+}

@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.vedtak
 
 import no.nav.helse.spenn.defaultObjectMapper
-import no.nav.helse.spenn.vedtak.fnr.AktorRegisterException
+import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
 import no.nav.helse.spenn.vedtak.fnr.AktorRegisteretClient
 import no.nav.helse.spenn.vedtak.fnr.StsRestClient
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ class AktorRegisteretClientTest {
                 .`when`(aktorregister).lookUp("1000020000000")
         val fnr = aktorregister.tilFnr("1000010000000")
         assertEquals("11111111111", fnr)
-        assertThrows<AktorRegisterException> {aktorregister.tilFnr("1000020000000")}
+        assertThrows<AktorNotFoundException> {aktorregister.tilFnr("1000020000000")}
     }
 }
 
