@@ -13,7 +13,7 @@ import java.util.*
 @Component
 @Profile(value=["preprod", "prod"])
 class AktorRegisteretClient(val stsRestClient: StsRestClient,
-                            @Value("\${AKTORREGISTERET_BASE_URL") val aktorRegisteretUrl: String) : AktørTilFnrMapper {
+                            @Value("\${AKTORREGISTERET_BASE_URL}") val aktorRegisteretUrl: String) : AktørTilFnrMapper {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(AktorRegisteretClient::class.java)
