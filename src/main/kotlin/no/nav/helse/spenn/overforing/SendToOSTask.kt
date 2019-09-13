@@ -5,6 +5,7 @@ import net.javacrumbs.shedlock.core.SchedulerLock
 import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import org.slf4j.LoggerFactory
@@ -43,21 +44,32 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
                 meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.SENDT_OS.name).increment()
             } else {
                 meterRegistry.counter(OPPDRAG, "status", "INSANE").increment()
-                log.error("oppdrag med soknadId=${it.soknadId} bestod ikke sanityCheck!")
+                log.error("Oppdrag med soknadId=${it.soknadId} bestod ikke sanityCheck! Det er derfor IKKE sendt videre til oppdragssystemet!")
             }
         }
 
     }
 
     fun passesSanityCheck(oppdragDTO: OppdragStateDTO) : Boolean {
-        val maksDagsats = BigDecimal(99858 * 6.5 / 260) // TODO ?
         oppdragDTO.utbetalingsOppdrag.utbetalingsLinje.forEach {
+            if (it.satsTypeKode != SatsTypeKode.DAGLIG) {
+                log.error("satsTypeKode i oppdrag med soknadId=${oppdragDTO.soknadId} er ${it.satsTypeKode}. Vi har ikke logikk for å sanity-sjekke dette.")
+                return false
+            }
+            val maksDagsats = maksTillattDagsats()
             if (it.sats > maksDagsats) {
                 log.error("sats i oppdrag med soknadId=${oppdragDTO.soknadId} er ${it.sats} som er høyere enn begrensningen på $maksDagsats")
                 return false
             }
         }
         return true
+    }
+
+    private fun maksTillattDagsats() : BigDecimal {
+        // TODO ? Konfig? Sykepenger er maks 6G, maksTillattDagsats kan ikke være lavere enn dette.
+        val G = 100000
+        val hverdagerPerAar = 260
+        return BigDecimal(6.5 * G / hverdagerPerAar)
     }
 
 }

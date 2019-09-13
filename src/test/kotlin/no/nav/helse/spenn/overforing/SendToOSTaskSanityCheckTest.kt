@@ -17,7 +17,7 @@ import java.util.*
 
 class SendToOSTaskSanityCheckTest {
 
-    val maksDagsats = BigDecimal(99858 * 6.5 / 260)
+    val maksDagsats = BigDecimal(100000 * 6.5 / 260)
 
     @Test
     fun dagssatsSomIkkeErOverMaksSkalIkkeBliStoppet() {
@@ -55,9 +55,26 @@ class SendToOSTaskSanityCheckTest {
         verify(mockUtbetalingService, never()).sendUtbetalingOppdragMQ(any())
     }
 
+    @Test
+    fun annenSatstypeEnnDagsatsSkalBliStoppet() {
+        val mockUtbetalingService = mock(UtbetalingService::class.java)
+        val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
+        val mockOppdragStateService = mock(OppdragStateService::class.java)
+
+        val ostask = SendToOSTask(mockOppdragStateService, mockUtbetalingService, mockMeterRegistry, 100)
+
+        SatsTypeKode.values().filter { it != SatsTypeKode.DAGLIG }.forEach { satsTypeKode ->
+            val oppdrag = oppdragMedSats(1000, satsTypeKode)
+            `when`(mockOppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_OK,100))
+                    .thenReturn(listOf(oppdrag))
+            ostask.sendToOS()
+            verify(mockUtbetalingService, never()).sendUtbetalingOppdragMQ(any())
+        }
+
+    }
 
 
-    private fun oppdragMedSats(sats: Long) =
+    private fun oppdragMedSats(sats: Long, satsTypeKode : SatsTypeKode = SatsTypeKode.DAGLIG) =
             OppdragStateDTO(
                     soknadId = UUID.randomUUID(), utbetalingsOppdrag = UtbetalingsOppdrag(
                     vedtak = Vedtak(
@@ -71,7 +88,7 @@ class SendToOSTaskSanityCheckTest {
                     operasjon = AksjonsKode.OPPDATER,
                     utbetalingsLinje = listOf(
                             UtbetalingsLinje(id = "1",
-                                    satsTypeKode = SatsTypeKode.DAGLIG,
+                                    satsTypeKode = satsTypeKode,
                                     sats = BigDecimal.valueOf(sats),
                                     utbetalesTil = "999888777",
                                     datoFom = LocalDate.now().minusWeeks(4),
