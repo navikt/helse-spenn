@@ -16,6 +16,7 @@ enum class OppdragStateStatus {
     STARTET,
     SIMULERING_OK,
     SIMULERING_FEIL,
+    STOPPET,
     SENDT_OS,
     FERDIG,
     FEIL

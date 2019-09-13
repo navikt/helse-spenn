@@ -105,7 +105,7 @@ class AvstemmingMapper(
             when (oppdrag.status) {
                 OppdragStateStatus.SENDT_OS -> DetaljType.MANG
                 OppdragStateStatus.FEIL -> DetaljType.AVVI
-                OppdragStateStatus.SIMULERING_OK, OppdragStateStatus.STARTET, OppdragStateStatus.SIMULERING_FEIL -> {
+                OppdragStateStatus.SIMULERING_OK, OppdragStateStatus.STARTET, OppdragStateStatus.SIMULERING_FEIL, OppdragStateStatus.STOPPET -> {
                     log.error("Uventet status: ${oppdrag.status} på oppdragId=${oppdrag.id}. Håndterer som om 'ferdig'")
                     null
                 }
