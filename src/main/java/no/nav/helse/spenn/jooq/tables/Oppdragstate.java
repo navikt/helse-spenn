@@ -22,7 +22,7 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row8;
+import org.jooq.Row9;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -44,7 +44,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Oppdragstate extends TableImpl<OppdragstateRecord> {
 
-    private static final long serialVersionUID = -367389612;
+    private static final long serialVersionUID = 573641407;
 
     /**
      * The reference instance of <code>public.oppdragstate</code>
@@ -98,6 +98,11 @@ public class Oppdragstate extends TableImpl<OppdragstateRecord> {
      * The column <code>public.oppdragstate.simuleringresult</code>.
      */
     public final TableField<OppdragstateRecord, String> SIMULERINGRESULT = createField(DSL.name("simuleringresult"), org.jooq.impl.SQLDataType.CLOB, this, "");
+
+    /**
+     * The column <code>public.oppdragstate.feilbeskrivelse</code>.
+     */
+    public final TableField<OppdragstateRecord, String> FEILBESKRIVELSE = createField(DSL.name("feilbeskrivelse"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
      * Create a <code>public.oppdragstate</code> table reference
@@ -184,11 +189,11 @@ public class Oppdragstate extends TableImpl<OppdragstateRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row8 type methods
+    // Row9 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row8<Long, UUID, Timestamp, Timestamp, String, String, String, String> fieldsRow() {
-        return (Row8) super.fieldsRow();
+    public Row9<Long, UUID, Timestamp, Timestamp, String, String, String, String, String> fieldsRow() {
+        return (Row9) super.fieldsRow();
     }
 }
