@@ -5,8 +5,8 @@
 
 Depends on: 
   * kafka
-  * MQ
-  * sparkel
+  * IBM MQ
+  * Aktørregisteret
   * postgres
   * vault
 
