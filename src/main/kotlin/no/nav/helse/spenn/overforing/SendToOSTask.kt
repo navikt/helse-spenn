@@ -43,8 +43,10 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
                 utbetalingService.sendUtbetalingOppdragMQ(updated)
                 meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.SENDT_OS.name).increment()
             } else {
-                meterRegistry.counter(OPPDRAG, "status", "INSANE").increment()
+                meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.STOPPET.name).increment()
                 log.error("Oppdrag med soknadId=${it.soknadId} bestod ikke sanityCheck! Det er derfor IKKE sendt videre til oppdragssystemet!")
+                val updated = it.copy(status = OppdragStateStatus.STOPPET)
+                oppdragStateService.saveOppdragState(updated)
             }
         }
 
