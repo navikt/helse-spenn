@@ -12,6 +12,7 @@ data class OppdragStateDTO (val id: Long? = null, val soknadId: UUID, val create
                             val modified: LocalDateTime = LocalDateTime.now(),
                             val utbetalingsOppdrag: UtbetalingsOppdrag, val status: OppdragStateStatus = OppdragStateStatus.STARTET,
                             val oppdragResponse: String? = null, val simuleringResult: SimuleringResult? = null,
+                            val feilbeskrivelse: String? = null,
                             val avstemming: AvstemmingDTO? = null, val fagId: String = soknadId.toFagId())
 
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -60,6 +60,7 @@ fun toEntity(dto: OppdragStateDTO): OppdragState {
             simuleringResult = defaultObjectMapper.writeValueAsString(dto.simuleringResult),
             status = dto.status,
             oppdragResponse = dto.oppdragResponse,
+            feilbeskrivelse = dto.feilbeskrivelse,
             avstemming = toAvstemmingEntity(dto.avstemming)
 
     )
@@ -74,6 +75,7 @@ fun toDTO(entity: OppdragState): OppdragStateDTO {
             simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
             modified = entity.modified,
             created = entity.created,
+            feilbeskrivelse = entity.feilbeskrivelse,
             avstemming = toAvstemmingDTO(entity.avstemming),
             fagId = entity.soknadId.toFagId())
 }

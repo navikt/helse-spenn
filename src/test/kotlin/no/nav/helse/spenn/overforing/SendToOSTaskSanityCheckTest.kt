@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.any
+import no.nav.helse.spenn.kArgThat
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
@@ -53,6 +54,10 @@ class SendToOSTaskSanityCheckTest {
         ostask.sendToOS()
 
         verify(mockUtbetalingService, never()).sendUtbetalingOppdragMQ(any())
+
+        verify(mockOppdragStateService).saveOppdragState(kArgThat {
+            (it.status == OppdragStateStatus.STOPPET) && (it.feilbeskrivelse!!.contains("dagsats"))
+        })
     }
 
     @Test
@@ -69,6 +74,11 @@ class SendToOSTaskSanityCheckTest {
                     .thenReturn(listOf(oppdrag))
             ostask.sendToOS()
             verify(mockUtbetalingService, never()).sendUtbetalingOppdragMQ(any())
+            verify(mockOppdragStateService).saveOppdragState(kArgThat {
+                (it.status == OppdragStateStatus.STOPPET) && (it.feilbeskrivelse!!.contains("satsTypeKode"))
+            })
+
+            reset(mockOppdragStateService)
         }
 
     }

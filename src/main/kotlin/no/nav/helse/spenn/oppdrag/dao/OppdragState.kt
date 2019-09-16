@@ -7,6 +7,7 @@ data class OppdragState(val id: Long? = null, val soknadId: UUID, val created: L
                         val modified: LocalDateTime = LocalDateTime.now(),
                         val utbetalingsOppdrag: String, val status: OppdragStateStatus = OppdragStateStatus.STARTET,
                         val oppdragResponse: String? = null, val simuleringResult: String? = null,
+                        val feilbeskrivelse: String? = null,
                         val avstemming: Avstemming? = null)
 
 data class Avstemming(val id: Long? = null, val oppdragstateId: Long? = null,
