@@ -1,6 +1,5 @@
 package no.nav.helse.spenn
 
-import org.mockito.Mockito
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
@@ -9,6 +8,7 @@ import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.Vedtaksperiode
 import no.nav.security.oidc.test.support.JwkGenerator
 import no.nav.security.oidc.test.support.JwtTokenGenerator
+import org.mockito.Mockito
 import java.time.LocalDate
 import java.util.*
 
@@ -71,3 +71,5 @@ fun etEnkeltVedtak(): Vedtak {
 }
 
 fun <T> any(): T = Mockito.any<T>()
+
+fun <T> kArgThat(matcher: (T) -> Boolean): T = Mockito.argThat<T>(matcher)

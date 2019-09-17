@@ -55,12 +55,14 @@ class OppdragStateRepositoryTest {
                 created = dbState.created,
                 modified = dbState.modified,
                 simuleringResult = dbState.simuleringResult,
+                feilbeskrivelse = "jauda, så feil så",
                 avstemming = Avstemming()))
 
         assertNotNull(update.avstemming)
         assertNotNull(update.avstemming?.nokkel)
         println("avstemmingId: ${update.avstemming?.id} avstemmingnokkel: ${update.avstemming?.nokkel}")
         assertEquals(OppdragStateStatus.FERDIG, update.status)
+        assertEquals("jauda, så feil så", update.feilbeskrivelse)
         assertTrue(update.modified.isAfter(dbState.modified))
         assertFailsWith<DuplicateKeyException>{repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))}
     }

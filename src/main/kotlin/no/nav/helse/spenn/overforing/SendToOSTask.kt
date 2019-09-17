@@ -37,32 +37,32 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
         log.info("We are sending ${oppdragList.size} to OS")
 
         oppdragList.forEach {
-            if (passesSanityCheck(it)) {
+            try {
+                performSanityCheck(it)
                 val updated = it.copy(status = OppdragStateStatus.SENDT_OS, avstemming = AvstemmingDTO())
                 oppdragStateService.saveOppdragState(updated)
                 utbetalingService.sendUtbetalingOppdragMQ(updated)
                 meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.SENDT_OS.name).increment()
-            } else {
-                meterRegistry.counter(OPPDRAG, "status", "INSANE").increment()
-                log.error("Oppdrag med soknadId=${it.soknadId} bestod ikke sanityCheck! Det er derfor IKKE sendt videre til oppdragssystemet!")
+            } catch (sanityError: SanityCheckException) {
+                meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.STOPPET.name).increment()
+                log.error("Oppdrag med soknadId=${it.soknadId} bestod ikke sanityCheck! Feil=${sanityError.message}. Det er derfor IKKE sendt videre til oppdragssystemet!")
+                val updated = it.copy(status = OppdragStateStatus.STOPPET, feilbeskrivelse = sanityError.message)
+                oppdragStateService.saveOppdragState(updated)
             }
         }
 
     }
 
-    fun passesSanityCheck(oppdragDTO: OppdragStateDTO) : Boolean {
+    fun performSanityCheck(oppdragDTO: OppdragStateDTO) {
         oppdragDTO.utbetalingsOppdrag.utbetalingsLinje.forEach {
             if (it.satsTypeKode != SatsTypeKode.DAGLIG) {
-                log.error("satsTypeKode i oppdrag med soknadId=${oppdragDTO.soknadId} er ${it.satsTypeKode}. Vi har ikke logikk for å sanity-sjekke dette.")
-                return false
+                throw SanityCheckException("satsTypeKode er ${it.satsTypeKode}. Vi har ikke logikk for å sanity-sjekke dette.")
             }
             val maksDagsats = maksTillattDagsats()
             if (it.sats > maksDagsats) {
-                log.error("sats i oppdrag med soknadId=${oppdragDTO.soknadId} er ${it.sats} som er høyere enn begrensningen på $maksDagsats")
-                return false
+                throw SanityCheckException("dagsats ${it.sats} som er høyere enn begrensningen på $maksDagsats")
             }
         }
-        return true
     }
 
     private fun maksTillattDagsats() : BigDecimal {
@@ -71,6 +71,8 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
         val hverdagerPerAar = 260
         return BigDecimal(6.5 * G / hverdagerPerAar)
     }
+
+    private class SanityCheckException(message : String) : Exception(message)
 
 }
 
