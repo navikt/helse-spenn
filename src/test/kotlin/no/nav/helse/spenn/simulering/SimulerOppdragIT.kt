@@ -1,15 +1,12 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.spenn.AppConfig
 import no.nav.helse.spenn.defaultObjectMapper
-import no.nav.helse.spenn.etEnkeltVedtak
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.vedtak.Fordeling
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.Vedtaksperiode
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
-
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given

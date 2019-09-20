@@ -1,17 +1,12 @@
 package no.nav.helse.spenn.oppdrag
 
-import io.micrometer.core.instrument.Meter
-import io.micrometer.core.instrument.MeterRegistry
+
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
-import io.micrometer.core.instrument.cumulative.CumulativeCounter
-import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.vedtak.Vedtak
 import org.junit.jupiter.api.Test
-
-
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.annotation.ComponentScan
@@ -21,6 +16,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
@@ -57,7 +53,7 @@ class MQOppdragReceiverTest {
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
 
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
-                oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
+                oppdragGjelder = "11111111111", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
                 vedtak = Vedtak(
                         soknadId = UUID.randomUUID(),
                         maksDato = LocalDate.now().plusYears(1),
@@ -71,6 +67,9 @@ class MQOppdragReceiverTest {
         val oppdrag = mqReceiver.receiveOppdragResponse(receiveError)
         assertEquals(OppdragStateStatus.FEIL, oppdrag.status)
         assertEquals("Mangler verdi i Avst-nøkkel på id-115", oppdrag.feilbeskrivelse)
+        val ok = mqReceiver.receiveOppdragResponse(receiveOK)
+        assertEquals(OppdragStateStatus.FERDIG, ok.status)
+        assertNull(ok.feilbeskrivelse)
     }
 
 }
@@ -226,4 +225,102 @@ val receiveError="""<?xml version="1.0" encoding="utf-8"?>
 
 </oppdrag-110></ns2:oppdrag>
 """
-val receiveOK=""" """
+val receiveOK="""<?xml version="1.0" encoding="utf-8"?>
+<oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag">
+    <mmel>
+        <systemId>231-OPPD</systemId>
+        <alvorlighetsgrad>00</alvorlighetsgrad>
+    </mmel>
+    <oppdrag-110>
+        <kodeAksjon>1</kodeAksjon>
+        <kodeEndring>NY</kodeEndring>
+        <kodeFagomraade>SPREF</kodeFagomraade>
+        <fagsystemId>ZApp5GWKTB6XtoaYYtHBOg</fagsystemId>
+        <utbetFrekvens>MND</utbetFrekvens>
+        <oppdragGjelderId>11111111111</oppdragGjelderId>
+        <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>
+        <saksbehId>SPA</saksbehId>
+        <avstemming-115>
+            <kodeKomponent>SP</kodeKomponent>
+            <nokkelAvstemming>2019-09-20-13.31.28.572227</nokkelAvstemming>
+            <tidspktMelding>2019-09-20-13.31.28.572227</tidspktMelding>
+        </avstemming-115>
+        <oppdrags-enhet-120>
+            <typeEnhet>BOS</typeEnhet>
+            <enhet>4151</enhet>
+            <datoEnhetFom>1970-01-01+01:00</datoEnhetFom>
+        </oppdrags-enhet-120>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>1</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-01-01+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-01-12+01:00</datoVedtakTom>
+            <sats>600</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPA</saksbehId>
+            <refusjonsinfo-156>
+                <maksDato>2020-09-20+02:00</maksDato>
+                <refunderesId>00995816598</refunderesId>
+                <datoFom>2019-01-01+01:00</datoFom>
+            </refusjonsinfo-156>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>50</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPA</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>2</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-02-13+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-02-20+01:00</datoVedtakTom>
+            <sats>600</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPA</saksbehId>
+            <refusjonsinfo-156>
+                <maksDato>2020-09-20+02:00</maksDato>
+                <refunderesId>00995816598</refunderesId>
+                <datoFom>2019-02-13+01:00</datoFom>
+            </refusjonsinfo-156>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>70</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPA</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+        <oppdrags-linje-150>
+            <kodeEndringLinje>NY</kodeEndringLinje>
+            <delytelseId>3</delytelseId>
+            <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
+            <datoVedtakFom>2019-03-18+01:00</datoVedtakFom>
+            <datoVedtakTom>2019-04-12+02:00</datoVedtakTom>
+            <sats>1000</sats>
+            <fradragTillegg>T</fradragTillegg>
+            <typeSats>DAG</typeSats>
+            <brukKjoreplan>N</brukKjoreplan>
+            <saksbehId>SPA</saksbehId>
+            <refusjonsinfo-156>
+                <maksDato>2020-09-20+02:00</maksDato>
+                <refunderesId>00995816598</refunderesId>
+                <datoFom>2019-03-18+01:00</datoFom>
+            </refusjonsinfo-156>
+            <grad-170>
+                <typeGrad>UFOR</typeGrad>
+                <grad>100</grad>
+            </grad-170>
+            <attestant-180>
+                <attestantId>SPA</attestantId>
+            </attestant-180>
+        </oppdrags-linje-150>
+    </oppdrag-110>
+</ns2:oppdrag>"""

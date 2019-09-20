@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
 
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.vedtak.Vedtak
 import org.junit.jupiter.api.Test
@@ -17,6 +18,8 @@ import java.util.*
 class MQOppdragIT {
 
     @Autowired lateinit var mqSender: OppdragMQSender
+
+    @Autowired lateinit var oppdragStateService: OppdragStateService
 
     @Test
     fun sendOppdragTilOS() {
@@ -46,8 +49,12 @@ class MQOppdragIT {
                         aktorId = "12341234",
                         vedtaksperioder = emptyList()
                 ))
-        val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling)
+
+        val oppdragState = OppdragStateDTO(soknadId = UUID.randomUUID(),
+                utbetalingsOppdrag = utbetaling, avstemming = AvstemmingDTO())
+        oppdragStateService.saveOppdragState(oppdragState)
         mqSender.sendOppdrag(oppdragState.toOppdrag())
+        //wait for answer from OS
+        Thread.sleep(10000)
     }
 }
