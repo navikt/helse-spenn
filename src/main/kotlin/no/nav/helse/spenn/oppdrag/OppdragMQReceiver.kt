@@ -34,21 +34,24 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag,
     }
 
     @JmsListener(destination = "\${oppdrag.queue.mottak}")
-    fun receiveOppdragResponse(response: String) {
+    fun receiveOppdragResponse(response: String): OppdragStateDTO {
         log.debug(response)
         //rar xml som blir returnert
         val replaced = response.replace("oppdrag xmlns", "ns2:oppdrag xmlns:ns2")
-        handleResponse(jaxb.toOppdrag(replaced), replaced)
+        return handleResponse(jaxb.toOppdrag(replaced), replaced)
     }
 
-    private fun handleResponse(oppdrag : Oppdrag, xml: String) {
-        log.info("OppdragResponse for ${oppdrag.oppdrag110.fagsystemId}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
-        val state = oppdragStateService.fetchOppdragStateById(oppdrag.oppdrag110.fagsystemId.toLong())
-        val updated = state.copy(oppdragResponse = xml, status = mapStatus(oppdrag))
+    private fun handleResponse(oppdrag : Oppdrag, xml: String): OppdragStateDTO {
+        val uuid = oppdrag.oppdrag110.fagsystemId.fromFagId()
+        log.info("OppdragResponse for ${uuid} ${oppdrag.oppdrag110.fagsystemId}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
+        val state = oppdragStateService.fetchOppdragState(uuid)
+        val status = mapStatus(oppdrag)
+        val feilmld = if (status == OppdragStateStatus.FEIL) oppdrag.mmel.beskrMelding else null
+        val updated = state.copy(oppdragResponse = xml, status = status, feilbeskrivelse = feilmld)
         meterRegistry.counter(OPPDRAG, "status", updated.status.name).increment()
-        oppdragStateService.saveOppdragState(updated)
         if (updated.status == OppdragStateStatus.FERDIG) {
             statusProducer.send(OppdragFerdigInfo(updated.soknadId.toString()))
         }
+        return oppdragStateService.saveOppdragState(updated)
     }
 }
