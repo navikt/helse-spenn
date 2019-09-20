@@ -328,8 +328,11 @@
             <version>2.24.1</version>
             <scope>test</scope>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>24.1.1-jre</version>
+        </dependency>
     </dependencies>
 
     <profiles>
