@@ -43,7 +43,7 @@ fun JsonNode.tilVedtak(key: String): Vedtak =
                     if (spaMelding.get("originalSøknad") != null) {
                         spaMelding.get("originalSøknad").get("aktorId").textValue()
                     } else {
-                        spaMelding.get("sakskompleks").get("søknader")[0].get("aktørId").textValue()
+                        spaMelding.get("sakskompleks").get("søknader")[0].get("aktorId").textValue()
                     }
                 }(this) ,
                 vedtaksperioder = lagVedtaksperioder(this.get("vedtak").get("perioder")),
