@@ -39,13 +39,7 @@ private fun Vedtak.lagLinjer(): List<UtbetalingsLinje> =
 
 fun JsonNode.tilVedtak(key: String): Vedtak =
         Vedtak(soknadId = UUID.fromString(key),
-                aktorId = { spaMelding:JsonNode ->
-                    if (spaMelding.get("originalSøknad") != null) {
-                        spaMelding.get("originalSøknad").get("aktorId").textValue()
-                    } else {
-                        spaMelding.get("sakskompleks").get("søknader")[0].get("aktorId").textValue()
-                    }
-                }(this) ,
+                aktorId = this.get("originalSøknad").get("aktorId").textValue(),
                 vedtaksperioder = lagVedtaksperioder(this.get("vedtak").get("perioder")),
                 maksDato = this.get("avklarteVerdier").get("maksdato").get("fastsattVerdi").asLocalDate()
                 )
