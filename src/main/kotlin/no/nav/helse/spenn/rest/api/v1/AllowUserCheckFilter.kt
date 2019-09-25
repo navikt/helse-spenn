@@ -14,11 +14,11 @@ class AllowUserCheckFilter(val oidcRequestContextHolder: OIDCRequestContextHolde
                            @Value("\${api.access.requiredgroup:group1}") val requiredGroupMembership: String): OncePerRequestFilter() {
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
 
-        if (ourIssuer() == null || currentUserGroups() == null || (!currentUserGroups().contains(requiredGroupMembership))) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing group $requiredGroupMembership in JWT")
-        }
-        else {
-            filterChain.doFilter(request,response)
+        when {
+            ourIssuer() == null -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No value for `ourIssuer`")
+            currentUserGroups() == null -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No user-groups in JWT")
+            !currentUserGroups().contains(requiredGroupMembership) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing group $requiredGroupMembership in JWT")
+            else -> filterChain.doFilter(request,response)
         }
     }
 
