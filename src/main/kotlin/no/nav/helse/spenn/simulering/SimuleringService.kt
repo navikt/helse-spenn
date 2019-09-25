@@ -54,6 +54,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         dumpXML(simulerRequest)
         return try {
             val response = simulerFpService.simulerBeregning(simulerRequest)
+            dumpXML(response)
             mapResponseToResultat(response.response)
         }
         catch (e: SimulerBeregningFeilUnderBehandling) {
