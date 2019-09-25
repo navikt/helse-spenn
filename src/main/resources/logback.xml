@@ -6,7 +6,6 @@
 
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
    <logger name="no.nav" level="INFO" />
-   <logger name="no.nav.helse.spenn.simulering" level="DEBUG" />
 
    <logger name="org.jooq.Constants" level="ERROR" />
 

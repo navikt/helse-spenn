@@ -21,9 +21,6 @@ import java.time.LocalDate
 import org.slf4j.LoggerFactory
 
 import org.springframework.stereotype.Service
-import java.io.StringWriter
-import javax.xml.bind.JAXBContext
-import javax.xml.bind.Marshaller
 
 @Service
 class SimuleringService(val simulerFpService: SimulerFpService) {
@@ -51,10 +48,8 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
 
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         disableCnCheck(simulerFpService)
-        dumpXML(simulerRequest)
         return try {
             val response = simulerFpService.simulerBeregning(simulerRequest)
-            dumpXML(response)
             mapResponseToResultat(response.response)
         }
         catch (e: SimulerBeregningFeilUnderBehandling) {
@@ -62,15 +57,6 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
             SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
         }
 
-    }
-
-    private fun dumpXML(type: Any) {
-        val jaxbContext = JAXBContext.newInstance(type.javaClass)
-        val marshaller = jaxbContext.createMarshaller()
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-        val stringWriter = StringWriter()
-        marshaller.marshal(type, stringWriter)
-        log.debug(stringWriter.toString())
     }
 
     private fun mapResponseToResultat(response: SimulerBeregningResponse) : SimuleringResult {
