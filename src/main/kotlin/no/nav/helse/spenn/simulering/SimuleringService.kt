@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.simulering
 
+import io.micrometer.core.annotation.Timed
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
@@ -29,6 +30,7 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
         private val log = LoggerFactory.getLogger(SimuleringService::class.java)
     }
 
+    @Timed("simulering")
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
         log.info("simulering for ${oppdrag.soknadId}")
         val result = callSimulering(oppdrag)
