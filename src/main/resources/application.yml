@@ -16,7 +16,9 @@ spring:
       minimum-idle: 1
   application:
     name: spenn
-    
+  jackson:
+    date-format: yyyy-MM-dd
+
 jms.mq:
   enabled: true
 
