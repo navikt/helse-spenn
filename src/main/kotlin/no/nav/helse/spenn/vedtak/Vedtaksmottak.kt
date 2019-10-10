@@ -7,11 +7,13 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
@@ -22,6 +24,7 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.LogAndFailExceptionHandler
+import org.apache.kafka.streams.errors.ProductionExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
@@ -208,6 +211,8 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndFailExceptionHandler::class.java)
 
+        put(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG, "no.nav.helse.spenn.vedtak.HoppOverUgyldigAktorIdExceptionHandler")
+
         credentials.first?.let {
             log.info("Using user name ${it} to authenticate against Kafka brokers ")
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
@@ -225,6 +230,23 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 log.error("Failed to set '${SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG}' location", ex)
             }
         }
+    }
+}
+
+class HoppOverUgyldigAktorIdExceptionHandler : ProductionExceptionHandler {
+    companion object {
+        private val log = LoggerFactory.getLogger(HoppOverUgyldigAktorIdExceptionHandler::class.java)
+    }
+    override fun handle(record: ProducerRecord<ByteArray, ByteArray>?, exception: java.lang.Exception?): ProductionExceptionHandler.ProductionExceptionHandlerResponse {
+        if (exception is AktorNotFoundException) {
+            log.error("AktorID ${exception.aktorId} Not found! Skipping Record!", exception)
+            return ProductionExceptionHandler.ProductionExceptionHandlerResponse.CONTINUE;
+        }
+        log.error("Exception in stream! Failing...", exception)
+        return ProductionExceptionHandler.ProductionExceptionHandlerResponse.FAIL;
+    }
+
+    override fun configure(configs: MutableMap<String, *>?) {
     }
 }
 

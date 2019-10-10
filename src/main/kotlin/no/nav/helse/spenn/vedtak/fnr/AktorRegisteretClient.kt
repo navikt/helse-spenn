@@ -24,7 +24,7 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
         val identer = node["identer"]
         if (identer.isNull) {
             LOG.error("Could not lookup aktorId: ${aktorId}")
-            throw AktorNotFoundException(node["feilmelding"].asText())
+            throw AktorNotFoundException(node["feilmelding"].asText(), aktorId)
         }
         return identer.filter {
             it["identgruppe"].textValue() == "NorskIdent"
@@ -47,7 +47,7 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
     }
 }
 
-class AktorNotFoundException(message: String?) : Exception(message)
+class AktorNotFoundException(message: String, val aktorId: String) : Exception(message)
 
 @Component
 @Profile(value=["test", "default", "integration"])
