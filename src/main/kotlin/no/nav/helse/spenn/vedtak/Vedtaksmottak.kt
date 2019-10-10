@@ -211,8 +211,6 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndFailExceptionHandler::class.java)
 
-        //put(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG, HoppOverUgyldigAktorIdExceptionHandler::class.java)
-
         credentials.first?.let {
             log.info("Using user name ${it} to authenticate against Kafka brokers ")
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
@@ -232,23 +230,6 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         }
     }
 }
-
-/*class HoppOverUgyldigAktorIdExceptionHandler : ProductionExceptionHandler {
-    companion object {
-        private val log = LoggerFactory.getLogger(HoppOverUgyldigAktorIdExceptionHandler::class.java)
-    }
-    override fun handle(record: ProducerRecord<ByteArray, ByteArray>?, exception: java.lang.Exception?): ProductionExceptionHandler.ProductionExceptionHandlerResponse {
-        if (exception is AktorNotFoundException) {
-            log.error("AktorID ${exception.aktorId} Not found! Skipping Record!", exception)
-            return ProductionExceptionHandler.ProductionExceptionHandlerResponse.CONTINUE;
-        }
-        log.error("Exception in stream! Failing...", exception)
-        return ProductionExceptionHandler.ProductionExceptionHandlerResponse.FAIL;
-    }
-
-    override fun configure(configs: MutableMap<String, *>?) {
-    }
-}*/
 
 data class Topic<K, V>(
         val name: String,
