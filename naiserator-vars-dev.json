@@ -1,0 +1,4 @@
+{
+  "ingress": "https://spenn.nais.preprod.local",
+  "memorylimit": "512Mi"
+}

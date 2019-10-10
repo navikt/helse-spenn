@@ -1,92 +1,75 @@
-version: 2
+version: 2.1
 jobs:
   build:
-    machine: true
-    working_directory: ~/spenn
-    environment:
-      MAVEN_OPTS: -Xmx512m
+    docker:
+      - image: "circleci/openjdk:11-jdk"
     steps:
-      - restore_cache:
-          keys:
-            - openjdk-11
-      - run:
-          name: install openjdk-11
-          command: |
-            set -e
-            mkdir -p ~/.apt-cache
-            sudo rm -rf /var/cache/apt/archives
-            sudo ln -s ~/.apt-cache /var/cache/apt/archives && mkdir -p ~/.apt-cache/partial
-            sudo add-apt-repository ppa:openjdk-r/ppa
-            sudo apt update -q
-            sudo apt install -qy openjdk-11-jdk
-            sudo update-java-alternatives -s java-1.11.0-openjdk-amd64
-      - save_cache:
-          paths:
-            - ~/.apt-cache
-          key: openjdk-11
       - checkout
+      - setup_remote_docker
       - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-      - run: mvn dependency:go-offline
+          key: dependency-cache-{{ checksum "pom.xml" }}
+      - run:
+          name: Bygg
+          command: mvn install
       - save_cache:
+          key: dependency-cache-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2
-          key: v1-dependencies-{{ checksum "pom.xml" }}
-      - run: ./mvnw install
       - run:
-          name: github creds
+          name: Setup some ENV
           command: |
-            set -e
-            git clone https://github.com/navikt/github-apps-support.git
-            export PATH=`pwd`/github-apps-support/bin:$PATH
-            echo -e $HELSECI_KEY > helseci.key
-            export GITHUB_APP_ID=19726
-            export GH_TOKEN=$(generate-installation-token.sh `generate-jwt.sh helseci.key $GITHUB_APP_ID`)
-            echo -e "machine api.github.com login x-access-token password $GH_TOKEN" > ~/.netrc
-            rm helseci.key
+            mkdir /tmp/workspace
+            export COMMIT_SHORT=$(git rev-parse --short HEAD)
+            echo "DOCKER_TAG=navikt/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_PROJECT_REPONAME}:$COMMIT_SHORT" >> /tmp/workspace/properties.env
+            cat /tmp/workspace/properties.env >> $BASH_ENV
       - run:
-          name: build and push to docker
+          name: Build docker image
           command: |
-            set -e
-            if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
-              export COMMIT_SHORT=$(git rev-parse --short HEAD)
-              export RELEASE_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec | cut -f 1 -d "-")
-              export DOCKER_TAG=navikt/spenn:$RELEASE_VERSION.$CIRCLE_BUILD_NUM-$COMMIT_SHORT
-              docker build . -t $DOCKER_TAG
-              echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
-              echo "export DOCKER_TAG=$DOCKER_TAG" >> $BASH_ENV
-              docker push $DOCKER_TAG
-            fi
+            echo "DOCKER_TAG=$DOCKER_TAG"
+            docker build -t docker.pkg.github.com/$DOCKER_TAG .
       - run:
-          name: deploy to preprod
+          name: Docker push
           command: |
-            set -e
-            if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
-              echo "deploying $DOCKER_TAG to preprod"
-              PREPROD_NAISERATOR=$(cat deploy/preprod.json | jq '.spec.image="'$DOCKER_TAG'"' -c)
-              PREPROD_DEPLOYMENT=$(cat deploy/deployreq.json | jq '.payload.kubernetes.resources += ['$PREPROD_NAISERATOR']')
-              PREPROD_DEPLOYMENT=$(echo $PREPROD_DEPLOYMENT | jq '.environment = "dev-fss"')
-              curl -i -n \
-                   -X POST \
-                   -d "$PREPROD_DEPLOYMENT" \
-                   -H "Accept: application/vnd.github.ant-man-preview+json" \
-                   https://api.github.com/repos/navikt/helse-spenn/deployments
-            fi
-#      - run:
-#          name: deploy to prod
-#          command: |
-#            set -e
-#            if [ -z "${CIRCLE_PULL_REQUEST}" ] && [ "${CIRCLE_BRANCH}" = "master" ]; then
-#              echo "deploying $DOCKER_TAG to prod"
-#              PROD_NAISERATOR=$(cat deploy/prod.json | jq '.spec.image="'$DOCKER_TAG'"' -c)
-#              PROD_DEPLOYMENT=$(cat deploy/deployreq.json | jq '.payload.kubernetes.resources += ['$PROD_NAISERATOR']')
-#              PROD_DEPLOYMENT=$(echo $PROD_DEPLOYMENT | jq '.environment = "prod-fss"')
-#              curl -i -n \
-#                   -X POST \
-#                   -d "$PROD_DEPLOYMENT" \
-#                   -H "Accept: application/vnd.github.ant-man-preview+json" \
-#                   https://api.github.com/repos/navikt/helse-spenn/deployments
-#            fi
+            echo "DOCKER_TAG=$DOCKER_TAG"
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
+            echo "Pushing with tag $DOCKER_TAG"
+            docker push docker.pkg.github.com/$DOCKER_TAG
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - properties.env
+
+  deploy_preprod:
+    docker:
+      - image: "navikt/deployment-cli:44bb04ecc11c0e57ac539744411c70794dd31899"
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - run:
+          name: Set up environment variables
+          command: cat /tmp/workspace/properties.env >> $BASH_ENV
+      - run:
+          name: Create github deployment for dev-fss
+          command: source $BASH_ENV; deployment-cli deploy create
+            --team=tbd
+            --cluster=dev-fss
+            -r=naiserator.yml
+            --version=${DOCKER_TAG}
+            --repository=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+            --vars=naiserator-vars-dev.json
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+      - deploy_preprod:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
