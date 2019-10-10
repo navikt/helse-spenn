@@ -72,17 +72,8 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                     log.info("soknad id ${key}")
                 }
                 .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(
-                        {
-                            try {
-                                aktørTilFnrMapper.tilFnr(vedtak.aktorId)
-                            } catch (e: AktorNotFoundException) {
-                                log.error("AktorID ${e.aktorId} Not found! Skipping Record!", e)
-                                "11223312345"
-                            }
-                        }()
-                        ,vedtak) }
-                .filter { _,  (fodselnummer, vedtak) -> fodselnummer != "11223312345" }                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
+                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktorId),vedtak) }
+                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
                 .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
                 .filter { _, value ->  value != null}
                 .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
