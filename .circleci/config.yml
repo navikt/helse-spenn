@@ -93,9 +93,13 @@ workflows:
           filters:
             branches:
               only: master
-      - deploy_prod:
+      - approve_for_prod:
+          type: approval
           requires:
             - build
+      - deploy_prod:
+          requires:
+            - approve_for_prod
           filters:
             branches:
               only: master
