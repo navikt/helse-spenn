@@ -211,7 +211,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndFailExceptionHandler::class.java)
 
-        put(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG, "no.nav.helse.spenn.vedtak.HoppOverUgyldigAktorIdExceptionHandler")
+        put(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG, HoppOverUgyldigAktorIdExceptionHandler::class.java)
 
         credentials.first?.let {
             log.info("Using user name ${it} to authenticate against Kafka brokers ")
