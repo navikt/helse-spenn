@@ -9,19 +9,15 @@ import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicLong
 import javax.annotation.PostConstruct
 
-@Component
-@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
+//@Component
+//@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
 class SendToSimuleringTask(val simuleringService: SimuleringService,
                            val oppdragStateService: OppdragStateService,
                            val meterRegistry: MeterRegistry,
-                           @Value("\${scheduler.tasks.simulering.limit:100}") val limit: Int = 100) {
+                           /*@Value("\${scheduler.tasks.simulering.limit:100}")*/ val limit: Int = 100) {
 
     private val maksBelopGauge = AtomicLong(0)
 
@@ -35,7 +31,7 @@ class SendToSimuleringTask(val simuleringService: SimuleringService,
         meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, maksBelopGauge)
     }
     
-    @Scheduled(cron = "30 * 7-21 * * ?")
+    //@Scheduled(cron = "30 * 7-21 * * ?")
     @SchedulerLock(name = "sendToSimulering")
     fun sendSimulering() {
         LOG.info("Running SendToSimulering task")

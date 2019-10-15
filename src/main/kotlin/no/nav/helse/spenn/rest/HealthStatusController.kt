@@ -3,20 +3,15 @@ package no.nav.helse.spenn.rest
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.security.oidc.api.Unprotected
+//import no.nav.security.oidc.api.Unprotected
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RestController
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import javax.annotation.PostConstruct
 
-@RestController
-@Unprotected
+//@RestController
+//@Unprotected
 class HealthStatusController(val streams: KafkaStreams, val oppdragStateService: OppdragStateService,
                              val simuleringService: SimuleringService, val meterRegistry: MeterRegistry ) {
 
@@ -31,6 +26,8 @@ class HealthStatusController(val streams: KafkaStreams, val oppdragStateService:
     fun init() {
         meterRegistry.gauge("KAFKA_STATE", kafkaState)
     }
+
+    /*
 
     @GetMapping("/internal/isAlive")
     fun isAlive(): ResponseEntity<String> {
@@ -70,4 +67,7 @@ class HealthStatusController(val streams: KafkaStreams, val oppdragStateService:
             return ResponseEntity.badRequest().body("bad request")
         }
     }
+
+
+     */
 }

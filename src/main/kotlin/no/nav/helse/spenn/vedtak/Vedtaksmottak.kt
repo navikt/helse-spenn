@@ -29,41 +29,33 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.AutoConfigureAfter
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-
-import org.springframework.dao.DuplicateKeyException
 import java.io.File
 import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
 
 
-@Configuration
-@AutoConfigureAfter(FlywayAutoConfiguration::class)
+/*@Configuration
+@AutoConfigureAfter(FlywayAutoConfiguration::class)*/
 class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                          val meterRegistry: MeterRegistry,
                          val aktørTilFnrMapper: AktørTilFnrMapper,
-                         @Value("\${KAFKA_BOOTSTRAP_SERVERS}") val bootstrapServersUrl: String,
-                         @Value("\${KAFKA_APP_ID:spenn-1}")val appId: String,
-                         @Value("\${KAFKA_USERNAME}") val kafkaUsername: String,
-                         @Value("\${KAFKA_PASSWORD}") val kafkaPassword: String,
-                         @Value("\${NAV_TRUSTSTORE_PATH}") val navTruststorePath: String,
-                         @Value("\${NAV_TRUSTSTORE_PASSWORD}") val navTruststorePassword: String,
-                         @Value("\${PLAIN_TEXT_KAFKA:false}") val plainTextKafka: String,
-                         @Value("\${kafka.offset-reset.timestamp-millis}") val timeStampMillis: Long,
-                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String,
-                         @Value("\${kafka.stream.vedtak.enabled:true}") val streamVedtak: Boolean) {
+                         /*@Value("\${KAFKA_BOOTSTRAP_SERVERS}")*/ val bootstrapServersUrl: String,
+                         /*@Value("\${KAFKA_APP_ID:spenn-1}")*/val appId: String,
+                         /*@Value("\${KAFKA_USERNAME}") */val kafkaUsername: String,
+                         /*@Value("\${KAFKA_PASSWORD}") */val kafkaPassword: String,
+                         /*@Value("\${NAV_TRUSTSTORE_PATH}")*/val navTruststorePath: String,
+                         /*@Value("\${NAV_TRUSTSTORE_PASSWORD}") */val navTruststorePassword: String,
+                         /*@Value("\${PLAIN_TEXT_KAFKA:false}")*/ val plainTextKafka: String,
+                         /*@Value("\${kafka.offset-reset.timestamp-millis}")*/ val timeStampMillis: Long,
+                         /*@Value("\${kafka.offset-reset.enabled}")*/ val offsetReset: String,
+                         /*@Value("\${kafka.stream.vedtak.enabled:true}") */val streamVedtak: Boolean) {
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
     }
 
-    @Bean
+    //@Bean
     fun mottakslogikk() : Topology {
         val builder = StreamsBuilder()
 
@@ -137,7 +129,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         }
     }
 
-    @Bean
+    //@Bean
     fun kafkaStreams(topology: Topology) : KafkaStreams {
         val streamConfig = if ("true" == plainTextKafka) streamConfigPlainTextKafka() else streamConfig(appId, bootstrapServersUrl,
                 kafkaUsername to kafkaPassword,
@@ -150,7 +142,8 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 OppdragStateDTO(soknadId = UUID.fromString(key),
                         utbetalingsOppdrag = utbetaling))
         }
-        catch (e: DuplicateKeyException) {
+        catch (e: Exception /*DuplicateKeyException*/) {
+            if (true) throw e; // TOFIX
             log.warn("skipping duplicate for key ${key}")
             meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
             return null
@@ -182,9 +175,9 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         return to(topic.name, Produced.with(topic.keySerde, topic.valueSerde))
     }
 
-    @Bean
-    fun streamConsumer(kafkaStreams: KafkaStreams, flywayMigrationInitializer: FlywayMigrationInitializer?) : StreamConsumer {
-        if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
+    //@Bean
+    fun streamConsumer(kafkaStreams: KafkaStreams /*, flywayMigrationInitializer: FlywayMigrationInitializer?*/) : StreamConsumer {
+        //if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
         val streamConsumer = StreamConsumer(appId, kafkaStreams)
         if (streamVedtak) streamConsumer.start()
         return streamConsumer

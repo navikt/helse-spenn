@@ -1,14 +1,14 @@
 package no.nav.helse.spenn.rest.api.v1
 
-import no.nav.security.oidc.context.OIDCRequestContextHolder
+/*import no.nav.security.oidc.context.OIDCRequestContextHolder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpServletResponse*/
 
-
+/*
 @Component
 class AllowUserCheckFilter(val oidcRequestContextHolder: OIDCRequestContextHolder,
                            @Value("\${api.access.requiredgroup:group1}") val requiredGroupMembership: String): OncePerRequestFilter() {
@@ -31,3 +31,4 @@ class AllowUserCheckFilter(val oidcRequestContextHolder: OIDCRequestContextHolde
     private fun currentUserGroups() = ourIssuer().getAsList("groups")
 
 }
+*/

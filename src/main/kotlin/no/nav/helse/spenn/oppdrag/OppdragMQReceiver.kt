@@ -8,10 +8,10 @@ import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 
-import org.springframework.jms.annotation.JmsListener
-import org.springframework.stereotype.Component
+/*import org.springframework.jms.annotation.JmsListener
+import org.springframework.stereotype.Component*/
 
-@Component
+//@Component
 class OppdragMQReceiver(val jaxb : JAXBOppdrag,
                         val oppdragStateService: OppdragStateService,
                         val meterRegistry: MeterRegistry,
@@ -33,7 +33,7 @@ class OppdragMQReceiver(val jaxb : JAXBOppdrag,
         }
     }
 
-    @JmsListener(destination = "\${oppdrag.queue.mottak}")
+    //@JmsListener(destination = "\${oppdrag.queue.mottak}")
     fun receiveOppdragResponse(response: String): OppdragStateDTO {
         log.debug(response)
         //rar xml som blir returnert

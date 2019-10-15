@@ -4,17 +4,13 @@ import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.fromFagId
-import no.nav.security.oidc.api.Protected
+//import no.nav.security.oidc.api.Protected
 import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
-@RestController
+/*@RestController
 @Protected
-@RequestMapping("/api/v1/rekjoring")
+@RequestMapping("/api/v1/rekjoring")*/
 class RekjoringController(val oppdragStateService: OppdragStateService,
                           val audit: AuditSupport) {
 
@@ -22,9 +18,9 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
         private val LOG = LoggerFactory.getLogger(RekjoringController::class.java)
     }
 
-    @PutMapping
-    fun resetStateForRerun(@RequestParam(required = false, defaultValue = "") fagId: String,
-                           @RequestParam(required = false, defaultValue = "") soknadId: String): List<String> {
+    //@PutMapping
+    fun resetStateForRerun(/*@RequestParam(required = false, defaultValue = "")*/ fagId: String,
+                           /*@RequestParam(required = false, defaultValue = "")*/ soknadId: String): List<String> {
         LOG.info("running reset state for rerun for: ${fagId} ${soknadId}")
         audit.info("rekjører for  ${fagId} ${soknadId}")
         val fagIdList = if (fagId.isNotEmpty()) fagId.split(",").map { it.fromFagId() } else listOf()
@@ -37,8 +33,8 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
         }
     }
 
-    @PutMapping("/all")
-    fun resetAllErrorStateForRerun(@RequestParam(required = false, defaultValue = "false") includeSimulering: Boolean): List<String> {
+    //@PutMapping("/all")
+    fun resetAllErrorStateForRerun(/*@RequestParam(required = false, defaultValue = "false")*/ includeSimulering: Boolean): List<String> {
         LOG.info("running reset all oppdragstate that got FEIL")
         audit.info("rekjører for alle oppdrag som har feil (og simulerfeil)")
         val feilList = if (includeSimulering) oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.SIMULERING_FEIL)

@@ -6,26 +6,26 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariDataSource
 import net.javacrumbs.shedlock.core.LockProvider
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider
+/*import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jms.annotation.EnableJms
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.transaction.annotation.EnableTransactionManagement
+import org.springframework.transaction.annotation.EnableTransactionManagement*/
 
 val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
         .registerModule(JavaTimeModule())
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
-@Configuration
+/*@Configuration
 @EnableJms
 @EnableTransactionManagement
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtMostFor = "PT2M")
+@EnableSchedulerLock(defaultLockAtMostFor = "PT2M")*/
 class AppConfig {
 
-    @Bean
+    /*@Bean
     fun objectMapper(): ObjectMapper {
         return defaultObjectMapper
     }
@@ -33,6 +33,6 @@ class AppConfig {
     @Bean
     fun lockProvider(dataSource: HikariDataSource): LockProvider {
         return JdbcTemplateLockProvider(dataSource);
-    }
+    }*/
 
 }

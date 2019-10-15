@@ -3,14 +3,9 @@ package no.nav.helse.spenn.vedtak.fnr
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.vedtak.Fodselsnummer
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Profile
-import org.springframework.http.MediaType
-import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 
-@Component
+/*@Component
 @Profile(value=["preprod", "prod"])
 class AktorRegisteretClient(val stsRestClient: StsRestClient,
                             @Value("\${AKTORREGISTERET_BASE_URL}") val aktorRegisteretUrl: String) : AktørTilFnrMapper {
@@ -45,12 +40,12 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
                 .bodyToMono(JsonNode::class.java).block()!!
 
     }
-}
+}*/
 
 class AktorNotFoundException(message: String, val aktorId: String) : Exception(message)
 
-@Component
-@Profile(value=["test", "default", "integration"])
+//@Component
+//@Profile(value=["test", "default", "integration"])
 class DummyAktørMapper() : AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
 }

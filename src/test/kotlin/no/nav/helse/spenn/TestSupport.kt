@@ -6,8 +6,8 @@ import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.helse.spenn.vedtak.Fordeling
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.Vedtaksperiode
-import no.nav.security.oidc.test.support.JwkGenerator
-import no.nav.security.oidc.test.support.JwtTokenGenerator
+import no.nav.security.token.support.test.JwkGenerator
+import no.nav.security.token.support.test.JwtTokenGenerator
 import org.mockito.Mockito
 import java.time.LocalDate
 import java.util.*

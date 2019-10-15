@@ -1,15 +1,15 @@
 package no.nav.helse.spenn
 
-import no.nav.security.spring.oidc.api.EnableOIDCTokenValidation
+/*import no.nav.security.spring.oidc.api.EnableOIDCTokenValidation
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
+import org.springframework.boot.runApplication*/
 
-@EnableOIDCTokenValidation
-@SpringBootApplication(scanBasePackages = ["no.nav.helse"])
+/*@EnableOIDCTokenValidation
+@SpringBootApplication(scanBasePackages = ["no.nav.helse"])*/
 class Application
 fun main(args: Array<String>) {
-    runApplication<Application>(*args) {
+    /*runApplication<Application>(*args) {
         setBannerMode(Banner.Mode.OFF)
-    }
+    }*/
 }

@@ -6,7 +6,6 @@ import org.apache.cxf.binding.soap.Soap12
 import org.apache.cxf.binding.soap.SoapMessage
 import org.apache.cxf.endpoint.Client
 import org.apache.cxf.frontend.ClientProxy
-import org.springframework.context.annotation.Configuration
 import javax.xml.namespace.QName
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
@@ -17,14 +16,12 @@ import org.apache.cxf.ws.security.SecurityConstants
 import org.apache.cxf.ws.security.trust.STSClient
 import org.apache.neethi.Policy
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Bean
 
-@Configuration
-class SimuleringConfig(@Value("\${SIMULERING_SERVICE_URL}") val simuleringServiceUrl: String,
-                       @Value("\${SECURITYTOKENSERVICE_URL}") val stsUrl: String,
-                       @Value("\${STS_SOAP_USERNAME}") val stsUsername: String,
-                       @Value("\${STS_SOAP_PASSWORD}") val stsPassword: String) {
+//@Configuration
+class SimuleringConfig(/*@Value("\${SIMULERING_SERVICE_URL}")*/ val simuleringServiceUrl: String,
+                       /*@Value("\${SECURITYTOKENSERVICE_URL}")*/ val stsUrl: String,
+                       /*@Value("\${STS_SOAP_USERNAME}")*/ val stsUsername: String,
+                       /*@Value("\${STS_SOAP_PASSWORD}")*/ val stsPassword: String) {
     private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerFpServiceWSBinding.wsdl"
     private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
     private val SERVICE = QName(NAMESPACE, "simulerFpService")
@@ -36,7 +33,7 @@ class SimuleringConfig(@Value("\${SIMULERING_SERVICE_URL}") val simuleringServic
         private val log = LoggerFactory.getLogger(SimuleringConfig::class.java)
     }
 
-    @Bean
+    //@Bean
     fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
         log.info("using simuleringservice url ${simuleringServiceUrl}")
         val factory = JaxWsProxyFactoryBean().apply {

@@ -6,16 +6,11 @@ import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
-import no.nav.security.oidc.api.Protected
 import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
 
-@RestController
+/*@RestController
 @Protected
-@RequestMapping("/api/v1/simulering")
+@RequestMapping("/api/v1/simulering")*/
 class SimuleringController(val simuleringService: SimuleringService,
                            val aktørTilFnrMapper: AktørTilFnrMapper,
                            val audit: AuditSupport) {
@@ -24,8 +19,8 @@ class SimuleringController(val simuleringService: SimuleringService,
 
     }
 
-    @PostMapping()
-    fun runSimulering(@RequestBody vedtak: Vedtak): SimuleringResult? {
+    //@PostMapping()
+    fun runSimulering(/*@RequestBody*/ vedtak: Vedtak): SimuleringResult? {
         LOG.info("simulering called for vedtak: ${vedtak.soknadId}")
         audit.info("simulering kall for vedtak: ${vedtak.soknadId}")
         val oppdrag = OppdragStateDTO(soknadId = vedtak.soknadId,

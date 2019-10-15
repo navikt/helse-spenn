@@ -21,9 +21,7 @@ import java.time.LocalDate
 
 import org.slf4j.LoggerFactory
 
-import org.springframework.stereotype.Service
-
-@Service
+//@Service
 class SimuleringService(val simulerFpService: SimulerFpService) {
 
     companion object {

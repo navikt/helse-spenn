@@ -2,22 +2,22 @@ package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.jooq.Tables.AVSTEMMING
 import org.jooq.DSLContext
-import org.springframework.stereotype.Repository
+//import org.springframework.stereotype.Repository
 import no.nav.helse.spenn.jooq.Tables.OPPDRAGSTATE
 import no.nav.helse.spenn.jooq.tables.records.AvstemmingRecord
 import no.nav.helse.spenn.jooq.tables.records.OppdragstateRecord
 import org.jooq.Record
 import org.jooq.SelectOnConditionStep
 import org.jooq.impl.DSL.currentTimestamp
-import org.springframework.transaction.annotation.Transactional
+//import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.*
 
 
-@Repository
+//@Repository
 class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
-    @Transactional(readOnly = false)
+    //@Transactional(readOnly = false)
     override fun insert(oppdragstate: OppdragState): OppdragState {
         val id =  with(OPPDRAGSTATE) {
              jooq.insertInto(this)
@@ -37,7 +37,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(id)
     }
 
-    @Transactional(readOnly = false)
+    //@Transactional(readOnly = false)
     override fun delete(id: Long): OppdragState {
         val delete = findById(id)
         jooq.delete(OPPDRAGSTATE)
@@ -47,13 +47,13 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     }
 
 
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     override fun findAll(): List<OppdragState> {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
     }
 
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     override fun findById(id: Long?): OppdragState {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.ID.equal(id))
@@ -63,7 +63,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                 }
     }
 
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     override fun findAllByStatus(status: OppdragStateStatus, limit: Int): List<OppdragState> {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.STATUS.equal(status.name))
@@ -72,7 +72,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     }
 
 
-    @Transactional(readOnly = false)
+    //@Transactional(readOnly = false)
     override fun update(oppdragstate: OppdragState): OppdragState {
         with(OPPDRAGSTATE) {
             jooq.update(this)
@@ -90,7 +90,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(oppdragstate.id)
     }
 
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     override fun findBySoknadId(soknadId: UUID): OppdragState {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.SOKNAD_ID.equal(soknadId))

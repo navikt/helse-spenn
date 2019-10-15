@@ -2,22 +2,17 @@ package no.nav.helse.spenn.vedtak.fnr
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.MediaType
-import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.ExchangeFilterFunctions
-import org.springframework.web.reactive.function.client.WebClient
 import java.time.LocalDateTime
 
 
-@Component
-class StsRestClient(@Value("\${SECURITY_TOKEN_SERVICE_REST_URL}") val stsRestUrl: String,
-                    @Value("\${STS_REST_USERNAME}") val stsRestUsername: String,
-                    @Value("\${STS_REST_PASSWORD}") val stsRestPassword: String) {
+//@Component
+class StsRestClient(/*@Value("\${SECURITY_TOKEN_SERVICE_REST_URL}")*/ val stsRestUrl: String,
+                    /*@Value("\${STS_REST_USERNAME}")*/ val stsRestUsername: String,
+                    /*@Value("\${STS_REST_PASSWORD}")*/ val stsRestPassword: String) {
     private var cachedOidcToken: Token? = null
 
     fun token(): String {
-        if (Token.shouldRenew(cachedOidcToken))  {
+        /*if (Token.shouldRenew(cachedOidcToken))  {
            val webClient = WebClient.builder().baseUrl(stsRestUrl)
                    .filter(ExchangeFilterFunctions.basicAuthentication(stsRestUsername, stsRestPassword))
                    .build()
@@ -26,7 +21,7 @@ class StsRestClient(@Value("\${SECURITY_TOKEN_SERVICE_REST_URL}") val stsRestUrl
                     .retrieve()
                     .bodyToMono(Token::class.java)
                     .block()
-        }
+        }*/
         return cachedOidcToken!!.accessToken
     }
 
