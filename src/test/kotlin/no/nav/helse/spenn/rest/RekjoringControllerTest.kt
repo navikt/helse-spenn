@@ -13,14 +13,16 @@ import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.stubOIDCProvider
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
-import no.nav.security.oidc.test.support.JwtTokenGenerator
+import no.nav.security.token.support.test.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
-import org.hamcrest.Matchers.`is`
+//import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
-import org.springframework.beans.factory.annotation.Autowired
+import kotlin.test.assertTrue
+
+/*import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
@@ -28,27 +30,32 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status*(
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
 import java.util.*
+import kotlin.test.assertTrue
 
-@WebMvcTest(properties = [
+/*@WebMvcTest(properties = [
     "no.nav.security.oidc.issuer.ourissuer.accepted_audience=aud-localhost",
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
     "api.access.requiredgroup=$requiredGroupMembership"])
 @Import(AuditSupport::class)
 @MockBean(HealthStatusController::class, SimuleringService::class, KafkaStreams::class, AktørTilFnrMapper::class)
+*/
+
+ */
 class RekjoringControllerTest {
 
-    @Autowired
-    lateinit var mockMvc: MockMvc
 
-    @MockBean
+    //@Autowired
+    //lateinit var mockMvc: MockMvc
+
+    //@MockBean
     lateinit var oppdragStateService: OppdragStateService
-
+/*
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().port(33333))
         @BeforeAll
@@ -83,6 +90,15 @@ class RekjoringControllerTest {
         val ikkeFeil = feil.copy(id=3L, soknadId = UUID.randomUUID(), status = OppdragStateStatus.FERDIG)
         val feil2 = feil.copy(4L, soknadId = UUID.randomUUID())
     }
+
+ */
+
+    @Test
+    fun fail() {
+        assertTrue(false, "FIXME")
+    }
+
+    /*
 
     @Test
     fun runresetStateTest() {
@@ -122,4 +138,7 @@ class RekjoringControllerTest {
 
 
     }
+
+
+     */
 }

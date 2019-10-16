@@ -12,13 +12,13 @@ import org.springframework.stereotype.Component*/
 
 
 //@Component
-class AvstemmingMQSender(//val jmsTemplate: JmsTemplate,
+open class AvstemmingMQSender(//val jmsTemplate: JmsTemplate,
                          /*@Value("\${avstemming.queue.send}")*/ val sendqueue: String,
                          val jaxb : JAXBAvstemmingsdata) {
 
     private val log = LoggerFactory.getLogger(AvstemmingMQSender::class.java)
 
-    fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
+    open fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
         val xmlMelding = jaxb.fromAvstemmingsdataToXml(avstemmingsMelding)
         log.debug("sending $xmlMelding")
         log.debug("QUEUE: $sendqueue")

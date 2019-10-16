@@ -7,9 +7,9 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.vedtak.Vedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-import org.springframework.context.annotation.ComponentScan
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.autoconfigure.jooq.JooqTest
+//import org.springframework.context.annotation.ComponentScan
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -18,13 +18,13 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@JooqTest(properties = ["VAULT_ENABLED=false",
+/*@JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
+    "spring.test.database.replace=none"])*/
+//@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class MQOppdragReceiverTest {
 
-    @Autowired
+    //@Autowired
     lateinit var oppdragStateService: OppdragStateService
 
     val meterRegistry = CompositeMeterRegistry()

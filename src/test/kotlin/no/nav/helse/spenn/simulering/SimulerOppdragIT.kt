@@ -7,27 +7,27 @@ import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.Vedtaksperiode
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
-import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
+//import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.context.SpringBootTest
+//import org.springframework.boot.test.mock.mockito.MockBean
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
 import java.util.*
 
-@SpringBootTest(classes = [CxfAutoConfiguration::class, SimuleringConfig::class, SimuleringService::class])
+//@SpringBootTest(classes = [CxfAutoConfiguration::class, SimuleringConfig::class, SimuleringService::class])
 class SimulerOppdragIT {
 
     private val log = LoggerFactory.getLogger(SimulerOppdragIT::class.java)
-    @Autowired
+    //@Autowired
     lateinit var simuleringService : SimuleringService
 
-    @MockBean
+    //@MockBean
     lateinit var aktørTilFnrMapper: AktørTilFnrMapper
 
     @Test

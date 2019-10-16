@@ -6,20 +6,20 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-import org.springframework.context.annotation.ComponentScan
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.autoconfigure.jooq.JooqTest
+//import org.springframework.context.annotation.ComponentScan
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-@JooqTest(properties = ["VAULT_ENABLED=false",
+/*@JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
+    "spring.test.database.replace=none"])*/
+//@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateServiceTest {
 
-    @Autowired
+    //@Autowired
     lateinit var service: OppdragStateService
 
     @Test

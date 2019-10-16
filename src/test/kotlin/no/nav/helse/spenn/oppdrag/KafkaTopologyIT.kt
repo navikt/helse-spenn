@@ -10,18 +10,18 @@ import no.nav.helse.spenn.vedtak.*
 import org.apache.kafka.streams.KafkaStreams
 
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+//import org.springframework.boot.test.context.SpringBootTest
+//import org.springframework.boot.test.mock.mockito.MockBean
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils
 import java.util.*
 import java.util.function.Consumer
-import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.beans.factory.annotation.Autowired
 import kotlin.test.assertEquals
 
 import kotlin.test.fail
 
-@SpringBootTest(properties = [
+/*@SpringBootTest(properties = [
     "KAFKA_BOOTSTRAP_SERVERS=localhost:9092",
     "SECURITY_TOKEN_SERVICE_REST_URL=localhost:8080",
     "SECURITYTOKENSERVICE_URL=localhost:8888",
@@ -35,10 +35,10 @@ import kotlin.test.fail
     "NAV_TRUSTSTORE_PATH=somewhere",
     "NAV_TRUSTSTORE_PASSWORD=somekey",
     "PLAIN_TEXT_KAFKA=true"])
-@MockBean(classes= [SimuleringService::class, UtbetalingService::class])
+@MockBean(classes= [SimuleringService::class, UtbetalingService::class])*/
 class KafkaTopologyIT {
 
-    @Autowired
+    //@Autowired
     lateinit var streamConsumer: StreamConsumer
 
     companion object {

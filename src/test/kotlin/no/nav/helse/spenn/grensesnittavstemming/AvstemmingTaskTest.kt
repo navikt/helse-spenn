@@ -24,23 +24,23 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.jms.core.JmsTemplate
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.autoconfigure.jooq.JooqTest
+//import org.springframework.context.annotation.ComponentScan
+//import org.springframework.jms.core.JmsTemplate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@JooqTest(properties = ["VAULT_ENABLED=false",
+/*@JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
+    "spring.test.database.replace=none"])*/
+//@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class AvstemmingTaskTest {
 
-    @Autowired
+    //@Autowired
     lateinit var service: OppdragStateService
     val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
@@ -51,7 +51,7 @@ class AvstemmingTaskTest {
 
     @Test
     fun ingenOppdragSkalBliIngenAvstemming() {
-        class MockSender : AvstemmingMQSender(Mockito.mock(JmsTemplate::class.java), "tullekø", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(/*Mockito.mock(JmsTemplate::class.java),*/ "tullekø", JAXBAvstemmingsdata() ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
             }
@@ -102,7 +102,7 @@ class AvstemmingTaskTest {
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
 
-        class MockSender : AvstemmingMQSender(Mockito.mock(JmsTemplate::class.java), "tullekø", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(/*Mockito.mock(JmsTemplate::class.java),*/ "tullekø", JAXBAvstemmingsdata() ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 sendteMeldinger.add(avstemmingsMelding)
             }

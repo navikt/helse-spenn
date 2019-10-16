@@ -9,29 +9,29 @@ import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
+/*import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.annotation.Transactional*/
 
 import java.util.*
 import kotlin.test.*
 
-@DataJdbcTest(properties = ["VAULT_ENABLED=false",
+/*@DataJdbcTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ImportAutoConfiguration(classes = [JooqAutoConfiguration::class])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
+    "spring.test.database.replace=none"])*/
+//@ImportAutoConfiguration(classes = [JooqAutoConfiguration::class])
+//@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateRepositoryTest {
 
-    @Autowired lateinit var repository: OppdragStateRepository
+    /*@Autowired */lateinit var repository: OppdragStateRepository
 
     @Test
-    @Transactional(propagation = Propagation.NEVER)
+    //@Transactional(propagation = Propagation.NEVER)
     fun crudOppdragState() {
         val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
@@ -64,7 +64,9 @@ class OppdragStateRepositoryTest {
         assertEquals(OppdragStateStatus.FERDIG, update.status)
         assertEquals("jauda, så feil så", update.feilbeskrivelse)
         assertTrue(update.modified.isAfter(dbState.modified))
-        assertFailsWith<DuplicateKeyException>{repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))}
+
+        assertTrue(false, "FIXME")
+        //assertFailsWith<DuplicateKeyException>{repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))}
     }
 
 }

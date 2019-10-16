@@ -5,8 +5,8 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.vedtak.Vedtak
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.context.SpringBootTest
 
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -14,12 +14,12 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.*
 
-@SpringBootTest
+//@SpringBootTest
 class MQOppdragIT {
 
-    @Autowired lateinit var mqSender: OppdragMQSender
+    /*@Autowired*/ lateinit var mqSender: OppdragMQSender
 
-    @Autowired lateinit var oppdragStateService: OppdragStateService
+    /*@Autowired*/ lateinit var oppdragStateService: OppdragStateService
 
     @Test
     fun sendOppdragTilOS() {

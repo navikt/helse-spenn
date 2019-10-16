@@ -14,38 +14,39 @@ import no.nav.helse.spenn.simulering.Status
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
-import no.nav.security.oidc.test.support.JwtTokenGenerator
+import no.nav.security.token.support.test.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
-import org.springframework.beans.factory.annotation.Autowired
+/*import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status*/
 import java.math.BigDecimal
 import java.time.LocalDate
+import kotlin.test.assertTrue
 
-@WebMvcTest(properties = [
+/*@WebMvcTest(properties = [
     "no.nav.security.oidc.issuer.ourissuer.accepted_audience=aud-localhost",
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
     "api.access.requiredgroup=$requiredGroupMembership"])
 @Import(AuditSupport::class)
-@MockBean(HealthStatusController::class, KafkaStreams::class, OppdragStateService::class)
+@MockBean(HealthStatusController::class, KafkaStreams::class, OppdragStateService::class)*/
 class SimuleringControllerTest {
 
-    @Autowired
-    lateinit var mockMvc: MockMvc
+    //@Autowired
+    //lateinit var mockMvc: MockMvc
 
-    @MockBean
+    //@MockBean
     lateinit var aktørTilFnrMapper: AktørTilFnrMapper
 
-    @MockBean
+    //@MockBean
     lateinit var simuleringService: SimuleringService
 
     companion object {
@@ -74,7 +75,7 @@ class SimuleringControllerTest {
         given(aktørTilFnrMapper.tilFnr("12345")).willReturn("12345678900")
         given(simuleringService.runSimulering(any())).willReturn(oppdragStateDTO)
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser", groups = listOf(requiredGroupMembership)))
-        val requestBuilder = MockMvcRequestBuilders
+        /*val requestBuilder = MockMvcRequestBuilders
                 .post("/api/v1/simulering")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer ${jwt.serialize()}")
@@ -82,8 +83,9 @@ class SimuleringControllerTest {
                 .content(etVedtakJson)
         val body = mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk)
-                .andReturn().response.contentAsString
-        println(body)
+                .andReturn().response.contentAsString*/
+        assertTrue(false) // FIXME
+        //println(body)
     }
 }
 
