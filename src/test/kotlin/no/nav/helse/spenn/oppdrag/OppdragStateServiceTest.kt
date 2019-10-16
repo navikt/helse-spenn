@@ -1,8 +1,10 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
@@ -19,8 +21,9 @@ import kotlin.test.assertNotNull
 //@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateServiceTest {
 
-    //@Autowired
-    lateinit var service: OppdragStateService
+    val service = OppdragStateService(
+            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
+    )
 
     @Test
     fun saveAndFetch() {

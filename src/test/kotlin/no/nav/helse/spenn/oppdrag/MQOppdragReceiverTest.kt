@@ -1,10 +1,19 @@
 package no.nav.helse.spenn.oppdrag
 
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.Vedtak
+import org.flywaydb.core.Flyway
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 //import org.springframework.beans.factory.annotation.Autowired
@@ -25,7 +34,9 @@ import kotlin.test.assertNull
 class MQOppdragReceiverTest {
 
     //@Autowired
-    lateinit var oppdragStateService: OppdragStateService
+    val oppdragStateService = OppdragStateService(
+            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
+    )
 
     val meterRegistry = CompositeMeterRegistry()
     val kafkaProducer = mock(OppdragStateKafkaProducer::class.java)
