@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory
 //import org.springframework.jms.core.JmsTemplate
 import java.time.LocalDateTime
 import java.util.*
+import javax.jms.Connection
+import javax.jms.Session
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -47,14 +49,18 @@ class AvstemmingTaskTest {
     )
     val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
+    val mockConnection = Mockito.mock(Connection::class.java)
+    val mockJmsSession = Mockito.mock(Session::class.java)
+
     @BeforeEach
     fun beforeEach() {
         settAltEksisterendeTilAvstemt()
+        Mockito.`when`(mockConnection.createSession()).thenReturn(mockJmsSession)
     }
 
     @Test
     fun ingenOppdragSkalBliIngenAvstemming() {
-        class MockSender : AvstemmingMQSender(/*Mockito.mock(JmsTemplate::class.java),*/ "tullekø", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata() ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
             }
@@ -105,7 +111,7 @@ class AvstemmingTaskTest {
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
 
-        class MockSender : AvstemmingMQSender(/*Mockito.mock(JmsTemplate::class.java),*/ "tullekø", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata() ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 sendteMeldinger.add(avstemmingsMelding)
             }
