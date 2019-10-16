@@ -7,8 +7,10 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
+import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
@@ -27,8 +29,9 @@ import kotlin.test.assertTrue
 //@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class SendToOSTaskTest {
 
-    //@Autowired
-    lateinit var service: OppdragStateService
+    val service = OppdragStateService(
+            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
+    )
 
     val mockUtbetalingService = mock(UtbetalingService::class.java)
     val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
