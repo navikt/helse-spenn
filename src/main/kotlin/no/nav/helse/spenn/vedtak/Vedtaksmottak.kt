@@ -28,8 +28,10 @@ import org.apache.kafka.streams.errors.ProductionExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
+import org.jooq.exception.DataAccessException
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.sql.SQLIntegrityConstraintViolationException
 import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
@@ -142,11 +144,13 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 OppdragStateDTO(soknadId = UUID.fromString(key),
                         utbetalingsOppdrag = utbetaling))
         }
-        catch (e: Exception /*DuplicateKeyException*/) {
-            if (true) throw e; // TOFIX
-            log.warn("skipping duplicate for key ${key}")
-            meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
-            return null
+        catch (e: DataAccessException/*DuplicateKeyException*/) {
+            if (e.cause is SQLIntegrityConstraintViolationException) {
+                log.warn("skipping duplicate for key ${key}")
+                meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
+                return null
+            }
+            throw e
         }
     }
 

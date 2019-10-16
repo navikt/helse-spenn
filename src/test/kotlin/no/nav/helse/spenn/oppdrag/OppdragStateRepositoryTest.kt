@@ -1,14 +1,15 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import no.nav.helse.spenn.oppdrag.dao.Avstemming
-import no.nav.helse.spenn.oppdrag.dao.OppdragState
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateRepository
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.oppdrag.dao.*
+import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
+import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException
+import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Test
+import java.sql.SQLIntegrityConstraintViolationException
 /*import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.jooq.JooqAutoConfiguration
@@ -28,7 +29,8 @@ import kotlin.test.*
 //@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateRepositoryTest {
 
-    /*@Autowired */lateinit var repository: OppdragStateRepository
+    val repository: OppdragStateRepository =
+            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
 
     @Test
     //@Transactional(propagation = Propagation.NEVER)
@@ -65,8 +67,14 @@ class OppdragStateRepositoryTest {
         assertEquals("jauda, så feil så", update.feilbeskrivelse)
         assertTrue(update.modified.isAfter(dbState.modified))
 
-        assertTrue(false, "FIXME")
-        //assertFailsWith<DuplicateKeyException>{repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))}
+        try {
+            repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))
+        } catch (e : DataAccessException) {
+            println(e.stackTrace)
+        }
+
+        val exception = assertFailsWith</*DuplicateKeyException*/DataAccessException>{repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))}
+        assertTrue(exception.cause is SQLIntegrityConstraintViolationException)
     }
 
 }
