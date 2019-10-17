@@ -34,6 +34,31 @@ class HealthStatusTest {
     }
 
     @Test
+    fun isAliveShouldReturnFAILED_DEPENDENCY_whenKafkaNotRunningAfter61rounds_butResetTo_OK_whenOkAgain() {
+        withTestApplication({
+            spennApiModule(apienv)
+        }) {
+            mockKafkaIsRunning(false)
+            handleRequest(HttpMethod.Get, "internal/isAlive").apply {
+                assertEquals(HttpStatusCode.OK, response.status(), "running=false one time should be OK")
+                assertEquals("ALIVE", response.content)
+            }
+            for (i in 1..60) {
+                handleRequest(HttpMethod.Get, "internal/isAlive")
+            }
+            handleRequest(HttpMethod.Get, "internal/isAlive").apply {
+                assertEquals(HttpStatusCode.FailedDependency, response.status(), "running=false one time should be OK")
+            }
+            mockKafkaIsRunning(true)
+            handleRequest(HttpMethod.Get, "internal/isAlive").apply {
+                assertEquals(HttpStatusCode.OK, response.status(), "running=true should reset to OK")
+                assertEquals("ALIVE", response.content)
+            }
+        }
+
+    }
+
+    @Test
     fun isReadyShouldReturn_200_READY_whenEverythingOK() {
         mockKafkaIsRunning(true)
         withTestApplication({
