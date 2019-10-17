@@ -2,41 +2,42 @@ package no.nav.helse.spenn
 
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
+import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigResolveOptions
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.application.Application
 import io.ktor.config.ApplicationConfig
+import io.ktor.config.HoconApplicationConfig
 import io.micrometer.core.instrument.Metrics
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
+import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider
+import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
+import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
+import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.overforing.SendToOSTask
 import no.nav.helse.spenn.overforing.UtbetalingService
+import no.nav.helse.spenn.rest.SpennApiEnvironment
+import no.nav.helse.spenn.rest.spennApiServer
 import no.nav.helse.spenn.simulering.SendToSimuleringTask
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
-import org.apache.cxf.bus.extension.ExtensionManagerBus
-import org.flywaydb.core.Flyway
-import org.jooq.DSLContext
-import org.jooq.SQLDialect
-import org.jooq.impl.DSL
-import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import javax.sql.DataSource
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
-import net.javacrumbs.shedlock.core.LockConfiguration
-import net.javacrumbs.shedlock.core.LockingTaskExecutor
-import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
-import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
-import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.vedtak.KafkaStreamsConfig
 import no.nav.helse.spenn.vedtak.SpennKafkaConfig
 import no.nav.helse.spenn.vedtak.fnr.DummyAktørMapper
+import org.apache.cxf.bus.extension.ExtensionManagerBus
+import org.flywaydb.core.Flyway
+import org.jooq.SQLDialect
+import org.jooq.impl.DSL
+import org.slf4j.LoggerFactory
 import java.time.Instant
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 
 /*import no.nav.security.spring.oidc.api.EnableOIDCTokenValidation
@@ -53,19 +54,18 @@ import org.springframework.boot.runApplication*/
 }*/
 //}
 
-fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+//fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 
 private val log = LoggerFactory.getLogger("SpennApplication")
 
 
-@Suppress("unused") // Referenced in application.conf
-@kotlin.jvm.JvmOverloads
-@io.ktor.util.KtorExperimentalAPI
-fun Application.module(testing: Boolean = false) {
+fun main(args: Array<String>) {
     log.info("Application.module starting...")
 
-    val appConfig = this.environment.config
+    val conf = ConfigFactory.parseResources("application.conf")
+            .resolve(ConfigResolveOptions.defaults())
+    val appConfig = HoconApplicationConfig(conf)
 
     val services = SpennServices(appConfig)
 
@@ -75,11 +75,8 @@ fun Application.module(testing: Boolean = false) {
         scheduler = setupSchedules(services, schedulerConfig)
     }
 
-    //log.info("Starting kafka stream")
-    //services.kafkaStreamConsumer.start()
-    println("STATE IS")
-    println(services.kafkaStreamConsumer.state())
-
+    println("Starting HTTP API services")
+    services.spennApiServer.start()
 
     Runtime.getRuntime().addShutdownHook(Thread {
         log.info("Shutting down scheduler...")
@@ -236,6 +233,13 @@ class SpennServices(appConfig: ApplicationConfig) {
     val sendTilAvstemmingTask = SendTilAvstemmingTask(
             oppdragStateService, avstemmingMQSender, metrics
     )
+
+    ///// HTTP API /////
+
+    val spennApiServer = spennApiServer(SpennApiEnvironment(
+            kafkaStreams = kafkaStreamConsumer.streams,
+            meterRegistry = metrics
+    ))
 
     ///// ///// /////
 

@@ -359,6 +359,14 @@
             <version>${jooq.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-server-test-host</artifactId>
+            <version>${ktor.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!--dependency>
             <groupId>no.nav.security</groupId>
             <artifactId>oidc-spring-support</artifactId>
