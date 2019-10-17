@@ -52,9 +52,13 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
             val response = simulerFpService.simulerBeregning(simulerRequest)
             mapResponseToResultat(response.response)
         }
-        catch (e: SimulerBeregningFeilUnderBehandling) {
+        catch (e: SimulerBeregningFeilUnderBehandling) { // TODO
             log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
             SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
+        }
+        catch (e: Exception) { // TODO
+            log.error("Got unexpected error while running Simulering {}", e)
+            SimuleringResult(status = Status.FEIL, feilMelding = e.message?:"")
         }
 
     }
