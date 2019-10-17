@@ -33,6 +33,9 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor
 import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
+import no.nav.helse.spenn.vedtak.KafkaStreamsConfig
+import no.nav.helse.spenn.vedtak.SpennKafkaConfig
+import no.nav.helse.spenn.vedtak.fnr.DummyAktørMapper
 import java.time.Instant
 
 
@@ -62,13 +65,21 @@ private val log = LoggerFactory.getLogger("SpennApplication")
 fun Application.module(testing: Boolean = false) {
     log.info("Application.module starting...")
 
-    val config = SpennConfig.from(this.environment.config)
-    val services = SpennServices(config)
+    val appConfig = this.environment.config
 
+    val services = SpennServices(appConfig)
+
+    val schedulerConfig = SpennConfig.from(appConfig)
     var scheduler:ScheduledExecutorService? = null
-    if (config.schedulerEnabled) {
-        scheduler = setupSchedules(services, config)
+    if (schedulerConfig.schedulerEnabled) {
+        scheduler = setupSchedules(services, schedulerConfig)
     }
+
+    //log.info("Starting kafka stream")
+    //services.kafkaStreamConsumer.start()
+    println("STATE IS")
+    println(services.kafkaStreamConsumer.state())
+
 
     Runtime.getRuntime().addShutdownHook(Thread {
         log.info("Shutting down scheduler...")
@@ -91,11 +102,21 @@ private fun setupSchedules(services: SpennServices, config: SpennConfig) : Sched
     val lockingExecutor = DefaultLockingTaskExecutor(lockProvider)
     val defaultMaxWaitForLockInSeconds = 10L
 
+    val wrapWithErrorLogging = fun(fn : () -> Unit ) {
+        try {
+            fn()
+        } catch (e : Exception) {
+            log.error("Error running scheduled task", e)
+        }
+    }
+
     if (config.taskOppdragEnabled) {
         log.info("Scheduling sendToOSTask")
         scheduler.scheduleAtFixedRate({
             lockingExecutor.executeWithLock(Runnable {
-                services.sendToOSTask.sendToOS()
+                wrapWithErrorLogging {
+                    services.sendToOSTask.sendToOS()
+                }
             }, LockConfiguration(
                     "sendToOS",
                     Instant.now().plusSeconds(defaultMaxWaitForLockInSeconds)))
@@ -108,7 +129,9 @@ private fun setupSchedules(services: SpennServices, config: SpennConfig) : Sched
             log.info("sendToSimuleringTask - before lock")
             // TODO: Ikke kjør mellom kl 21 og 07
             lockingExecutor.executeWithLock(Runnable {
-                services.sendToSimuleringTask.sendSimulering()
+                wrapWithErrorLogging {
+                    services.sendToSimuleringTask.sendSimulering()
+                }
             }, LockConfiguration(
                     "sendToSimulering",
                     Instant.now().plusSeconds(defaultMaxWaitForLockInSeconds)))
@@ -119,7 +142,9 @@ private fun setupSchedules(services: SpennServices, config: SpennConfig) : Sched
         log.info("Scheduling sendTilAvstemmingTask")
         scheduler.scheduleAtFixedRate({
             lockingExecutor.executeWithLock(Runnable {
-                services.sendTilAvstemmingTask.sendTilAvstemming()
+                wrapWithErrorLogging {
+                    services.sendTilAvstemmingTask.sendTilAvstemming()
+                }
             }, LockConfiguration(
                     "sendTilAvstemming",
                     Instant.now().plusSeconds(defaultMaxWaitForLockInSeconds)))
@@ -131,9 +156,10 @@ private fun setupSchedules(services: SpennServices, config: SpennConfig) : Sched
 
 
 
-class SpennServices(val config: SpennConfig) {
+class SpennServices(appConfig: ApplicationConfig) {
 
     val metrics = Metrics.globalRegistry
+    val spennConfig = SpennConfig.from(appConfig)
 
     ////// DATABASE ///////
 
@@ -145,6 +171,15 @@ class SpennServices(val config: SpennConfig) {
                     jooqDSLContext
             )
     )
+
+    ///// KAFKA /////
+
+    val kafkaStreamConsumer = KafkaStreamsConfig(
+            oppdragStateService = oppdragStateService,
+            meterRegistry = metrics,
+            aktørTilFnrMapper = DummyAktørMapper(), // TODO
+            config = SpennKafkaConfig.from(appConfig))
+            .streamConsumerStart()
 
     ////// MQ ///////
 
@@ -159,10 +194,10 @@ class SpennServices(val config: SpennConfig) {
     //// SIMULERING ////
 
     val simuleringConfig = SimuleringConfig(
-            simuleringServiceUrl = config.simuleringServiceUrl,
-            stsUrl = config.stsUrl,
-            stsUsername = config.stsUsername,
-            stsPassword = config.stsPassword
+            simuleringServiceUrl = spennConfig.simuleringServiceUrl,
+            stsUrl = spennConfig.stsUrl,
+            stsUsername = spennConfig.stsUsername,
+            stsPassword = spennConfig.stsPassword
     )
 
     val simuleringService = SimuleringService(
