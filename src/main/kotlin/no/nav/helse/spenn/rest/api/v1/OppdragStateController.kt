@@ -17,7 +17,7 @@ import java.util.*
 class OppdragStateController(val oppdragStateService: OppdragStateService,
                              val audit: AuditSupport) {
 
-    companion object {
+    /*companion object {
         private val LOG = LoggerFactory.getLogger(OppdragStateController::class.java)
     }
 
@@ -60,7 +60,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
         LOG.info("Rest retrieve for status: ${status}")
         audit.info("slår opp oppdrag på status=${status}")
         return oppdragStateService.fetchOppdragStateByStatus(status)
-    }
+    }*/
 
 
 

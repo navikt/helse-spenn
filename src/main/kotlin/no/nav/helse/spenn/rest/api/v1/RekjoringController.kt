@@ -17,7 +17,7 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
     companion object {
         private val LOG = LoggerFactory.getLogger(RekjoringController::class.java)
     }
-
+/*
     //@PutMapping
     fun resetStateForRerun(/*@RequestParam(required = false, defaultValue = "")*/ fagId: String,
                            /*@RequestParam(required = false, defaultValue = "")*/ soknadId: String): List<String> {
@@ -50,5 +50,5 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
         oppdragStateService.saveOppdragState(it.copy(status = OppdragStateStatus.STARTET))
         return it.soknadId.toString()
     }
-
+*/
 }

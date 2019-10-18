@@ -1,5 +1,8 @@
 package no.nav.helse.spenn.rest
 
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
@@ -7,22 +10,25 @@ import io.ktor.server.testing.withTestApplication
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.helse.spenn.mockApiEnvironment
+import no.nav.helse.spenn.rest.api.v1.AuditSupport
+import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.stubOIDCProvider
+import no.nav.helse.spenn.vedtak.fnr.DummyAktørMapper
 import org.apache.kafka.streams.KafkaStreams
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import kotlin.test.assertEquals
 
 class HealthStatusTest {
 
-    val apienv = SpennApiEnvironment(
-            kafkaStreams = mock(KafkaStreams::class.java),
-            meterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
-    )
+    val apienv = mockApiEnvironment()
 
     @Test
     fun isALiveShouldReturn_200_ALIVE_whenEverythingOK() {
-        mockKafkaIsRunning(true)
+        apienv.mockKafkaIsRunning(true)
         withTestApplication({
             spennApiModule(apienv)
         }) {
@@ -38,7 +44,7 @@ class HealthStatusTest {
         withTestApplication({
             spennApiModule(apienv)
         }) {
-            mockKafkaIsRunning(false)
+            apienv.mockKafkaIsRunning(false)
             handleRequest(HttpMethod.Get, "internal/isAlive").apply {
                 assertEquals(HttpStatusCode.OK, response.status(), "running=false one time should be OK")
                 assertEquals("ALIVE", response.content)
@@ -49,7 +55,7 @@ class HealthStatusTest {
             handleRequest(HttpMethod.Get, "internal/isAlive").apply {
                 assertEquals(HttpStatusCode.FailedDependency, response.status(), "running=false one time should be OK")
             }
-            mockKafkaIsRunning(true)
+            apienv.mockKafkaIsRunning(true)
             handleRequest(HttpMethod.Get, "internal/isAlive").apply {
                 assertEquals(HttpStatusCode.OK, response.status(), "running=true should reset to OK")
                 assertEquals("ALIVE", response.content)
@@ -60,7 +66,7 @@ class HealthStatusTest {
 
     @Test
     fun isReadyShouldReturn_200_READY_whenEverythingOK() {
-        mockKafkaIsRunning(true)
+        apienv.mockKafkaIsRunning(true)
         withTestApplication({
             spennApiModule(apienv)
         }) {
@@ -71,10 +77,19 @@ class HealthStatusTest {
         }
     }
 
-    private fun mockKafkaIsRunning(isRunning: Boolean = true) {
-        Mockito.reset(apienv.kafkaStreams)
-        val mockState = mock(KafkaStreams.State::class.java)
-        Mockito.`when`(mockState.isRunning).thenReturn(isRunning)
-        Mockito.`when`(apienv.kafkaStreams.state()).thenReturn(mockState)
+    companion object {
+        val server: WireMockServer = WireMockServer(WireMockConfiguration.options().port(33333))
+        @BeforeAll
+        @JvmStatic
+        fun before() {
+            server.start()
+            WireMock.configureFor(server.port())
+            stubOIDCProvider(server)
+        }
+        @AfterAll
+        @JvmStatic
+        fun after() {
+            server.stop()
+        }
     }
 }

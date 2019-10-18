@@ -21,7 +21,9 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.overforing.SendToOSTask
 import no.nav.helse.spenn.overforing.UtbetalingService
+import no.nav.helse.spenn.rest.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.SpennApiEnvironment
+import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.rest.spennApiServer
 import no.nav.helse.spenn.simulering.SendToSimuleringTask
 import no.nav.helse.spenn.simulering.SimuleringConfig
@@ -234,11 +236,22 @@ class SpennServices(appConfig: ApplicationConfig) {
             oppdragStateService, avstemmingMQSender, metrics
     )
 
+    ///// AKTØR-reg /////
+
+    val aktorTilFnrMapper = DummyAktørMapper() // TODO
+
+
     ///// HTTP API /////
+
+    private val apiAuthConfig = SpennApiAuthConfig() // TODO
 
     val spennApiServer = spennApiServer(SpennApiEnvironment(
             kafkaStreams = kafkaStreamConsumer.streams,
-            meterRegistry = metrics
+            meterRegistry = metrics,
+            authConfig = apiAuthConfig,
+            simuleringService = simuleringService,
+            aktørTilFnrMapper = aktorTilFnrMapper,
+            auditSupport = AuditSupport(apiAuthConfig)
     ))
 
     ///// ///// /////

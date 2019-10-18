@@ -3,16 +3,44 @@ package no.nav.helse.spenn
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
+import io.micrometer.core.instrument.MockClock
+import io.micrometer.core.instrument.simple.SimpleConfig
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.helse.spenn.rest.SpennApiAuthConfig
+import no.nav.helse.spenn.rest.SpennApiEnvironment
+import no.nav.helse.spenn.rest.api.v1.AuditSupport
+import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.Fordeling
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.Vedtaksperiode
+import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.token.support.test.JwkGenerator
 import no.nav.security.token.support.test.JwtTokenGenerator
+import org.apache.kafka.streams.KafkaStreams
 import org.mockito.Mockito
+import org.mockito.stubbing.OngoingStubbing
+import java.net.URL
 import java.time.LocalDate
 import java.util.*
 
 const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
+
+fun testSpennApiAuthConfig() : SpennApiAuthConfig {
+    return SpennApiAuthConfig(
+            acceptedIssuer = JwtTokenGenerator.ISS,
+            acceptedAudience= JwtTokenGenerator.AUD,
+            discoveryUrl = URL("http://localhost:33333/.well-known/openid-configuration"),
+            requiredGroup = requiredGroupMembership)
+}
+
+fun mockApiEnvironment() = SpennApiEnvironment(
+        kafkaStreams = Mockito.mock(KafkaStreams::class.java),
+        meterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock()),
+        authConfig = testSpennApiAuthConfig(),
+        simuleringService = Mockito.mock(SimuleringService::class.java),
+        auditSupport = AuditSupport(testSpennApiAuthConfig()),
+        aktørTilFnrMapper = Mockito.mock(AktørTilFnrMapper::class.java)
+)
 
 fun buildClaimSet(subject: String,
                   issuer: String = JwtTokenGenerator.ISS,
@@ -73,3 +101,6 @@ fun etEnkeltVedtak(): Vedtak {
 fun <T> any(): T = Mockito.any<T>()
 
 fun <T> kArgThat(matcher: (T) -> Boolean): T = Mockito.argThat<T>(matcher)
+
+fun <T> kWhen(methodCall : T) : OngoingStubbing<T> =
+    Mockito.`when`(methodCall)
