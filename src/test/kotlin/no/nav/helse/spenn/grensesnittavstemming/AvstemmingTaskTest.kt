@@ -26,10 +26,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.slf4j.LoggerFactory
-//import org.springframework.beans.factory.annotation.Autowired
-//import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-//import org.springframework.context.annotation.ComponentScan
-//import org.springframework.jms.core.JmsTemplate
 import java.time.LocalDateTime
 import java.util.*
 import javax.jms.Connection
@@ -38,10 +34,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/*@JooqTest(properties = ["VAULT_ENABLED=false",
-    "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])*/
-//@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class AvstemmingTaskTest {
 
     val service = OppdragStateService(

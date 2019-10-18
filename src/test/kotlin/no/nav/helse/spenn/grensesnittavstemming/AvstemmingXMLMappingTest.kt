@@ -4,8 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class AvstemmingXMLMappingTest {
-
-
+    
     @Test
     fun testThatJAXBAvstemmingsdataIsAlive() {
         val avstemmingsdata = AvstemmingMapper.objectFactory.createAvstemmingsdata()

@@ -7,19 +7,11 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
-import io.micrometer.core.instrument.MockClock
-import io.micrometer.core.instrument.simple.SimpleConfig
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.mockApiEnvironment
-import no.nav.helse.spenn.rest.api.v1.AuditSupport
-import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.stubOIDCProvider
-import no.nav.helse.spenn.vedtak.fnr.DummyAktørMapper
-import org.apache.kafka.streams.KafkaStreams
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
 import kotlin.test.assertEquals
 
 class HealthStatusTest {

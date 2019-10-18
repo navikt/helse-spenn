@@ -2,7 +2,6 @@ package no.nav.helse.spenn.rest.api.v1
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import io.ktor.application.call
-import io.ktor.application.log
 import io.ktor.auth.authentication
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -10,16 +9,11 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
-import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import org.slf4j.LoggerFactory
-
-/*@RestController
-@Protected
-@RequestMapping("/api/v1/simulering")*/
 
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 
