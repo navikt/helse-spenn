@@ -335,6 +335,11 @@
             <version>${postgres.version}</version>
         </dependency>
         <dependency>
+            <groupId>khttp</groupId>
+            <artifactId>khttp</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>vault</artifactId>
             <version>${testcontainers.version}</version>
