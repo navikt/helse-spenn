@@ -1,55 +1,44 @@
 package no.nav.helse.spenn.vedtak.fnr
 
-import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.vedtak.Fodselsnummer
+import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.*
 
-/*@Component
-@Profile(value=["preprod", "prod"])
 class AktorRegisteretClient(val stsRestClient: StsRestClient,
-                            @Value("\${AKTORREGISTERET_BASE_URL}") val aktorRegisteretUrl: String) : AktørTilFnrMapper {
+        /*@Value("\${AKTORREGISTERET_BASE_URL}")*/ val aktorRegisteretUrl: String) : AktørTilFnrMapper {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(AktorRegisteretClient::class.java)
     }
 
     override fun tilFnr(aktorId: String): Fodselsnummer {
-        val node = lookUp(aktorId).elements().next()
-        val identer = node["identer"]
-        if (identer.isNull) {
+        val identResponse = lookUp(aktorId).getJSONObject(aktorId)
+        if (identResponse.isNull("identer")) {
             LOG.error("Could not lookup aktorId: ${aktorId}")
-            throw AktorNotFoundException(node["feilmelding"].asText(), aktorId)
+            throw AktorNotFoundException(identResponse.getString("feilmelding"), aktorId)
         }
-        return identer.filter {
-            it["identgruppe"].textValue() == "NorskIdent"
-        }.first()["ident"].asText()
+        return identResponse.getJSONArray("identer")
+                .map { it as JSONObject }
+                .filter {
+                    it.getString("identgruppe") == "NorskIdent"
+                }.first().getString("ident")
     }
 
-    fun lookUp(aktorId: String): JsonNode {
-        val bearer = stsRestClient.token()
-        val webClient = WebClient.builder().baseUrl(aktorRegisteretUrl).build()
-        return webClient.get()
-                .uri("/api/v1/identer?gjeldende=true")
-                .accept(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer $bearer")
-                .header("Nav-Call-Id", UUID.randomUUID().toString())
-                .header("Nav-Consumer-Id", "spenn")
-                .header("Nav-Personidenter", aktorId)
-                .retrieve()
-                .bodyToMono(JsonNode::class.java).block()!!
+    fun lookUp(aktorId: String): JSONObject =
+            khttp.get(
+                    url = "$aktorRegisteretUrl/api/v1/identer?gjeldende=true",
+                    headers = mapOf(
+                            "Accept" to "application/json",
+                            "Authorization" to "Bearer ${stsRestClient.token()}",
+                            "Nav-Call-Id" to UUID.randomUUID().toString(),
+                            "Nav-Consumer-Id" to "spenn",
+                            "Nav-Personidenter" to aktorId
+                    )).jsonObject
 
-    }
-}*/
-
-class AktorNotFoundException(message: String, val aktorId: String) : Exception(message)
-
-//@Component
-//@Profile(value=["test", "default", "integration"])
-class DummyAktørMapper() : AktørTilFnrMapper {
-    override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
 }
 
+class AktorNotFoundException(message: String, val aktorId: String) : Exception(message)
 
 interface AktørTilFnrMapper {
     fun tilFnr(aktørId: String): Fodselsnummer

@@ -10,6 +10,7 @@ import no.nav.helse.spenn.rest.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.vedtak.Fodselsnummer
 import no.nav.helse.spenn.vedtak.Fordeling
 import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.helse.spenn.vedtak.Vedtaksperiode
@@ -104,3 +105,8 @@ fun <T> kArgThat(matcher: (T) -> Boolean): T = Mockito.argThat<T>(matcher)
 
 fun <T> kWhen(methodCall : T) : OngoingStubbing<T> =
     Mockito.`when`(methodCall)
+
+
+class DummyAktørMapper() : AktørTilFnrMapper {
+    override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
+}

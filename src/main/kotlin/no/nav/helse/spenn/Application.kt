@@ -31,7 +31,8 @@ import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.KafkaStreamsConfig
 import no.nav.helse.spenn.vedtak.SpennKafkaConfig
-import no.nav.helse.spenn.vedtak.fnr.DummyAktørMapper
+import no.nav.helse.spenn.vedtak.fnr.AktorRegisteretClient
+import no.nav.helse.spenn.vedtak.fnr.StsRestClient
 import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.flywaydb.core.Flyway
 import org.jooq.SQLDialect
@@ -175,19 +176,35 @@ class SpennServices(appConfig: ApplicationConfig) {
             )
     )
 
+
+    ///// STS-REST /////
+
+    val stsRestClient = StsRestClient(
+            baseUrl = "http://localhost:8080", // TODO
+            username = "foo",
+            password = "bar"
+    )
+
+    ///// AKTØR-reg /////
+
+    val aktorTilFnrMapper = AktorRegisteretClient(
+            stsRestClient = stsRestClient,
+            aktorRegisteretUrl = "http://localhost:8080" // TODO
+    )
+
     ///// KAFKA /////
 
     val kafkaStreamConsumer = KafkaStreamsConfig(
             oppdragStateService = oppdragStateService,
             meterRegistry = metrics,
-            aktørTilFnrMapper = DummyAktørMapper(), // TODO
+            aktørTilFnrMapper = aktorTilFnrMapper,
             config = SpennKafkaConfig.from(appConfig))
             .streamConsumerStart()
 
     ////// MQ ///////
 
     val spennMQConnection = MQConnectionFactory().apply {
-        hostName = "localhost"
+        hostName = "localhost"  // TODO
         port = 1414
         channel = "DEV.ADMIN.SVRCONN"
         queueManager = "QM1"
@@ -247,10 +264,6 @@ class SpennServices(appConfig: ApplicationConfig) {
     val sendTilAvstemmingTask = SendTilAvstemmingTask(
             oppdragStateService, avstemmingMQSender, metrics
     )
-
-    ///// AKTØR-reg /////
-
-    val aktorTilFnrMapper = DummyAktørMapper() // TODO
 
 
     ///// HTTP API /////
