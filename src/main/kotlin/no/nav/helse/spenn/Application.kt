@@ -16,6 +16,7 @@ import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
+import no.nav.helse.spenn.oppdrag.OppdragMQReceiver
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
@@ -77,8 +78,11 @@ fun main(args: Array<String>) {
         scheduler = setupSchedules(services, schedulerConfig)
     }
 
-    println("Starting HTTP API services")
+    log.info("Starting HTTP API services")
     services.spennApiServer.start()
+
+    log.info("Starting MQConnection to start cunsuming replies on MQQueue...")
+    services.spennMQConnection.start()
 
     Runtime.getRuntime().addShutdownHook(Thread {
         log.info("Shutting down scheduler...")
@@ -218,6 +222,14 @@ class SpennServices(appConfig: ApplicationConfig) {
             JAXBOppdrag()
     )
 
+    val oppdragMQReceiver = OppdragMQReceiver(
+            spennMQConnection,
+            "DEV.QUEUE.3",
+            JAXBOppdrag(),
+            oppdragStateService,
+            metrics
+    )
+
     val utbetalingService = UtbetalingService(oppdragMQSender)
 
     val sendToOSTask = SendToOSTask(
@@ -259,6 +271,8 @@ class SpennServices(appConfig: ApplicationConfig) {
     fun shutdown() {
         log.info("Closing MQ Connection...")
         oppdragMQSender.close()
+        oppdragMQReceiver.close()
+        avstemmingMQSender.close()
         spennMQConnection.close()
         log.info("Closing MQ Connection done.")
         log.info("Closing datasource...")
