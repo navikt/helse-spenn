@@ -4,8 +4,6 @@ import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.ktor.config.ApplicationConfig
 import io.ktor.config.HoconApplicationConfig
 import io.micrometer.core.instrument.Metrics
@@ -34,9 +32,6 @@ import no.nav.helse.spenn.vedtak.SpennKafkaConfig
 import no.nav.helse.spenn.vedtak.fnr.AktorRegisteretClient
 import no.nav.helse.spenn.vedtak.fnr.StsRestClient
 import org.apache.cxf.bus.extension.ExtensionManagerBus
-import org.flywaydb.core.Flyway
-import org.jooq.SQLDialect
-import org.jooq.impl.DSL
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.concurrent.Executors
@@ -74,7 +69,7 @@ fun main(args: Array<String>) {
     val services = SpennServices(appConfig)
 
     val schedulerConfig = SpennConfig.from(appConfig)
-    var scheduler:ScheduledExecutorService? = null
+    var scheduler: ScheduledExecutorService? = null
     if (schedulerConfig.schedulerEnabled) {
         scheduler = setupSchedules(services, schedulerConfig)
     }
@@ -97,19 +92,18 @@ fun main(args: Array<String>) {
 }
 
 
-
-private fun setupSchedules(services: SpennServices, config: SpennConfig) : ScheduledExecutorService {
+private fun setupSchedules(services: SpennServices, config: SpennConfig): ScheduledExecutorService {
     log.info("setting up scheduler")
     val scheduler = Executors.newSingleThreadScheduledExecutor()
 
-    val lockProvider = JdbcLockProvider(services.dataSource, "shedlock")
+    val lockProvider = JdbcLockProvider(services.spennDataSource.dataSource, "shedlock")
     val lockingExecutor = DefaultLockingTaskExecutor(lockProvider)
     val defaultMaxWaitForLockInSeconds = 10L
 
-    val wrapWithErrorLogging = fun(fn : () -> Unit ) {
+    val wrapWithErrorLogging = fun(fn: () -> Unit) {
         try {
             fn()
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             log.error("Error running scheduled task", e)
         }
     }
@@ -159,7 +153,6 @@ private fun setupSchedules(services: SpennServices, config: SpennConfig) : Sched
 }
 
 
-
 class SpennServices(appConfig: ApplicationConfig) {
 
     val metrics = Metrics.globalRegistry
@@ -167,12 +160,18 @@ class SpennServices(appConfig: ApplicationConfig) {
 
     ////// DATABASE ///////
 
-    val dataSource = createMigratedTestDatasource() // TODO: FIX
-    val jooqDSLContext = DSL.using(dataSource, SQLDialect.H2) // TODO: FIX
+    val spennDataSource = SpennDataSource.getMigratedDatasourceInstance(
+            SpennDbConfig(
+                    jdbcUrl = "jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE",
+                    maximumPoolSize = 2,
+                    minimumIdle = 1,
+                    vaultEnabled = false,
+                    vaultPostgresBackend = "nada"
+            ))
 
     val oppdragStateService = OppdragStateService(
             OppdragStateJooqRepository(
-                    jooqDSLContext
+                    spennDataSource.jooqDslContext
             )
     )
 
@@ -289,26 +288,7 @@ class SpennServices(appConfig: ApplicationConfig) {
         spennMQConnection.close()
         log.info("Closing MQ Connection done.")
         log.info("Closing datasource...")
-        dataSource.close()
+        spennDataSource.dataSource.close()
         log.info("Closing datasource done.")
     }
 }
-
-
-//// TO FIX:
-
-fun createMigratedTestDatasource() : HikariDataSource {
-    val hikariConfig = HikariConfig().apply {
-        jdbcUrl = "jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE"
-        maximumPoolSize = 5
-        minimumIdle=1
-    }
-    val flyDS = HikariDataSource(hikariConfig)
-    Flyway.configure().dataSource(flyDS)
-            .load()
-            .migrate()
-    return flyDS
-}
-
-
-
