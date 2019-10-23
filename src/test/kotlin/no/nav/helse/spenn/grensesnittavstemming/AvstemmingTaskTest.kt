@@ -147,10 +147,19 @@ class AvstemmingTaskTest {
     //////////////////////////////////
     //////////////////////////////////
 
-    private fun settAltEksisterendeTilAvstemt() =
-        service.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now()).forEach {
-            service.saveOppdragState(it.copy(avstemming = it.avstemming!!.copy(avstemt = true)))
+    private fun settAltEksisterendeTilAvstemt() {
+        try {
+            println("----CIRCLEDEBUG-settAltEksisterendeTilAvstemt()")
+            println("----CIRCLEDEBUG:fetch...")
+            service.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now()).forEach {
+                println("----CIRCLEDEBUG:saveOppdragState...")
+                service.saveOppdragState(it.copy(avstemming = it.avstemming!!.copy(avstemt = true)))
+            }
+        } catch (e:Exception) {
+            e.printStackTrace()
+            throw e
         }
+    }
 
     private fun createLogAppender(): ListAppender<ILoggingEvent> =
         ListAppender<ILoggingEvent>().apply {
