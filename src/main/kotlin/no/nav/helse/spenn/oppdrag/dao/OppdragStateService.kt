@@ -70,7 +70,7 @@ fun toDTO(entity: OppdragState): OppdragStateDTO {
             status = entity.status,
             utbetalingsOppdrag = defaultObjectMapper.readValue(entity.utbetalingsOppdrag, UtbetalingsOppdrag::class.java),
             oppdragResponse = entity.oppdragResponse,
-            simuleringResult = defaultObjectMapper.readValue(entity.simuleringResult, SimuleringResult::class.java),
+            simuleringResult = entity.simuleringResult?.let { defaultObjectMapper.readValue(it, SimuleringResult::class.java) },
             modified = entity.modified,
             created = entity.created,
             feilbeskrivelse = entity.feilbeskrivelse,
