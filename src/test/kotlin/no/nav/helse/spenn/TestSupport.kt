@@ -28,7 +28,6 @@ const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
 fun testSpennApiAuthConfig() : SpennApiAuthConfig {
     return SpennApiAuthConfig(
-            acceptedIssuer = JwtTokenGenerator.ISS,
             acceptedAudience= JwtTokenGenerator.AUD,
             discoveryUrl = URL("http://localhost:33333/.well-known/openid-configuration"),
             requiredGroup = requiredGroupMembership)
