@@ -11,7 +11,12 @@ class SpennConfig(
         val simuleringServiceUrl:String,
         val stsUrl:String,
         val stsUsername:String,
-        val stsPassword:String
+        val stsPassword:String,
+        val stsRestUrl:String,
+        val stsRestUsername:String,
+        val stsRestPassword:String,
+
+        val aktorRegisteretBaseUrl:String
 ) {
     companion object {
         fun from(cfg:ApplicationConfig) : SpennConfig {
@@ -27,10 +32,13 @@ class SpennConfig(
                     simuleringServiceUrl = cfg.property("simulering.service.url").getString(),
                     stsUrl = cfg.property("sts.soap.url").getString(),
                     stsUsername = cfg.property("sts.soap.username").getString(),
-                    stsPassword = cfg.property("sts.soap.password").getString()
+                    stsPassword = cfg.property("sts.soap.password").getString(),
+                    stsRestUrl = cfg.property("sts.rest.url").getString(),
+                    stsRestUsername = cfg.property("sts.rest.username").getString(),
+                    stsRestPassword = cfg.property("sts.rest.password").getString(),
+                    aktorRegisteretBaseUrl = cfg.property("aktorregisteret.base-url").getString()
             )
         }
-
     }
 }
 

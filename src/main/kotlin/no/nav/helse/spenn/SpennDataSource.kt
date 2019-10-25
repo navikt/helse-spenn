@@ -2,6 +2,7 @@ package no.nav.helse.spenn
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.ktor.config.ApplicationConfig
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 import org.jooq.DSLContext
@@ -15,7 +16,24 @@ data class SpennDbConfig(
         val minimumIdle: Int = 1,
         val vaultEnabled: Boolean,
         val vaultPostgresBackend: String // vault mount-path (i.e: postgresql/preprod-fss)
-)
+) {
+    companion object {
+        @io.ktor.util.KtorExperimentalAPI
+        fun from(cfg: ApplicationConfig) : SpennDbConfig {
+            val getBool = fun(key : String) : Boolean {
+                val prop = cfg.propertyOrNull(key)
+                if (prop == null) return false else return prop.getString().equals("true")
+            }
+            return SpennDbConfig(
+                    jdbcUrl = cfg.property("datasource.url").getString(),
+                    maximumPoolSize = cfg.property("datasource.hikari.maximum-pool-size").getString().toInt(),
+                    minimumIdle = cfg.property("datasource.hikari.minimum-idle").getString().toInt(),
+                    vaultEnabled = getBool("datasource.vault.enabled"),
+                    vaultPostgresBackend = cfg.property("datasource.vault.mountpath").getString()
+            )
+        }
+    }
+}
 
 class SpennDataSource private constructor(
     val config: SpennDbConfig

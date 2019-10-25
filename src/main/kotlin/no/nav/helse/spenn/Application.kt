@@ -10,6 +10,7 @@ import io.micrometer.core.instrument.Metrics
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider
+import no.nav.helse.spenn.config.SpennMQConfig
 import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
@@ -161,13 +162,7 @@ class SpennServices(appConfig: ApplicationConfig) {
     ////// DATABASE ///////
 
     val spennDataSource = SpennDataSource.getMigratedDatasourceInstance(
-            SpennDbConfig(
-                    jdbcUrl = "jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE",
-                    maximumPoolSize = 2,
-                    minimumIdle = 1,
-                    vaultEnabled = false,
-                    vaultPostgresBackend = "nada"
-            ))
+            SpennDbConfig.from(appConfig))
 
     val oppdragStateService = OppdragStateService(
             OppdragStateJooqRepository(
@@ -179,16 +174,16 @@ class SpennServices(appConfig: ApplicationConfig) {
     ///// STS-REST /////
 
     val stsRestClient = StsRestClient(
-            baseUrl = "http://localhost:8080", // TODO
-            username = "foo",
-            password = "bar"
+            baseUrl = spennConfig.stsRestUrl,
+            username = spennConfig.stsRestUsername,
+            password = spennConfig.stsRestPassword
     )
 
     ///// AKTØR-reg /////
 
     val aktorTilFnrMapper = AktorRegisteretClient(
             stsRestClient = stsRestClient,
-            aktorRegisteretUrl = "http://localhost:8080" // TODO
+            aktorRegisteretUrl = spennConfig.aktorRegisteretBaseUrl
     )
 
     ///// KAFKA /////
@@ -202,13 +197,17 @@ class SpennServices(appConfig: ApplicationConfig) {
 
     ////// MQ ///////
 
-    val spennMQConnection = MQConnectionFactory().apply {
-        hostName = "localhost"  // TODO
-        port = 1414
-        channel = "DEV.ADMIN.SVRCONN"
-        queueManager = "QM1"
+    val mqConfig = SpennMQConfig.from(appConfig)
+
+    // TODO if (! mqConfig.mqEnabled) then what?
+    val spennMQConnection =
+            MQConnectionFactory().apply {
+        hostName = mqConfig.hostname
+        port = mqConfig.port
+        channel = mqConfig.channel
+        queueManager = mqConfig.queueManager
         transportType = WMQConstants.WMQ_CM_CLIENT
-    }.createConnection("admin", "passw0rd")
+    }.createConnection(mqConfig.user, mqConfig.password)
 
     //// SIMULERING ////
 
@@ -233,14 +232,14 @@ class SpennServices(appConfig: ApplicationConfig) {
 
     val oppdragMQSender = OppdragMQSender(
             spennMQConnection,
-            "DEV.QUEUE.1",
-            "DEV.QUEUE.3",
+            mqConfig.oppdragQueueSend,
+            mqConfig.oppdragQueueMottak,
             JAXBOppdrag()
     )
 
     val oppdragMQReceiver = OppdragMQReceiver(
             spennMQConnection,
-            "DEV.QUEUE.3",
+            mqConfig.oppdragQueueMottak,
             JAXBOppdrag(),
             oppdragStateService,
             metrics
@@ -256,7 +255,7 @@ class SpennServices(appConfig: ApplicationConfig) {
 
     val avstemmingMQSender = AvstemmingMQSender(
             spennMQConnection,
-            "DEV.QUEUE.2",
+            mqConfig.avstemmingQueueSend,
             JAXBAvstemmingsdata()
     )
 
@@ -267,7 +266,7 @@ class SpennServices(appConfig: ApplicationConfig) {
 
     ///// HTTP API /////
 
-    private val apiAuthConfig = SpennApiAuthConfig() // TODO
+    private val apiAuthConfig = SpennApiAuthConfig.from(appConfig)
 
     val spennApiServer = spennApiServer(SpennApiEnvironment(
             kafkaStreams = kafkaStreamConsumer.streams,

@@ -7,6 +7,7 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
+import io.ktor.config.ApplicationConfig
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
@@ -29,10 +30,22 @@ import org.slf4j.LoggerFactory
 import java.net.URL
 
 data class SpennApiAuthConfig(
-        val acceptedIssuer: String = "iss-localhost",
-        val acceptedAudience: String = "aud-localhost",
-        val discoveryUrl: URL = URL("http://localhost:9000/.well-known/openid-configuration"),
-        val requiredGroup: String = "group1")
+        val acceptedAudience: String,
+        val discoveryUrl: URL,
+        val requiredGroup: String)
+{
+    companion object {
+        val ourIssuer = "ourissuer"
+
+        fun from(cfg: ApplicationConfig) : SpennApiAuthConfig {
+            return SpennApiAuthConfig(
+                    acceptedAudience = cfg.property("spenn-api.auth.oidc.accepted-audience").getString(),
+                    discoveryUrl = URL(cfg.property("spenn-api.auth.oidc.discovery-url").getString()),
+                    requiredGroup = cfg.property("spenn-api.auth.required-group").getString()
+            )
+        }
+    }
+}
 
 
 data class SpennApiEnvironment(
@@ -57,12 +70,12 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
     install(Authentication) {
         tokenValidationSupport(config = TokenSupportConfig(
                 IssuerConfig(
-                        name = env.authConfig.acceptedIssuer,
+                        name = SpennApiAuthConfig.ourIssuer,
                         acceptedAudience = listOf(env.authConfig.acceptedAudience),
                         discoveryUrl = env.authConfig.discoveryUrl.toString()
                 )),
                 additionalValidation = {
-                    val claims = it.getClaims(env.authConfig.acceptedIssuer)
+                    val claims = it.getClaims(SpennApiAuthConfig.ourIssuer)
                     val groups = claims?.getAsList("groups")
                     val hasGroup = groups != null && groups.contains(env.authConfig.requiredGroup)
                     if (!hasGroup) log.info("missing required group ${env.authConfig.requiredGroup}")

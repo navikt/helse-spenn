@@ -13,7 +13,7 @@ class AuditSupport(private val authConfig : SpennApiAuthConfig) { //val oidcRequ
 
     private fun navIdent(auth: AuthenticationContext) : String {
         val ident = auth.principal<TokenValidationContextPrincipal>()?.context
-                ?.getClaims(authConfig.acceptedIssuer)
+                ?.getClaims(SpennApiAuthConfig.ourIssuer)
                 ?.getStringClaim("NAVident")
         return ident ?:
         throw IllegalStateException("Using no token or token without required claim in auditlogging")
