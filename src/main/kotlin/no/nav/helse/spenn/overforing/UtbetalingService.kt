@@ -4,9 +4,6 @@ import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.toOppdrag
 import org.slf4j.LoggerFactory
 
-//import org.springframework.stereotype.Service
-
-//@Service
 class UtbetalingService(val oppdragSender: OppdragMQSender) {
     companion object {
         private val log = LoggerFactory.getLogger(UtbetalingService::class.java)

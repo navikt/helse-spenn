@@ -10,7 +10,6 @@ import javax.xml.bind.Marshaller
 import javax.xml.stream.XMLInputFactory
 import javax.xml.transform.stream.StreamSource
 
-//@Component
 class JAXBOppdrag {
 
     val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)

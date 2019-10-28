@@ -17,11 +17,10 @@ import org.apache.cxf.ws.security.trust.STSClient
 import org.apache.neethi.Policy
 import org.slf4j.LoggerFactory
 
-//@Configuration
-class SimuleringConfig(/*@Value("\${SIMULERING_SERVICE_URL}")*/ val simuleringServiceUrl: String,
-                       /*@Value("\${SECURITYTOKENSERVICE_URL}")*/ val stsUrl: String,
-                       /*@Value("\${STS_SOAP_USERNAME}")*/ val stsUsername: String,
-                       /*@Value("\${STS_SOAP_PASSWORD}")*/ val stsPassword: String) {
+class SimuleringConfig(val simuleringServiceUrl: String,
+                       val stsUrl: String,
+                       val stsUsername: String,
+                       val stsPassword: String) {
     private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerFpServiceWSBinding.wsdl"
     private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
     private val SERVICE = QName(NAMESPACE, "simulerFpService")
@@ -33,7 +32,6 @@ class SimuleringConfig(/*@Value("\${SIMULERING_SERVICE_URL}")*/ val simuleringSe
         private val log = LoggerFactory.getLogger(SimuleringConfig::class.java)
     }
 
-    //@Bean
     fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
         log.info("using simuleringservice url ${simuleringServiceUrl}")
         val factory = JaxWsProxyFactoryBean().apply {

@@ -9,9 +9,7 @@ import no.nav.helse.spenn.simulering.SimuleringResult
 import java.time.LocalDateTime
 import java.util.*
 
-//@Service
 class OppdragStateService(val repository: OppdragStateRepository) {
-
 
     //@Transactional(readOnly = false)
     fun saveOppdragState(dto: OppdragStateDTO): OppdragStateDTO {

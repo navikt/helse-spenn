@@ -21,7 +21,6 @@ import java.time.LocalDate
 
 import org.slf4j.LoggerFactory
 
-//@Service
 class SimuleringService(val simulerFpService: SimulerFpService) {
 
     companion object {

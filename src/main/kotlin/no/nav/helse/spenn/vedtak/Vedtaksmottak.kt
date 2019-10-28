@@ -2,13 +2,12 @@ package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
-import io.ktor.config.ApplicationConfig
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -35,8 +34,6 @@ import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
 
-/*@Configuration
-@AutoConfigureAfter(FlywayAutoConfiguration::class)*/
 class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                          val meterRegistry: MeterRegistry,
                          val aktørTilFnrMapper: AktørTilFnrMapper,
@@ -46,7 +43,6 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
     }
 
-    //@Bean
     fun mottakslogikk() : Topology {
         val builder = StreamsBuilder()
 
@@ -120,7 +116,6 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         }
     }
 
-    //@Bean
     fun kafkaStreams(topology: Topology) : KafkaStreams {
         val streamConfig = if (config.plainTextKafka) streamConfigPlainTextKafka() else streamConfig(config.appId, config.bootstrapServersUrl,
                 config.kafkaUsername to config.kafkaPassword,
@@ -172,9 +167,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         return streamConsumer(kafkaStreams(mottakslogikk()))
     }
 
-    //@Bean
-    fun streamConsumer(kafkaStreams: KafkaStreams /*, flywayMigrationInitializer: FlywayMigrationInitializer?*/) : StreamConsumer {
-        //if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
+    fun streamConsumer(kafkaStreams: KafkaStreams) : StreamConsumer {
         val streamConsumer = StreamConsumer(config.appId, kafkaStreams)
         if (config.streamVedtak) streamConsumer.start()
         return streamConsumer
@@ -226,5 +219,3 @@ data class Topic<K, V>(
         val keySerde: Serde<K>,
         val valueSerde: Serde<V>
 )
-
-

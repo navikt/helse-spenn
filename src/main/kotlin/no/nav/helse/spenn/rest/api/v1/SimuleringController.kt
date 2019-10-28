@@ -29,7 +29,6 @@ fun Route.simuleringcontroller(simuleringService: SimuleringService,
             LOG.info("JsonProcessingException")
             LOG.debug("JsonProcessingException: ", jsonError)
             call.respond(HttpStatusCode.BadRequest);
-                    //"Feil her: ${jsonError.message}")
             return@post
         }
         LOG.info("simulering called for vedtak: ${vedtak.soknadId}")

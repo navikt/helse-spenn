@@ -42,20 +42,4 @@ fun Route.healthstatuscontroller(streams: KafkaStreams,
     get("/internal/dependsOn") {
         call.respondText("Kafka state: ${streams.state().name}, stateCount: ${stateCount}")
     }
-
-/*  // Hvorfor er dette her? :
-    @GetMapping("/internal/simulering/{soknadId}")
-    fun simulering(@PathVariable soknadId: UUID): ResponseEntity<String> {
-        val oppdrag = oppdragStateService.fetchOppdragState(soknadId)
-        try {
-            val result = simuleringService.runSimulering(oppdrag)
-            return ResponseEntity.ok("Result of simulering ${result.simuleringResult?.status} med utbetalt beløp: ${result.simuleringResult?.mottaker?.totalBelop}" +
-                    "feilmelding ${result.simuleringResult?.feilMelding}")
-        }
-        catch(e: Exception) {
-            LOG.error("feil i simulering",e)
-            return ResponseEntity.badRequest().body("bad request")
-        }
-    }
-     */
 }

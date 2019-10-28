@@ -5,7 +5,7 @@ import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.security.token.support.ktor.TokenValidationContextPrincipal
 import org.slf4j.LoggerFactory
 
-class AuditSupport(private val authConfig : SpennApiAuthConfig) { //val oidcRequestContextHolder: OIDCRequestContextHolder) {
+class AuditSupport {
 
     companion object {
         private val AUDIT_LOG = LoggerFactory.getLogger("auditLogger")

@@ -10,12 +10,8 @@ import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import javax.jms.Connection
 
-/*import org.springframework.jms.annotation.JmsListener
-import org.springframework.stereotype.Component*/
-
-//@Component
 class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
-                        mottakqueue: String, /*@Value("\${oppdrag.queue.mottak}")*/
+                        mottakqueue: String,
                         val jaxb: JAXBOppdrag,
                         val oppdragStateService: OppdragStateService,
                         val meterRegistry: MeterRegistry/*,

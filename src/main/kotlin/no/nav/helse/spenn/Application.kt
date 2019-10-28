@@ -14,27 +14,9 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 
-/*import no.nav.security.spring.oidc.api.EnableOIDCTokenValidation
-import org.springframework.boot.Banner
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication*/
-
-/*@EnableOIDCTokenValidation
-@SpringBootApplication(scanBasePackages = ["no.nav.helse"])*/
-//class Application
-//fun main(args: Array<String>) {
-/*runApplication<Application>(*args) {
-    setBannerMode(Banner.Mode.OFF)
-}*/
-//}
-
-//fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
-
-
 private val log = LoggerFactory.getLogger("SpennApplication")
 
-
-fun main(args: Array<String>) {
+fun main() {
     log.info("Application.module starting...")
 
     val conf = ConfigFactory.parseResources("application.conf")
@@ -126,5 +108,3 @@ private fun setupSchedules(services: SpennServices, config: SpennConfig): Schedu
 
     return scheduler
 }
-
-

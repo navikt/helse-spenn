@@ -1,13 +1,12 @@
 package no.nav.helse.spenn.simulering
 
 import io.micrometer.core.instrument.MeterRegistry
-import net.javacrumbs.shedlock.core.SchedulerLock
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.appsupport.SIMULERING
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicLong
 import javax.annotation.PostConstruct
@@ -32,7 +31,7 @@ class SendToSimuleringTask(val simuleringService: SimuleringService,
     }
     
     //@Scheduled(cron = "30 * 7-21 * * ?")
-    @SchedulerLock(name = "sendToSimulering")
+    //@SchedulerLock(name = "sendToSimulering")
     fun sendSimulering() {
         LOG.info("Running SendToSimulering task")
         val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, limit)

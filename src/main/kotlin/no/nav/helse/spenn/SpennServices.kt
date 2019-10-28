@@ -1,5 +1,9 @@
 package no.nav.helse.spenn
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
 import io.ktor.config.ApplicationConfig
@@ -26,6 +30,10 @@ import no.nav.helse.spenn.vedtak.fnr.AktorRegisteretClient
 import no.nav.helse.spenn.vedtak.fnr.StsRestClient
 import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.slf4j.LoggerFactory
+
+val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
+        .registerModule(JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
 private val log = LoggerFactory.getLogger("SpennServices")
 
@@ -148,7 +156,7 @@ class SpennServices(appConfig: ApplicationConfig) {
             authConfig = apiAuthConfig,
             simuleringService = simuleringService,
             aktørTilFnrMapper = aktorTilFnrMapper,
-            auditSupport = AuditSupport(apiAuthConfig)
+            auditSupport = AuditSupport()
     ))
 
     ///// ///// /////

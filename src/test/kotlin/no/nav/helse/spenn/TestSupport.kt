@@ -38,7 +38,7 @@ fun mockApiEnvironment() = SpennApiEnvironment(
         meterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock()),
         authConfig = testSpennApiAuthConfig(),
         simuleringService = Mockito.mock(SimuleringService::class.java),
-        auditSupport = AuditSupport(testSpennApiAuthConfig()),
+        auditSupport = AuditSupport(),
         aktørTilFnrMapper = Mockito.mock(AktørTilFnrMapper::class.java)
 )
 

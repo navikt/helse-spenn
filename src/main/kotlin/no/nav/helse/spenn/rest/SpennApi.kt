@@ -3,16 +3,11 @@ package no.nav.helse.spenn.rest
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.application.Application
-import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.config.ApplicationConfig
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
@@ -74,7 +69,6 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
         }
     }
 
-
     routing {
 
         healthstatuscontroller(env.kafkaStreams, env.meterRegistry)
@@ -84,12 +78,4 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
         }
 
     }
-}
-
-fun Route.test1() {
-
-    get("/test/hei") {
-        call.respond("HEISANN")
-    }
-
 }

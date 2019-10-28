@@ -2,20 +2,17 @@ package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.jooq.Tables.AVSTEMMING
 import org.jooq.DSLContext
-//import org.springframework.stereotype.Repository
 import no.nav.helse.spenn.jooq.Tables.OPPDRAGSTATE
 import no.nav.helse.spenn.jooq.tables.records.AvstemmingRecord
 import no.nav.helse.spenn.jooq.tables.records.OppdragstateRecord
 import org.jooq.Record
 import org.jooq.SelectOnConditionStep
 import org.jooq.impl.DSL.currentTimestamp
-//import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.*
 
 
-//@Repository
 class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     //@Transactional(readOnly = false)
     override fun insert(oppdragstate: OppdragState): OppdragState {

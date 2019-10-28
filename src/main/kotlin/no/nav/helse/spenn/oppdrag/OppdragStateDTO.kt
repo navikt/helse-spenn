@@ -1,10 +1,8 @@
 package no.nav.helse.spenn.oppdrag
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.simulering.SimuleringResult
-import java.nio.ByteBuffer
 import java.time.LocalDateTime
 import java.util.*
 
