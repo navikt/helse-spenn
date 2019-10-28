@@ -93,9 +93,10 @@ workflows:
           requires:
             - build
           filters:
-            only:
-              - master
-              - unspring_experiment
+            branches:
+              only:
+                - master
+                - unspring_experiment
       - approve_for_prod:
           type: approval
           requires:
