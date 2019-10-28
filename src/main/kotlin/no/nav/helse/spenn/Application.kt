@@ -2,6 +2,7 @@ package no.nav.helse.spenn
 
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
+import io.ktor.config.ApplicationConfig
 import io.ktor.config.HoconApplicationConfig
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
 import net.javacrumbs.shedlock.core.LockConfiguration
@@ -17,17 +18,21 @@ import java.util.concurrent.TimeUnit
 private val log = LoggerFactory.getLogger("SpennApplication")
 
 fun main() {
-    log.info("Application.module starting...")
-
+    log.info("Loading config...")
     val conf = ConfigFactory.parseResources("application.conf")
             .resolve(ConfigResolveOptions.defaults())
     val appConfig = HoconApplicationConfig(conf)
+    spenn(appConfig)
+}
 
+fun spenn(appConfig: ApplicationConfig) {
+    log.info("Creating SpennServices...")
     val services = SpennServices(appConfig)
 
     val schedulerConfig = SpennConfig.from(appConfig)
     var scheduler: ScheduledExecutorService? = null
     if (schedulerConfig.schedulerEnabled) {
+        log.info("Setting up schedules...")
         scheduler = setupSchedules(services, schedulerConfig)
     }
 
