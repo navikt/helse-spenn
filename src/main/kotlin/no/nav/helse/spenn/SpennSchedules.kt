@@ -5,7 +5,10 @@ import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider
 import no.nav.helse.spenn.config.SpennConfig
 import org.slf4j.LoggerFactory
+import java.time.Clock
+import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -19,7 +22,11 @@ interface SpennTaskRunner {
     fun sendTilAvstemming()
 }
 
-internal fun setupSchedules(spennTasks: SpennTaskRunner, dataSourceForLockingTable: DataSource, config: SpennConfig): ScheduledExecutorService {
+internal fun setupSchedules(spennTasks: SpennTaskRunner,
+                            dataSourceForLockingTable: DataSource,
+                            config: SpennConfig,
+                            clock: Clock = Clock.systemDefaultZone()): ScheduledExecutorService {
+    
     log.info("setting up scheduler")
     val scheduler = Executors.newSingleThreadScheduledExecutor()
 
@@ -27,53 +34,58 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner, dataSourceForLockingTab
     val lockingExecutor = DefaultLockingTaskExecutor(lockProvider)
     val defaultMaxWaitForLockInSeconds = 10L
 
-    val wrapWithErrorLogging = fun(fn: () -> Unit) {
-        try {
-            fn()
-        } catch (e: Exception) {
-            log.error("Error running scheduled task", e)
-        }
+    val runWithLock = fun(lockName: String, fn: () -> Unit) {
+        lockingExecutor.executeWithLock(Runnable {
+            try {
+                fn()
+            } catch (e: Exception) {
+                log.error("Error running scheduled task", e)
+            }
+        }, LockConfiguration(
+                lockName,
+                Instant.now().plusSeconds(defaultMaxWaitForLockInSeconds)))
     }
 
     if (config.taskOppdragEnabled) {
         log.info("Scheduling sendToOSTask")
         scheduler.scheduleAtFixedRate({
-            lockingExecutor.executeWithLock(Runnable {
-                wrapWithErrorLogging {
-                    spennTasks.sendToOS()
-                }
-            }, LockConfiguration(
-                    "sendToOS",
-                    Instant.now().plusSeconds(defaultMaxWaitForLockInSeconds)))
-        }, 5, 60, TimeUnit.SECONDS)
+            runWithLock("sendToOS") {
+                spennTasks.sendToOS()
+            }
+        }, 45, 60, TimeUnit.SECONDS)
     }
 
     if (config.taskSimuleringEnabled) {
         log.info("Scheduling sendToSimuleringTask")
         scheduler.scheduleAtFixedRate({
-            log.info("sendToSimuleringTask - before lock")
-            // TODO: Ikke kjør mellom kl 21 og 07
-            lockingExecutor.executeWithLock(Runnable {
-                wrapWithErrorLogging {
+            val now = LocalDateTime.now(clock)
+            if (now.hour < 7 || now.hour > 20) {
+                log.info("Skipping sendToSimuleringTask between 21-7")
+            } else {
+                runWithLock("sendToSimulering") {
                     spennTasks.sendSimulering()
                 }
-            }, LockConfiguration(
-                    "sendToSimulering",
-                    Instant.now().plusSeconds(defaultMaxWaitForLockInSeconds)))
-        }, 10, 30, TimeUnit.SECONDS)
+            }
+        }, 30, 30, TimeUnit.SECONDS)
     }
 
     if (config.taskAvstemmingEnabled) {
         log.info("Scheduling sendTilAvstemmingTask")
+        val avstemmingsTidspunktTime = 21
+        val avstemmingsTidspunktMinutt = 0
+
+        val now = LocalDateTime.now(clock)
+        var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0);
+        if (now.compareTo(nextRun) > 0) {
+            nextRun = nextRun.plusDays(1)
+        }
+        val initialDelay = Duration.between(now, nextRun).seconds
+
         scheduler.scheduleAtFixedRate({
-            lockingExecutor.executeWithLock(Runnable {
-                wrapWithErrorLogging {
-                    spennTasks.sendTilAvstemming()
-                }
-            }, LockConfiguration(
-                    "sendTilAvstemming",
-                    Instant.now().plusSeconds(defaultMaxWaitForLockInSeconds)))
-        }, 12, 24, TimeUnit.HOURS) // TODO: bør gå fast klokkeslett
+            runWithLock("sendTilAvstemming") {
+                spennTasks.sendTilAvstemming()
+            }
+        }, initialDelay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS) // TODO: bør gå fast klokkeslett
     }
 
     return scheduler
