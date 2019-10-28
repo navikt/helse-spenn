@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.config
 
 import io.ktor.config.ApplicationConfig
 

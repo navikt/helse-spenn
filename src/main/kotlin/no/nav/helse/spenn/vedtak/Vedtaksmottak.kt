@@ -4,18 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.ktor.config.ApplicationConfig
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.SpennConfig
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.appsupport.VEDTAK
+import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
@@ -26,7 +24,6 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.LogAndFailExceptionHandler
-import org.apache.kafka.streams.errors.ProductionExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
@@ -37,41 +34,6 @@ import java.sql.SQLIntegrityConstraintViolationException
 import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
-
-
-class SpennKafkaConfig(
-     val bootstrapServersUrl: String,
-     val appId: String = "spenn-1",
-     val kafkaUsername: String,
-     val kafkaPassword: String,
-     val navTruststorePath: String?,
-     val navTruststorePassword: String?,
-     val plainTextKafka: Boolean = false,
-     val offsetReset: Boolean = false,
-     val timeStampMillis: Long = -1,
-     val streamVedtak: Boolean = true) {
-    companion object {
-        @io.ktor.util.KtorExperimentalAPI
-        fun from(cfg: ApplicationConfig) : SpennKafkaConfig {
-            val getBool = fun(key : String) : Boolean {
-                val prop = cfg.propertyOrNull(key)
-                if (prop == null) return false else return prop.getString().equals("true")
-            }
-            return SpennKafkaConfig(
-                    bootstrapServersUrl = cfg.property("kafka.bootstrapservers").getString(),
-                    appId = cfg.property("kafka.appid").getString(),
-                    kafkaUsername = cfg.property("kafka.username").getString(),
-                    kafkaPassword = cfg.property("kafka.password").getString(),
-                    navTruststorePath = cfg.property("kafka.truststorepath").getString(),
-                    navTruststorePassword = cfg.property("kafka.truststorepassword").getString(),
-                    plainTextKafka = getBool("kafka.plaintext"),
-                    offsetReset = getBool("kafka.offsetreset.enabled"),
-                    timeStampMillis = cfg.property("kafka.offsetreset.timestamp-millis").getString().toLong(),
-                    streamVedtak = getBool("kafka.streamvedtakenabled")
-            )
-        }
-    }
-}
 
 /*@Configuration
 @AutoConfigureAfter(FlywayAutoConfiguration::class)*/

@@ -10,7 +10,7 @@ import io.micrometer.core.instrument.Metrics
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider
-import no.nav.helse.spenn.config.SpennMQConfig
+import no.nav.helse.spenn.config.*
 import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
@@ -21,7 +21,6 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.overforing.SendToOSTask
 import no.nav.helse.spenn.overforing.UtbetalingService
-import no.nav.helse.spenn.rest.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.rest.spennApiServer
@@ -29,7 +28,6 @@ import no.nav.helse.spenn.simulering.SendToSimuleringTask
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.KafkaStreamsConfig
-import no.nav.helse.spenn.vedtak.SpennKafkaConfig
 import no.nav.helse.spenn.vedtak.fnr.AktorRegisteretClient
 import no.nav.helse.spenn.vedtak.fnr.StsRestClient
 import org.apache.cxf.bus.extension.ExtensionManagerBus

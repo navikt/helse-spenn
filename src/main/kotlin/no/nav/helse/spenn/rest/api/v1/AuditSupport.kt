@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.rest.api.v1
 
 import io.ktor.auth.AuthenticationContext
-import no.nav.helse.spenn.rest.SpennApiAuthConfig
+import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.security.token.support.ktor.TokenValidationContextPrincipal
 import org.slf4j.LoggerFactory
 

@@ -18,6 +18,7 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.rest.api.v1.simuleringcontroller
 import no.nav.helse.spenn.simulering.SimuleringService
@@ -27,26 +28,6 @@ import no.nav.security.token.support.ktor.TokenSupportConfig
 import no.nav.security.token.support.ktor.tokenValidationSupport
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
-import java.net.URL
-
-data class SpennApiAuthConfig(
-        val acceptedAudience: String,
-        val discoveryUrl: URL,
-        val requiredGroup: String)
-{
-    companion object {
-        val ourIssuer = "ourissuer"
-
-        fun from(cfg: ApplicationConfig) : SpennApiAuthConfig {
-            return SpennApiAuthConfig(
-                    acceptedAudience = cfg.property("spenn-api.auth.oidc.accepted-audience").getString(),
-                    discoveryUrl = URL(cfg.property("spenn-api.auth.oidc.discovery-url").getString()),
-                    requiredGroup = cfg.property("spenn-api.auth.required-group").getString()
-            )
-        }
-    }
-}
-
 
 data class SpennApiEnvironment(
         val port: Int = 8080,

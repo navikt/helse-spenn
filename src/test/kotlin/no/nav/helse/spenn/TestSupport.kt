@@ -6,7 +6,7 @@ import com.nimbusds.jwt.JWTClaimsSet
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.rest.SpennApiAuthConfig
+import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
