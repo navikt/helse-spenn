@@ -1,13 +1,12 @@
 package no.nav.helse.spenn.vedtak.fnr
 
 import no.nav.helse.spenn.vedtak.Fodselsnummer
-import org.json.JSONException
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.*
 
 class AktorRegisteretClient(val stsRestClient: StsRestClient,
-        /*@Value("\${AKTORREGISTERET_BASE_URL}")*/ val aktorRegisteretUrl: String) : AktørTilFnrMapper {
+                            val aktorRegisteretUrl: String) : AktørTilFnrMapper {
 
     companion object {
         private val LOG = LoggerFactory.getLogger(AktorRegisteretClient::class.java)
@@ -37,14 +36,9 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
                         "Nav-Personidenter" to aktorId
                 ))
         if (resp.statusCode != 200) {
-            LOG.error("Got statusCode ${resp.statusCode}")
+            throw RuntimeException("AktorRegisteretClient response got statusCode ${resp.statusCode}")
         }
-        try {
-            return resp.jsonObject
-        } catch (e:JSONException) {
-            LOG.error("Bad JSON: ${resp.text}")
-            throw e
-        }
+        return resp.jsonObject
     }
 
 }
