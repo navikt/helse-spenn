@@ -75,7 +75,7 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
         val avstemmingsTidspunktMinutt = 0
 
         val now = LocalDateTime.now(clock)
-        var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0);
+        var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
         if (now.compareTo(nextRun) > 0) {
             nextRun = nextRun.plusDays(1)
         }
@@ -85,7 +85,7 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
             runWithLock("sendTilAvstemming") {
                 spennTasks.sendTilAvstemming()
             }
-        }, initialDelay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS) // TODO: bør gå fast klokkeslett
+        }, initialDelay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS)
     }
 
     return scheduler
