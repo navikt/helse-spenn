@@ -86,7 +86,9 @@ workflows:
       - build:
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - unspring_experiment
       - deploy_preprod:
           requires:
             - build
