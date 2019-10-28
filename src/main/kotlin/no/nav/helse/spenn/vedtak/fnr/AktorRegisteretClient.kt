@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.vedtak.fnr
 
 import no.nav.helse.spenn.vedtak.Fodselsnummer
+import org.json.JSONException
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -25,16 +26,26 @@ class AktorRegisteretClient(val stsRestClient: StsRestClient,
                 }.first().getString("ident")
     }
 
-    fun lookUp(aktorId: String): JSONObject =
-            khttp.get(
-                    url = "$aktorRegisteretUrl/api/v1/identer?gjeldende=true",
-                    headers = mapOf(
-                            "Accept" to "application/json",
-                            "Authorization" to "Bearer ${stsRestClient.token()}",
-                            "Nav-Call-Id" to UUID.randomUUID().toString(),
-                            "Nav-Consumer-Id" to "spenn",
-                            "Nav-Personidenter" to aktorId
-                    )).jsonObject
+    fun lookUp(aktorId: String): JSONObject {
+        val resp = khttp.get(
+                url = "$aktorRegisteretUrl/api/v1/identer?gjeldende=true",
+                headers = mapOf(
+                        "Accept" to "application/json",
+                        "Authorization" to "Bearer ${stsRestClient.token()}",
+                        "Nav-Call-Id" to UUID.randomUUID().toString(),
+                        "Nav-Consumer-Id" to "spenn",
+                        "Nav-Personidenter" to aktorId
+                ))
+        if (resp.statusCode != 200) {
+            LOG.error("Got statusCode ${resp.statusCode}")
+        }
+        try {
+            return resp.jsonObject
+        } catch (e:JSONException) {
+            LOG.error("Bad JSON: ${resp.text}")
+            throw e
+        }
+    }
 
 }
 
