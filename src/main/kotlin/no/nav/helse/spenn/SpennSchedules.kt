@@ -70,15 +70,17 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
     }
 
     if (config.taskAvstemmingEnabled) {
-        log.info("Scheduling sendTilAvstemmingTask")
-        val avstemmingsTidspunktTime = 15
-        val avstemmingsTidspunktMinutt = 40
+        val avstemmingsTidspunktTime = 21
+        val avstemmingsTidspunktMinutt = 0
 
         val now = LocalDateTime.now(clock)
         var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
         if (now.compareTo(nextRun) > 0) {
             nextRun = nextRun.plusDays(1)
         }
+
+        log.info("Scheduling sendTilAvstemmingTask (first will be at ${nextRun})")
+
         val initialDelay = Duration.between(now, nextRun).seconds
 
         scheduler.scheduleAtFixedRate({
