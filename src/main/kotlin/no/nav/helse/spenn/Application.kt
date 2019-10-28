@@ -27,7 +27,10 @@ internal fun spenn(appConfig: ApplicationConfig) {
     var scheduler: ScheduledExecutorService? = null
     if (schedulerConfig.schedulerEnabled) {
         log.info("Setting up schedules...")
-        scheduler = setupSchedules(services, schedulerConfig)
+        scheduler = setupSchedules(
+                spennTasks = services,
+                dataSourceForLockingTable = services.spennDataSource.dataSource,
+                config = schedulerConfig)
     }
 
     log.info("Starting HTTP API services")

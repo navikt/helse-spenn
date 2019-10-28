@@ -37,7 +37,15 @@ val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
 
 private val log = LoggerFactory.getLogger("SpennServices")
 
-class SpennServices(appConfig: ApplicationConfig) {
+class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
+
+    ////
+
+    override fun sendToOS() = sendToOSTask.sendToOS()
+    override fun sendSimulering() = sendToSimuleringTask.sendSimulering()
+    override fun sendTilAvstemming() = sendTilAvstemmingTask.sendTilAvstemming()
+
+    ////
 
     val metrics = Metrics.globalRegistry
     val spennConfig = SpennConfig.from(appConfig)

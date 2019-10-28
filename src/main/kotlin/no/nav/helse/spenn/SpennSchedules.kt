@@ -9,14 +9,21 @@ import java.time.Instant
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import javax.sql.DataSource
 
 private val log = LoggerFactory.getLogger("SpennSchedules")
 
-internal fun setupSchedules(services: SpennServices, config: SpennConfig): ScheduledExecutorService {
+interface SpennTaskRunner {
+    fun sendToOS()
+    fun sendSimulering()
+    fun sendTilAvstemming()
+}
+
+internal fun setupSchedules(spennTasks: SpennTaskRunner, dataSourceForLockingTable: DataSource, config: SpennConfig): ScheduledExecutorService {
     log.info("setting up scheduler")
     val scheduler = Executors.newSingleThreadScheduledExecutor()
 
-    val lockProvider = JdbcLockProvider(services.spennDataSource.dataSource, "shedlock")
+    val lockProvider = JdbcLockProvider(dataSourceForLockingTable, "shedlock")
     val lockingExecutor = DefaultLockingTaskExecutor(lockProvider)
     val defaultMaxWaitForLockInSeconds = 10L
 
@@ -33,7 +40,7 @@ internal fun setupSchedules(services: SpennServices, config: SpennConfig): Sched
         scheduler.scheduleAtFixedRate({
             lockingExecutor.executeWithLock(Runnable {
                 wrapWithErrorLogging {
-                    services.sendToOSTask.sendToOS()
+                    spennTasks.sendToOS()
                 }
             }, LockConfiguration(
                     "sendToOS",
@@ -48,7 +55,7 @@ internal fun setupSchedules(services: SpennServices, config: SpennConfig): Sched
             // TODO: Ikke kjør mellom kl 21 og 07
             lockingExecutor.executeWithLock(Runnable {
                 wrapWithErrorLogging {
-                    services.sendToSimuleringTask.sendSimulering()
+                    spennTasks.sendSimulering()
                 }
             }, LockConfiguration(
                     "sendToSimulering",
@@ -61,7 +68,7 @@ internal fun setupSchedules(services: SpennServices, config: SpennConfig): Sched
         scheduler.scheduleAtFixedRate({
             lockingExecutor.executeWithLock(Runnable {
                 wrapWithErrorLogging {
-                    services.sendTilAvstemmingTask.sendTilAvstemming()
+                    spennTasks.sendTilAvstemming()
                 }
             }, LockConfiguration(
                     "sendTilAvstemming",
