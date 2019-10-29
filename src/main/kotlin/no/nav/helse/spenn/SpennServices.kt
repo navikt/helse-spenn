@@ -7,7 +7,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
 import io.ktor.config.ApplicationConfig
-import io.micrometer.core.instrument.Metrics
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.*
 import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
@@ -47,7 +48,7 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     ////
 
-    val metrics = Metrics.globalRegistry
+    val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT) //Metrics.globalRegistry
     val spennConfig = SpennConfig.from(appConfig)
 
     ////// DATABASE ///////

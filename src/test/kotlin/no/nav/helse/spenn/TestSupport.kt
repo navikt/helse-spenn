@@ -4,8 +4,9 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
 import io.micrometer.core.instrument.MockClock
-import io.micrometer.core.instrument.simple.SimpleConfig
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
 import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
@@ -35,7 +36,7 @@ fun testSpennApiAuthConfig() : SpennApiAuthConfig {
 
 fun mockApiEnvironment() = SpennApiEnvironment(
         kafkaStreams = Mockito.mock(KafkaStreams::class.java),
-        meterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock()),
+        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry(), MockClock()),
         authConfig = testSpennApiAuthConfig(),
         simuleringService = Mockito.mock(SimuleringService::class.java),
         auditSupport = AuditSupport(),

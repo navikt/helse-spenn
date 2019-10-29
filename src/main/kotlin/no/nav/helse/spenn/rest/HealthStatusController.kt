@@ -6,7 +6,7 @@ import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.get
-import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicInteger
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 private val LOG = LoggerFactory.getLogger("healthstatuscontroller")
 
 fun Route.healthstatuscontroller(streams: KafkaStreams,
-                                 meterRegistry: MeterRegistry ) {
+                                 meterRegistry: PrometheusMeterRegistry ) {
 
     var stateCount = 0
     val kafkaState = AtomicInteger(0)
@@ -41,5 +41,9 @@ fun Route.healthstatuscontroller(streams: KafkaStreams,
 
     get("/internal/dependsOn") {
         call.respondText("Kafka state: ${streams.state().name}, stateCount: ${stateCount}")
+    }
+
+    get("/internal/metrics") {
+        call.respondText(meterRegistry.scrape())
     }
 }

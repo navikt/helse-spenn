@@ -12,7 +12,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.rest.api.v1.simuleringcontroller
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 data class SpennApiEnvironment(
         val port: Int = 8080,
         val kafkaStreams: KafkaStreams,
-        val meterRegistry: MeterRegistry,
+        val meterRegistry: PrometheusMeterRegistry,
         val authConfig: SpennApiAuthConfig,
         val simuleringService: SimuleringService,
         val aktørTilFnrMapper: AktørTilFnrMapper,
