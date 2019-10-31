@@ -5,8 +5,10 @@ import org.jooq.DSLContext
 import no.nav.helse.spenn.jooq.Tables.OPPDRAGSTATE
 import no.nav.helse.spenn.jooq.tables.records.AvstemmingRecord
 import no.nav.helse.spenn.jooq.tables.records.OppdragstateRecord
+import org.jooq.Configuration
 import org.jooq.Record
 import org.jooq.SelectOnConditionStep
+import org.jooq.impl.DSL
 import org.jooq.impl.DSL.currentTimestamp
 import java.sql.Timestamp
 import java.time.LocalDateTime
@@ -14,23 +16,28 @@ import java.util.*
 
 
 class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
+
     //@Transactional(readOnly = false)
     override fun insert(oppdragstate: OppdragState): OppdragState {
-        val id =  with(OPPDRAGSTATE) {
-             jooq.insertInto(this)
-                    .set(SOKNAD_ID, oppdragstate.soknadId)
-                    .set(MODIFIED, currentTimestamp())
-                    .set(CREATED, currentTimestamp())
-                    .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
-                    .set(STATUS, oppdragstate.status.name)
-                    .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
-                    .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
-                    .set(FEILBESKRIVELSE, oppdragstate.feilbeskrivelse)
-                    .returning()
-                    .fetchOne()
-                    .id
+        val id = jooq.transactionResult { conf: Configuration ->
+            val dslContext = DSL.using(conf)
+            val id =  with(OPPDRAGSTATE) {
+                dslContext.insertInto(this)
+                        .set(SOKNAD_ID, oppdragstate.soknadId)
+                        .set(MODIFIED, currentTimestamp())
+                        .set(CREATED, currentTimestamp())
+                        .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
+                        .set(STATUS, oppdragstate.status.name)
+                        .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
+                        .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
+                        .set(FEILBESKRIVELSE, oppdragstate.feilbeskrivelse)
+                        .returning()
+                        .fetchOne()
+                        .id
+            }
+            insertAvstemming(oppdragstate.avstemming, id, dslContext)
+            id
         }
-        insert(oppdragstate.avstemming, id)
         return findById(id)
     }
 
@@ -71,19 +78,22 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
 
     //@Transactional(readOnly = false)
     override fun update(oppdragstate: OppdragState): OppdragState {
-        with(OPPDRAGSTATE) {
-            jooq.update(this)
-                    .set(SOKNAD_ID, oppdragstate.soknadId)
-                    .set(MODIFIED, currentTimestamp())
-                    .set(STATUS, oppdragstate.status.name)
-                    .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
-                    .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
-                    .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
-                    .set(FEILBESKRIVELSE, oppdragstate.feilbeskrivelse)
-                    .where(ID.equal(oppdragstate.id))
-                    .execute()
+        jooq.transaction { conf: Configuration ->
+            val dslContext = DSL.using(conf)
+            with(OPPDRAGSTATE) {
+                dslContext.update(this)
+                        .set(SOKNAD_ID, oppdragstate.soknadId)
+                        .set(MODIFIED, currentTimestamp())
+                        .set(STATUS, oppdragstate.status.name)
+                        .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
+                        .set(SIMULERINGRESULT, oppdragstate.simuleringResult)
+                        .set(OPPDRAGRESPONSE, oppdragstate.oppdragResponse)
+                        .set(FEILBESKRIVELSE, oppdragstate.feilbeskrivelse)
+                        .where(ID.equal(oppdragstate.id))
+                        .execute()
+            }
+            updateAvstemming(oppdragstate.avstemming, oppdragstate.id!!, dslContext)
         }
-        update(oppdragstate.avstemming, oppdragstate.id!!)
         return findById(oppdragstate.id)
     }
 
@@ -121,10 +131,10 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
     }
 
 
-    private fun insert(avstemming: Avstemming?, oppdragstateId: Long) {
+    private fun insertAvstemming(avstemming: Avstemming?, oppdragstateId: Long, dslContext: DSLContext) {
         if (avstemming!=null) {
              with(AVSTEMMING) {
-                jooq.insertInto(this)
+                 dslContext.insertInto(this)
                     .set(OPPDRAGSTATE_ID, oppdragstateId)
                     .set(NOKKEL, avstemming.nokkel.toTimeStamp())
                     .set(AVSTEMT, avstemming.avstemt)
@@ -133,14 +143,14 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         }
     }
 
-    private fun update(avstemming: Avstemming?, oppdragstateId: Long) {
+    private fun updateAvstemming(avstemming: Avstemming?, oppdragstateId: Long, dslContext: DSLContext) {
         if (avstemming!=null) {
             with(AVSTEMMING) {
                 if (avstemming.id == null) {
-                    insert(avstemming, oppdragstateId)
+                    insertAvstemming(avstemming, oppdragstateId, dslContext)
                 }
                 else {
-                    jooq.update(this)
+                    dslContext.update(this)
                             .set(OPPDRAGSTATE_ID, oppdragstateId)
                             .set(NOKKEL, avstemming.nokkel.toTimeStamp())
                             .set(AVSTEMT, avstemming.avstemt)
