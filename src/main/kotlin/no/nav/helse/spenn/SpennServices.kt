@@ -110,7 +110,8 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
     )
 
     val simuleringService = SimuleringService(
-            simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus())
+            simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()),
+            metrics
     )
 
     val sendToSimuleringTask = SendToSimuleringTask(
