@@ -11,7 +11,7 @@ private val strings = Serdes.String()
 private val json = Serdes.serdeFrom(JsonSerializer(), JsonDeserializer())
 
 val VEDTAK_SYKEPENGER = Topic(
-        name = "aapen-helse-sykepenger-vedtak",
+        name = "privat-helse-spenn-utbetaling",
         keySerde = strings,
         valueSerde = json
 )
