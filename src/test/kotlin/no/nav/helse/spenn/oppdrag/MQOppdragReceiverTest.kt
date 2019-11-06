@@ -1,39 +1,70 @@
 package no.nav.helse.spenn.oppdrag
 
 
+import com.ibm.mq.jms.MQQueue
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
+import no.nav.helse.spenn.kWhen
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.Vedtak
+import org.flywaydb.core.Flyway
+import org.jooq.DSLContext
+import org.jooq.SQLDialect
+import org.jooq.impl.DSL
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.Mockito.mock
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-import org.springframework.context.annotation.ComponentScan
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.autoconfigure.jooq.JooqTest
+//import org.springframework.context.annotation.ComponentScan
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
 import java.util.*
+import javax.jms.Connection
+import javax.jms.MessageConsumer
+import javax.jms.Session
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@JooqTest(properties = ["VAULT_ENABLED=false",
+/*@JooqTest(properties = ["VAULT_ENABLED=false",
     "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
+    "spring.test.database.replace=none"])*/
+//@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class MQOppdragReceiverTest {
 
-    @Autowired
-    lateinit var oppdragStateService: OppdragStateService
+    //@Autowired
+    val oppdragStateService = OppdragStateService(
+            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
+    )
 
     val meterRegistry = CompositeMeterRegistry()
     val kafkaProducer = mock(OppdragStateKafkaProducer::class.java)
 
+    val mockConnection = mock(Connection::class.java)
+    val mockJmsSession = mock(Session::class.java)
+    val mockConsumer = mock(MessageConsumer::class.java)
+
+    @BeforeEach
+    fun beforeEach() {
+        kWhen(mockConnection.createSession()).thenReturn(mockJmsSession)
+        kWhen(mockJmsSession.createConsumer(MQQueue("mottaksqueue"))).thenReturn(mockConsumer)
+    }
+
     @Test
     fun OppdragMQSendAndReceiveTest() {
-        val mqReceiver = OppdragMQReceiver(jaxb = JAXBOppdrag(), oppdragStateService = oppdragStateService,
-                meterRegistry = meterRegistry, statusProducer = kafkaProducer)
+        val mqReceiver = OppdragMQReceiver(
+                connection = mockConnection,
+                mottakqueue = "mottaksqueue",
+                jaxb = JAXBOppdrag(), oppdragStateService = oppdragStateService,
+                meterRegistry = meterRegistry) //, statusProducer = kafkaProducer)
         val fom1 = LocalDate.of(2019, Month.JANUARY, 1)
         val tom1 = LocalDate.of(2019, Month.JANUARY, 12)
         val oppdragslinje1 = UtbetalingsLinje(id = "1", datoFom = fom1,

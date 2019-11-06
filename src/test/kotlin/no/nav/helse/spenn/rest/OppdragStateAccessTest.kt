@@ -10,18 +10,18 @@ import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.stubOIDCProvider
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
-import no.nav.security.oidc.test.support.JwtTokenGenerator
+//import no.nav.security.oidc.test.support.JwtTokenGenerator
 import org.apache.kafka.streams.KafkaStreams
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
+/*import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders*/
 import kotlin.test.assertEquals
 
 // I prod/Q, sett med env-variabler slik:
@@ -29,7 +29,7 @@ import kotlin.test.assertEquals
 // NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL=http://localhost:33333/.well-known/openid-configuration
 // API_ACCESS_REQUIREDGROUP=12345678-abcd-abcd-eeff-1234567890ab
 // og eventuelt: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_PROXY_URL=http://someproxy:8080
-
+/*
 @WebMvcTest(properties = [
     "no.nav.security.oidc.issuer.ourissuer.accepted_audience=aud-localhost",
     "no.nav.security.oidc.issuer.ourissuer.discoveryurl=http://localhost:33333/.well-known/openid-configuration",
@@ -132,4 +132,4 @@ class OppdragStateAccessTest {
 
 
 
-}
+}*/

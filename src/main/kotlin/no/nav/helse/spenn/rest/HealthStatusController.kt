@@ -1,73 +1,49 @@
 package no.nav.helse.spenn.rest
 
-import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
-import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.security.oidc.api.Unprotected
+import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
+import io.ktor.response.respond
+import io.ktor.response.respondText
+import io.ktor.routing.Route
+import io.ktor.routing.get
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RestController
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import javax.annotation.PostConstruct
 
-@RestController
-@Unprotected
-class HealthStatusController(val streams: KafkaStreams, val oppdragStateService: OppdragStateService,
-                             val simuleringService: SimuleringService, val meterRegistry: MeterRegistry ) {
+private val LOG = LoggerFactory.getLogger("healthstatuscontroller")
 
-    private var stateCount = 0
-    private val kafkaState = AtomicInteger(0)
+fun Route.healthstatuscontroller(streams: KafkaStreams,
+                                 meterRegistry: PrometheusMeterRegistry ) {
 
-    companion object {
-        private val LOG = LoggerFactory.getLogger(HealthStatusController::class.java)
-    }
+    var stateCount = 0
+    val kafkaState = AtomicInteger(0)
+    meterRegistry.gauge("KAFKA_STATE", kafkaState)
 
-    @PostConstruct
-    fun init() {
-        meterRegistry.gauge("KAFKA_STATE", kafkaState)
-    }
-
-    @GetMapping("/internal/isAlive")
-    fun isAlive(): ResponseEntity<String> {
+    get("/internal/isAlive") {
         if (streams.state().isRunning) {
             stateCount = 0
         }
         else  {
             if (++stateCount > 60) {
                 LOG.error("Kafka stream has not been running for a while")
-                return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body("Kafka has been down for a long time!")
+                call.respond(HttpStatusCode.FailedDependency, "Kafka has been down for a long time!")
+                return@get
             }
         }
-        return ResponseEntity.ok("ALIVE")
+        call.respondText("ALIVE")
     }
 
-    @GetMapping("/internal/isReady")
-    fun isReady(): ResponseEntity<String> {
+    get("/internal/isReady") {
         kafkaState.set(streams.state().ordinal)
-        return ResponseEntity.ok("READY")
+        call.respondText("READY")
     }
 
-    @GetMapping("/internal/dependsOn")
-    fun dependsOn(): String {
-        return "Kafka state: ${streams.state().name}, stateCount: ${stateCount}"
+    get("/internal/dependsOn") {
+        call.respondText("Kafka state: ${streams.state().name}, stateCount: ${stateCount}")
     }
 
-    @GetMapping("/internal/simulering/{soknadId}")
-    fun simulering(@PathVariable soknadId: UUID): ResponseEntity<String> {
-        val oppdrag = oppdragStateService.fetchOppdragState(soknadId)
-        try {
-            val result = simuleringService.runSimulering(oppdrag)
-            return ResponseEntity.ok("Result of simulering ${result.simuleringResult?.status} med utbetalt beløp: ${result.simuleringResult?.mottaker?.totalBelop}" +
-                    "feilmelding ${result.simuleringResult?.feilMelding}")
-        }
-        catch(e: Exception) {
-            LOG.error("feil i simulering",e)
-            return ResponseEntity.badRequest().body("bad request")
-        }
+    get("/internal/metrics") {
+        call.respondText(meterRegistry.scrape())
     }
 }

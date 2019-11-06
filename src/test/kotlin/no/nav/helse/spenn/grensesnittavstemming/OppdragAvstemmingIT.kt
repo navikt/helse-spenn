@@ -8,9 +8,9 @@ import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.vedtak.Vedtak
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.stereotype.Repository
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.context.SpringBootTest
+//import org.springframework.stereotype.Repository
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -18,20 +18,20 @@ import java.time.Month
 import java.util.*
 import kotlin.test.assertNotNull
 
-@Repository
+//@Repository
 class MyRepo(val jooq: DSLContext) {
     fun setOppdragSequence(n:Long) {
         jooq.alterSequence("oppdragstate_id_seq").restartWith(BigInteger.valueOf(n)).execute();
     }
 }
 
-@SpringBootTest
+//@SpringBootTest
 class OppdragAvstemmingIT {
 
-    @Autowired lateinit var mqSender: OppdragMQSender
-    @Autowired lateinit var mqAvstemmingSender: AvstemmingMQSender
-    @Autowired lateinit var service: OppdragStateService
-    @Autowired lateinit var db: MyRepo
+    /*@Autowired*/ lateinit var mqSender: OppdragMQSender
+    /*@Autowired*/ lateinit var mqAvstemmingSender: AvstemmingMQSender
+    /*@Autowired*/ lateinit var service: OppdragStateService
+    /*@Autowired*/ lateinit var db: MyRepo
 
     @Test
     fun sendOppdragTilOS() {

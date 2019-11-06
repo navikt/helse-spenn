@@ -3,17 +3,16 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.appsupport.VEDTAK
+import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
@@ -24,46 +23,26 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.LogAndFailExceptionHandler
-import org.apache.kafka.streams.errors.ProductionExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
+import org.jooq.exception.DataAccessException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.AutoConfigureAfter
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-
-import org.springframework.dao.DuplicateKeyException
 import java.io.File
+import java.sql.SQLIntegrityConstraintViolationException
 import java.time.Duration
 import java.util.*
 import javax.annotation.PostConstruct
 
-
-@Configuration
-@AutoConfigureAfter(FlywayAutoConfiguration::class)
 class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                          val meterRegistry: MeterRegistry,
                          val aktørTilFnrMapper: AktørTilFnrMapper,
-                         @Value("\${KAFKA_BOOTSTRAP_SERVERS}") val bootstrapServersUrl: String,
-                         @Value("\${KAFKA_APP_ID:spenn-1}")val appId: String,
-                         @Value("\${KAFKA_USERNAME}") val kafkaUsername: String,
-                         @Value("\${KAFKA_PASSWORD}") val kafkaPassword: String,
-                         @Value("\${NAV_TRUSTSTORE_PATH}") val navTruststorePath: String,
-                         @Value("\${NAV_TRUSTSTORE_PASSWORD}") val navTruststorePassword: String,
-                         @Value("\${PLAIN_TEXT_KAFKA:false}") val plainTextKafka: String,
-                         @Value("\${kafka.offset-reset.timestamp-millis}") val timeStampMillis: Long,
-                         @Value("\${kafka.offset-reset.enabled}") val offsetReset: String,
-                         @Value("\${kafka.stream.vedtak.enabled:true}") val streamVedtak: Boolean) {
+                         val config: SpennKafkaConfig) {
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
     }
 
-    @Bean
     fun mottakslogikk() : Topology {
         val builder = StreamsBuilder()
 
@@ -83,30 +62,30 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
 
     @PostConstruct
     fun offsetReset() {
-        if ("true" == offsetReset) {
-            log.info("Running offset reset of ${VEDTAK_SYKEPENGER.name} to ${timeStampMillis}")
+        if (config.offsetReset) {
+            log.info("Running offset reset of ${VEDTAK_SYKEPENGER.name} to ${config.timeStampMillis}")
             val configProperties = Properties()
-            configProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServersUrl)
+            configProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, config.bootstrapServersUrl)
             configProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
             configProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-            configProperties.put(ConsumerConfig.GROUP_ID_CONFIG, appId)
+            configProperties.put(ConsumerConfig.GROUP_ID_CONFIG, config.appId)
             configProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,false)
             configProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest")
-            if ("false" == plainTextKafka) {
+            if (!config.plainTextKafka) {
                 configProperties.put(SaslConfigs.SASL_MECHANISM, "PLAIN")
                 configProperties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
                 configProperties.put(SaslConfigs.SASL_JAAS_CONFIG,
-                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${kafkaUsername}\" password=\"${kafkaPassword}\";")
+                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${config.kafkaUsername}\" password=\"${config.kafkaPassword}\";")
                 configProperties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL")
-                configProperties.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, File(navTruststorePath).absolutePath)
-                configProperties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, navTruststorePassword)
+                configProperties.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, File(config.navTruststorePath).absolutePath)
+                configProperties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, config.navTruststorePassword)
             }
             val offsetConsumer = KafkaConsumer<String, String>(configProperties)
             offsetConsumer.subscribe(listOf(VEDTAK_SYKEPENGER.name),  object: ConsumerRebalanceListener {
                 override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>) {
                     for (p in partitions) {
                         log.info("assigned to ${p.topic()} to partion: ${p.partition()}")
-                        val offsetsForTimes = offsetConsumer.offsetsForTimes(mapOf(p to timeStampMillis))
+                        val offsetsForTimes = offsetConsumer.offsetsForTimes(mapOf(p to config.timeStampMillis))
                         log.info("offset for times ${offsetsForTimes.entries}")
                         offsetsForTimes.forEach { topicPartition, offsetAndTimestamp ->
                             if (offsetAndTimestamp != null) {
@@ -137,11 +116,10 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         }
     }
 
-    @Bean
     fun kafkaStreams(topology: Topology) : KafkaStreams {
-        val streamConfig = if ("true" == plainTextKafka) streamConfigPlainTextKafka() else streamConfig(appId, bootstrapServersUrl,
-                kafkaUsername to kafkaPassword,
-                navTruststorePath to navTruststorePassword)
+        val streamConfig = if (config.plainTextKafka) streamConfigPlainTextKafka() else streamConfig(config.appId, config.bootstrapServersUrl,
+                config.kafkaUsername to config.kafkaPassword,
+                config.navTruststorePath to config.navTruststorePassword)
         return KafkaStreams(topology, streamConfig)
     }
 
@@ -150,10 +128,13 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 OppdragStateDTO(soknadId = UUID.fromString(key),
                         utbetalingsOppdrag = utbetaling))
         }
-        catch (e: DuplicateKeyException) {
-            log.warn("skipping duplicate for key ${key}")
-            meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
-            return null
+        catch (e: DataAccessException/*DuplicateKeyException*/) {
+            if (e.cause is SQLIntegrityConstraintViolationException) {
+                log.warn("skipping duplicate for key ${key}")
+                meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
+                return null
+            }
+            throw e
         }
     }
 
@@ -182,19 +163,21 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         return to(topic.name, Produced.with(topic.keySerde, topic.valueSerde))
     }
 
-    @Bean
-    fun streamConsumer(kafkaStreams: KafkaStreams, flywayMigrationInitializer: FlywayMigrationInitializer?) : StreamConsumer {
-        if (flywayMigrationInitializer == null) throw ExceptionInInitializerError("Kafka needs flyway migration to finished")
-        val streamConsumer = StreamConsumer(appId, kafkaStreams)
-        if (streamVedtak) streamConsumer.start()
+    fun streamConsumerStart() : StreamConsumer{
+        return streamConsumer(kafkaStreams(mottakslogikk()))
+    }
+
+    fun streamConsumer(kafkaStreams: KafkaStreams) : StreamConsumer {
+        val streamConsumer = StreamConsumer(config.appId, kafkaStreams)
+        if (config.streamVedtak) streamConsumer.start()
         return streamConsumer
     }
 
 
     private fun streamConfigPlainTextKafka(): Properties = Properties().apply {
         log.warn("Using kafka plain text config only works in development!")
-        put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServersUrl)
-        put(StreamsConfig.APPLICATION_ID_CONFIG, appId)
+        put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, config.bootstrapServersUrl)
+        put(StreamsConfig.APPLICATION_ID_CONFIG, config.appId)
         put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndFailExceptionHandler::class.java)
     }
@@ -236,5 +219,3 @@ data class Topic<K, V>(
         val keySerde: Serde<K>,
         val valueSerde: Serde<V>
 )
-
-

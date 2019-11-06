@@ -14,8 +14,10 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
+import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
@@ -24,34 +26,33 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.jms.core.JmsTemplate
 import java.time.LocalDateTime
 import java.util.*
+import javax.jms.Connection
+import javax.jms.Session
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@JooqTest(properties = ["VAULT_ENABLED=false",
-    "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class AvstemmingTaskTest {
 
-    @Autowired
-    lateinit var service: OppdragStateService
+    val service = OppdragStateService(
+            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
+    )
     val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
+
+    val mockConnection = Mockito.mock(Connection::class.java)
+    val mockJmsSession = Mockito.mock(Session::class.java)
 
     @BeforeEach
     fun beforeEach() {
         settAltEksisterendeTilAvstemt()
+        Mockito.`when`(mockConnection.createSession()).thenReturn(mockJmsSession)
     }
 
     @Test
     fun ingenOppdragSkalBliIngenAvstemming() {
-        class MockSender : AvstemmingMQSender(Mockito.mock(JmsTemplate::class.java), "tullekø", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata() ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
             }
@@ -102,7 +103,7 @@ class AvstemmingTaskTest {
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
 
-        class MockSender : AvstemmingMQSender(Mockito.mock(JmsTemplate::class.java), "tullekø", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata() ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 sendteMeldinger.add(avstemmingsMelding)
             }

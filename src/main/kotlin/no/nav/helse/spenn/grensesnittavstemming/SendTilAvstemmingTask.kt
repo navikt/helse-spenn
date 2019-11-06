@@ -7,24 +7,19 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.appsupport.AVSTEMMING
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.annotation.Profile
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 
-@Component
-@Profile(value=["!prod"])
-@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.avstemming"], havingValue = "true")
+/*@Profile(value=["!prod"])
+@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.avstemming"], havingValue = "true")*/
 class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
                             val avstemmingMQSender: AvstemmingMQSender,
                             val meterRegistry: MeterRegistry) {
 
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
 
-    @Scheduled(cron = "0 0 13 * * *")
-    @SchedulerLock(name = "sendTilAvstemming")
+    //@Scheduled(cron = "0 0 13 * * *")
+    //@SchedulerLock(name = "sendTilAvstemming")
     fun sendTilAvstemming() {
         val oppdragList = oppdragStateService.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now().minusHours(1))
         log.info("Fant ${oppdragList.size} oppdrag som skal sendes til avstemming")

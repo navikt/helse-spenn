@@ -1,12 +1,7 @@
 package no.nav.helse.spenn.simulering
 
 import no.nav.helse.spenn.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.UtbetalingsType
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.LocalDate
 
 class SimuleringResultTest {
 

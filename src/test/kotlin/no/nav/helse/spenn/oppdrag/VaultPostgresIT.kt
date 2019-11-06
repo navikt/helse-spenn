@@ -10,8 +10,8 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
+//import org.springframework.beans.factory.annotation.Autowired
+//import org.springframework.boot.test.context.SpringBootTest
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy
@@ -26,7 +26,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 
-@SpringBootTest(properties = [
+/*@SpringBootTest(properties = [
     "spring.profiles.active=integration",
     "spring.cloud.vault.uri=http://localhost:8200",
     "spring.cloud.vault.scheme=http",
@@ -50,10 +50,10 @@ import kotlin.test.assertNotNull
     "STS_SOAP_PASSWORD=bar",
     "NAV_TRUSTSTORE_PATH=somewhere",
     "NAV_TRUSTSTORE_PASSWORD=somekey",
-    "PLAIN_TEXT_KAFKA=true"])
+    "PLAIN_TEXT_KAFKA=true"])*/
 class VaultPostgresIT {
 
-    @Autowired
+    //@Autowired
     lateinit var service: OppdragStateService
 
     companion object {

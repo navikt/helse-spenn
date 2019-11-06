@@ -3,7 +3,6 @@ package no.nav.helse.spenn.oppdrag
 
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 
-import org.springframework.stereotype.Component
 import java.io.StringReader
 import java.io.StringWriter
 import javax.xml.bind.JAXBContext
@@ -11,7 +10,6 @@ import javax.xml.bind.Marshaller
 import javax.xml.stream.XMLInputFactory
 import javax.xml.transform.stream.StreamSource
 
-@Component
 class JAXBOppdrag {
 
     val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)

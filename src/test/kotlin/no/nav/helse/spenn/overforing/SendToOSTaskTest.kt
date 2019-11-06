@@ -7,28 +7,24 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
+import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.tilUtbetaling
 import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-import org.springframework.context.annotation.ComponentScan
 import java.util.*
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-@JooqTest(properties = ["VAULT_ENABLED=false",
-    "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])
-@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class SendToOSTaskTest {
 
-    @Autowired
-    lateinit var service: OppdragStateService
+    val service = OppdragStateService(
+            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
+    )
 
     val mockUtbetalingService = mock(UtbetalingService::class.java)
     val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())

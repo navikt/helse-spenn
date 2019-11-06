@@ -1,38 +1,34 @@
 package no.nav.helse.spenn.simulering
 
-import io.micrometer.core.annotation.Timed
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
-
+import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
+import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaaDetaljer
 import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.apache.cxf.configuration.jsse.TLSClientParameters
 import org.apache.cxf.frontend.ClientProxy
 import org.apache.cxf.transport.http.HTTPConduit
-import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
-import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaaDetaljer
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
-import org.slf4j.LoggerFactory
-
-import org.springframework.stereotype.Service
-
-@Service
-class SimuleringService(val simulerFpService: SimulerFpService) {
+class SimuleringService(val simulerFpService: SimulerFpService,
+                        val meterRegistry: MeterRegistry) {
 
     companion object {
         private val log = LoggerFactory.getLogger(SimuleringService::class.java)
     }
 
-    @Timed("simulering")
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
         log.info("simulering for ${oppdrag.soknadId}")
+
         val result = callSimulering(oppdrag)
         val status = when (result.status) {
             Status.OK -> OppdragStateStatus.SIMULERING_OK
@@ -51,12 +47,18 @@ class SimuleringService(val simulerFpService: SimulerFpService) {
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         disableCnCheck(simulerFpService)
         return try {
-            val response = simulerFpService.simulerBeregning(simulerRequest)
+            val response = meterRegistry.timer("simulering").recordCallable {
+                simulerFpService.simulerBeregning(simulerRequest)
+            }
             mapResponseToResultat(response.response)
         }
-        catch (e: SimulerBeregningFeilUnderBehandling) {
+        catch (e: SimulerBeregningFeilUnderBehandling) { // TODO
             log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
             SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
+        }
+        catch (e: Exception) { // TODO
+            log.error("Got unexpected error while running Simulering {}", e)
+            SimuleringResult(status = Status.FEIL, feilMelding = e.message?:"")
         }
 
     }

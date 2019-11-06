@@ -2,7 +2,6 @@ package no.nav.helse.spenn.grensesnittavstemming
 
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
