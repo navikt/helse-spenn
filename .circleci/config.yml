@@ -86,17 +86,13 @@ workflows:
       - build:
           filters:
             branches:
-              only:
-                - master
-                - unspring_experiment
+              only: master
       - deploy_preprod:
           requires:
             - build
           filters:
             branches:
-              only:
-                - master
-                - unspring_experiment
+              only: master
       - approve_for_prod:
           type: approval
           requires:
