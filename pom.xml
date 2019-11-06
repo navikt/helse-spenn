@@ -34,7 +34,7 @@
         <shedlock.version>3.0.0</shedlock.version>
         <ibm.mq.version>2.1.2</ibm.mq.version>
         <postgres.version>42.2.8</postgres.version>
-        <testcontainers.version>1.12.2</testcontainers.version>
+        <testcontainers.version>1.12.3</testcontainers.version>
         <tokensupport.version>1.1.1</tokensupport.version>
         <jooq.version>3.12.2</jooq.version>
         <logback.version>1.2.3</logback.version>
