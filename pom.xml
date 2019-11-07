@@ -36,7 +36,7 @@
         <postgres.version>42.2.8</postgres.version>
         <testcontainers.version>1.12.2</testcontainers.version>
         <tokensupport.version>1.1.1</tokensupport.version>
-        <jooq.version>3.12.2</jooq.version>
+        <jooq.version>3.12.3</jooq.version>
         <logback.version>1.2.3</logback.version>
     </properties>
 
