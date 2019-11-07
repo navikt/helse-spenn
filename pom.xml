@@ -80,6 +80,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-metrics-micrometer</artifactId>
+            <version>${ktor.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
             <version>${jackson.version}</version>

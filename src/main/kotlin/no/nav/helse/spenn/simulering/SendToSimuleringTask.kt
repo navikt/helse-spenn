@@ -11,12 +11,10 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicLong
 import javax.annotation.PostConstruct
 
-//@Component
-//@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.simulering"], havingValue = "true")
 class SendToSimuleringTask(val simuleringService: SimuleringService,
                            val oppdragStateService: OppdragStateService,
                            val meterRegistry: MeterRegistry,
-                           /*@Value("\${scheduler.tasks.simulering.limit:100}")*/ val limit: Int = 100) {
+                           val limit: Int = 100) {
 
     private val maksBelopGauge = AtomicLong(0)
 
@@ -29,9 +27,7 @@ class SendToSimuleringTask(val simuleringService: SimuleringService,
         LOG.info("init gauge maksBeløp")
         meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, maksBelopGauge)
     }
-    
-    //@Scheduled(cron = "30 * 7-21 * * ?")
-    //@SchedulerLock(name = "sendToSimulering")
+
     fun sendSimulering() {
         LOG.info("Running SendToSimulering task")
         val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, limit)

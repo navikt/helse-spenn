@@ -8,6 +8,7 @@ import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
+import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
@@ -66,6 +67,10 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
             //enable(SerializationFeature.INDENT_OUTPUT) // Pretty Prints the JSON
             registerModule(JavaTimeModule())
             disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        }
+
+        install(MicrometerMetrics) {
+            registry = env.meterRegistry
         }
     }
 
