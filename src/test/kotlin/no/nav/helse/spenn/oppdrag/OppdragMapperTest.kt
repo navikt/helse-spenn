@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.vedtak.Vedtak
+import no.nav.helse.spenn.etEnkeltBehov
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.StringWriter
@@ -27,12 +27,7 @@ class OppdragMapperTest {
                 utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "12121212345", utbetalingsLinje = listOf(enOppdragsLinje),
-                vedtak = Vedtak(
-                        soknadId = UUID.randomUUID(),
-                        maksDato = maksDato,
-                        aktorId = "12341234",
-                        vedtaksperioder = emptyList()
-                ))
+                behov = etEnkeltBehov(maksdato = maksDato))
         val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
         val oppdrag = oppdragState.toOppdrag()

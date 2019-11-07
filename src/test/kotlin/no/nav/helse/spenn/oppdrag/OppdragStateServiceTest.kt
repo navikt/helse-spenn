@@ -1,24 +1,18 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.tilUtbetaling
-import no.nav.helse.spenn.vedtak.tilVedtak
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import org.junit.jupiter.api.Test
-//import org.springframework.beans.factory.annotation.Autowired
-//import org.springframework.boot.test.autoconfigure.jooq.JooqTest
-//import org.springframework.context.annotation.ComponentScan
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-/*@JooqTest(properties = ["VAULT_ENABLED=false",
-    "spring.cloud.vault.enabled=false",
-    "spring.test.database.replace=none"])*/
-//@ComponentScan(basePackages = ["no.nav.helse.spenn.oppdrag.dao"])
 class OppdragStateServiceTest {
 
     val service = OppdragStateService(
@@ -28,9 +22,9 @@ class OppdragStateServiceTest {
     @Test
     fun saveAndFetch() {
         val soknadKey = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetaling = behov.tilUtbetaling("12345678901")
         for (i in 1..100) {
             service.saveOppdragState(OppdragStateDTO(soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling))
         }
@@ -40,9 +34,9 @@ class OppdragStateServiceTest {
     @Test
     fun insert_fetch_compare_update_refetch_compare() {
         val soknadKey = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetaling = behov.tilUtbetaling("12345678901")
         val soknadId = UUID.randomUUID()
         service.saveOppdragState(OppdragStateDTO(
                 soknadId = soknadId,

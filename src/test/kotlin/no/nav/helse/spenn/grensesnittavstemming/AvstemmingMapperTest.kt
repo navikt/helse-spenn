@@ -2,9 +2,9 @@ package no.nav.helse.spenn.grensesnittavstemming
 
 import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.*
-import no.nav.helse.spenn.vedtak.Vedtak
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -226,12 +226,7 @@ class AvstemmingMapperTest {
                                 satsTypeKode = SatsTypeKode.DAGLIG,
                                 utbetalesTil = "999988887"
                         )),
-                        vedtak = Vedtak(
-                                soknadId = soknadId,
-                                maksDato = LocalDate.now().plusYears(1),
-                                aktorId = "12341234",
-                                vedtaksperioder = emptyList()
-                        )
+                        behov = etEnkeltBehov()
                 ),
                 avstemming = AvstemmingDTO(
                         oppdragStateId = newId,

@@ -37,17 +37,16 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
-        saksbehId = utbetalingsOppdrag.vedtak.saksbehandler
+        saksbehId = utbetalingsOppdrag.behov.saksbehandler
         enhet.add(oppdragsEnhet)
-        val vedtak = utbetalingsOppdrag.vedtak
         utbetalingsOppdrag.utbetalingsLinje.forEach {
             if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
             if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
             oppdragslinje.add(
                     mapToSimuleringsOppdragslinje(
                             oppdragslinje = it,
-                            maksDato = vedtak.maksDato,
-                            saksbehandler = vedtak.saksbehandler)
+                            maksDato = utbetalingsOppdrag.behov.maksdato,
+                            saksbehandler = utbetalingsOppdrag.behov.saksbehandler)
             )
         }
     }
@@ -120,19 +119,18 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
-        saksbehId = utbetalingsOppdrag.vedtak.saksbehandler
+        saksbehId = utbetalingsOppdrag.behov.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
             this.nokkelAvstemming = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
             this.tidspktMelding = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
         }
         oppdragsEnhet120.add(oppdragsEnhet)
-        val vedtak = utbetalingsOppdrag.vedtak
         utbetalingsOppdrag.utbetalingsLinje.forEach {
             oppdragsLinje150.add(mapTolinje150(
                     oppdragslinje = it,
-                    maksDato = vedtak.maksDato,
-                    saksbehandler = vedtak.saksbehandler))
+                    maksDato = utbetalingsOppdrag.behov.maksdato,
+                    saksbehandler = utbetalingsOppdrag.behov.saksbehandler))
         }
     }
 

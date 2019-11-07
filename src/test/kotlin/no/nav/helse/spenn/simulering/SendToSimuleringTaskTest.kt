@@ -5,13 +5,12 @@ import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.any
+import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.vedtak.Vedtak
-import no.nav.helse.spenn.vedtak.tilVedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.math.BigDecimal
@@ -29,10 +28,6 @@ class SendToSimuleringTaskTest {
     fun sendToSimulering() {
         val sendToSimuleringTask = SendToSimuleringTask(simuleringService = mockSimuleringService,
                 meterRegistry = mockMeterRegistry, oppdragStateService = mockPersistence)
-        val soknadKey = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        node.tilVedtak(soknadKey.toString())
-
         `when`(mockPersistence.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, 100)).thenReturn(listOf(oppdragEn, oppdragTo))
         `when`(mockSimuleringService.runSimulering(oppdragEn)).thenReturn(simulertOppdragEn)
         `when`(mockSimuleringService.runSimulering(oppdragTo)).thenReturn(simulertOppdragTo)
@@ -57,12 +52,7 @@ val oppdragEn = OppdragStateDTO(
         avstemming = null,
         soknadId = UUID.randomUUID(),
         utbetalingsOppdrag = UtbetalingsOppdrag(
-                vedtak = Vedtak(
-                        soknadId = UUID.randomUUID(),
-                        maksDato = LocalDate.now().plusYears(1),
-                        aktorId = "12341234",
-                        vedtaksperioder = emptyList()
-                ),
+                behov = etEnkeltBehov(),
                 utbetalingsLinje = emptyList(),
                 oppdragGjelder = "someone",
                 operasjon = AksjonsKode.SIMULERING

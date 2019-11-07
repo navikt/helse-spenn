@@ -12,9 +12,8 @@ import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.Fodselsnummer
-import no.nav.helse.spenn.vedtak.Fordeling
-import no.nav.helse.spenn.vedtak.Vedtak
-import no.nav.helse.spenn.vedtak.Vedtaksperiode
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
+import no.nav.helse.spenn.vedtak.Utbetalingslinje
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.token.support.test.JwkGenerator
 import no.nav.security.token.support.test.JwtTokenGenerator
@@ -82,22 +81,24 @@ fun stubOIDCProvider(server: WireMockServer) {
             WireMock.okJson(JwkGenerator.getJWKSet().toPublicJWKSet().toString())))
 }
 
-fun etEnkeltVedtak(): Vedtak {
-    return Vedtak(
-            soknadId = UUID.randomUUID(),
-            aktorId = "en random aktørid",
-            vedtaksperioder = listOf(Vedtaksperiode(
-                    fom = LocalDate.of(2020, 1, 15),
-                    tom = LocalDate.of(2020, 1, 30),
-                    dagsats = 1234,
-                    fordeling = listOf(Fordeling(
-                            mottager = "897654321",
-                            andel = 100
-                    ))
-            )),
-            maksDato = LocalDate.now().plusYears(1)
-    )
-}
+fun etEnkeltBehov(
+    sakskompleksId: UUID = UUID.randomUUID(),
+    maksdato: LocalDate = LocalDate.now().plusYears(1)
+) = Utbetalingsbehov(
+    sakskompleksId = sakskompleksId,
+    aktørId = "en random aktørid",
+    saksbehandler = "yes",
+    organisasjonsnummer = "897654321",
+    utbetalingslinjer = listOf(
+        Utbetalingslinje(
+            fom = LocalDate.of(2020, 1, 15),
+            tom = LocalDate.of(2020, 1, 30),
+            dagsats = 1234.toBigDecimal(),
+            grad = 100
+        )
+    ),
+    maksdato = maksdato
+)
 
 fun <T> any(): T = Mockito.any<T>()
 

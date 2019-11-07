@@ -1,10 +1,11 @@
 package no.nav.helse.spenn.vedtak
 
-import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.config.SpennKafkaConfig
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
@@ -46,13 +47,14 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
     fun mottakslogikk() : Topology {
         val builder = StreamsBuilder()
 
-        builder.consumeTopic(VEDTAK_SYKEPENGER)
-                .peek{ key: String, _ ->
-                    log.info("soknad id ${key}")
-                }
-                .mapValues { key: String, node: JsonNode -> node.tilVedtak(key) }
-                .mapValues { _, vedtak -> Pair<Fodselsnummer, Vedtak>(aktørTilFnrMapper.tilFnr(vedtak.aktorId),vedtak) }
-                .mapValues { _,  (fodselnummer, vedtak) -> vedtak.tilUtbetaling(fodselnummer) }
+        builder.consumeTopic(SYKEPENGER_BEHOV_TOPIC)
+                .filter { _, value -> value["@behov"]?.textValue() == "Utbetaling" }
+                .filter { _, value -> value["@løsning"].let {
+                    it == null || it.isNull
+                }}
+                .mapValues { _, value -> defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
+                .mapValues { _, value -> aktørTilFnrMapper.tilFnr(value.aktørId) to value }
+                .mapValues { _,  (fodselnummer, value) -> value.tilUtbetaling(fodselnummer) }
                 .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
                 .filter { _, value ->  value != null}
                 .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
@@ -63,7 +65,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
     @PostConstruct
     fun offsetReset() {
         if (config.offsetReset) {
-            log.info("Running offset reset of ${VEDTAK_SYKEPENGER.name} to ${config.timeStampMillis}")
+            log.info("Running offset reset of ${SYKEPENGER_BEHOV_TOPIC.name} to ${config.timeStampMillis}")
             val configProperties = Properties()
             configProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, config.bootstrapServersUrl)
             configProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
@@ -81,7 +83,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 configProperties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, config.navTruststorePassword)
             }
             val offsetConsumer = KafkaConsumer<String, String>(configProperties)
-            offsetConsumer.subscribe(listOf(VEDTAK_SYKEPENGER.name),  object: ConsumerRebalanceListener {
+            offsetConsumer.subscribe(listOf(SYKEPENGER_BEHOV_TOPIC.name),  object: ConsumerRebalanceListener {
                 override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>) {
                     for (p in partitions) {
                         log.info("assigned to ${p.topic()} to partion: ${p.partition()}")

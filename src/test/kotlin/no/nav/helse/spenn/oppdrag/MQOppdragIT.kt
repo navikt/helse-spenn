@@ -4,17 +4,12 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
-import io.ktor.config.ApplicationConfig
-import io.ktor.config.MapApplicationConfig
-import no.nav.helse.spenn.SpennServices
+import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.Vedtak
 import org.junit.jupiter.api.Test
-//import org.springframework.beans.factory.annotation.Autowired
-//import org.springframework.boot.test.context.SpringBootTest
 
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -22,19 +17,16 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.*
 
-//@SpringBootTest
 class MQOppdragIT {
 
-    var mqConn = //SpennServices(MapApplicationConfig()).spennMQConnection
-            MQConnectionFactory().apply {
-                hostName = "localhost"
-                port = 1414
-                channel = "DEV.ADMIN.SVRCONN"
-                queueManager = "QM1"
-                transportType = WMQConstants.WMQ_CM_CLIENT
-            }.createConnection("admin", "passw0rd")
+    var mqConn = MQConnectionFactory().apply {
+        hostName = "localhost"
+        port = 1414
+        channel = "DEV.ADMIN.SVRCONN"
+        queueManager = "QM1"
+        transportType = WMQConstants.WMQ_CM_CLIENT
+    }.createConnection("admin", "passw0rd")
 
-    /*@Autowired*/ //lateinit var mqSender: OppdragMQSender
     val mqSender = OppdragMQSender(
             mqConn,
             "DEV.QUEUE.1",
@@ -42,8 +34,6 @@ class MQOppdragIT {
             JAXBOppdrag()
     )
 
-    /*@Autowired*/ //lateinit var oppdragStateService: OppdragStateService
-    // burde bruke ordentlig postgres+vault ?
     val oppdragStateService = OppdragStateService(
             OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
     )
@@ -70,12 +60,8 @@ class MQOppdragIT {
 
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
-                vedtak = Vedtak(
-                        soknadId = UUID.randomUUID(),
-                        maksDato = LocalDate.now().plusYears(1),
-                        aktorId = "12341234",
-                        vedtaksperioder = emptyList()
-                ))
+                behov = etEnkeltBehov()
+        )
 
         val oppdragState = OppdragStateDTO(soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling, avstemming = AvstemmingDTO())

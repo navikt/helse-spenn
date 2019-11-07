@@ -10,31 +10,35 @@ import io.ktor.routing.Route
 import io.ktor.routing.post
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.vedtak.Vedtak
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
-import no.nav.helse.spenn.vedtak.tilUtbetaling
 import org.slf4j.LoggerFactory
 
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 
-fun Route.simuleringcontroller(simuleringService: SimuleringService,
-                               aktørTilFnrMapper: AktørTilFnrMapper,
-                               audit: AuditSupport) {
+fun Route.simuleringcontroller(
+    simuleringService: SimuleringService,
+    aktørTilFnrMapper: AktørTilFnrMapper,
+    audit: AuditSupport
+) {
 
     post("/api/v1/simulering") {
-        val vedtak:Vedtak
+        val behov: Utbetalingsbehov
         try {
-            vedtak = call.receive()
+            behov = call.receive()
         } catch (jsonError: JsonProcessingException) {
             LOG.info("JsonProcessingException")
             LOG.debug("JsonProcessingException: ", jsonError)
             call.respond(HttpStatusCode.BadRequest);
             return@post
         }
-        LOG.info("simulering called for vedtak: ${vedtak.soknadId}")
-        audit.info("simulering kall for vedtak: ${vedtak.soknadId}", call.authentication)
-        val oppdrag = OppdragStateDTO(soknadId = vedtak.soknadId,
-                utbetalingsOppdrag = vedtak.tilUtbetaling(aktørTilFnrMapper.tilFnr(vedtak.aktorId)))
-        call.respond(simuleringService.runSimulering(oppdrag).simuleringResult!!)
+        LOG.info("simulering called for vedtak: ${behov.sakskompleksId}")
+        audit.info("simulering kall for vedtak: ${behov.sakskompleksId}", call.authentication)
+        call.respond(simuleringService.runSimulering(
+            OppdragStateDTO(
+                soknadId = behov.sakskompleksId,
+                utbetalingsOppdrag = behov.tilUtbetaling(aktørTilFnrMapper.tilFnr(behov.aktørId))
+            )
+        ).simuleringResult!!)
     }
 }

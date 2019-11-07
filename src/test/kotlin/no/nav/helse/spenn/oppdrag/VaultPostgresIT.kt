@@ -1,17 +1,16 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.github.dockerjava.api.command.CreateContainerCmd
 import com.github.dockerjava.api.model.ExposedPort
 import com.github.dockerjava.api.model.PortBinding
 import com.github.dockerjava.api.model.Ports
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.vedtak.tilUtbetaling
-import no.nav.helse.spenn.vedtak.tilVedtak
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import org.junit.jupiter.api.Test
-//import org.springframework.beans.factory.annotation.Autowired
-//import org.springframework.boot.test.context.SpringBootTest
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy
@@ -25,35 +24,7 @@ import java.util.function.Consumer
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-
-/*@SpringBootTest(properties = [
-    "spring.profiles.active=integration",
-    "spring.cloud.vault.uri=http://localhost:8200",
-    "spring.cloud.vault.scheme=http",
-    "spring.cloud.vault.enabled=true",
-    "spring.cloud.vault.authentication=TOKEN",
-    "spring.cloud.vault.token=token123",
-    "spring.cloud.vault.database.enabled=true",
-    "spring.cloud.vault.database.role=default",
-    "spring.cloud.vault.database.backend=database",
-    "spring.datasource.url=jdbc:postgresql://localhost:5432/testdb",
-    "spring.test.database.replace=none",
-    "KAFKA_BOOTSTRAP_SERVERS=localhost:9020",
-    "SECURITY_TOKEN_SERVICE_REST_URL=localhost:8080",
-    "SECURITYTOKENSERVICE_URL=localhost:8888",
-    "SIMULERING_SERVICE_URL=localhost:9110",
-    "STS_REST_USERNAME=foo",
-    "STS_REST_PASSWORD=bar",
-    "KAFKA_USERNAME=foo",
-    "KAFKA_PASSWORD=bar",
-    "STS_SOAP_USERNAME=foo",
-    "STS_SOAP_PASSWORD=bar",
-    "NAV_TRUSTSTORE_PATH=somewhere",
-    "NAV_TRUSTSTORE_PASSWORD=somekey",
-    "PLAIN_TEXT_KAFKA=true"])*/
 class VaultPostgresIT {
-
-    //@Autowired
     lateinit var service: OppdragStateService
 
     companion object {
@@ -96,9 +67,9 @@ class VaultPostgresIT {
     @Test
     fun startVaultPostgresIntegrationTest() {
         val soknadKey = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetaling = behov.tilUtbetaling("12345678901")
         val state = OppdragStateDTO(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
                 utbetalingsOppdrag = utbetaling)
         val saved = service.saveOppdragState(state)

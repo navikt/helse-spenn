@@ -4,8 +4,6 @@ import com.github.dockerjava.api.command.CreateContainerCmd
 import com.github.dockerjava.api.model.ExposedPort
 import com.github.dockerjava.api.model.PortBinding
 import com.github.dockerjava.api.model.Ports
-import no.nav.helse.spenn.overforing.UtbetalingService
-import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.*
 import org.apache.kafka.streams.KafkaStreams
 
@@ -21,21 +19,6 @@ import kotlin.test.assertEquals
 
 import kotlin.test.fail
 
-/*@SpringBootTest(properties = [
-    "KAFKA_BOOTSTRAP_SERVERS=localhost:9092",
-    "SECURITY_TOKEN_SERVICE_REST_URL=localhost:8080",
-    "SECURITYTOKENSERVICE_URL=localhost:8888",
-    "SIMULERING_SERVICE_URL=localhost:9110",
-    "STS_REST_USERNAME=foo",
-    "STS_REST_PASSWORD=bar",
-    "KAFKA_USERNAME=foo",
-    "KAFKA_PASSWORD=bar",
-    "STS_SOAP_USERNAME=foo",
-    "STS_SOAP_PASSWORD=bar",
-    "NAV_TRUSTSTORE_PATH=somewhere",
-    "NAV_TRUSTSTORE_PASSWORD=somekey",
-    "PLAIN_TEXT_KAFKA=true"])
-@MockBean(classes= [SimuleringService::class, UtbetalingService::class])*/
 class KafkaTopologyIT {
 
     //@Autowired
@@ -46,12 +29,12 @@ class KafkaTopologyIT {
         val kafka = KafkaContainer("5.1.0")
                 .withCreateContainerCmdModifier(portBinding)
         fun createTopic() {
-            val createTopic = String.format("/usr/bin/kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic %s", VEDTAK_SYKEPENGER.name)
+            val createTopic = String.format("/usr/bin/kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic %s", SYKEPENGER_BEHOV_TOPIC.name)
             execInContainer(createTopic)
         }
         fun createMessage(key: String, jsonMessage: String) {
             val message = String.format("echo '%s:%s'|/usr/bin/kafka-console-producer --broker-list localhost:9092 --topic %s --property \"parse.key=true\" --property \"key.separator=:\"",
-                    key, jsonMessage.replace("\n",""), VEDTAK_SYKEPENGER.name)
+                    key, jsonMessage.replace("\n",""), SYKEPENGER_BEHOV_TOPIC.name)
             println(message)
             execInContainer(message)
         }

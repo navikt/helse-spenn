@@ -1,0 +1,16 @@
+{
+  "@behov": "Utbetaling",
+  "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
+  "aktørId": "1234567890123",
+  "organisasjonsnummer": "123456789",
+  "maksdato": "2011-12-20",
+  "saksbehandler": "Z999999",
+  "utbetalingslinjer": [
+    {
+      "fom": "2011-01-01",
+      "tom": "2011-01-31",
+      "grad": 100,
+      "dagsats": "1000.0"
+    }
+  ]
+}

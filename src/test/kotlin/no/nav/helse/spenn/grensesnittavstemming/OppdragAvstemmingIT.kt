@@ -2,15 +2,12 @@ package no.nav.helse.spenn.grensesnittavstemming
 
 
 import no.nav.helse.spenn.FagOmraadekode
+import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.overforing.OppdragMQSender
-import no.nav.helse.spenn.vedtak.Vedtak
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Test
-//import org.springframework.beans.factory.annotation.Autowired
-//import org.springframework.boot.test.context.SpringBootTest
-//import org.springframework.stereotype.Repository
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -18,20 +15,18 @@ import java.time.Month
 import java.util.*
 import kotlin.test.assertNotNull
 
-//@Repository
 class MyRepo(val jooq: DSLContext) {
     fun setOppdragSequence(n:Long) {
         jooq.alterSequence("oppdragstate_id_seq").restartWith(BigInteger.valueOf(n)).execute();
     }
 }
 
-//@SpringBootTest
 class OppdragAvstemmingIT {
 
-    /*@Autowired*/ lateinit var mqSender: OppdragMQSender
-    /*@Autowired*/ lateinit var mqAvstemmingSender: AvstemmingMQSender
-    /*@Autowired*/ lateinit var service: OppdragStateService
-    /*@Autowired*/ lateinit var db: MyRepo
+    lateinit var mqSender: OppdragMQSender
+    lateinit var mqAvstemmingSender: AvstemmingMQSender
+    lateinit var service: OppdragStateService
+    lateinit var db: MyRepo
 
     @Test
     fun sendOppdragTilOS() {
@@ -57,12 +52,8 @@ class OppdragAvstemmingIT {
 
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
-                vedtak = Vedtak(
-                        soknadId = UUID.randomUUID(),
-                        maksDato = LocalDate.now().plusYears(1),
-                        aktorId = "12341234",
-                        vedtaksperioder = emptyList()
-                ))
+                behov = etEnkeltBehov()
+        )
 
         val oppdragStateNew = OppdragStateDTO(id = null, soknadId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)

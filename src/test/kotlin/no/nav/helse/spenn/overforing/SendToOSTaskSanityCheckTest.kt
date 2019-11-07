@@ -4,11 +4,11 @@ import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.any
+import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.kArgThat
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.vedtak.Vedtak
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.math.BigDecimal
@@ -87,13 +87,7 @@ class SendToOSTaskSanityCheckTest {
     private fun oppdragMedSats(sats: Long, satsTypeKode : SatsTypeKode = SatsTypeKode.DAGLIG) =
             OppdragStateDTO(
                     soknadId = UUID.randomUUID(), utbetalingsOppdrag = UtbetalingsOppdrag(
-                    vedtak = Vedtak(
-                            soknadId = UUID.randomUUID(),
-                            maksDato = LocalDate.now().plusYears(1),
-                            vedtaksperioder = emptyList(),
-                            aktorId = "111122223333",
-                            saksbehandler = "SPA"
-                    ),
+                    behov = etEnkeltBehov(),
                     oppdragGjelder = "12345678901",
                     operasjon = AksjonsKode.OPPDATER,
                     utbetalingsLinje = listOf(

@@ -5,10 +5,12 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
@@ -18,8 +20,8 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.tilUtbetaling
-import no.nav.helse.spenn.vedtak.tilVedtak
+import no.nav.helse.spenn.vedtak.KafkaStreamsConfig
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import org.junit.jupiter.api.BeforeEach
@@ -66,9 +68,9 @@ class AvstemmingTaskTest {
         val soknadKey = UUID.randomUUID()
         val soknadKey2 = UUID.randomUUID()
         val soknadKey3 = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetaling = behov.tilUtbetaling("12345678901")
 
         val oppdrag1 = service.saveOppdragState(OppdragStateDTO(
                 soknadId = soknadKey, utbetalingsOppdrag = utbetaling,

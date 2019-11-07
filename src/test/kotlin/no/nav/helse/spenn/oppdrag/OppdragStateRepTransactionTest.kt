@@ -1,12 +1,12 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.kWhen
 import no.nav.helse.spenn.oppdrag.dao.*
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.tilUtbetaling
-import no.nav.helse.spenn.vedtak.tilVedtak
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.mockito.Mockito.mock
 import java.util.*
@@ -16,17 +16,17 @@ import kotlin.test.assertEquals
 class OppdragStateRepTransactionTest {
 
 
-    val repository: OppdragStateRepository =
+    private val repository: OppdragStateRepository =
             OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
 
-    val exceptionTypeThrownWhenSoknadNotFound = NullPointerException::class.java // Probably not ideal, but thats what jooq's fetchOne() do for now
+    private val exceptionTypeThrownWhenSoknadNotFound = NullPointerException::class.java // Probably not ideal, but thats what jooq's fetchOne() do for now
 
     @Test
     fun test_insertOppdragState_AtIkkeOppdragStateLagresNaarLagringAvAvstemmingenFeiler() {
         val soknadKey = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetaling = behov.tilUtbetaling("12345678901")
 
         val trasigAvstemming = mock(Avstemming::class.java)
         kWhen(trasigAvstemming.nokkel).thenThrow(UventetFeilTestException())
@@ -51,9 +51,9 @@ class OppdragStateRepTransactionTest {
     @Test
     fun test_updateOppdragState_AtIkkeOppdragStateEndresNaarLagringAvAvstemmingenFeiler() {
         val soknadKey = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetaling = behov.tilUtbetaling("12345678901")
 
         val oppdragState = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
                 utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))

@@ -1,9 +1,11 @@
 package no.nav.helse.spenn.overforing
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
@@ -11,8 +13,7 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.tilUtbetaling
-import no.nav.helse.spenn.vedtak.tilVedtak
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import java.util.*
@@ -32,9 +33,9 @@ class SendToOSTaskTest {
     @Test
     fun afterSimuleringSendToOS() {
         val soknadKey = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/en_behandlet_soknad.json"))
-        val vedtak = node.tilVedtak(soknadKey.toString())
-        val utbetaling = vedtak.tilUtbetaling("12345678901")
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetaling = behov.tilUtbetaling("12345678901")
 
         service.saveOppdragState(OppdragStateDTO(
                 soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
