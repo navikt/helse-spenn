@@ -7,7 +7,9 @@ jobs:
       - checkout
       - setup_remote_docker
       - restore_cache:
-          key: dependency-cache-{{ checksum "pom.xml" }}
+          keys:
+            - dependency-cache-{{ checksum "pom.xml" }}
+            - dependency-cache-
       - run:
           name: Bygg
           command: mvn install
