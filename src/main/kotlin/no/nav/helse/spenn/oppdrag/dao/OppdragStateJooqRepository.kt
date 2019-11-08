@@ -17,13 +17,12 @@ import java.util.*
 
 class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
 
-    //@Transactional(readOnly = false)
     override fun insert(oppdragstate: OppdragState): OppdragState {
         val id = jooq.transactionResult { conf: Configuration ->
             val dslContext = DSL.using(conf)
             val id =  with(OPPDRAGSTATE) {
                 dslContext.insertInto(this)
-                        .set(SOKNAD_ID, oppdragstate.soknadId)
+                        .set(SAKSKOMPLEKS_ID, oppdragstate.soknadId)
                         .set(MODIFIED, currentTimestamp())
                         .set(CREATED, currentTimestamp())
                         .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
@@ -41,7 +40,6 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(id)
     }
 
-    //@Transactional(readOnly = false)
     override fun delete(id: Long): OppdragState {
         val delete = findById(id)
         jooq.delete(OPPDRAGSTATE)
@@ -50,14 +48,11 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return delete
     }
 
-
-    //@Transactional(readOnly = true)
     override fun findAll(): List<OppdragState> {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
     }
 
-    //@Transactional(readOnly = true)
     override fun findById(id: Long?): OppdragState {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.ID.equal(id))
@@ -67,7 +62,6 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                 }
     }
 
-    //@Transactional(readOnly = true)
     override fun findAllByStatus(status: OppdragStateStatus, limit: Int): List<OppdragState> {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.STATUS.equal(status.name))
@@ -75,14 +69,12 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                 .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
     }
 
-
-    //@Transactional(readOnly = false)
     override fun update(oppdragstate: OppdragState): OppdragState {
         jooq.transaction { conf: Configuration ->
             val dslContext = DSL.using(conf)
             with(OPPDRAGSTATE) {
                 dslContext.update(this)
-                        .set(SOKNAD_ID, oppdragstate.soknadId)
+                        .set(SAKSKOMPLEKS_ID, oppdragstate.soknadId)
                         .set(MODIFIED, currentTimestamp())
                         .set(STATUS, oppdragstate.status.name)
                         .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
@@ -97,10 +89,9 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(oppdragstate.id)
     }
 
-    //@Transactional(readOnly = true)
     override fun findBySoknadId(soknadId: UUID): OppdragState {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
-                .where(OPPDRAGSTATE.SOKNAD_ID.equal(soknadId))
+                .where(OPPDRAGSTATE.SAKSKOMPLEKS_ID.equal(soknadId))
                 .fetchOne()
                 .map {
                     it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))
@@ -168,7 +159,7 @@ private fun LocalDateTime?.toTimeStamp(): Timestamp? {
 
 private fun OppdragstateRecord?.toOppdragState(avstemmingRecord: AvstemmingRecord): OppdragState {
     if (this?.id == null) throw OppdragStateNotFound()
-    return OppdragState(id=id, soknadId = soknadId, created = created.toLocalDateTime(),
+    return OppdragState(id=id, soknadId = sakskompleksId, created = created.toLocalDateTime(),
             modified = modified.toLocalDateTime(), utbetalingsOppdrag = utbetalingsoppdrag,
             oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
             simuleringResult = simuleringresult, avstemming = avstemmingRecord.toAvstemming(),

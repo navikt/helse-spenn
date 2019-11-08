@@ -32,3 +32,11 @@ Tech:
 mvn clean install
 docker-compose up --build 
 ```
+
+Ved endringer av database-schema kan jooq-ting regenereres sånn:
+
+```
+mvn -Pjooq clean install
+```
+
+... og deretter må man gjøre endringer i `OppdragStateJooqRepository`
