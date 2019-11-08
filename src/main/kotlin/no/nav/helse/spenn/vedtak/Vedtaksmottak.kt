@@ -55,7 +55,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 .mapValues { _, value -> defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
                 .mapValues { _, value -> aktørTilFnrMapper.tilFnr(value.aktørId) to value }
                 .mapValues { _,  (fodselnummer, value) -> value.tilUtbetaling(fodselnummer) }
-                .mapValues { key: String, utbetaling -> saveInitialOppdragState(key, utbetaling) }
+                .mapValues { _, utbetaling -> saveInitialOppdragState(utbetaling) }
                 .filter { _, value ->  value != null}
                 .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
 
@@ -125,14 +125,14 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         return KafkaStreams(topology, streamConfig)
     }
 
-    private fun saveInitialOppdragState(key: String, utbetaling: UtbetalingsOppdrag): OppdragStateDTO? {
+    private fun saveInitialOppdragState(utbetaling: UtbetalingsOppdrag): OppdragStateDTO? {
         return try { oppdragStateService.saveOppdragState(
-                OppdragStateDTO(soknadId = UUID.fromString(key),
+                OppdragStateDTO(soknadId = utbetaling.behov.sakskompleksId,
                         utbetalingsOppdrag = utbetaling))
         }
         catch (e: DataAccessException/*DuplicateKeyException*/) {
             if (e.cause is SQLIntegrityConstraintViolationException) {
-                log.warn("skipping duplicate for key ${key}")
+                log.warn("skipping duplicate for key ${utbetaling.behov.sakskompleksId}")
                 meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
                 return null
             }
