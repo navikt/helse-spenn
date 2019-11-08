@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.vedtak
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
@@ -10,6 +11,7 @@ import java.util.*
 
 typealias Fodselsnummer = String
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class Utbetalingsbehov(
     val sakskompleksId: UUID,
     val aktørId: String,

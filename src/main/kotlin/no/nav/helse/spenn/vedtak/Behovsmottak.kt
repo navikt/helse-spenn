@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
@@ -56,14 +57,25 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                     it == null || it.isNull
                 }
             }
-            .mapValues { _, value -> defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
-            .mapValues { _, value -> aktørTilFnrMapper.tilFnr(value.aktørId) to value }
-            .mapValues { _, (fodselnummer, value) -> value.tilUtbetaling(fodselnummer) }
-            .mapValues { _, utbetaling -> saveInitialOppdragState(utbetaling) }
-            .filter { _, value -> value != null }
+            .mapValues { _, value -> value to defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
+            .mapValues { _, (originalMessage, value) ->
+                originalMessage to value.tilUtbetaling(
+                    aktørTilFnrMapper.tilFnr(
+                        value.aktørId
+                    )
+                )
+            }
+            .mapValues { _, (originalMessage, utbetaling) -> originalMessage to saveInitialOppdragState(utbetaling) }
+            .filter { _, (_, value) -> value != null }
             .peek { _, _ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
-            .mapValues { _, dto -> dto!!.tilLøstBehov() }
-            .mapValues { _, løstBehov -> defaultObjectMapper.valueToTree<JsonNode>(løstBehov) }
+            .mapValues { _, (originalMessage, dto) -> (originalMessage as ObjectNode) to (dto!!.id!!) }
+            .mapValues { _, (originalMessage, løsningsid) -> originalMessage to Løsning(løsningsid) }
+            .mapValues { _, (originalMessage, løsning) ->
+                originalMessage.set<JsonNode>(
+                    "@løsning",
+                    defaultObjectMapper.valueToTree<JsonNode>(løsning)
+                )
+            }
             .toTopic(SYKEPENGER_BEHOV_TOPIC)
 
         return builder.build()
