@@ -30,7 +30,7 @@
         <activation.version>1.1.1</activation.version>
         <jaxws-api.version>2.3.1</jaxws-api.version>
         <javax-wsapi.version>1.1</javax-wsapi.version>
-        <cxf.version>3.3.3</cxf.version>
+        <cxf.version>3.3.4</cxf.version>
         <shedlock.version>3.0.0</shedlock.version>
         <ibm.mq.version>2.1.2</ibm.mq.version>
         <postgres.version>42.2.8</postgres.version>
