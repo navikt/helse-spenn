@@ -17,7 +17,7 @@ data class Utbetalingsbehov(
     val maksdato: LocalDate,
     val saksbehandler: String,
     val utbetalingslinjer: List<Utbetalingslinje>,
-    val løsning: Long? = null
+    val løsning: Løsning? = null
 ) {
     fun tilUtbetaling(fodselsnummer: Fodselsnummer): UtbetalingsOppdrag = UtbetalingsOppdrag(
         behov = this,
@@ -39,6 +39,8 @@ data class Utbetalingsbehov(
             )
         }
 }
+
+data class Løsning(val oppdragId: Long)
 
 data class Utbetalingslinje(
     val grad: Int,
