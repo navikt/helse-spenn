@@ -50,7 +50,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
 fun toEntity(dto: OppdragStateDTO): OppdragState {
     return OppdragState(id = dto.id,
             utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(dto.utbetalingsOppdrag),
-            soknadId = dto.soknadId,
+            soknadId = dto.sakskompleksId,
             modified = dto.modified,
             created = dto.created,
             simuleringResult = defaultObjectMapper.writeValueAsString(dto.simuleringResult),
@@ -64,7 +64,7 @@ fun toEntity(dto: OppdragStateDTO): OppdragState {
 
 fun toDTO(entity: OppdragState): OppdragStateDTO {
     return OppdragStateDTO(id = entity.id,
-            soknadId = entity.soknadId,
+            sakskompleksId = entity.soknadId,
             status = entity.status,
             utbetalingsOppdrag = defaultObjectMapper.readValue(entity.utbetalingsOppdrag, UtbetalingsOppdrag::class.java),
             oppdragResponse = entity.oppdragResponse,

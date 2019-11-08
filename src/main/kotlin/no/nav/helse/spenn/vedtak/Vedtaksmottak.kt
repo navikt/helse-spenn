@@ -126,11 +126,14 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
     }
 
     private fun saveInitialOppdragState(utbetaling: UtbetalingsOppdrag): OppdragStateDTO? {
-        return try { oppdragStateService.saveOppdragState(
-                OppdragStateDTO(soknadId = utbetaling.behov.sakskompleksId,
-                        utbetalingsOppdrag = utbetaling))
-        }
-        catch (e: DataAccessException/*DuplicateKeyException*/) {
+        return try {
+            oppdragStateService.saveOppdragState(
+                OppdragStateDTO(
+                    sakskompleksId = utbetaling.behov.sakskompleksId,
+                    utbetalingsOppdrag = utbetaling
+                )
+            )
+        } catch (e: DataAccessException/*DuplicateKeyException*/) {
             if (e.cause is SQLIntegrityConstraintViolationException) {
                 log.warn("skipping duplicate for key ${utbetaling.behov.sakskompleksId}")
                 meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()

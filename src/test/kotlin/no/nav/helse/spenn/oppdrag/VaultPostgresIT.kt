@@ -70,7 +70,7 @@ class VaultPostgresIT {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
-        val state = OppdragStateDTO(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
+        val state = OppdragStateDTO(sakskompleksId = soknadKey, status = OppdragStateStatus.STARTET,
                 utbetalingsOppdrag = utbetaling)
         val saved = service.saveOppdragState(state)
         assertNotNull(saved)

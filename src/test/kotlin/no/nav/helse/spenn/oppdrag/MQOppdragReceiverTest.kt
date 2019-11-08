@@ -70,7 +70,7 @@ class MQOppdragReceiverTest {
                 behov = etEnkeltBehov()
         )
         val uuid = "ZApp5GWKTB6XtoaYYtHBOg".fromFagId()
-        val oppdragState = OppdragStateDTO(soknadId = uuid,
+        val oppdragState = OppdragStateDTO(sakskompleksId = uuid,
                 utbetalingsOppdrag = utbetaling)
         val state = oppdragStateService.saveOppdragState(oppdragState)
         val oppdrag = mqReceiver.receiveOppdragResponse(receiveError)

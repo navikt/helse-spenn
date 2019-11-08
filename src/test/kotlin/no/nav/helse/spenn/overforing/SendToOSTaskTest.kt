@@ -38,16 +38,16 @@ class SendToOSTaskTest {
         val utbetaling = behov.tilUtbetaling("12345678901")
 
         service.saveOppdragState(OppdragStateDTO(
-                soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
+                sakskompleksId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG
         ))
         val simulering = service.saveOppdragState(OppdragStateDTO(
-                soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
+                sakskompleksId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.SIMULERING_OK))
         service.saveOppdragState(OppdragStateDTO(
-                soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
+                sakskompleksId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.SIMULERING_OK
         ))

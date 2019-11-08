@@ -28,7 +28,7 @@ class OppdragMapperTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
                 oppdragGjelder = "12121212345", utbetalingsLinje = listOf(enOppdragsLinje),
                 behov = etEnkeltBehov(maksdato = maksDato))
-        val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
+        val oppdragState = OppdragStateDTO(id = 1L, sakskompleksId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
         val oppdrag = oppdragState.toOppdrag()
         val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)

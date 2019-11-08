@@ -20,7 +20,6 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.KafkaStreamsConfig
 import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
@@ -73,7 +72,7 @@ class AvstemmingTaskTest {
         val utbetaling = behov.tilUtbetaling("12345678901")
 
         val oppdrag1 = service.saveOppdragState(OppdragStateDTO(
-                soknadId = soknadKey, utbetalingsOppdrag = utbetaling,
+                sakskompleksId = soknadKey, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
                 oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
@@ -83,7 +82,7 @@ class AvstemmingTaskTest {
                         nokkel = LocalDateTime.now().minusHours(2)
                 )))
         service.saveOppdragState(OppdragStateDTO(
-                soknadId = soknadKey2, utbetalingsOppdrag = utbetaling,
+                sakskompleksId = soknadKey2, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
                 oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
@@ -93,7 +92,7 @@ class AvstemmingTaskTest {
                         nokkel = LocalDateTime.now().minusHours(2).plusMinutes(1)
                 )))
         val oppdrag3 = service.saveOppdragState(OppdragStateDTO(
-                soknadId = soknadKey3, utbetalingsOppdrag = utbetaling,
+                sakskompleksId = soknadKey3, utbetalingsOppdrag = utbetaling,
                 simuleringResult = SimuleringResult(status = Status.OK),
                 status = OppdragStateStatus.FERDIG,
                 oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "04"),
@@ -145,10 +144,6 @@ class AvstemmingTaskTest {
         assertTrue(service.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now()).isEmpty(),
                 "Det skal ikke være igjen noen ikke-avstemte meldinger")
     }
-
-    //////////////////////////////////
-    //////////////////////////////////
-    //////////////////////////////////
 
     private fun settAltEksisterendeTilAvstemt() {
         service.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now()).forEach {

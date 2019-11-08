@@ -55,7 +55,7 @@ class OppdragAvstemmingIT {
                 behov = etEnkeltBehov()
         )
 
-        val oppdragStateNew = OppdragStateDTO(id = null, soknadId = UUID.randomUUID(),
+        val oppdragStateNew = OppdragStateDTO(id = null, sakskompleksId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
         val oppdragStateWithoutAvstemmingId = service.saveOppdragState(oppdragStateNew)
         val oppdragState = service.saveOppdragState(oppdragStateWithoutAvstemmingId.copy(

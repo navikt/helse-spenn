@@ -212,7 +212,7 @@ class AvstemmingMapperTest {
                         status == OppdragStateStatus.SENDT_OS,
                         alvorlighetsgrad),
                 simuleringResult = null,
-                soknadId = soknadId,
+                sakskompleksId = soknadId,
                 status = status,
                 utbetalingsOppdrag = UtbetalingsOppdrag(
                         operasjon = AksjonsKode.OPPDATER,

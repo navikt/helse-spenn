@@ -26,7 +26,7 @@ class OppdragStateServiceTest {
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
         for (i in 1..100) {
-            service.saveOppdragState(OppdragStateDTO(soknadId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling))
+            service.saveOppdragState(OppdragStateDTO(sakskompleksId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling))
         }
         assertEquals(service.fetchOppdragStateByStatus(OppdragStateStatus.STARTET,10).size, 10, "size should be equal")
     }
@@ -39,7 +39,7 @@ class OppdragStateServiceTest {
         val utbetaling = behov.tilUtbetaling("12345678901")
         val soknadId = UUID.randomUUID()
         service.saveOppdragState(OppdragStateDTO(
-                soknadId = soknadId,
+                sakskompleksId = soknadId,
                 status = OppdragStateStatus.SIMULERING_OK,
                 utbetalingsOppdrag = utbetaling,
                 feilbeskrivelse = "veryWRONG"))

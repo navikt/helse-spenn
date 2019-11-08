@@ -30,7 +30,7 @@ class SimulerOppdragMapperTest {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "12121212345", utbetalingsLinje = listOf(enOppdragsLinje),
                 behov = etEnkeltBehov(maksdato = maksDato))
-        val oppdragState = OppdragStateDTO(id = 1L, soknadId = UUID.randomUUID(),
+        val oppdragState = OppdragStateDTO(id = 1L, sakskompleksId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling)
         val simuleringRequest = oppdragState.toSimuleringRequest()
         val jaxbContext = JAXBContext.newInstance(SimulerBeregningRequest::class.java)

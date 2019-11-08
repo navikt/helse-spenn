@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.simulering
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
@@ -50,7 +49,7 @@ val oppdragEn = OppdragStateDTO(
         modified = LocalDateTime.now(),
         created = LocalDateTime.now(),
         avstemming = null,
-        soknadId = UUID.randomUUID(),
+        sakskompleksId = UUID.randomUUID(),
         utbetalingsOppdrag = UtbetalingsOppdrag(
                 behov = etEnkeltBehov(),
                 utbetalingsLinje = emptyList(),
@@ -62,5 +61,5 @@ val simuleringsResultat = SimuleringResult(status = Status.OK,
         simulering = Simulering(gjelderId = "",gjelderNavn = "",datoBeregnet = LocalDate.now(),
                 totalBelop = BigDecimal.TEN, periodeList = emptyList()), feilMelding = "")
 val simulertOppdragEn = oppdragEn.copy(simuleringResult = simuleringsResultat)
-val oppdragTo = oppdragEn.copy(id = 2L, soknadId = UUID.randomUUID())
+val oppdragTo = oppdragEn.copy(id = 2L, sakskompleksId = UUID.randomUUID())
 val simulertOppdragTo = oppdragTo.copy(simuleringResult = simuleringsResultat)

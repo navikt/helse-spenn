@@ -36,7 +36,7 @@ fun Route.simuleringcontroller(
         audit.info("simulering kall for vedtak: ${behov.sakskompleksId}", call.authentication)
         call.respond(simuleringService.runSimulering(
             OppdragStateDTO(
-                soknadId = behov.sakskompleksId,
+                sakskompleksId = behov.sakskompleksId,
                 utbetalingsOppdrag = behov.tilUtbetaling(aktørTilFnrMapper.tilFnr(behov.aktørId))
             )
         ).simuleringResult!!)

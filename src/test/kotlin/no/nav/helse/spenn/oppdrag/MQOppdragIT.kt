@@ -63,7 +63,7 @@ class MQOppdragIT {
                 behov = etEnkeltBehov()
         )
 
-        val oppdragState = OppdragStateDTO(soknadId = UUID.randomUUID(),
+        val oppdragState = OppdragStateDTO(sakskompleksId = UUID.randomUUID(),
                 utbetalingsOppdrag = utbetaling, avstemming = AvstemmingDTO())
         oppdragStateService.saveOppdragState(oppdragState)
         mqSender.sendOppdrag(oppdragState.toOppdrag())

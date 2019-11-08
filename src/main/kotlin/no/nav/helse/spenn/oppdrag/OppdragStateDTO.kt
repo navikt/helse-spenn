@@ -7,17 +7,24 @@ import java.time.LocalDateTime
 import java.util.*
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class OppdragStateDTO (val id: Long? = null,
-                            val soknadId: UUID,
-                            val created: LocalDateTime = LocalDateTime.now(),
-                            val modified: LocalDateTime = LocalDateTime.now(),
-                            val utbetalingsOppdrag: UtbetalingsOppdrag,
-                            val status: OppdragStateStatus = OppdragStateStatus.STARTET,
-                            val oppdragResponse: String? = null,
-                            val simuleringResult: SimuleringResult? = null,
-                            val feilbeskrivelse: String? = null,
-                            val avstemming: AvstemmingDTO? = null, val fagId: String = soknadId.toFagId())
+data class OppdragStateDTO(
+    val id: Long? = null,
+    val sakskompleksId: UUID,
+    val created: LocalDateTime = LocalDateTime.now(),
+    val modified: LocalDateTime = LocalDateTime.now(),
+    val utbetalingsOppdrag: UtbetalingsOppdrag,
+    val status: OppdragStateStatus = OppdragStateStatus.STARTET,
+    val oppdragResponse: String? = null,
+    val simuleringResult: SimuleringResult? = null,
+    val feilbeskrivelse: String? = null,
+    val avstemming: AvstemmingDTO? = null,
+    val fagId: String = sakskompleksId.toFagId()
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class AvstemmingDTO(val id: Long? = null, val oppdragStateId: Long? = null,
-                         val nokkel: LocalDateTime = LocalDateTime.now(), val avstemt: Boolean = false)
+data class AvstemmingDTO(
+    val id: Long? = null,
+    val oppdragStateId: Long? = null,
+    val nokkel: LocalDateTime = LocalDateTime.now(),
+    val avstemt: Boolean = false
+)
