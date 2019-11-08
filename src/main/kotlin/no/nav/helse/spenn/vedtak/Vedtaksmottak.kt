@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.vedtak
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
@@ -9,6 +10,7 @@ import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.tilLøstBehov
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -44,20 +46,25 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
     }
 
-    fun mottakslogikk() : Topology {
+    fun mottakslogikk(): Topology {
         val builder = StreamsBuilder()
 
         builder.consumeTopic(SYKEPENGER_BEHOV_TOPIC)
-                .filter { _, value -> value["@behov"]?.textValue() == "Utbetaling" }
-                .filter { _, value -> value["@løsning"].let {
+            .filter { _, value -> value["@behov"]?.textValue() == "Utbetaling" }
+            .filter { _, value ->
+                value["@løsning"].let {
                     it == null || it.isNull
-                }}
-                .mapValues { _, value -> defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
-                .mapValues { _, value -> aktørTilFnrMapper.tilFnr(value.aktørId) to value }
-                .mapValues { _,  (fodselnummer, value) -> value.tilUtbetaling(fodselnummer) }
-                .mapValues { _, utbetaling -> saveInitialOppdragState(utbetaling) }
-                .filter { _, value ->  value != null}
-                .peek {_,_ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
+                }
+            }
+            .mapValues { _, value -> defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
+            .mapValues { _, value -> aktørTilFnrMapper.tilFnr(value.aktørId) to value }
+            .mapValues { _, (fodselnummer, value) -> value.tilUtbetaling(fodselnummer) }
+            .mapValues { _, utbetaling -> saveInitialOppdragState(utbetaling) }
+            .filter { _, value -> value != null }
+            .peek { _, _ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
+            .mapValues { _, dto -> dto!!.tilLøstBehov() }
+            .mapValues { _, løstBehov -> defaultObjectMapper.valueToTree<JsonNode>(løstBehov) }
+            .toTopic(SYKEPENGER_BEHOV_TOPIC)
 
         return builder.build()
     }

@@ -3,6 +3,7 @@ package no.nav.helse.spenn.oppdrag
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.simulering.SimuleringResult
+import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import java.time.LocalDateTime
 import java.util.*
 
@@ -28,3 +29,5 @@ data class AvstemmingDTO(
     val nokkel: LocalDateTime = LocalDateTime.now(),
     val avstemt: Boolean = false
 )
+
+fun OppdragStateDTO.tilLøstBehov() = this.utbetalingsOppdrag.behov.copy(løsning = this.id)
