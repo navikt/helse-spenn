@@ -24,18 +24,18 @@ class OppdragStateRepositoryTest {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
-        val state = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
+        val state = OppdragState(sakskompleksId = soknadKey, status = OppdragStateStatus.STARTET,
                utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
         val dbState = repository.insert(state)
         assertNotNull(dbState.created)
         assertNotNull(dbState.modified)
-        assertEquals(soknadKey,dbState.soknadId)
+        assertEquals(soknadKey,dbState.sakskompleksId)
         assertEquals(OppdragStateStatus.STARTET, dbState.status)
         assertNull(dbState.avstemming)
 
         val update = repository.update(OppdragState(
                 id=dbState.id,
-                soknadId = dbState.soknadId,
+                sakskompleksId = dbState.sakskompleksId,
                 utbetalingsOppdrag = dbState.utbetalingsOppdrag,
                 oppdragResponse = kvittering,
                 status = OppdragStateStatus.FERDIG,
@@ -53,12 +53,12 @@ class OppdragStateRepositoryTest {
         assertTrue(update.modified.isAfter(dbState.modified))
 
         try {
-            repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))
+            repository.insert(OppdragState(sakskompleksId = soknadKey, utbetalingsOppdrag = ""))
         } catch (e : DataAccessException) {
             println(e.stackTrace)
         }
 
-        val exception = assertFailsWith</*DuplicateKeyException*/DataAccessException>{repository.insert(OppdragState(soknadId = soknadKey, utbetalingsOppdrag = ""))}
+        val exception = assertFailsWith</*DuplicateKeyException*/DataAccessException>{repository.insert(OppdragState(sakskompleksId = soknadKey, utbetalingsOppdrag = ""))}
         assertTrue(exception.cause is SQLIntegrityConstraintViolationException)
     }
 

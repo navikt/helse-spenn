@@ -50,7 +50,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
 fun toEntity(dto: OppdragStateDTO): OppdragState {
     return OppdragState(id = dto.id,
             utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(dto.utbetalingsOppdrag),
-            soknadId = dto.sakskompleksId,
+            sakskompleksId = dto.sakskompleksId,
             modified = dto.modified,
             created = dto.created,
             simuleringResult = defaultObjectMapper.writeValueAsString(dto.simuleringResult),
@@ -64,7 +64,7 @@ fun toEntity(dto: OppdragStateDTO): OppdragState {
 
 fun toDTO(entity: OppdragState): OppdragStateDTO {
     return OppdragStateDTO(id = entity.id,
-            sakskompleksId = entity.soknadId,
+            sakskompleksId = entity.sakskompleksId,
             status = entity.status,
             utbetalingsOppdrag = defaultObjectMapper.readValue(entity.utbetalingsOppdrag, UtbetalingsOppdrag::class.java),
             oppdragResponse = entity.oppdragResponse,
@@ -73,7 +73,7 @@ fun toDTO(entity: OppdragState): OppdragStateDTO {
             created = entity.created,
             feilbeskrivelse = entity.feilbeskrivelse,
             avstemming = toAvstemmingDTO(entity.avstemming),
-            fagId = entity.soknadId.toFagId())
+            fagId = entity.sakskompleksId.toFagId())
 }
 
 fun toAvstemmingEntity(dto: AvstemmingDTO?): Avstemming? {

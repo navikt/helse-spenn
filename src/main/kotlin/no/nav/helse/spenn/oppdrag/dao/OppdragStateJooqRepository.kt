@@ -22,7 +22,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
             val dslContext = DSL.using(conf)
             val id =  with(OPPDRAGSTATE) {
                 dslContext.insertInto(this)
-                        .set(SAKSKOMPLEKS_ID, oppdragstate.soknadId)
+                        .set(SAKSKOMPLEKS_ID, oppdragstate.sakskompleksId)
                         .set(MODIFIED, currentTimestamp())
                         .set(CREATED, currentTimestamp())
                         .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
@@ -74,7 +74,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
             val dslContext = DSL.using(conf)
             with(OPPDRAGSTATE) {
                 dslContext.update(this)
-                        .set(SAKSKOMPLEKS_ID, oppdragstate.soknadId)
+                        .set(SAKSKOMPLEKS_ID, oppdragstate.sakskompleksId)
                         .set(MODIFIED, currentTimestamp())
                         .set(STATUS, oppdragstate.status.name)
                         .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
@@ -159,7 +159,7 @@ private fun LocalDateTime?.toTimeStamp(): Timestamp? {
 
 private fun OppdragstateRecord?.toOppdragState(avstemmingRecord: AvstemmingRecord): OppdragState {
     if (this?.id == null) throw OppdragStateNotFound()
-    return OppdragState(id=id, soknadId = sakskompleksId, created = created.toLocalDateTime(),
+    return OppdragState(id=id, sakskompleksId = sakskompleksId, created = created.toLocalDateTime(),
             modified = modified.toLocalDateTime(), utbetalingsOppdrag = utbetalingsoppdrag,
             oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
             simuleringResult = simuleringresult, avstemming = avstemmingRecord.toAvstemming(),

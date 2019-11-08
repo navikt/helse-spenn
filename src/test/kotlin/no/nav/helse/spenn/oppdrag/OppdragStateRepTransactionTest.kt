@@ -31,7 +31,7 @@ class OppdragStateRepTransactionTest {
         val trasigAvstemming = mock(Avstemming::class.java)
         kWhen(trasigAvstemming.nokkel).thenThrow(UventetFeilTestException())
 
-        val oppdragState = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
+        val oppdragState = OppdragState(sakskompleksId = soknadKey, status = OppdragStateStatus.STARTET,
                 utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling),
                 avstemming = trasigAvstemming)
 
@@ -55,7 +55,7 @@ class OppdragStateRepTransactionTest {
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
 
-        val oppdragState = OppdragState(soknadId = soknadKey, status = OppdragStateStatus.STARTET,
+        val oppdragState = OppdragState(sakskompleksId = soknadKey, status = OppdragStateStatus.STARTET,
                 utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
 
         val oppdragStateMedID = repository.insert(oppdragState)
