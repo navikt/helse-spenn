@@ -1,9 +1,9 @@
 [![CircleCI](https://circleci.com/gh/navikt/helse-spenn/tree/master.svg?style=svg)](https://circleci.com/gh/navikt/helse-spenn/tree/master)
 [![Known Vulnerabilities](https://snyk.io/test/github/navikt/helse-spenn/badge.svg)](https://snyk.io/test/github/navikt/helse-spenn)
 
-## Spenn 
+# Spenn 
 
-Oppgaver:
+## Oppgaver
 1. Hente inn vedtak fra kafka topic
 2. Lage og mappe et utbetalingsoppdrag fra vedtaket
 3. Kjøre simulering for utbetalingsoppdraget
@@ -16,17 +16,7 @@ Oppgaver:
 
 ![Spenn overview](docs/spenn-overview.jpg "Overview")
 
-### Kjøre på dev eller localhost
-
-Tech:
-  * Kotlin
-  * JDK 11
-  * Springboot 2.x
-  * Kafka
-  * IBM MQ
-  * JOOQ + Postgres 
-  * Vault
-  * Docker + Docker compose
+## Kjøre på dev eller localhost
 
 ```
 mvn clean install
