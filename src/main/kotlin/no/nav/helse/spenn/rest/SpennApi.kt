@@ -57,7 +57,7 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
                     val hasGroup = groups != null && groups.contains(env.authConfig.requiredGroup)
                     if (!hasGroup) log.info("missing required group ${env.authConfig.requiredGroup}")
                     val hasIdentRequiredForAuditLog = claims?.getStringClaim(identClaimForAuditLog) != null
-                    if (!hasGroup) log.info("missing claim $identClaimForAuditLog required for auditlog")
+                    if (!hasIdentRequiredForAuditLog) log.info("missing claim $identClaimForAuditLog required for auditlog")
                     hasGroup && hasIdentRequiredForAuditLog
                 })
     }
