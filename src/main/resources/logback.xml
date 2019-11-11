@@ -5,7 +5,7 @@
    </appender>
 
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
-   <logger name="no.nav" level="INFO" />
+   <logger name="no.nav" level="TRACE" />
 
    <logger name="org.jooq.Constants" level="ERROR" />
 
@@ -16,7 +16,7 @@
 
    <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener" level="OFF" />
 
-   <root level="DEBUG">
+   <root level="INFO">
       <appender-ref ref="STDOUT_JSON"/>
    </root>
 
