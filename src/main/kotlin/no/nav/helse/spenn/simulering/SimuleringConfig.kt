@@ -5,6 +5,7 @@ import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12
 import org.apache.cxf.binding.soap.SoapMessage
 import org.apache.cxf.endpoint.Client
+import org.apache.cxf.ext.logging.LoggingFeature
 import org.apache.cxf.frontend.ClientProxy
 import javax.xml.namespace.QName
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
@@ -40,7 +41,7 @@ class SimuleringConfig(val simuleringServiceUrl: String,
             serviceName = SERVICE
             endpointName = PORT
             serviceClass = SimulerFpService::class.java
-            features = listOf(WSAddressingFeature())
+            features = listOf(WSAddressingFeature(), LoggingFeature())
 
         }
         return factory.create(SimulerFpService::class.java).apply {

@@ -38,4 +38,6 @@ spec:
   vault:
     enabled: true
   webproxy: true
+  secureLogs:
+    enabled: true
   team: tbd
