@@ -12,6 +12,7 @@ import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.tilLøstBehov
+import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -59,11 +60,22 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
             }
             .mapValues { _, value -> value to defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
             .mapValues { _, (originalMessage, value) ->
-                originalMessage to value.tilUtbetaling(
-                    aktørTilFnrMapper.tilFnr(
-                        value.aktørId
+                try {
+                    originalMessage to value.tilUtbetaling(
+                            aktørTilFnrMapper.tilFnr(
+                                    value.aktørId
+                            )
                     )
-                )
+                } catch (err: AktorNotFoundException) {
+                    log.info("aktør finnes ikke, skipper melding", err)
+                    null
+                }
+            }
+            .filter { _, value ->
+                value != null
+            }
+            .mapValues { _, value ->
+                value as Pair<JsonNode, UtbetalingsOppdrag>
             }
             .mapValues { _, (originalMessage, utbetaling) -> originalMessage to saveInitialOppdragState(utbetaling) }
             .filter { _, (_, value) -> value != null }
