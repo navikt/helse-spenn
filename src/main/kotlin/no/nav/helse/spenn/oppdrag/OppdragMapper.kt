@@ -37,7 +37,7 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
-        saksbehId = "SPEIL"
+        saksbehId = OppdragSkjemaConstants.APP
         enhet.add(oppdragsEnhet)
         utbetalingsOppdrag.utbetalingsLinje.forEach {
             if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
@@ -46,7 +46,7 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
                     mapToSimuleringsOppdragslinje(
                             oppdragslinje = it,
                             maksDato = utbetalingsOppdrag.behov.maksdato,
-                            saksbehandler = utbetalingsOppdrag.behov.saksbehandler)
+                            saksbehandler = OppdragSkjemaConstants.APP)
             )
         }
     }
