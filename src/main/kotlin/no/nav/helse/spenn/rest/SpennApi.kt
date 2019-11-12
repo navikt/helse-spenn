@@ -41,7 +41,7 @@ fun spennApiServer(env : SpennApiEnvironment) : ApplicationEngine =
 
 internal fun Application.spennApiModule(env: SpennApiEnvironment) {
 
-    val identClaimForAuditLog = "NAVident"
+    val identClaimForAuditLog = "oid"
     val log = LoggerFactory.getLogger("spennApiModule")
 
     install(Authentication) {
