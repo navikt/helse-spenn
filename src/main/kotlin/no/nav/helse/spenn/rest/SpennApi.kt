@@ -16,6 +16,7 @@ import io.ktor.server.netty.Netty
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
+import no.nav.helse.spenn.rest.api.v1.AuditSupport.Companion.identClaimForAuditLog
 import no.nav.helse.spenn.rest.api.v1.simuleringcontroller
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
@@ -41,7 +42,6 @@ fun spennApiServer(env : SpennApiEnvironment) : ApplicationEngine =
 
 internal fun Application.spennApiModule(env: SpennApiEnvironment) {
 
-    val identClaimForAuditLog = "oid"
     val log = LoggerFactory.getLogger("spennApiModule")
 
     install(Authentication) {

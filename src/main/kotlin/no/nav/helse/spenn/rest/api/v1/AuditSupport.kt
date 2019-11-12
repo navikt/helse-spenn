@@ -9,12 +9,15 @@ class AuditSupport {
 
     companion object {
         private val AUDIT_LOG = LoggerFactory.getLogger("auditLogger")
+
+        val identClaimForAuditLog = "preferred_username"
+
     }
 
     private fun navIdent(auth: AuthenticationContext) : String {
         val ident = auth.principal<TokenValidationContextPrincipal>()?.context
                 ?.getClaims(SpennApiAuthConfig.ourIssuer)
-                ?.getStringClaim("NAVident")
+                ?.getStringClaim(identClaimForAuditLog)
         return ident ?:
         throw IllegalStateException("Using no token or token without required claim in auditlogging")
     }
