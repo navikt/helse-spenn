@@ -5,7 +5,7 @@
    </appender>
 
    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR" />
-   <logger name="no.nav" level="TRACE" />
+   <logger name="no.nav" level="INFO" />
 
    <logger name="org.jooq.Constants" level="ERROR" />
 
