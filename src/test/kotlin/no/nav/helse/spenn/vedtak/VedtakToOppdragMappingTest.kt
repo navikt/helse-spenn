@@ -20,7 +20,7 @@ class VedtakToOppdragMappingTest {
         val behov = etEnkeltBehov()
 
         val oppdragsLinje = UtbetalingsLinje(
-            id = "0",
+            id = "1",
             sats = BigDecimal.valueOf(1234L),
             satsTypeKode = SatsTypeKode.DAGLIG,
             datoFom = behov.utbetalingslinjer[0].fom,
