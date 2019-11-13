@@ -37,7 +37,7 @@ data class Utbetalingsbehov(
                 sats = periode.dagsats,
                 satsTypeKode = SatsTypeKode.DAGLIG,
                 utbetalesTil = organisasjonsnummer,
-                grad = periode.grad.toBigInteger()
+                grad = 100.toBigInteger() //periode.grad.toBigInteger()
             )
         }
 }
