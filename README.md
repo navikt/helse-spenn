@@ -31,3 +31,17 @@ mvn -Pjooq clean install
 ```
 
 ... og deretter må man gjøre endringer i `OppdragStateJooqRepository`
+
+## Se på database i preprod:
+
+Se https://stackoverflow.com/c/nav-it/questions/33/108#108
+
+```brew install vault``` gir deg vault cli.
+
+```vault login -method=ldap``` logger deg inn i vault.
+
+```vault read postgresql/preprod-fss/creds/helse-spenn-oppdrag-admin``` gir brukernavn og passord for preprod.
+
+Se på 
+```vault read kv/preprod/fss/spenn/default | grep DATASOURCE_URL```
+for connection-url.
