@@ -13,7 +13,7 @@ class OppdragSkjemaConstants {
     companion object {
         @JvmField
         val JAXB_CLASS = Oppdrag::class.java
-        const val SP_ENHET = "4151"
+        const val SP_ENHET = "8020"
         const val BOS = "BOS"
         const val APP = "SPENN"
 
