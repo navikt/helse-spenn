@@ -1,5 +1,8 @@
 package no.nav.helse.spenn.vedtak
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
@@ -34,6 +37,14 @@ class VedtakToOppdragMappingTest {
 
         val faktisk = behov.tilUtbetaling("12345678901")
         Assertions.assertEquals(målbilde, faktisk)
+    }
+
+    @Test
+    fun testFoersteLinjeIMappetUtbetalingslinjeSkalHaId_lik_1() {
+        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val utbetalingsOppdrag = behov.tilUtbetaling("01010112345")
+        assertEquals(1.toString(), utbetalingsOppdrag.utbetalingsLinje.first().id)
     }
 
     @Test

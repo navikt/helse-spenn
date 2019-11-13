@@ -31,7 +31,7 @@ data class Utbetalingsbehov(
     private fun lagLinjer(): List<UtbetalingsLinje> =
         utbetalingslinjer.mapIndexed { index, periode ->
             UtbetalingsLinje(
-                id = index.toString(),
+                id = (index + 1).toString(),
                 datoFom = periode.fom,
                 datoTom = periode.tom,
                 sats = periode.dagsats,
