@@ -29,8 +29,7 @@ fun Route.simuleringcontroller(
         try {
             behov = call.receive()
         } catch (jsonError: JsonProcessingException) {
-            LOG.info("JsonProcessingException")
-            LOG.debug("JsonProcessingException: ", jsonError)
+            LOG.warn("JsonProcessingException: ", jsonError)
             call.respond(HttpStatusCode.BadRequest);
             return@post
         }
