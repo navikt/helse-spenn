@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
 import io.ktor.config.ApplicationConfig
+import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.*
@@ -40,6 +41,7 @@ val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
 
 private val log = LoggerFactory.getLogger("SpennServices")
 
+@KtorExperimentalAPI
 class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     ////

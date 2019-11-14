@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.config
 
 import io.ktor.config.ApplicationConfig
+import io.ktor.util.KtorExperimentalAPI
 import java.net.URL
 
 data class SpennApiAuthConfig(
@@ -8,6 +9,7 @@ data class SpennApiAuthConfig(
         val discoveryUrl: URL,
         val requiredGroup: String)
 {
+    @KtorExperimentalAPI
     companion object {
         val ourIssuer = "ourissuer"
 

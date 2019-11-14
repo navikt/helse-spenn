@@ -13,6 +13,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
@@ -26,6 +27,7 @@ import no.nav.security.token.support.ktor.tokenValidationSupport
 import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
 
+@KtorExperimentalAPI
 data class SpennApiEnvironment(
         val port: Int = 8080,
         val kafkaStreams: KafkaStreams,
@@ -37,9 +39,11 @@ data class SpennApiEnvironment(
 
 )
 
+@KtorExperimentalAPI
 fun spennApiServer(env : SpennApiEnvironment) : ApplicationEngine =
     embeddedServer(factory = Netty, port = env.port, module = { spennApiModule(env) })
 
+@KtorExperimentalAPI
 internal fun Application.spennApiModule(env: SpennApiEnvironment) {
 
     val log = LoggerFactory.getLogger("spennApiModule")

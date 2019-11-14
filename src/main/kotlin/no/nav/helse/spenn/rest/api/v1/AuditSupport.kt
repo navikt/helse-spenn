@@ -1,10 +1,12 @@
 package no.nav.helse.spenn.rest.api.v1
 
 import io.ktor.auth.AuthenticationContext
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.security.token.support.ktor.TokenValidationContextPrincipal
 import org.slf4j.LoggerFactory
 
+@KtorExperimentalAPI
 class AuditSupport {
 
     companion object {

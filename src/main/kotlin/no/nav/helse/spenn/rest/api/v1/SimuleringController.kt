@@ -8,6 +8,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.Utbetalingsbehov
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory
 
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 
+@KtorExperimentalAPI
 fun Route.simuleringcontroller(
     simuleringService: SimuleringService,
     aktørTilFnrMapper: AktørTilFnrMapper,

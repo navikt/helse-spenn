@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.config
 
 import io.ktor.config.ApplicationConfig
+import io.ktor.util.KtorExperimentalAPI
 
 class SpennConfig(
         val schedulerEnabled: Boolean = false,
@@ -18,6 +19,7 @@ class SpennConfig(
 
         val aktorRegisteretBaseUrl:String
 ) {
+    @KtorExperimentalAPI
     companion object {
         fun from(cfg:ApplicationConfig) : SpennConfig {
             val getBool = fun(key : String) : Boolean {

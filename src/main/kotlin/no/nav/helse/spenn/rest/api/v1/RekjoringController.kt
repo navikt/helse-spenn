@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.rest.api.v1
 
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
@@ -11,6 +12,7 @@ import java.util.*
 /*@RestController
 @Protected
 @RequestMapping("/api/v1/rekjoring")*/
+@KtorExperimentalAPI
 class RekjoringController(val oppdragStateService: OppdragStateService,
                           val audit: AuditSupport) {
 

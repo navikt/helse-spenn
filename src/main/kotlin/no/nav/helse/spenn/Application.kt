@@ -4,6 +4,7 @@ import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
 import io.ktor.config.ApplicationConfig
 import io.ktor.config.HoconApplicationConfig
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.config.SpennConfig
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ScheduledExecutorService
@@ -11,6 +12,7 @@ import java.util.concurrent.ScheduledExecutorService
 
 private val log = LoggerFactory.getLogger("SpennApplication")
 
+@KtorExperimentalAPI
 fun main() {
     log.info("Loading config...")
     val conf = ConfigFactory.parseResources("application.conf")
@@ -19,6 +21,7 @@ fun main() {
     spenn(appConfig)
 }
 
+@KtorExperimentalAPI
 internal fun spenn(appConfig: ApplicationConfig) {
     log.info("Creating SpennServices...")
     val services = SpennServices(appConfig)
