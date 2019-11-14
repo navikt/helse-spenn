@@ -36,6 +36,7 @@ public class Indexes {
     public static final Index UQ_AVSTEMMING_OPPDRAGSTATE = Indexes0.UQ_AVSTEMMING_OPPDRAGSTATE;
     public static final Index OPPDRAGSTATE_MODIFIED_IDX = Indexes0.OPPDRAGSTATE_MODIFIED_IDX;
     public static final Index OPPDRAGSTATE_STATUS_IDX = Indexes0.OPPDRAGSTATE_STATUS_IDX;
+    public static final Index OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = Indexes0.OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY;
     public static final Index PK_OPPDRAGSTATE = Indexes0.PK_OPPDRAGSTATE;
     public static final Index UQ_SAKSKOMPLEKS_ID = Indexes0.UQ_SAKSKOMPLEKS_ID;
 
@@ -49,6 +50,7 @@ public class Indexes {
         public static Index UQ_AVSTEMMING_OPPDRAGSTATE = Internal.createIndex("uq_avstemming_oppdragstate", Avstemming.AVSTEMMING, new OrderField[] { Avstemming.AVSTEMMING.OPPDRAGSTATE_ID }, true);
         public static Index OPPDRAGSTATE_MODIFIED_IDX = Internal.createIndex("oppdragstate_modified_idx", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.MODIFIED }, false);
         public static Index OPPDRAGSTATE_STATUS_IDX = Internal.createIndex("oppdragstate_status_idx", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.STATUS }, false);
+        public static Index OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = Internal.createIndex("oppdragstate_utbetalingsreferanse_key", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.UTBETALINGSREFERANSE }, true);
         public static Index PK_OPPDRAGSTATE = Internal.createIndex("pk_oppdragstate", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.ID }, true);
         public static Index UQ_SAKSKOMPLEKS_ID = Internal.createIndex("uq_sakskompleks_id", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.SAKSKOMPLEKS_ID }, true);
     }

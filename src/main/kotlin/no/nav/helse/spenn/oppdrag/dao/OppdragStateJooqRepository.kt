@@ -23,6 +23,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
             val id =  with(OPPDRAGSTATE) {
                 dslContext.insertInto(this)
                         .set(SAKSKOMPLEKS_ID, oppdragstate.sakskompleksId)
+                        .set(UTBETALINGSREFERANSE, oppdragstate.utbetalingsreferanse)
                         .set(MODIFIED, currentTimestamp())
                         .set(CREATED, currentTimestamp())
                         .set(UTBETALINGSOPPDRAG, oppdragstate.utbetalingsOppdrag)
@@ -159,11 +160,19 @@ private fun LocalDateTime?.toTimeStamp(): Timestamp? {
 
 private fun OppdragstateRecord?.toOppdragState(avstemmingRecord: AvstemmingRecord): OppdragState {
     if (this?.id == null) throw OppdragStateNotFound()
-    return OppdragState(id=id, sakskompleksId = sakskompleksId, created = created.toLocalDateTime(),
-            modified = modified.toLocalDateTime(), utbetalingsOppdrag = utbetalingsoppdrag,
-            oppdragResponse = oppdragresponse, status = OppdragStateStatus.valueOf(status),
-            simuleringResult = simuleringresult, avstemming = avstemmingRecord.toAvstemming(),
-            feilbeskrivelse = feilbeskrivelse)
+    return OppdragState(
+        id=id,
+        sakskompleksId = sakskompleksId,
+        utbetalingsreferanse = utbetalingsreferanse,
+        created = created.toLocalDateTime(),
+        modified = modified.toLocalDateTime(),
+        utbetalingsOppdrag = utbetalingsoppdrag,
+        oppdragResponse = oppdragresponse,
+        status = OppdragStateStatus.valueOf(status),
+        simuleringResult = simuleringresult,
+        avstemming = avstemmingRecord.toAvstemming(),
+        feilbeskrivelse = feilbeskrivelse
+    )
 
 }
 

@@ -63,8 +63,12 @@ class MQOppdragIT {
                 behov = etEnkeltBehov()
         )
 
-        val oppdragState = OppdragStateDTO(sakskompleksId = UUID.randomUUID(),
-                utbetalingsOppdrag = utbetaling, avstemming = AvstemmingDTO())
+        val oppdragState = OppdragStateDTO(
+            sakskompleksId = UUID.randomUUID(),
+            utbetalingsreferanse = "1001",
+            utbetalingsOppdrag = utbetaling,
+            avstemming = AvstemmingDTO()
+        )
         oppdragStateService.saveOppdragState(oppdragState)
         mqSender.sendOppdrag(oppdragState.toOppdrag())
         //wait for answer from OS

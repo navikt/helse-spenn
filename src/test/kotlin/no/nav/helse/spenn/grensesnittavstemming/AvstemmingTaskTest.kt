@@ -72,35 +72,44 @@ class AvstemmingTaskTest {
         val utbetaling = behov.tilUtbetaling("12345678901")
 
         val oppdrag1 = service.saveOppdragState(OppdragStateDTO(
-                sakskompleksId = soknadKey, utbetalingsOppdrag = utbetaling,
-                simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.FERDIG,
-                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
-                avstemming = AvstemmingDTO(
-                        id = 123L,
-                        avstemt = false,
-                        nokkel = LocalDateTime.now().minusHours(2)
-                )))
+            sakskompleksId = soknadKey,
+            utbetalingsreferanse = "2001",
+            utbetalingsOppdrag = utbetaling,
+            simuleringResult = SimuleringResult(status = Status.OK),
+            status = OppdragStateStatus.FERDIG,
+            oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
+            avstemming = AvstemmingDTO(
+                id = 123L,
+                avstemt = false,
+                nokkel = LocalDateTime.now().minusHours(2)
+            )
+        ))
         service.saveOppdragState(OppdragStateDTO(
-                sakskompleksId = soknadKey2, utbetalingsOppdrag = utbetaling,
-                simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.FERDIG,
-                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
-                avstemming = AvstemmingDTO(
-                        id = 124L,
-                        avstemt = false,
-                        nokkel = LocalDateTime.now().minusHours(2).plusMinutes(1)
-                )))
+            sakskompleksId = soknadKey2,
+            utbetalingsreferanse = "2002",
+            utbetalingsOppdrag = utbetaling,
+            simuleringResult = SimuleringResult(status = Status.OK),
+            status = OppdragStateStatus.FERDIG,
+            oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "00"),
+            avstemming = AvstemmingDTO(
+                id = 124L,
+                avstemt = false,
+                nokkel = LocalDateTime.now().minusHours(2).plusMinutes(1)
+            )
+        ))
         val oppdrag3 = service.saveOppdragState(OppdragStateDTO(
-                sakskompleksId = soknadKey3, utbetalingsOppdrag = utbetaling,
-                simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.FERDIG,
-                oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "04"),
-                avstemming = AvstemmingDTO(
-                        id = 125L,
-                        avstemt = false,
-                        nokkel = LocalDateTime.now().minusHours(2).plusMinutes(2)
-                )))
+            sakskompleksId = soknadKey3,
+            utbetalingsreferanse = "2003",
+            utbetalingsOppdrag = utbetaling,
+            simuleringResult = SimuleringResult(status = Status.OK),
+            status = OppdragStateStatus.FERDIG,
+            oppdragResponse = AvstemmingMapperTest.lagOppdragResponseXml("whatever", false, "04"),
+            avstemming = AvstemmingDTO(
+                id = 125L,
+                avstemt = false,
+                nokkel = LocalDateTime.now().minusHours(2).plusMinutes(2)
+            )
+        ))
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
 

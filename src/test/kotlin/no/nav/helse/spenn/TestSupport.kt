@@ -86,6 +86,7 @@ fun etEnkeltBehov(
     maksdato: LocalDate = LocalDate.now().plusYears(1)
 ) = Utbetalingsbehov(
     sakskompleksId = sakskompleksId,
+    utbetalingsreferanse = "1",
     aktørId = "en random aktørid",
     saksbehandler = "yes",
     organisasjonsnummer = "897654321",

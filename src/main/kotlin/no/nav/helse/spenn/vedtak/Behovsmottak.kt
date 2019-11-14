@@ -161,6 +161,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
             oppdragStateService.saveOppdragState(
                 OppdragStateDTO(
                     sakskompleksId = utbetaling.behov.sakskompleksId,
+                    utbetalingsreferanse = utbetaling.behov.utbetalingsreferanse,
                     utbetalingsOppdrag = utbetaling
                 )
             )

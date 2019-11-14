@@ -86,20 +86,23 @@ class SendToOSTaskSanityCheckTest {
 
     private fun oppdragMedSats(sats: Long, satsTypeKode : SatsTypeKode = SatsTypeKode.DAGLIG) =
             OppdragStateDTO(
-                    sakskompleksId = UUID.randomUUID(), utbetalingsOppdrag = UtbetalingsOppdrag(
+                sakskompleksId = UUID.randomUUID(),
+                utbetalingsreferanse = "1001",
+                utbetalingsOppdrag = UtbetalingsOppdrag(
                     behov = etEnkeltBehov(),
                     oppdragGjelder = "12345678901",
                     operasjon = AksjonsKode.OPPDATER,
                     utbetalingsLinje = listOf(
-                            UtbetalingsLinje(id = "1",
-                                    satsTypeKode = satsTypeKode,
-                                    sats = BigDecimal.valueOf(sats),
-                                    utbetalesTil = "999888777",
-                                    datoFom = LocalDate.now().minusWeeks(4),
-                                    datoTom = LocalDate.now().minusWeeks(1),
-                                    grad = BigInteger.valueOf(100)
-                            )
+                        UtbetalingsLinje(id = "1",
+                            satsTypeKode = satsTypeKode,
+                            sats = BigDecimal.valueOf(sats),
+                            utbetalesTil = "999888777",
+                            datoFom = LocalDate.now().minusWeeks(4),
+                            datoTom = LocalDate.now().minusWeeks(1),
+                            grad = BigInteger.valueOf(100)
+                        )
                     )
-            ))
+                )
+            )
 
 }

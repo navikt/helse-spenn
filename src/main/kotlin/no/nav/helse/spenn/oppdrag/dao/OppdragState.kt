@@ -6,6 +6,7 @@ import java.util.*
 data class OppdragState(
     val id: Long? = null,
     val sakskompleksId: UUID,
+    val utbetalingsreferanse: String,
     val created: LocalDateTime = LocalDateTime.now(),
     val modified: LocalDateTime = LocalDateTime.now(),
     val utbetalingsOppdrag: String,

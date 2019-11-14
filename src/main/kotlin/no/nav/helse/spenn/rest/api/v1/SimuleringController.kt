@@ -37,6 +37,7 @@ fun Route.simuleringcontroller(
         call.respond(simuleringService.runSimulering(
             OppdragStateDTO(
                 sakskompleksId = behov.sakskompleksId,
+                utbetalingsreferanse = behov.utbetalingsreferanse,
                 utbetalingsOppdrag = behov.tilUtbetaling(aktørTilFnrMapper.tilFnr(behov.aktørId))
             )
         ).simuleringResult!!)

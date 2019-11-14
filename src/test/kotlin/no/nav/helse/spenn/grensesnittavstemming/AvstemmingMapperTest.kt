@@ -199,6 +199,7 @@ class AvstemmingMapperTest {
 
 
     private fun lagOppdrag(status: OppdragStateStatus = OppdragStateStatus.FERDIG,
+                           utbetalingsreferanse: String = "12",
                            alvorlighetsgrad: String = "00",
                            dagSats: Long = 1345) : OppdragStateDTO {
         val soknadId = UUID.randomUUID()
@@ -213,6 +214,7 @@ class AvstemmingMapperTest {
                         alvorlighetsgrad),
                 simuleringResult = null,
                 sakskompleksId = soknadId,
+                utbetalingsreferanse = utbetalingsreferanse,
                 status = status,
                 utbetalingsOppdrag = UtbetalingsOppdrag(
                         operasjon = AksjonsKode.OPPDATER,

@@ -14,6 +14,7 @@ typealias Fodselsnummer = String
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Utbetalingsbehov(
     val sakskompleksId: UUID,
+    val utbetalingsreferanse: String,
     val aktørId: String,
     val organisasjonsnummer: String,
     val maksdato: LocalDate,

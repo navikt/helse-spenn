@@ -47,6 +47,7 @@ public class Keys {
     public static final UniqueKey<AvstemmingRecord> UQ_AVSTEMMING_NOKKEL = UniqueKeys0.UQ_AVSTEMMING_NOKKEL;
     public static final UniqueKey<OppdragstateRecord> PK_OPPDRAGSTATE = UniqueKeys0.PK_OPPDRAGSTATE;
     public static final UniqueKey<OppdragstateRecord> UQ_SAKSKOMPLEKS_ID = UniqueKeys0.UQ_SAKSKOMPLEKS_ID;
+    public static final UniqueKey<OppdragstateRecord> OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = UniqueKeys0.OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY;
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
@@ -69,6 +70,7 @@ public class Keys {
         public static final UniqueKey<AvstemmingRecord> UQ_AVSTEMMING_NOKKEL = Internal.createUniqueKey(Avstemming.AVSTEMMING, "uq_avstemming_nokkel", Avstemming.AVSTEMMING.NOKKEL);
         public static final UniqueKey<OppdragstateRecord> PK_OPPDRAGSTATE = Internal.createUniqueKey(Oppdragstate.OPPDRAGSTATE, "pk_oppdragstate", Oppdragstate.OPPDRAGSTATE.ID);
         public static final UniqueKey<OppdragstateRecord> UQ_SAKSKOMPLEKS_ID = Internal.createUniqueKey(Oppdragstate.OPPDRAGSTATE, "uq_sakskompleks_id", Oppdragstate.OPPDRAGSTATE.SAKSKOMPLEKS_ID);
+        public static final UniqueKey<OppdragstateRecord> OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = Internal.createUniqueKey(Oppdragstate.OPPDRAGSTATE, "oppdragstate_utbetalingsreferanse_key", Oppdragstate.OPPDRAGSTATE.UTBETALINGSREFERANSE);
     }
 
     private static class ForeignKeys0 {

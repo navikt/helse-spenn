@@ -51,6 +51,7 @@ fun toEntity(dto: OppdragStateDTO): OppdragState {
     return OppdragState(id = dto.id,
             utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(dto.utbetalingsOppdrag),
             sakskompleksId = dto.sakskompleksId,
+            utbetalingsreferanse = dto.utbetalingsreferanse,
             modified = dto.modified,
             created = dto.created,
             simuleringResult = defaultObjectMapper.writeValueAsString(dto.simuleringResult),
@@ -58,13 +59,13 @@ fun toEntity(dto: OppdragStateDTO): OppdragState {
             oppdragResponse = dto.oppdragResponse,
             feilbeskrivelse = dto.feilbeskrivelse,
             avstemming = toAvstemmingEntity(dto.avstemming)
-
     )
 }
 
 fun toDTO(entity: OppdragState): OppdragStateDTO {
     return OppdragStateDTO(id = entity.id,
             sakskompleksId = entity.sakskompleksId,
+            utbetalingsreferanse = entity.utbetalingsreferanse,
             status = entity.status,
             utbetalingsOppdrag = defaultObjectMapper.readValue(entity.utbetalingsOppdrag, UtbetalingsOppdrag::class.java),
             oppdragResponse = entity.oppdragResponse,

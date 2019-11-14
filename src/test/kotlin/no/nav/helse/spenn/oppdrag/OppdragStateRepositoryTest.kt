@@ -24,8 +24,12 @@ class OppdragStateRepositoryTest {
         val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
-        val state = OppdragState(sakskompleksId = soknadKey, status = OppdragStateStatus.STARTET,
-               utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling))
+        val state = OppdragState(
+            sakskompleksId = soknadKey,
+            utbetalingsreferanse = "10001",
+            status = OppdragStateStatus.STARTET,
+            utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling)
+        )
         val dbState = repository.insert(state)
         assertNotNull(dbState.created)
         assertNotNull(dbState.modified)
@@ -36,6 +40,7 @@ class OppdragStateRepositoryTest {
         val update = repository.update(OppdragState(
                 id=dbState.id,
                 sakskompleksId = dbState.sakskompleksId,
+                utbetalingsreferanse = "6001",
                 utbetalingsOppdrag = dbState.utbetalingsOppdrag,
                 oppdragResponse = kvittering,
                 status = OppdragStateStatus.FERDIG,
@@ -53,12 +58,20 @@ class OppdragStateRepositoryTest {
         assertTrue(update.modified.isAfter(dbState.modified))
 
         try {
-            repository.insert(OppdragState(sakskompleksId = soknadKey, utbetalingsOppdrag = ""))
+            repository.insert(OppdragState(
+                sakskompleksId = soknadKey,
+                utbetalingsreferanse = "5001",
+                utbetalingsOppdrag = ""
+            ))
         } catch (e : DataAccessException) {
             println(e.stackTrace)
         }
 
-        val exception = assertFailsWith</*DuplicateKeyException*/DataAccessException>{repository.insert(OppdragState(sakskompleksId = soknadKey, utbetalingsOppdrag = ""))}
+        val exception = assertFailsWith</*DuplicateKeyException*/DataAccessException>{repository.insert(OppdragState(
+            sakskompleksId = soknadKey,
+            utbetalingsreferanse = "4001",
+            utbetalingsOppdrag = ""
+        ))}
         assertTrue(exception.cause is SQLIntegrityConstraintViolationException)
     }
 

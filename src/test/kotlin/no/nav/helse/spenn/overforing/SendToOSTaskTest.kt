@@ -38,18 +38,25 @@ class SendToOSTaskTest {
         val utbetaling = behov.tilUtbetaling("12345678901")
 
         service.saveOppdragState(OppdragStateDTO(
-                sakskompleksId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
-                simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.FERDIG
+            sakskompleksId = UUID.randomUUID(),
+            utbetalingsreferanse = "1001",
+            utbetalingsOppdrag = utbetaling,
+            simuleringResult = SimuleringResult(status = Status.OK),
+            status = OppdragStateStatus.FERDIG
         ))
         val simulering = service.saveOppdragState(OppdragStateDTO(
-                sakskompleksId = soknadKey, utbetalingsOppdrag = utbetaling,
-                simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.SIMULERING_OK))
+            sakskompleksId = soknadKey,
+            utbetalingsreferanse = "1002",
+            utbetalingsOppdrag = utbetaling,
+            simuleringResult = SimuleringResult(status = Status.OK),
+            status = OppdragStateStatus.SIMULERING_OK
+        ))
         service.saveOppdragState(OppdragStateDTO(
-                sakskompleksId = UUID.randomUUID(), utbetalingsOppdrag = utbetaling,
-                simuleringResult = SimuleringResult(status = Status.OK),
-                status = OppdragStateStatus.SIMULERING_OK
+            sakskompleksId = UUID.randomUUID(),
+            utbetalingsreferanse = "1003",
+            utbetalingsOppdrag = utbetaling,
+            simuleringResult = SimuleringResult(status = Status.OK),
+            status = OppdragStateStatus.SIMULERING_OK
         ))
         assertNotNull(simulering)
         val sendToOSTask = SendToOSTask(oppdragStateService = service, utbetalingService = mockUtbetalingService,

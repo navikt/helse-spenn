@@ -50,6 +50,7 @@ val oppdragEn = OppdragStateDTO(
         created = LocalDateTime.now(),
         avstemming = null,
         sakskompleksId = UUID.randomUUID(),
+        utbetalingsreferanse = "1001",
         utbetalingsOppdrag = UtbetalingsOppdrag(
                 behov = etEnkeltBehov(),
                 utbetalingsLinje = emptyList(),

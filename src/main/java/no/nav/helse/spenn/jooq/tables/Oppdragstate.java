@@ -22,7 +22,7 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row9;
+import org.jooq.Row10;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -44,7 +44,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Oppdragstate extends TableImpl<OppdragstateRecord> {
 
-    private static final long serialVersionUID = -2049536140;
+    private static final long serialVersionUID = 302223218;
 
     /**
      * The reference instance of <code>public.oppdragstate</code>
@@ -105,6 +105,11 @@ public class Oppdragstate extends TableImpl<OppdragstateRecord> {
     public final TableField<OppdragstateRecord, String> FEILBESKRIVELSE = createField(DSL.name("feilbeskrivelse"), org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
+     * The column <code>public.oppdragstate.utbetalingsreferanse</code>. betalingsreferanse som oppdragssystemet krever av oss.
+     */
+    public final TableField<OppdragstateRecord, String> UTBETALINGSREFERANSE = createField(DSL.name("utbetalingsreferanse"), org.jooq.impl.SQLDataType.VARCHAR(30).nullable(false).defaultValue(org.jooq.impl.DSL.field("'i am not set'::character varying", org.jooq.impl.SQLDataType.VARCHAR)), this, "betalingsreferanse som oppdragssystemet krever av oss.");
+
+    /**
      * Create a <code>public.oppdragstate</code> table reference
      */
     public Oppdragstate() {
@@ -144,7 +149,7 @@ public class Oppdragstate extends TableImpl<OppdragstateRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.OPPDRAGSTATE_MODIFIED_IDX, Indexes.OPPDRAGSTATE_STATUS_IDX, Indexes.PK_OPPDRAGSTATE, Indexes.UQ_SAKSKOMPLEKS_ID);
+        return Arrays.<Index>asList(Indexes.OPPDRAGSTATE_MODIFIED_IDX, Indexes.OPPDRAGSTATE_STATUS_IDX, Indexes.OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY, Indexes.PK_OPPDRAGSTATE, Indexes.UQ_SAKSKOMPLEKS_ID);
     }
 
     @Override
@@ -159,7 +164,7 @@ public class Oppdragstate extends TableImpl<OppdragstateRecord> {
 
     @Override
     public List<UniqueKey<OppdragstateRecord>> getKeys() {
-        return Arrays.<UniqueKey<OppdragstateRecord>>asList(Keys.PK_OPPDRAGSTATE, Keys.UQ_SAKSKOMPLEKS_ID);
+        return Arrays.<UniqueKey<OppdragstateRecord>>asList(Keys.PK_OPPDRAGSTATE, Keys.UQ_SAKSKOMPLEKS_ID, Keys.OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY);
     }
 
     @Override
@@ -189,11 +194,11 @@ public class Oppdragstate extends TableImpl<OppdragstateRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row9 type methods
+    // Row10 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Long, UUID, Timestamp, Timestamp, String, String, String, String, String> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public Row10<Long, UUID, Timestamp, Timestamp, String, String, String, String, String, String> fieldsRow() {
+        return (Row10) super.fieldsRow();
     }
 }
