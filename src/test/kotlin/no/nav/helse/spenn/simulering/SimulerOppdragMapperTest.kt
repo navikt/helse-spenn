@@ -24,12 +24,21 @@ class SimulerOppdragMapperTest {
         val maksDato = LocalDate.now().plusYears(1).minusDays(50)
         val vedtakFom = LocalDate.now().minusWeeks(2)
         val vedtakTom = LocalDate.now()
-        val enOppdragsLinje = UtbetalingsLinje(id = "1234567890", datoFom = vedtakFom,
-                datoTom = vedtakTom, sats = BigDecimal.valueOf(1230), satsTypeKode = SatsTypeKode.MÅNEDLIG,
-                utbetalesTil = "123456789", grad = BigInteger.valueOf(100))
-        val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
-                oppdragGjelder = "12121212345", utbetalingsLinje = listOf(enOppdragsLinje),
-                behov = etEnkeltBehov(maksdato = maksDato))
+        val enOppdragsLinje = UtbetalingsLinje(
+            id = "1234567890",
+            datoFom = vedtakFom,
+            datoTom = vedtakTom,
+            sats = BigDecimal.valueOf(1230),
+            satsTypeKode = SatsTypeKode.MÅNEDLIG,
+            utbetalesTil = "123456789",
+            grad = BigInteger.valueOf(100)
+        )
+        val utbetaling = UtbetalingsOppdrag(
+            operasjon = AksjonsKode.SIMULERING,
+            oppdragGjelder = "12121212345",
+            utbetalingsLinje = listOf(enOppdragsLinje),
+            behov = etEnkeltBehov(maksdato = maksDato)
+        )
         val oppdragState = OppdragStateDTO(
             id = 1L,
             sakskompleksId = UUID.randomUUID(),
@@ -42,13 +51,21 @@ class SimulerOppdragMapperTest {
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
         val stringWriter = StringWriter()
         marshaller.marshal(simuleringRequest, stringWriter)
-        println(stringWriter)
 
         Assertions.assertEquals("12121212345", simuleringRequest.request.oppdrag.oppdragGjelderId)
+        Assertions.assertEquals("1001", simuleringRequest.request.oppdrag.fagsystemId)
         assertNull(simuleringRequest.request.oppdrag.oppdragslinje.first().utbetalesTilId)
-        Assertions.assertEquals("00123456789", simuleringRequest.request.oppdrag.oppdragslinje[0].refusjonsInfo.refunderesId)
-        Assertions.assertEquals(maksDato.format(formatter), simuleringRequest.request.oppdrag.oppdragslinje[0].refusjonsInfo.maksDato)
-        Assertions.assertEquals(vedtakFom.format(formatter), simuleringRequest.request.oppdrag.oppdragslinje[0].refusjonsInfo.datoFom)
-
+        Assertions.assertEquals(
+            "00123456789",
+            simuleringRequest.request.oppdrag.oppdragslinje[0].refusjonsInfo.refunderesId
+        )
+        Assertions.assertEquals(
+            maksDato.format(formatter),
+            simuleringRequest.request.oppdrag.oppdragslinje[0].refusjonsInfo.maksDato
+        )
+        Assertions.assertEquals(
+            vedtakFom.format(formatter),
+            simuleringRequest.request.oppdrag.oppdragslinje[0].refusjonsInfo.datoFom
+        )
     }
 }

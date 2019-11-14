@@ -31,5 +31,3 @@ data class AvstemmingDTO(
     val nokkel: LocalDateTime = LocalDateTime.now(),
     val avstemt: Boolean = false
 )
-
-fun OppdragStateDTO.tilLøstBehov() = this.utbetalingsOppdrag.behov.copy(løsning = Løsning(this.id!!))

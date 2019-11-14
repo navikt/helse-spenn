@@ -33,7 +33,7 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
-        fagsystemId = fagId
+        fagsystemId = utbetalingsreferanse
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
@@ -43,17 +43,19 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
             if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
             if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
             oppdragslinje.add(
-                    mapToSimuleringsOppdragslinje(
-                            oppdragslinje = it,
-                            maksDato = utbetalingsOppdrag.behov.maksdato,
-                            saksbehandler = OppdragSkjemaConstants.APP)
+                mapToSimuleringsOppdragslinje(
+                    oppdragslinje = it,
+                    maksDato = utbetalingsOppdrag.behov.maksdato,
+                    saksbehandler = OppdragSkjemaConstants.APP
+                )
             )
         }
     }
     return grensesnittFactory.createSimulerBeregningRequest().apply {
         this.request = simFactory.createSimulerBeregningRequest().apply {
             this.oppdrag = oppdrag
-            simuleringsPeriode = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
+            simuleringsPeriode =
+                no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
                     .SimuleringsPeriode().apply {
                         datoSimulerFom = simulerFom.format(formatter)
                         datoSimulerTom = simulerTom.format(formatter)
@@ -63,7 +65,11 @@ fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
 
 }
 
-private fun mapToSimuleringsOppdragslinje(oppdragslinje : UtbetalingsLinje, maksDato : LocalDate, saksbehandler: String) : Oppdragslinje {
+private fun mapToSimuleringsOppdragslinje(
+    oppdragslinje: UtbetalingsLinje,
+    maksDato: LocalDate,
+    saksbehandler: String
+): Oppdragslinje {
     val erRefusjonTilArbeidsgiver = true
 
     val grad = Grad().apply {
@@ -74,7 +80,7 @@ private fun mapToSimuleringsOppdragslinje(oppdragslinje : UtbetalingsLinje, maks
         attestantId = saksbehandler
     }
 
-    return  Oppdragslinje().apply {
+    return Oppdragslinje().apply {
         kodeEndringLinje = EndringsKode.NY.kode
         kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = oppdragslinje.datoFom.format(formatter)
@@ -115,7 +121,7 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         kodeAksjon = utbetalingsOppdrag.operasjon.kode
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
-        fagsystemId = fagId
+        fagsystemId = utbetalingsOppdrag.behov.utbetalingsreferanse
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
@@ -127,21 +133,28 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         }
         oppdragsEnhet120.add(oppdragsEnhet)
         utbetalingsOppdrag.utbetalingsLinje.forEach {
-            oppdragsLinje150.add(mapTolinje150(
+            oppdragsLinje150.add(
+                mapTolinje150(
                     oppdragslinje = it,
                     maksDato = utbetalingsOppdrag.behov.maksdato,
-                    saksbehandler = utbetalingsOppdrag.behov.saksbehandler))
+                    saksbehandler = utbetalingsOppdrag.behov.saksbehandler
+                )
+            )
         }
     }
 
-    return  objectFactory.createOppdrag().apply {
+    return objectFactory.createOppdrag().apply {
         this.oppdrag110 = oppdrag110
     }
 
 
 }
 
-private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate, saksbehandler: String) : OppdragsLinje150 {
+private fun mapTolinje150(
+    oppdragslinje: UtbetalingsLinje,
+    maksDato: LocalDate,
+    saksbehandler: String
+): OppdragsLinje150 {
     val erRefusjonTilArbeidsgiver = true
 
     val grad = objectFactory.createGrad170().apply {
@@ -152,7 +165,7 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate,
         attestantId = saksbehandler
     }
 
-    return  objectFactory.createOppdragsLinje150().apply {
+    return objectFactory.createOppdragsLinje150().apply {
         kodeEndringLinje = EndringsKode.NY.kode
         kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = OppdragSkjemaConstants.toXMLDate(oppdragslinje.datoFom)
@@ -183,7 +196,7 @@ private fun mapTolinje150(oppdragslinje : UtbetalingsLinje, maksDato: LocalDate,
 fun UUID.toFagId(): String {
     val byteBuf = ByteBuffer.wrap(ByteArray(16)).putLong(mostSignificantBits).putLong(leastSignificantBits)
     val encodeToString = Base64.getUrlEncoder().encodeToString(byteBuf.array())
-    return encodeToString.substring(0, encodeToString.length-2)
+    return encodeToString.substring(0, encodeToString.length - 2)
 }
 
 fun String.fromFagId(): UUID {

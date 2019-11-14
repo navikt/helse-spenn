@@ -32,7 +32,6 @@ class SendToOSTaskTest {
 
     @Test
     fun afterSimuleringSendToOS() {
-        val soknadKey = UUID.randomUUID()
         val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
@@ -45,7 +44,7 @@ class SendToOSTaskTest {
             status = OppdragStateStatus.FERDIG
         ))
         val simulering = service.saveOppdragState(OppdragStateDTO(
-            sakskompleksId = soknadKey,
+            sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1002",
             utbetalingsOppdrag = utbetaling,
             simuleringResult = SimuleringResult(status = Status.OK),
@@ -59,9 +58,13 @@ class SendToOSTaskTest {
             status = OppdragStateStatus.SIMULERING_OK
         ))
         assertNotNull(simulering)
-        val sendToOSTask = SendToOSTask(oppdragStateService = service, utbetalingService = mockUtbetalingService,
-                meterRegistry = mockMeterRegistry)
+        val sendToOSTask = SendToOSTask(
+            oppdragStateService = service,
+            utbetalingService = mockUtbetalingService,
+            meterRegistry = mockMeterRegistry
+        )
         sendToOSTask.sendToOS()
+
         val avstemtList = service.fetchOppdragStateByAvstemtAndStatus(false, OppdragStateStatus.SENDT_OS)
         assertTrue(avstemtList.size>=2)
         val avstemming = avstemtList[0].avstemming

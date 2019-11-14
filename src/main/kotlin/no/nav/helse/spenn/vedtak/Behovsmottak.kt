@@ -11,7 +11,6 @@ import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
-import no.nav.helse.spenn.oppdrag.tilLøstBehov
 import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
