@@ -17,6 +17,8 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
                         val meterRegistry: MeterRegistry/*,
                         val statusProducer: OppdragStateKafkaProducer*/) {
 
+    private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
+
     private val jmsSession = connection.createSession()
     private val consumer = jmsSession
             .createConsumer(MQQueue(mottakqueue))
@@ -24,7 +26,11 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
     init {
         consumer.setMessageListener { m ->
             val body = m.getBody(String::class.java)
-            val ignored = receiveOppdragResponse(body)
+            try {
+                val ignored = receiveOppdragResponse(body)
+            } catch (e: IllegalArgumentException) {
+                log.error(e.message, e)
+            }
         }
     }
 
@@ -53,9 +59,9 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
     }
 
     private fun handleResponse(oppdrag: Oppdrag, xml: String): OppdragStateDTO {
-        val uuid = oppdrag.oppdrag110.fagsystemId.fromFagId()
-        log.info("OppdragResponse for ${uuid} ${oppdrag.oppdrag110.fagsystemId}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
-        val state = oppdragStateService.fetchOppdragState(uuid)
+        val utbetalingsreferanse = oppdrag.oppdrag110.fagsystemId
+        log.info("OppdragResponse for ${utbetalingsreferanse}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
+        val state = oppdragStateService.fetchOppdragState(utbetalingsreferanse)
         val status = mapStatus(oppdrag)
         val feilmld = if (status == OppdragStateStatus.FEIL) oppdrag.mmel.beskrMelding else null
         val updated = state.copy(oppdragResponse = xml, status = status, feilbeskrivelse = feilmld)

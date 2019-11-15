@@ -5,7 +5,7 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.oppdrag.fromFagId
+//import no.nav.helse.spenn.oppdrag.fromFagId
 //import no.nav.security.oidc.api.Protected
 import org.slf4j.LoggerFactory
 //import org.springframework.web.bind.annotation.*

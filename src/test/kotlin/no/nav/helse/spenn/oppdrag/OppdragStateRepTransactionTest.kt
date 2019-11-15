@@ -24,6 +24,8 @@ class OppdragStateRepTransactionTest {
     @Test
     fun test_insertOppdragState_AtIkkeOppdragStateLagresNaarLagringAvAvstemmingenFeiler() {
         val soknadKey = UUID.randomUUID()
+        val utbetalingsreferanse = "1001"
+
         val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
@@ -32,15 +34,15 @@ class OppdragStateRepTransactionTest {
         kWhen(trasigAvstemming.nokkel).thenThrow(UventetFeilTestException())
 
         val oppdragState = OppdragState(
-            sakskompleksId = soknadKey,
-            utbetalingsreferanse = "1001",
-            status = OppdragStateStatus.STARTET,
-            utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling),
-            avstemming = trasigAvstemming
+                sakskompleksId = soknadKey,
+                utbetalingsreferanse = utbetalingsreferanse,
+                status = OppdragStateStatus.STARTET,
+                utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling),
+                avstemming = trasigAvstemming
         )
 
         assertThrows(exceptionTypeThrownWhenSoknadNotFound, {
-            repository.findBySoknadId(soknadKey)
+            repository.findByUtbetalingsreferanse(utbetalingsreferanse)
         }, "Søknaden kan ikke finnes fra før når vi skal teste")
 
         assertThrows(UventetFeilTestException::class.java, {
@@ -48,22 +50,24 @@ class OppdragStateRepTransactionTest {
         }, "Hvis ikke feilen kastes får vi ikke testet det vi vil teste")
 
         assertThrows(exceptionTypeThrownWhenSoknadNotFound, {
-            repository.findBySoknadId(soknadKey)
+            repository.findByUtbetalingsreferanse(utbetalingsreferanse)
         }, "oppdragState skal ikke ha blitt lagret, siden lagring av avstemming feilet")
     }
 
     @Test
     fun test_updateOppdragState_AtIkkeOppdragStateEndresNaarLagringAvAvstemmingenFeiler() {
         val soknadKey = UUID.randomUUID()
+        val utbetalingsreferanse = "1001"
+
         val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
 
         val oppdragState = OppdragState(
-            sakskompleksId = soknadKey,
-            utbetalingsreferanse = "1001",
-            status = OppdragStateStatus.STARTET,
-            utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling)
+                sakskompleksId = soknadKey,
+                utbetalingsreferanse = utbetalingsreferanse,
+                status = OppdragStateStatus.STARTET,
+                utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(utbetaling)
         )
 
         val oppdragStateMedID = repository.insert(oppdragState)
@@ -77,7 +81,7 @@ class OppdragStateRepTransactionTest {
                     avstemming = trasigAvstemming))
         }, "Hvis ikke feilen kastes får vi ikke testet det vi vil teste")
 
-        assertEquals(OppdragStateStatus.STARTET, repository.findBySoknadId(soknadKey).status,
+        assertEquals(OppdragStateStatus.STARTET, repository.findByUtbetalingsreferanse(utbetalingsreferanse).status,
                 "oppdragState skal ikke ha blitt endret, siden lagring av avstemming feilet")
 
     }

@@ -9,11 +9,9 @@ import no.nav.system.os.entiteter.oppdragskjema.RefusjonsInfo
 import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
-import java.nio.ByteBuffer
+import no.trygdeetaten.skjema.oppdrag.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.*
-import no.trygdeetaten.skjema.oppdrag.*
 
 
 private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.ObjectFactory()
@@ -193,13 +191,3 @@ private fun mapTolinje150(
     }
 }
 
-fun UUID.toFagId(): String {
-    val byteBuf = ByteBuffer.wrap(ByteArray(16)).putLong(mostSignificantBits).putLong(leastSignificantBits)
-    val encodeToString = Base64.getUrlEncoder().encodeToString(byteBuf.array())
-    return encodeToString.substring(0, encodeToString.length - 2)
-}
-
-fun String.fromFagId(): UUID {
-    val buf = ByteBuffer.wrap(Base64.getUrlDecoder().decode(this.plus("=="))).asLongBuffer()
-    return UUID(buf.get(0), buf.get(1))
-}

@@ -38,7 +38,7 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
                 meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.SENDT_OS.name).increment()
             } catch (sanityError: SanityCheckException) {
                 meterRegistry.counter(OPPDRAG, "status", OppdragStateStatus.STOPPET.name).increment()
-                log.error("Oppdrag med soknadId=${it.sakskompleksId} bestod ikke sanityCheck! Feil=${sanityError.message}. Det er derfor IKKE sendt videre til oppdragssystemet!")
+                log.error("Oppdrag med sakskompleksId=${it.sakskompleksId} og utbetalingsreferanse${it.utbetalingsreferanse}  bestod ikke sanityCheck! Feil=${sanityError.message}. Det er derfor IKKE sendt videre til oppdragssystemet!")
                 val updated = it.copy(status = OppdragStateStatus.STOPPET, feilbeskrivelse = sanityError.message)
                 oppdragStateService.saveOppdragState(updated)
             }

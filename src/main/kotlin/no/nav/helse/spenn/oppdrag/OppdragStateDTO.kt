@@ -3,8 +3,6 @@ package no.nav.helse.spenn.oppdrag
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.simulering.SimuleringResult
-import no.nav.helse.spenn.vedtak.Løsning
-import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import java.time.LocalDateTime
 import java.util.*
 
@@ -20,8 +18,7 @@ data class OppdragStateDTO(
     val oppdragResponse: String? = null,
     val simuleringResult: SimuleringResult? = null,
     val feilbeskrivelse: String? = null,
-    val avstemming: AvstemmingDTO? = null,
-    val fagId: String = sakskompleksId.toFagId()
+    val avstemming: AvstemmingDTO? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

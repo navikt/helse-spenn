@@ -127,7 +127,7 @@ class AvstemmingMapper(
                 objectFactory.createDetaljdata().apply {
                     this.detaljType = detaljTypeForOppdrag
                     this.offnr = oppdrag.utbetalingsOppdrag.oppdragGjelder
-                    this.avleverendeTransaksjonNokkel = oppdrag.id.toString()
+                    this.avleverendeTransaksjonNokkel = oppdrag.utbetalingsreferanse
                     this.tidspunkt = tidspunktMelding(oppdrag)
                     if (detaljType in listOf(DetaljType.AVVI, DetaljType.VARS)) {
                         val kvittering = getKvitteringsMelding(oppdrag)

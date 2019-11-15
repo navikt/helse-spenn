@@ -24,6 +24,7 @@ class AvstemmingMapperTest {
 
     private var oppdragIdSequence = 1L
     private var utbetalingsLinjeIdSequence = 1L
+    private var utbetalingsreferanse = "123"
 
     private val tidspunktFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
     private val testoppdragsliste1 = listOf(
@@ -157,14 +158,14 @@ class AvstemmingMapperTest {
         oppdragsliste.get(1).let { oppdrag ->
             detaljer.get(0).let { detalj ->
                 assertEquals("08", detalj.alvorlighetsgrad)
-                assertEquals(oppdrag.id.toString(), detalj.avleverendeTransaksjonNokkel)
+                assertEquals(oppdrag.utbetalingsreferanse, detalj.avleverendeTransaksjonNokkel)
                 assertEquals(DetaljType.AVVI, detalj.detaljType)
             }
         }
         oppdragsliste.get(2).let { oppdrag ->
             detaljer.get(1).let { detalj ->
                 assertEquals("04", detalj.alvorlighetsgrad)
-                assertEquals(oppdrag.id.toString(), detalj.avleverendeTransaksjonNokkel)
+                assertEquals(oppdrag.utbetalingsreferanse, detalj.avleverendeTransaksjonNokkel)
                 assertEquals(DetaljType.VARS, detalj.detaljType)
             }
         }
@@ -172,21 +173,21 @@ class AvstemmingMapperTest {
         oppdragsliste.get(3).let { oppdrag ->
             detaljer.get(2).let { detalj ->
                 assertEquals("12", detalj.alvorlighetsgrad)
-                assertEquals(oppdrag.id.toString(), detalj.avleverendeTransaksjonNokkel)
+                assertEquals(oppdrag.utbetalingsreferanse, detalj.avleverendeTransaksjonNokkel)
                 assertEquals(DetaljType.AVVI, detalj.detaljType)
             }
         }
 
         oppdragsliste.get(6).let { oppdrag ->
             detaljer.get(3).let { detalj ->
-                assertEquals(oppdrag.id.toString(), detalj.avleverendeTransaksjonNokkel)
+                assertEquals(oppdrag.utbetalingsreferanse, detalj.avleverendeTransaksjonNokkel)
                 assertEquals(DetaljType.MANG, detalj.detaljType)
             }
         }
 
         oppdragsliste.get(7).let { oppdrag ->
             detaljer.get(4).let { detalj ->
-                assertEquals(oppdrag.id.toString(), detalj.avleverendeTransaksjonNokkel)
+                assertEquals(oppdrag.utbetalingsreferanse, detalj.avleverendeTransaksjonNokkel)
                 assertEquals(DetaljType.MANG, detalj.detaljType)
             }
         }
@@ -199,7 +200,7 @@ class AvstemmingMapperTest {
 
 
     private fun lagOppdrag(status: OppdragStateStatus = OppdragStateStatus.FERDIG,
-                           utbetalingsreferanse: String = "12",
+                           utbetalingsreferanse: String = this.utbetalingsreferanse,
                            alvorlighetsgrad: String = "00",
                            dagSats: Long = 1345) : OppdragStateDTO {
         val soknadId = UUID.randomUUID()
@@ -209,7 +210,7 @@ class AvstemmingMapperTest {
                 id = newId,
                 created = now,
                 modified = now,
-                oppdragResponse = lagOppdragResponseXml(newId.toString(),
+                oppdragResponse = lagOppdragResponseXml(utbetalingsreferanse,
                         status == OppdragStateStatus.SENDT_OS,
                         alvorlighetsgrad),
                 simuleringResult = null,
