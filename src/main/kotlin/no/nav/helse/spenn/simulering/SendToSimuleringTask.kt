@@ -29,9 +29,11 @@ class SendToSimuleringTask(val simuleringService: SimuleringService,
     }
 
     fun sendSimulering() {
-        LOG.info("Running SendToSimulering task")
+        LOG.trace("Running SendToSimulering task")
         val oppdragList = oppdragStateService.fetchOppdragStateByStatus(OppdragStateStatus.STARTET, limit)
-        LOG.info("Got ${oppdragList.size} items for simulering")
+        if (oppdragList.isNotEmpty()) {
+            LOG.info("Got ${oppdragList.size} items for simulering")
+        }
         oppdragList.forEach {
             val updated = oppdragStateService.saveOppdragState(simuleringService.runSimulering(it))
             simuleringMetrics(updated)

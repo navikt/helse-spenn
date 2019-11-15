@@ -26,8 +26,9 @@ class SendToOSTask(val oppdragStateService: OppdragStateService,
         if (oppdragList.size >= limit) {
             log.warn("Det ble hentet ut ${oppdragList.size} oppdrag, som er maksGrensen, kanskje klarer vi ikke å få unna alle?")
         }
-        log.info("We are sending ${oppdragList.size} to OS")
-
+        if (oppdragList.isNotEmpty()) {
+            log.info("We are sending ${oppdragList.size} to OS")
+        }
         oppdragList.forEach {
             try {
                 performSanityCheck(it)
