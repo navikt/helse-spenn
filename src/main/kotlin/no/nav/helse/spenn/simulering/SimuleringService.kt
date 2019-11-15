@@ -27,7 +27,7 @@ class SimuleringService(val simulerFpService: SimulerFpService,
     }
 
     fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
-        log.info("simulering for ${oppdrag.sakskompleksId}")
+        log.info("simulering for sakskompleks ${oppdrag.sakskompleksId} med utbetalingsreferanse ${oppdrag.utbetalingsreferanse}" )
 
         val result = callSimulering(oppdrag)
         val status = when (result.status) {

@@ -20,7 +20,7 @@ class OppdragStateService(val repository: OppdragStateRepository) {
     }
 
     //@Transactional(readOnly = true)
-    fun fetchOppdragState(soknadId: UUID): OppdragStateDTO {
+    fun fetchOppdragState(soknadId: String): OppdragStateDTO {
         return toDTO(repository.findBySoknadId(soknadId))
     }
 

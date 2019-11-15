@@ -10,7 +10,7 @@ class UtbetalingService(val oppdragSender: OppdragMQSender) {
     }
 
     fun sendUtbetalingOppdragMQ(oppdrag: OppdragStateDTO) {
-        log.info("sender til Oppdragsystemet for ${oppdrag.sakskompleksId} fagsystemId ${oppdrag.id}")
+        log.info("sender til Oppdragsystemet for sakskompleks ${oppdrag.sakskompleksId} med fagsystemId ${oppdrag.utbetalingsreferanse}")
         oppdragSender.sendOppdrag(oppdrag.toOppdrag())
     }
 

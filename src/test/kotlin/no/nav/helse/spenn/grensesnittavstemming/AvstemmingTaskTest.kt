@@ -137,7 +137,7 @@ class AvstemmingTaskTest {
 
             assertEquals(1, this.detalj.size)
             assertEquals("04", this.detalj.first().alvorlighetsgrad)
-            assertEquals(oppdrag3.id.toString(), this.detalj.first().avleverendeTransaksjonNokkel)
+            assertEquals(oppdrag3.utbetalingsreferanse, this.detalj.first().avleverendeTransaksjonNokkel)
 
         }
         assertEquals(AksjonType.AVSL, sendteMeldinger.last().aksjon.aksjonType)

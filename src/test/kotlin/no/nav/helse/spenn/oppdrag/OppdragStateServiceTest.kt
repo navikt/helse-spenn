@@ -38,17 +38,18 @@ class OppdragStateServiceTest {
     @Test
     fun insert_fetch_compare_update_refetch_compare() {
         val soknadKey = UUID.randomUUID()
+        val utbetalingsreferanse = "9001"
         val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
         val soknadId = UUID.randomUUID()
         service.saveOppdragState(OppdragStateDTO(
                 sakskompleksId = soknadId,
-                utbetalingsreferanse = "9001",
+                utbetalingsreferanse = utbetalingsreferanse,
                 status = OppdragStateStatus.SIMULERING_OK,
                 utbetalingsOppdrag = utbetaling,
                 feilbeskrivelse = "veryWRONG"))
-        val fetched = service.fetchOppdragState(soknadId)
+        val fetched = service.fetchOppdragState(utbetalingsreferanse)
         assertEquals(utbetaling, fetched.utbetalingsOppdrag)
         assertEquals("veryWRONG", fetched.feilbeskrivelse)
         assertEquals(OppdragStateStatus.SIMULERING_OK, fetched.status)
@@ -58,7 +59,7 @@ class OppdragStateServiceTest {
                 feilbeskrivelse = "wronger",
                 status = OppdragStateStatus.STOPPET
         ))
-        val updated = service.fetchOppdragState(soknadId)
+        val updated = service.fetchOppdragState(utbetalingsreferanse)
         assertEquals(utbetaling, updated.utbetalingsOppdrag)
         assertEquals("wronger", updated.feilbeskrivelse)
         assertEquals(OppdragStateStatus.STOPPET, updated.status)

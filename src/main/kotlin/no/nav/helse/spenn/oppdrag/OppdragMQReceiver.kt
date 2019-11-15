@@ -53,9 +53,9 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
     }
 
     private fun handleResponse(oppdrag: Oppdrag, xml: String): OppdragStateDTO {
-        val uuid = oppdrag.oppdrag110.fagsystemId.fromFagId()
-        log.info("OppdragResponse for ${uuid} ${oppdrag.oppdrag110.fagsystemId}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
-        val state = oppdragStateService.fetchOppdragState(uuid)
+        val utbetalingsreferanse = oppdrag.oppdrag110.fagsystemId
+        log.info("OppdragResponse for ${utbetalingsreferanse}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
+        val state = oppdragStateService.fetchOppdragState(utbetalingsreferanse)
         val status = mapStatus(oppdrag)
         val feilmld = if (status == OppdragStateStatus.FEIL) oppdrag.mmel.beskrMelding else null
         val updated = state.copy(oppdragResponse = xml, status = status, feilbeskrivelse = feilmld)

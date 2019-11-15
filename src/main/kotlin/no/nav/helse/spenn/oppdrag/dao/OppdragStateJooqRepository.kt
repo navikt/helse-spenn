@@ -90,9 +90,9 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(oppdragstate.id)
     }
 
-    override fun findBySoknadId(soknadId: UUID): OppdragState {
+    override fun findBySoknadId(soknadId: String): OppdragState {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
-                .where(OPPDRAGSTATE.SAKSKOMPLEKS_ID.equal(soknadId))
+                .where(OPPDRAGSTATE.UTBETALINGSREFERANSE.equal(soknadId))
                 .fetchOne()
                 .map {
                     it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))

@@ -19,7 +19,7 @@ interface OppdragStateRepository {
 
     fun findById(id: Long?): OppdragState
 
-    fun findBySoknadId(soknadId: UUID) : OppdragState
+    fun findBySoknadId(soknadId: String) : OppdragState
 
     fun update(oppdragstate: OppdragState): OppdragState
 }
