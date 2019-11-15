@@ -17,6 +17,8 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
                         val meterRegistry: MeterRegistry/*,
                         val statusProducer: OppdragStateKafkaProducer*/) {
 
+    private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
+
     private val jmsSession = connection.createSession()
     private val consumer = jmsSession
             .createConsumer(MQQueue(mottakqueue))
@@ -24,7 +26,11 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
     init {
         consumer.setMessageListener { m ->
             val body = m.getBody(String::class.java)
-            val ignored = receiveOppdragResponse(body)
+            try {
+                val ignored = receiveOppdragResponse(body)
+            } catch (e: IllegalArgumentException) {
+                log.error(e.message, e)
+            }
         }
     }
 

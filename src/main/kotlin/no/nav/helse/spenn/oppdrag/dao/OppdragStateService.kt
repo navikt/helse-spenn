@@ -18,8 +18,8 @@ class OppdragStateService(val repository: OppdragStateRepository) {
     }
 
     //@Transactional(readOnly = true)
-    fun fetchOppdragState(soknadId: String): OppdragStateDTO {
-        return toDTO(repository.findBySoknadId(soknadId))
+    fun fetchOppdragState(utbetalingsreferanse: String): OppdragStateDTO {
+        return toDTO(repository.findByUtbetalingsreferanse(utbetalingsreferanse))
     }
 
     //@Transactional(readOnly = true)

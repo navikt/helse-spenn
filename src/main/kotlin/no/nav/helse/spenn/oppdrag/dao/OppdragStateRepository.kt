@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.oppdrag.dao
 
 import java.time.LocalDateTime
-import java.util.*
 
 interface OppdragStateRepository {
 
@@ -19,7 +18,7 @@ interface OppdragStateRepository {
 
     fun findById(id: Long?): OppdragState
 
-    fun findBySoknadId(soknadId: String) : OppdragState
+    fun findByUtbetalingsreferanse(utbetalingsreferanse: String) : OppdragState
 
     fun update(oppdragstate: OppdragState): OppdragState
 }

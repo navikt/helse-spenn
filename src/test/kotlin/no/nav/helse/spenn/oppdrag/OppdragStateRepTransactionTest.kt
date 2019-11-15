@@ -42,7 +42,7 @@ class OppdragStateRepTransactionTest {
         )
 
         assertThrows(exceptionTypeThrownWhenSoknadNotFound, {
-            repository.findBySoknadId(utbetalingsreferanse)
+            repository.findByUtbetalingsreferanse(utbetalingsreferanse)
         }, "Søknaden kan ikke finnes fra før når vi skal teste")
 
         assertThrows(UventetFeilTestException::class.java, {
@@ -50,7 +50,7 @@ class OppdragStateRepTransactionTest {
         }, "Hvis ikke feilen kastes får vi ikke testet det vi vil teste")
 
         assertThrows(exceptionTypeThrownWhenSoknadNotFound, {
-            repository.findBySoknadId(utbetalingsreferanse)
+            repository.findByUtbetalingsreferanse(utbetalingsreferanse)
         }, "oppdragState skal ikke ha blitt lagret, siden lagring av avstemming feilet")
     }
 
@@ -81,7 +81,7 @@ class OppdragStateRepTransactionTest {
                     avstemming = trasigAvstemming))
         }, "Hvis ikke feilen kastes får vi ikke testet det vi vil teste")
 
-        assertEquals(OppdragStateStatus.STARTET, repository.findBySoknadId(utbetalingsreferanse).status,
+        assertEquals(OppdragStateStatus.STARTET, repository.findByUtbetalingsreferanse(utbetalingsreferanse).status,
                 "oppdragState skal ikke ha blitt endret, siden lagring av avstemming feilet")
 
     }

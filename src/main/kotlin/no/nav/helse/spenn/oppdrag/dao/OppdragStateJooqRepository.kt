@@ -12,15 +12,14 @@ import org.jooq.impl.DSL
 import org.jooq.impl.DSL.currentTimestamp
 import java.sql.Timestamp
 import java.time.LocalDateTime
-import java.util.*
 
 
-class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
+class OppdragStateJooqRepository(val jooq: DSLContext) : OppdragStateRepository {
 
     override fun insert(oppdragstate: OppdragState): OppdragState {
         val id = jooq.transactionResult { conf: Configuration ->
             val dslContext = DSL.using(conf)
-            val id =  with(OPPDRAGSTATE) {
+            val id = with(OPPDRAGSTATE) {
                 dslContext.insertInto(this)
                         .set(SAKSKOMPLEKS_ID, oppdragstate.sakskompleksId)
                         .set(UTBETALINGSREFERANSE, oppdragstate.utbetalingsreferanse)
@@ -90,19 +89,20 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
         return findById(oppdragstate.id)
     }
 
-    override fun findBySoknadId(soknadId: String): OppdragState {
+    override fun findByUtbetalingsreferanse(utbetalingsreferanse: String): OppdragState {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
-                .where(OPPDRAGSTATE.UTBETALINGSREFERANSE.equal(soknadId))
-                .fetchOne()
+                .where(OPPDRAGSTATE.UTBETALINGSREFERANSE.equal(utbetalingsreferanse))
+                .fetchOptional()
+                .orElseThrow { IllegalArgumentException("Could not find oppdrag with id $utbetalingsreferanse") }
                 .map {
                     it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))
                 }
     }
 
-    override fun findAllByAvstemtAndStatus(avstemt: Boolean, status:OppdragStateStatus): List<OppdragState> {
+    override fun findAllByAvstemtAndStatus(avstemt: Boolean, status: OppdragStateStatus): List<OppdragState> {
         return selectOppdragStateLeftJoinAvstemmingOnCondition()
                 .where(OPPDRAGSTATE.STATUS.equal(status.name).and(AVSTEMMING.AVSTEMT.equal(avstemt)))
-                .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))}
+                .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
 
     }
 
@@ -113,7 +113,7 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
                 .where(AVSTEMMING.AVSTEMT.equal(false))
                 .and(AVSTEMMING.NOKKEL.isNotNull)
                 .and(AVSTEMMING.NOKKEL.le(avstemmingsnokkelMax.toTimeStamp()))
-                .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING))}
+                .map { it.into(OPPDRAGSTATE).toOppdragState(it.into(AVSTEMMING)) }
     }
 
     private fun selectOppdragStateLeftJoinAvstemmingOnCondition(): SelectOnConditionStep<Record> {
@@ -124,30 +124,29 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
 
 
     private fun insertAvstemming(avstemming: Avstemming?, oppdragstateId: Long, dslContext: DSLContext) {
-        if (avstemming!=null) {
-             with(AVSTEMMING) {
-                 dslContext.insertInto(this)
-                    .set(OPPDRAGSTATE_ID, oppdragstateId)
-                    .set(NOKKEL, avstemming.nokkel.toTimeStamp())
-                    .set(AVSTEMT, avstemming.avstemt)
-                    .execute()
+        if (avstemming != null) {
+            with(AVSTEMMING) {
+                dslContext.insertInto(this)
+                        .set(OPPDRAGSTATE_ID, oppdragstateId)
+                        .set(NOKKEL, avstemming.nokkel.toTimeStamp())
+                        .set(AVSTEMT, avstemming.avstemt)
+                        .execute()
             }
         }
     }
 
     private fun updateAvstemming(avstemming: Avstemming?, oppdragstateId: Long, dslContext: DSLContext) {
-        if (avstemming!=null) {
+        if (avstemming != null) {
             with(AVSTEMMING) {
                 if (avstemming.id == null) {
                     insertAvstemming(avstemming, oppdragstateId, dslContext)
-                }
-                else {
+                } else {
                     dslContext.update(this)
                             .set(OPPDRAGSTATE_ID, oppdragstateId)
                             .set(NOKKEL, avstemming.nokkel.toTimeStamp())
                             .set(AVSTEMT, avstemming.avstemt)
                             .where(ID.equal(avstemming.id))
-                        .execute()
+                            .execute()
                 }
             }
         }
@@ -155,23 +154,23 @@ class OppdragStateJooqRepository(val jooq: DSLContext): OppdragStateRepository {
 }
 
 private fun LocalDateTime?.toTimeStamp(): Timestamp? {
-   return  if (this != null ) Timestamp.valueOf(this) else null
+    return if (this != null) Timestamp.valueOf(this) else null
 }
 
 private fun OppdragstateRecord?.toOppdragState(avstemmingRecord: AvstemmingRecord): OppdragState {
     if (this?.id == null) throw OppdragStateNotFound()
     return OppdragState(
-        id=id,
-        sakskompleksId = sakskompleksId,
-        utbetalingsreferanse = utbetalingsreferanse,
-        created = created.toLocalDateTime(),
-        modified = modified.toLocalDateTime(),
-        utbetalingsOppdrag = utbetalingsoppdrag,
-        oppdragResponse = oppdragresponse,
-        status = OppdragStateStatus.valueOf(status),
-        simuleringResult = simuleringresult,
-        avstemming = avstemmingRecord.toAvstemming(),
-        feilbeskrivelse = feilbeskrivelse
+            id = id,
+            sakskompleksId = sakskompleksId,
+            utbetalingsreferanse = utbetalingsreferanse,
+            created = created.toLocalDateTime(),
+            modified = modified.toLocalDateTime(),
+            utbetalingsOppdrag = utbetalingsoppdrag,
+            oppdragResponse = oppdragresponse,
+            status = OppdragStateStatus.valueOf(status),
+            simuleringResult = simuleringresult,
+            avstemming = avstemmingRecord.toAvstemming(),
+            feilbeskrivelse = feilbeskrivelse
     )
 
 }
