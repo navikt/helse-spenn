@@ -53,6 +53,8 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
                 spennTasks.sendToOS()
             }
         }, 45, 60, TimeUnit.SECONDS)
+    } else {
+        log.info("sendToOSTask is disabled")
     }
 
     if (config.taskSimuleringEnabled) {
@@ -67,6 +69,8 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
                 }
             }
         }, 30, 30, TimeUnit.SECONDS)
+    } else {
+        log.info("sendToSimuleringTask is disabled")
     }
 
     if (config.taskAvstemmingEnabled) {
@@ -88,6 +92,8 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
                 spennTasks.sendTilAvstemming()
             }
         }, initialDelay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS)
+    } else {
+        log.info("avstemming is disabled")
     }
 
     return scheduler
