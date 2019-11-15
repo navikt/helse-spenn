@@ -74,8 +74,8 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
     }
 
     if (config.taskAvstemmingEnabled) {
-        val avstemmingsTidspunktTime = 14
-        val avstemmingsTidspunktMinutt = 20
+        val avstemmingsTidspunktTime = 21
+        val avstemmingsTidspunktMinutt = 0
 
         val now = LocalDateTime.now(clock)
         var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
