@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.*
 import kotlin.test.assertEquals
 
 class VedtakToOppdragMappingTest {
@@ -45,13 +46,5 @@ class VedtakToOppdragMappingTest {
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetalingsOppdrag = behov.tilUtbetaling("01010112345")
         assertEquals(1.toString(), utbetalingsOppdrag.utbetalingsLinje.first().id)
-    }
-
-    @Test
-    fun testUUIDtoFagID() {
-        val uuid = UUID.randomUUID();
-        val fagId = uuid.toFagId()
-        val decode = fagId.fromFagId()
-        assertEquals(uuid, decode)
     }
 }

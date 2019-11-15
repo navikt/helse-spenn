@@ -16,6 +16,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.Month
+import java.util.*
 import javax.jms.Connection
 import javax.jms.MessageConsumer
 import javax.jms.Session
@@ -69,13 +70,13 @@ class MQOppdragReceiverTest {
                 oppdragGjelder = "11111111111", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
                 behov = etEnkeltBehov()
         )
-        val uuid = "ZApp5GWKTB6XtoaYYtHBOg".fromFagId()
+        val uuid = UUID.randomUUID()
         val oppdragState = OppdragStateDTO(
             sakskompleksId = uuid,
             utbetalingsreferanse = "3001",
             utbetalingsOppdrag = utbetaling
         )
-        val state = oppdragStateService.saveOppdragState(oppdragState)
+        val ignored = oppdragStateService.saveOppdragState(oppdragState)
         val oppdrag = mqReceiver.receiveOppdragResponse(receiveError)
         assertEquals(OppdragStateStatus.FEIL, oppdrag.status)
         assertEquals("Mangler verdi i Avst-nøkkel på id-115", oppdrag.feilbeskrivelse)
@@ -100,7 +101,7 @@ val receiveError="""<?xml version="1.0" encoding="utf-8"?>
     NY
 </kodeEndring>
 <kodeFagomraade>SPREF</kodeFagomraade>
-<fagsystemId>ZApp5GWKTB6XtoaYYtHBOg</fagsystemId>
+<fagsystemId>3001</fagsystemId>
 <utbetFrekvens>MND</utbetFrekvens>
 <oppdragGjelderId>
     11111111111
@@ -247,7 +248,7 @@ val receiveOK="""<?xml version="1.0" encoding="utf-8"?>
         <kodeAksjon>1</kodeAksjon>
         <kodeEndring>NY</kodeEndring>
         <kodeFagomraade>SPREF</kodeFagomraade>
-        <fagsystemId>ZApp5GWKTB6XtoaYYtHBOg</fagsystemId>
+        <fagsystemId>3001</fagsystemId>
         <utbetFrekvens>MND</utbetFrekvens>
         <oppdragGjelderId>11111111111</oppdragGjelderId>
         <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>

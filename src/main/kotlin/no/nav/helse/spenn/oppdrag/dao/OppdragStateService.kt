@@ -4,10 +4,8 @@ import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.OppdragStateDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.oppdrag.toFagId
 import no.nav.helse.spenn.simulering.SimuleringResult
 import java.time.LocalDateTime
-import java.util.*
 
 class OppdragStateService(val repository: OppdragStateRepository) {
 
@@ -73,8 +71,7 @@ fun toDTO(entity: OppdragState): OppdragStateDTO {
             modified = entity.modified,
             created = entity.created,
             feilbeskrivelse = entity.feilbeskrivelse,
-            avstemming = toAvstemmingDTO(entity.avstemming),
-            fagId = entity.sakskompleksId.toFagId())
+            avstemming = toAvstemmingDTO(entity.avstemming))
 }
 
 fun toAvstemmingEntity(dto: AvstemmingDTO?): Avstemming? {
