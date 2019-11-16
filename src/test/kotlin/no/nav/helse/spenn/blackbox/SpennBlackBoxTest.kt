@@ -290,19 +290,15 @@ internal class SpennBlackBoxTest {
             return MqContainer("ibmcom/mq:latest")
                     .withNetwork(network)
                     .withNetworkAliases(MqHostname)
-                    //.withExposedPorts(MqPort)
                     .withEnv("LICENSE", "accept")
                     .withEnv("MQ_QMGR_NAME", MqQueueMananagerName)
-            //.waitingFor(Wait.forListeningPort())
         }
 
         private fun setupVault(network: Network): VaultContainer {
             return VaultContainer(VaultImage)
                     .withNetwork(network)
                     .withNetworkAliases(VaultHostname)
-                    //.withExposedPorts(VaultPort)
                     .withEnv("VAULT_DEV_ROOT_TOKEN_ID", VaultRootToken)
-            //.waitingFor(Wait.forListeningPort())
         }
 
         private fun setupPostgreVault(network: Network): VaultContainer {
@@ -320,7 +316,6 @@ internal class SpennBlackBoxTest {
             return OidcContainer("qlik/simple-oidc-provider")
                     .withNetwork(network)
                     .withNetworkAliases(OidcHostname)
-                    //.withExposedPorts(9000)
                     .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-config.json"), "/oidc/config.json")
                     .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-users.json"), "/oidc/users.json")
                     .withEnv("USERS_FILE", "/oidc/users.json")
