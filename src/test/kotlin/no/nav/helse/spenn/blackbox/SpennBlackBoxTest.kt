@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.HttpRequest.request
@@ -25,39 +26,10 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-private fun String.readResource() =
-        object {}.javaClass.getResource(this)?.readText(Charsets.UTF_8) ?: throw RuntimeException("did not find resource <$this>")
-
 internal class SpennBlackBoxTest {
-
-    private companion object {
-        private const val behovTopic = "privat-helse-sykepenger-behov"
-
-        private val objectMapper = ObjectMapper()
-
-        private class PostgreContainer(dockerImageName: String) : PostgreSQLContainer<PostgreContainer>(dockerImageName) {
-            override fun runInitScriptIfRequired() {
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "/blackbox_test-init.sql", "/blackbox_test-init.sql".readResource())
-            }
-        }
-
-        private class VaultContainer(dockerImageName: String) : GenericContainer<VaultContainer>(dockerImageName)
-
-        private class KafkaInitContainer(dockerImageName: String): GenericContainer<KafkaInitContainer>(dockerImageName)
-
-        private class MqContainer(dockerImageName: String): GenericContainer<MqContainer>(dockerImageName)
-
-        private class OidcContainer(dockerImageName: String): GenericContainer<OidcContainer>(dockerImageName)
-
-        private class SpennContainer: GenericContainer<SpennContainer>(System.getProperty("spenn.image", "spenn:latest"))
-    }
-
-    private lateinit var bootstrapServers: String
 
     @Test
     fun `spenn svarer på et utbetalingsbehov`() {
-        val mockClient = setupCluster()
-
         val aktørId = "123456789"
         val fnr = "987654321"
 
@@ -73,164 +45,6 @@ internal class SpennBlackBoxTest {
             remove("@løsning")
         }
         assertEquals(sendtBehov, løsningPåBehovUtenLøsning)
-    }
-
-    private fun GenericContainer<*>.hostnameAndPort() =
-            "${this.getNetworkAliases()[0]}:${this.getExposedPorts()[0]}"
-
-    private fun GenericContainer<*>.baseUrl() =
-            "http://${this.hostnameAndPort()}"
-
-    private fun setupCluster(): MockServerClient {
-        val network = Network.newNetwork()
-
-        val postgre = setupPostgre(network)
-        postgre.start()
-
-        val kafka = setupKafka(network)
-        kafka.start()
-
-        bootstrapServers = kafka.bootstrapServers
-
-        val mq = setupMq(network)
-        mq.start()
-
-        val kafkaInit = setupTopic(network, "${kafka.networkAliases[0]}:2181", behovTopic)
-        val vault = setupVault(network)
-        val vaultInit = setupPostgreVault(network, vault.baseUrl(), postgre.hostnameAndPort(), postgre.username, postgre.password)
-        val oidcContainer = setupOidc(network)
-        val mockServer = setupMockServer(network)
-
-        kafkaInit.start()
-        vault.start()
-        vaultInit.start()
-        oidcContainer.start()
-        mockServer.start()
-
-        val spenn = setupSpenn(network, vault.baseUrl(), mq.networkAliases[0], mq.exposedPorts[0],
-                mockServer.baseUrl(), "kafka:9092",
-                "jdbc:postgresql://${postgre.hostnameAndPort()}/helse-spenn-oppdrag", oidcContainer.baseUrl())
-        spenn.start()
-
-        return MockServerClient(mockServer.containerIpAddress, mockServer.serverPort)
-    }
-
-    private fun setupPostgre(network: Network): PostgreContainer {
-        return PostgreContainer("postgres:11-alpine")
-                .withInitScript("blackbox_test-init.sql")
-                .withDatabaseName("helse-spenn-oppdrag")
-                .withUsername("postgres")
-                .withPassword("postgres")
-                .withNetwork(network)
-    }
-
-    private fun setupKafka(network: Network): KafkaContainer {
-        return KafkaContainer("5.1.0")
-                .withNetwork(network)
-                .withNetworkAliases("kafka")
-                .withEmbeddedZookeeper()
-                .waitingFor(Wait.forListeningPort())
-    }
-
-    private fun setupTopic(network: Network, zookeeperServer: String, topic: String): KafkaInitContainer {
-        return KafkaInitContainer("confluentinc/cp-kafka:5.1.0")
-                .withNetwork(network)
-                .withCommand("kafka-topics", "--create",
-                        "--if-not-exists",
-                        "--zookeeper",
-                        zookeeperServer,
-                        "--partitions",
-                        "1",
-                        "--replication-factor",
-                        "1",
-                        "--topic",
-                        topic)
-                .withLogConsumer { print("kafka_init: " + it.utf8String) }
-    }
-
-    private fun setupMq(network: Network): MqContainer {
-        return MqContainer("ibmcom/mq:latest")
-                .withNetwork(network)
-                .withExposedPorts(1414)
-                .withEnv("LICENSE", "accept")
-                .withEnv("MQ_QMGR_NAME", "QM1")
-                .waitingFor(Wait.forListeningPort())
-    }
-
-    private fun setupVault(network: Network): VaultContainer {
-        return VaultContainer("vault:1.1.0")
-                .withNetwork(network)
-                .withNetworkAliases("vault")
-                .withExposedPorts(8200)
-                .withEnv("VAULT_DEV_ROOT_TOKEN_ID", "token123")
-                .waitingFor(Wait.forListeningPort())
-    }
-
-    private fun setupPostgreVault(network: Network, vaultUrl: String, postgresHost: String, postgresUsername: String, postgresPassword: String): VaultContainer {
-        return VaultContainer("vault:1.1.0")
-                .withNetwork(network)
-                .withEnv("VAULT_ADDR", vaultUrl)
-                .withEnv("VAULT_TOKEN", "token123")
-                .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-setup-vault.sh"), "/setup-vault.sh")
-                .withCommand("/setup-vault.sh", postgresHost, postgresUsername, postgresPassword)
-                .withLogConsumer { print("vault_init: " + it.utf8String) }
-                .waitingFor(Wait.forLogMessage(".*Exit OK.*", 1))
-    }
-
-    private fun setupOidc(network: Network): OidcContainer {
-        return OidcContainer("qlik/simple-oidc-provider")
-                .withNetwork(network)
-                .withExposedPorts(9000)
-                .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-config.json"), "/oidc/config.json")
-                .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-users.json"), "/oidc/users.json")
-                .withEnv("USERS_FILE", "/oidc/users.json")
-                .withEnv("CONFIG_FILE", "/oidc/config.json")
-    }
-
-    private fun setupMockServer(network: Network): MockServerContainer {
-        return MockServerContainer()
-                .withNetwork(network)
-                .waitingFor(Wait.forListeningPort())
-    }
-
-    private fun setupSpenn(
-            network: Network,
-            vaultUrl: String,
-            mqHostname: String,
-            mqPort: Int,
-            mockServerUrl: String,
-            kafkaBootstrapServer: String,
-            dataSourceUrl: String,
-            oidcBaseUrl: String
-    ): SpennContainer {
-        return SpennContainer()
-                .withNetwork(network)
-                .withEnv("VAULT_ADDR", vaultUrl)
-                .withEnv("VAULT_TOKEN", "token123")
-                .withEnv("MQ_HOSTNAME", mqHostname)
-                .withEnv("MQ_PORT", "$mqPort")
-                .withEnv("SECURITYTOKENSERVICE_URL", "http://foo")
-                .withEnv("SECURITY_TOKEN_SERVICE_REST_URL", mockServerUrl)
-                .withEnv("AKTORREGISTERET_BASE_URL", mockServerUrl)
-                .withEnv("SIMULERING_SERVICE_URL", mockServerUrl)
-                .withEnv("KAFKA_BOOTSTRAP_SERVERS", kafkaBootstrapServer)
-                .withEnv("KAFKA_USERNAME", "foo")
-                .withEnv("KAFKA_PASSWORD", "bar")
-                .withEnv("PLAIN_TEXT_KAFKA", "true")
-                .withEnv("NAV_TRUSTSTORE_PATH", "foo")
-                .withEnv("NAV_TRUSTSTORE_PASSWORD", "bar")
-                .withEnv("STS_SOAP_USERNAME", "foo")
-                .withEnv("STS_SOAP_PASSWORD", "bar")
-                .withEnv("DATASOURCE_URL", dataSourceUrl)
-                .withEnv("DATASOURCE_VAULT_ENABLED", "true")
-                .withEnv("SCHEDULER_ENABLED", "true")
-                .withEnv("SCHEDULER_TASKS_SIMULERING", "true")
-                .withEnv("SCHEDULER_TASKS_OPPDRAG", "true")
-                .withEnv("SCHEDULER_TASKS_AVSTEMMING", "true")
-                .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE", "audience")
-                .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL", "${oidcBaseUrl}/.well-known/openid-configuration")
-                .waitingFor(Wait.forListeningPort())
-                .withLogConsumer { print("spenn: " + it.utf8String) }
     }
 
     private fun ventPåLøsning(timeout: Duration = Duration.ofSeconds(30)): JsonNode {
@@ -331,6 +145,225 @@ internal class SpennBlackBoxTest {
         ).respond(HttpResponse.response()
                 .withStatusCode(200)
                 .withBody(aktørregisteret_response))
+    }
+
+    private companion object {
+        private const val behovTopic = "privat-helse-sykepenger-behov"
+
+        private const val PostgresImage = "postgres:11-alpine"
+        private const val PostgresHostname = "postgres"
+        private const val PostgresPort = 5432
+        private const val PostgresInitScript = "/blackbox_test-init.sql"
+        private const val PostgresRootUsername = "postgres"
+        private const val PostgresRootPassword = "postgres"
+        private const val SpennDatabase = "helse-spenn-oppdrag"
+
+        private const val ZooKeeperImage = "confluentinc/cp-zookeeper:5.1.0"
+        private const val ZooKeeperHostname = "zookeeper"
+        private const val ZooKeeperPort = 2181
+
+        private const val KafkaHostname = "kafka"
+        private const val KafkaPort = 9092
+
+        private const val MqHostname = "mq"
+        private const val MqPort = 1414
+        private const val MqQueueMananagerName = "QM1"
+
+        private const val VaultImage = "vault:1.1.0"
+        private const val VaultHostname = "vault"
+        private const val VaultPort = 8200
+        private const val VaultRootToken = "token123"
+
+        private const val OidcHostname = "simple-oidc-provider"
+        private const val OidcPort = 9000
+
+        private const val MockServerHostname = "mockserver"
+        private const val MockServerPort = MockServerContainer.PORT
+
+        private val objectMapper = ObjectMapper()
+        private class PostgreContainer(dockerImageName: String) : PostgreSQLContainer<PostgreContainer>(dockerImageName) {
+            override fun runInitScriptIfRequired() {
+                ScriptUtils.executeDatabaseScript(databaseDelegate, PostgresInitScript, PostgresInitScript.readResource())
+            }
+
+            private fun String.readResource() =
+                    object {}.javaClass.getResource(this)?.readText(Charsets.UTF_8) ?: throw RuntimeException("did not find resource <$this>")
+        }
+
+        private class ZooKeeperContainer(dockerImageName: String) : GenericContainer<ZooKeeperContainer>(dockerImageName)
+
+        private class VaultContainer(dockerImageName: String) : GenericContainer<VaultContainer>(dockerImageName)
+
+        private class KafkaKontainer(dockerImageName: String): GenericContainer<KafkaKontainer>(dockerImageName)
+
+        private class MqContainer(dockerImageName: String): GenericContainer<MqContainer>(dockerImageName)
+
+        private class OidcContainer(dockerImageName: String): GenericContainer<OidcContainer>(dockerImageName)
+        private class SpennContainer: GenericContainer<SpennContainer>(System.getProperty("spenn.image", "spenn:latest"))
+
+        private lateinit var bootstrapServers: String
+
+        private lateinit var mockClient: MockServerClient
+
+        @BeforeAll
+        @JvmStatic
+        private fun setupCluster() {
+            val network = Network.newNetwork()
+
+            val postgre = setupPostgre(network)
+            postgre.start()
+
+            val zookeeper = setupZooKeeper(network)
+            zookeeper.start()
+
+            val kafka = setupKafka(network)
+            kafka.start()
+
+            bootstrapServers = kafka.bootstrapServers
+
+            val mq = setupMq(network)
+            mq.start()
+
+            val kafkaInit = setupTopic(network)
+            val vault = setupVault(network)
+            val vaultInit = setupPostgreVault(network)
+            val oidcContainer = setupOidc(network)
+            val mockServer = setupMockServer(network)
+
+            kafkaInit.start()
+            vault.start()
+            vaultInit.start()
+            oidcContainer.start()
+            mockServer.start()
+
+            val spenn = setupSpenn(network)
+            spenn.start()
+
+            mockClient = MockServerClient(mockServer.containerIpAddress, mockServer.serverPort)
+        }
+
+        private fun setupPostgre(network: Network): PostgreContainer {
+            return PostgreContainer(PostgresImage)
+                    .withNetwork(network)
+                    .withNetworkAliases(PostgresHostname)
+                    .withInitScript(PostgresInitScript)
+                    .withDatabaseName(SpennDatabase)
+                    .withUsername(PostgresRootUsername)
+                    .withPassword(PostgresRootPassword)
+        }
+
+        private fun setupZooKeeper(network: Network): ZooKeeperContainer {
+            return ZooKeeperContainer(ZooKeeperImage)
+                    .withNetwork(network)
+                    .withNetworkAliases(ZooKeeperHostname)
+                    .withExposedPorts(ZooKeeperPort)
+                    .withEnv("ZOOKEEPER_CLIENT_PORT", "$ZooKeeperPort")
+                    .waitingFor(Wait.forListeningPort())
+        }
+
+        private fun setupKafka(network: Network): KafkaContainer {
+            return KafkaContainer("5.1.0")
+                    .withNetwork(network)
+                    .withNetworkAliases(KafkaHostname)
+                    .withExternalZookeeper("$ZooKeeperHostname:$ZooKeeperPort")
+                    .withLogConsumer { print("kafka: " + it.utf8String) }
+                    .waitingFor(Wait.forListeningPort())
+        }
+
+        private fun setupTopic(network: Network): KafkaKontainer {
+            return KafkaKontainer("confluentinc/cp-kafka:5.1.0")
+                    .withNetwork(network)
+                    .withCommand("kafka-topics", "--create",
+                            "--if-not-exists",
+                            "--zookeeper",
+                            "$ZooKeeperHostname:$ZooKeeperPort",
+                            "--partitions",
+                            "1",
+                            "--replication-factor",
+                            "1",
+                            "--topic",
+                            behovTopic)
+                    .withLogConsumer { print("kafka_init: " + it.utf8String) }
+        }
+
+        private fun setupMq(network: Network): MqContainer {
+            return MqContainer("ibmcom/mq:latest")
+                    .withNetwork(network)
+                    .withNetworkAliases(MqHostname)
+                    //.withExposedPorts(MqPort)
+                    .withEnv("LICENSE", "accept")
+                    .withEnv("MQ_QMGR_NAME", MqQueueMananagerName)
+            //.waitingFor(Wait.forListeningPort())
+        }
+
+        private fun setupVault(network: Network): VaultContainer {
+            return VaultContainer(VaultImage)
+                    .withNetwork(network)
+                    .withNetworkAliases(VaultHostname)
+                    //.withExposedPorts(VaultPort)
+                    .withEnv("VAULT_DEV_ROOT_TOKEN_ID", VaultRootToken)
+            //.waitingFor(Wait.forListeningPort())
+        }
+
+        private fun setupPostgreVault(network: Network): VaultContainer {
+            return VaultContainer(VaultImage)
+                    .withNetwork(network)
+                    .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
+                    .withEnv("VAULT_TOKEN", VaultRootToken)
+                    .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-setup-vault.sh"), "/setup-vault.sh")
+                    .withCommand("/setup-vault.sh", "$PostgresHostname:$PostgresPort", PostgresRootUsername, PostgresRootPassword)
+                    .withLogConsumer { print("vault_init: " + it.utf8String) }
+                    .waitingFor(Wait.forLogMessage(".*Exit OK.*", 1))
+        }
+
+        private fun setupOidc(network: Network): OidcContainer {
+            return OidcContainer("qlik/simple-oidc-provider")
+                    .withNetwork(network)
+                    .withNetworkAliases(OidcHostname)
+                    //.withExposedPorts(9000)
+                    .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-config.json"), "/oidc/config.json")
+                    .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-users.json"), "/oidc/users.json")
+                    .withEnv("USERS_FILE", "/oidc/users.json")
+                    .withEnv("CONFIG_FILE", "/oidc/config.json")
+        }
+
+        private fun setupMockServer(network: Network): MockServerContainer {
+            return MockServerContainer()
+                    .withNetwork(network)
+                    .withNetworkAliases(MockServerHostname)
+                    .waitingFor(Wait.forListeningPort())
+        }
+
+        private fun setupSpenn(network: Network): SpennContainer {
+            return SpennContainer()
+                    .withNetwork(network)
+                    .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
+                    .withEnv("VAULT_TOKEN", VaultRootToken)
+                    .withEnv("MQ_HOSTNAME", MqHostname)
+                    .withEnv("MQ_PORT", "$MqPort")
+                    .withEnv("SECURITYTOKENSERVICE_URL", "http://foo")
+                    .withEnv("SECURITY_TOKEN_SERVICE_REST_URL", "http://$MockServerHostname:$MockServerPort")
+                    .withEnv("AKTORREGISTERET_BASE_URL", "http://$MockServerHostname:$MockServerPort")
+                    .withEnv("SIMULERING_SERVICE_URL", "http://$MockServerHostname:$MockServerPort")
+                    .withEnv("KAFKA_BOOTSTRAP_SERVERS", "$KafkaHostname:$KafkaPort")
+                    .withEnv("KAFKA_USERNAME", "foo")
+                    .withEnv("KAFKA_PASSWORD", "bar")
+                    .withEnv("PLAIN_TEXT_KAFKA", "true")
+                    .withEnv("NAV_TRUSTSTORE_PATH", "foo")
+                    .withEnv("NAV_TRUSTSTORE_PASSWORD", "bar")
+                    .withEnv("STS_SOAP_USERNAME", "foo")
+                    .withEnv("STS_SOAP_PASSWORD", "bar")
+                    .withEnv("DATASOURCE_URL", "jdbc:postgresql://$PostgresHostname:$PostgresPort/$SpennDatabase")
+                    .withEnv("DATASOURCE_VAULT_ENABLED", "true")
+                    .withEnv("SCHEDULER_ENABLED", "true")
+                    .withEnv("SCHEDULER_TASKS_SIMULERING", "true")
+                    .withEnv("SCHEDULER_TASKS_OPPDRAG", "true")
+                    .withEnv("SCHEDULER_TASKS_AVSTEMMING", "true")
+                    .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE", "audience")
+                    .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL", "http://$OidcHostname:$OidcPort/.well-known/openid-configuration")
+                    .waitingFor(Wait.forListeningPort())
+                    .withLogConsumer { print("spenn: " + it.utf8String) }
+        }
     }
 }
 
