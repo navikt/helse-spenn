@@ -1,0 +1,20 @@
+{
+  "idp_name": "http://simple-oidc-provider",
+  "port": 9000,
+  "client_config": [
+    {
+      "client_id": "foo",
+      "client_secret": "bar",
+      "grant_types": ["implicit"],
+      "response_types": ["id_token"],
+      "redirect_uris": [
+        "https://spenn/v1/authenticate/callback"
+      ]
+    }
+  ],
+  "claim_mapping": {
+    "openid": [ "sub","groups", "NAVident"],
+    "email": [ "email", "email_verified" ],
+    "profile": [ "name", "nickname" ]
+  }
+}
