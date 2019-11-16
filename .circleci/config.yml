@@ -28,7 +28,10 @@ jobs:
           name: Build docker image
           command: |
             echo "DOCKER_TAG=$DOCKER_TAG"
-            docker build -t docker.pkg.github.com/$DOCKER_TAG .
+            docker build -t docker.pkg.github.com/$DOCKER_TAG -t spenn:latest .
+      - run:
+          name: Blackbox test
+          command: ./mvnw verify -Dtest=SpennBlackBoxTest -Dspenn.image=docker.pkg.github.com/$DOCKER_TAG
       - run:
           name: Docker push
           command: |

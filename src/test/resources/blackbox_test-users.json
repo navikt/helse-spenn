@@ -1,0 +1,12 @@
+[
+  {
+    "id": "SIMPLE_OIDC_USER_S12345",
+    "email": "s12345@nav.no",
+    "email_verified": true,
+    "name": "NAV TESTER",
+    "nickname": "nav",
+    "password": "tester",
+    "groups": ["area-51"],
+    "NAVident": "s12345"
+  }
+]
