@@ -2,6 +2,7 @@ package no.nav.helse.spenn.blackbox
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -41,7 +42,7 @@ internal class SpennBlackBoxTest {
         val løsning = mottattBehovMedLøsning["@løsning"]
         assertTrue(løsning.hasNonNull("oppdragId"))
 
-        val løsningPåBehovUtenLøsning = (mottattBehovMedLøsning as com.fasterxml.jackson.databind.node.ObjectNode).apply {
+        val løsningPåBehovUtenLøsning = (mottattBehovMedLøsning as ObjectNode).apply {
             remove("@løsning")
         }
         assertEquals(sendtBehov, løsningPåBehovUtenLøsning)
@@ -173,6 +174,7 @@ internal class SpennBlackBoxTest {
         private const val VaultHostname = "vault"
         private const val VaultPort = 8200
         private const val VaultRootToken = "token123"
+        private const val VaultPostgresMountPath = "postgresql/preprod-fss"
 
         private const val OidcHostname = "simple-oidc-provider"
         private const val OidcPort = 9000
@@ -190,16 +192,7 @@ internal class SpennBlackBoxTest {
                     object {}.javaClass.getResource(this)?.readText(Charsets.UTF_8) ?: throw RuntimeException("did not find resource <$this>")
         }
 
-        private class ZooKeeperContainer(dockerImageName: String) : GenericContainer<ZooKeeperContainer>(dockerImageName)
-
-        private class VaultContainer(dockerImageName: String) : GenericContainer<VaultContainer>(dockerImageName)
-
-        private class KafkaKontainer(dockerImageName: String): GenericContainer<KafkaKontainer>(dockerImageName)
-
-        private class MqContainer(dockerImageName: String): GenericContainer<MqContainer>(dockerImageName)
-
-        private class OidcContainer(dockerImageName: String): GenericContainer<OidcContainer>(dockerImageName)
-        private class SpennContainer: GenericContainer<SpennContainer>(System.getProperty("spenn.image", "spenn:latest"))
+        private class DockerContainer(dockerImageName: String) : GenericContainer<DockerContainer>(dockerImageName)
 
         private lateinit var bootstrapServers: String
 
@@ -219,22 +212,22 @@ internal class SpennBlackBoxTest {
             val kafka = setupKafka(network)
             kafka.start()
 
+            setupTopic(kafka)
             bootstrapServers = kafka.bootstrapServers
 
             val mq = setupMq(network)
             mq.start()
 
-            val kafkaInit = setupTopic(network)
             val vault = setupVault(network)
-            val vaultInit = setupPostgreVault(network)
+            vault.start()
+
             val oidcContainer = setupOidc(network)
             val mockServer = setupMockServer(network)
 
-            kafkaInit.start()
-            vault.start()
-            vaultInit.start()
             oidcContainer.start()
             mockServer.start()
+
+            setupPostgreVault(vault)
 
             val spenn = setupSpenn(network)
             spenn.start()
@@ -252,8 +245,8 @@ internal class SpennBlackBoxTest {
                     .withPassword(PostgresRootPassword)
         }
 
-        private fun setupZooKeeper(network: Network): ZooKeeperContainer {
-            return ZooKeeperContainer(ZooKeeperImage)
+        private fun setupZooKeeper(network: Network): DockerContainer {
+            return DockerContainer(ZooKeeperImage)
                     .withNetwork(network)
                     .withNetworkAliases(ZooKeeperHostname)
                     .withExposedPorts(ZooKeeperPort)
@@ -270,10 +263,8 @@ internal class SpennBlackBoxTest {
                     .waitingFor(Wait.forListeningPort())
         }
 
-        private fun setupTopic(network: Network): KafkaKontainer {
-            return KafkaKontainer("confluentinc/cp-kafka:5.1.0")
-                    .withNetwork(network)
-                    .withCommand("kafka-topics", "--create",
+        private fun setupTopic(kafkaContainer: KafkaContainer) {
+            kafkaContainer.execInContainer("kafka-topics", "--create",
                             "--if-not-exists",
                             "--zookeeper",
                             "$ZooKeeperHostname:$ZooKeeperPort",
@@ -282,38 +273,40 @@ internal class SpennBlackBoxTest {
                             "--replication-factor",
                             "1",
                             "--topic",
-                            behovTopic)
-                    .withLogConsumer { print("kafka_init: " + it.utf8String) }
+                            behovTopic).print()
         }
 
-        private fun setupMq(network: Network): MqContainer {
-            return MqContainer("ibmcom/mq:latest")
+        private fun setupMq(network: Network): DockerContainer {
+            return DockerContainer("ibmcom/mq:latest")
                     .withNetwork(network)
                     .withNetworkAliases(MqHostname)
                     .withEnv("LICENSE", "accept")
                     .withEnv("MQ_QMGR_NAME", MqQueueMananagerName)
         }
 
-        private fun setupVault(network: Network): VaultContainer {
-            return VaultContainer(VaultImage)
+        private fun setupVault(network: Network): DockerContainer {
+            return DockerContainer(VaultImage)
                     .withNetwork(network)
                     .withNetworkAliases(VaultHostname)
-                    .withEnv("VAULT_DEV_ROOT_TOKEN_ID", VaultRootToken)
-        }
-
-        private fun setupPostgreVault(network: Network): VaultContainer {
-            return VaultContainer(VaultImage)
-                    .withNetwork(network)
-                    .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
+                    .withEnv("VAULT_ADDR", "http://127.0.0.1:$VaultPort")
                     .withEnv("VAULT_TOKEN", VaultRootToken)
-                    .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-setup-vault.sh"), "/setup-vault.sh")
-                    .withCommand("/setup-vault.sh", "$PostgresHostname:$PostgresPort", PostgresRootUsername, PostgresRootPassword)
-                    .withLogConsumer { print("vault_init: " + it.utf8String) }
-                    .waitingFor(Wait.forLogMessage(".*Exit OK.*", 1))
+                    .withEnv("VAULT_DEV_ROOT_TOKEN_ID", VaultRootToken)
+                    .withLogConsumer { print("vault: " + it.utf8String) }
         }
 
-        private fun setupOidc(network: Network): OidcContainer {
-            return OidcContainer("qlik/simple-oidc-provider")
+        private fun setupPostgreVault(vaultContainer: DockerContainer) {
+            vaultContainer.execInContainer("vault", "secrets", "enable", "-path=$VaultPostgresMountPath", "database")
+                    .print()
+            vaultContainer.execInContainer("vault", "write", "$VaultPostgresMountPath/config/$SpennDatabase", "plugin_name=postgresql-database-plugin", "allowed_roles=$SpennDatabase-admin,$SpennDatabase-user", "connection_url=postgresql://{{username}}:{{password}}@$PostgresHostname:$PostgresPort?sslmode=disable", "username=$PostgresRootUsername", "password=$PostgresRootPassword")
+                    .print()
+            vaultContainer.execInContainer("vault", "write", "$VaultPostgresMountPath/roles/$SpennDatabase-admin", "db_name=$SpennDatabase", "creation_statements=CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT \"$SpennDatabase-admin\" TO \"{{name}}\";", "default_ttl=5m", "max_ttl=5m")
+                    .print()
+            vaultContainer.execInContainer("vault", "write", "$VaultPostgresMountPath/roles/$SpennDatabase-user", "db_name=$SpennDatabase", "creation_statements=CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT \"$SpennDatabase-user\" TO \"{{name}}\";", "default_ttl=5m", "max_ttl=5m")
+                    .print()
+        }
+
+        private fun setupOidc(network: Network): DockerContainer {
+            return DockerContainer("qlik/simple-oidc-provider")
                     .withNetwork(network)
                     .withNetworkAliases(OidcHostname)
                     .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-config.json"), "/oidc/config.json")
@@ -329,8 +322,8 @@ internal class SpennBlackBoxTest {
                     .waitingFor(Wait.forListeningPort())
         }
 
-        private fun setupSpenn(network: Network): SpennContainer {
-            return SpennContainer()
+        private fun setupSpenn(network: Network): DockerContainer {
+            return DockerContainer(System.getProperty("spenn.image", "spenn:latest"))
                     .withNetwork(network)
                     .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
                     .withEnv("VAULT_TOKEN", VaultRootToken)
@@ -350,6 +343,7 @@ internal class SpennBlackBoxTest {
                     .withEnv("STS_SOAP_PASSWORD", "bar")
                     .withEnv("DATASOURCE_URL", "jdbc:postgresql://$PostgresHostname:$PostgresPort/$SpennDatabase")
                     .withEnv("DATASOURCE_VAULT_ENABLED", "true")
+                    .withEnv("DATASOURCE_VAULT_MOUNTPATH", VaultPostgresMountPath)
                     .withEnv("SCHEDULER_ENABLED", "true")
                     .withEnv("SCHEDULER_TASKS_SIMULERING", "true")
                     .withEnv("SCHEDULER_TASKS_OPPDRAG", "true")
@@ -360,6 +354,11 @@ internal class SpennBlackBoxTest {
                     .withLogConsumer { print("spenn: " + it.utf8String) }
         }
     }
+}
+
+private fun Container.ExecResult.print() {
+    println("stdout: ${this.stdout.replace("\n", "")}")
+    println("stderr: ${this.stderr.replace("\n", "")}")
 }
 
 
