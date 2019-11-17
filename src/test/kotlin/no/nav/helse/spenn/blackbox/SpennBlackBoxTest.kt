@@ -154,7 +154,6 @@ internal class SpennBlackBoxTest {
         private const val PostgresImage = "postgres:11-alpine"
         private const val PostgresHostname = "postgres"
         private const val PostgresPort = 5432
-        private const val PostgresInitScript = "/blackbox_test-init.sql"
         private const val PostgresRootUsername = "postgres"
         private const val PostgresRootPassword = "postgres"
         private const val SpennDatabase = "helse-spenn-oppdrag"
@@ -184,12 +183,24 @@ internal class SpennBlackBoxTest {
 
         private val objectMapper = ObjectMapper()
         private class PostgreContainer(dockerImageName: String) : PostgreSQLContainer<PostgreContainer>(dockerImageName) {
-            override fun runInitScriptIfRequired() {
-                ScriptUtils.executeDatabaseScript(databaseDelegate, PostgresInitScript, PostgresInitScript.readResource())
+            init {
+                withInitScript("an_init_script")
             }
 
-            private fun String.readResource() =
-                    object {}.javaClass.getResource(this)?.readText(Charsets.UTF_8) ?: throw RuntimeException("did not find resource <$this>")
+            override fun runInitScriptIfRequired() {
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "create role \"$databaseName-admin\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "create role \"$databaseName-user\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "create role \"$databaseName-readonly\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT \"$databaseName-readonly\" TO \"$databaseName-user\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT \"$databaseName-user\" TO \"$databaseName-admin\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-admin\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-user\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-readonly\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select, usage on sequences to \"$databaseName-readonly\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select on tables to \"$databaseName-readonly\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select, insert, update, delete, truncate on tables to \"$databaseName-user\";")
+                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant all privileges on tables to \"$databaseName-admin\";")
+            }
         }
 
         private class DockerContainer(dockerImageName: String) : GenericContainer<DockerContainer>(dockerImageName)
@@ -239,7 +250,6 @@ internal class SpennBlackBoxTest {
             return PostgreContainer(PostgresImage)
                     .withNetwork(network)
                     .withNetworkAliases(PostgresHostname)
-                    .withInitScript(PostgresInitScript)
                     .withDatabaseName(SpennDatabase)
                     .withUsername(PostgresRootUsername)
                     .withPassword(PostgresRootPassword)
