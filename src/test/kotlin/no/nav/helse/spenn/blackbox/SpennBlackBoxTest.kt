@@ -3,6 +3,10 @@ package no.nav.helse.spenn.blackbox
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigResolveOptions
+import io.ktor.config.HoconApplicationConfig
+import no.nav.helse.spenn.spenn
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -12,17 +16,21 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
+import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse
 import org.testcontainers.containers.*
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.ext.ScriptUtils
+import org.testcontainers.images.builder.ImageFromDockerfile
 import org.testcontainers.utility.MountableFile
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -35,6 +43,7 @@ internal class SpennBlackBoxTest {
         val fnr = "987654321"
 
         mockClient.settOppAktørregisteret(aktørId, fnr)
+        mockClient.settOppStsMock()
 
         val sendtBehov = sendUtbetalingsbehov(aktørId)
         val mottattBehovMedLøsning = ventPåLøsning()
@@ -42,26 +51,34 @@ internal class SpennBlackBoxTest {
         val løsning = mottattBehovMedLøsning["@løsning"]
         assertTrue(løsning.hasNonNull("oppdragId"))
 
+
+
+        println("------------------")
+        println("http://host.testcontainer.internal:${soapMock.port}/ws/simulering")
+        println("------------------")
+
+
         val løsningPåBehovUtenLøsning = (mottattBehovMedLøsning as ObjectNode).apply {
             remove("@løsning")
         }
         assertEquals(sendtBehov, løsningPåBehovUtenLøsning)
+        Thread.sleep(600000)
     }
 
     private fun ventPåLøsning(timeout: Duration = Duration.ofSeconds(30)): JsonNode {
-        return KafkaConsumer(consumerProperties(bootstrapServers), StringDeserializer(), StringDeserializer()).use { consumer ->
+        KafkaConsumer(consumerProperties(bootstrapServers), StringDeserializer(), StringDeserializer()).use { consumer ->
             consumer.subscribe(listOf(behovTopic))
+            val endTime = Instant.now() + timeout
 
-            var løsning: JsonNode? = null
-            val endTime = Instant.now().plusMillis(timeout.toMillis())
+            while (Instant.now() < endTime) {
+                val løsning = consumer.poll(Duration.ofMillis(0))
+                    .map { objectMapper.readTree(it.value()) }
+                    .firstOrNull { it.hasNonNull("@løsning") }
 
-            while (Instant.now() < endTime && løsning == null) {
-                løsning = consumer.poll(Duration.ofMillis(0)).map {
-                    objectMapper.readTree(it.value())
-                }.firstOrNull { it.hasNonNull("@løsning") }
+                if (løsning != null)
+                    return løsning
             }
-
-            løsning ?: throw RuntimeException("forventet å få en løsning i løpet av ${timeout.toSeconds()} sekunder")
+            throw RuntimeException("forventet å få en løsning i løpet av ${timeout.toSeconds()} sekunder")
         }
     }
 
@@ -69,20 +86,20 @@ internal class SpennBlackBoxTest {
         return """
 {
     "@behov": "Utbetaling",
-    "sakskompleksId": "${UUID.randomUUID().toString()}",
+    "sakskompleksId": "${UUID.randomUUID()}",
     "aktørId": "$aktørId",
     "organisasjonsnummer": "666",
     "saksbehandler": "Z999999",
     "utbetalingsreferanse": "foobar",
     "maksdato": "2019-01-01",
     "utbetalingslinjer": []
-}""".trimIndent().also { behov ->
-            KafkaProducer(producerProperties(bootstrapServers), StringSerializer(), StringSerializer()).use {
-                it.send(ProducerRecord(behovTopic, behov))
+}""".trimIndent()
+            .also { behov ->
+                KafkaProducer(producerProperties(bootstrapServers), StringSerializer(), StringSerializer()).use {
+                    it.send(ProducerRecord(behovTopic, behov))
+                }
             }
-        }.let {
-            objectMapper.readTree(it)
-        }
+            .let { objectMapper.readTree(it) }
     }
 
     private fun consumerProperties(bootstrapServer: String): MutableMap<String, Any>? {
@@ -105,6 +122,19 @@ internal class SpennBlackBoxTest {
                 put(ProducerConfig.RETRIES_CONFIG, "0")
                 put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             }
+
+    //////////
+
+
+    private fun MockServerClient.settOppStsMock() {
+        this.`when`(request()
+            .withPath("/soapsts")
+        ).respond(HttpResponse.response()
+            .withStatusCode(200)
+            .withBody(sts_response))
+    }
+
+    ///////////
 
     private fun MockServerClient.settOppAktørregisteret(aktørId: String, fnr: String) {
         this.`when`(request()
@@ -170,7 +200,7 @@ internal class SpennBlackBoxTest {
         private const val MqQueueMananagerName = "QM1"
 
         private const val VaultImage = "vault:1.1.0"
-        private const val VaultHostname = "vault"
+        private const val VaultHostname = "localhost" //""vault"
         private const val VaultPort = 8200
         private const val VaultRootToken = "token123"
         private const val VaultPostgresMountPath = "postgresql/preprod-fss"
@@ -180,6 +210,8 @@ internal class SpennBlackBoxTest {
 
         private const val MockServerHostname = "mockserver"
         private const val MockServerPort = MockServerContainer.PORT
+
+        private val soapMock = SoapMock()
 
         private val objectMapper = ObjectMapper()
         private class PostgreContainer(dockerImageName: String) : PostgreSQLContainer<PostgreContainer>(dockerImageName) {
@@ -212,9 +244,11 @@ internal class SpennBlackBoxTest {
         @BeforeAll
         @JvmStatic
         private fun setupCluster() {
+            soapMock.start()
             val network = Network.newNetwork()
 
             val postgre = setupPostgre(network)
+            postgre.withExposedPorts(5432)
             postgre.start()
 
             val zookeeper = setupZooKeeper(network)
@@ -230,6 +264,7 @@ internal class SpennBlackBoxTest {
             mq.start()
 
             val vault = setupVault(network)
+            vault.withExposedPorts(8200)
             vault.start()
 
             val oidcContainer = setupOidc(network)
@@ -244,6 +279,12 @@ internal class SpennBlackBoxTest {
             spenn.start()
 
             mockClient = MockServerClient(mockServer.containerIpAddress, mockServer.serverPort)
+        }
+
+        @AfterAll
+        @JvmStatic
+        private fun shutdownCluster() {
+            soapMock.close()
         }
 
         private fun setupPostgre(network: Network): PostgreContainer {
@@ -327,42 +368,72 @@ internal class SpennBlackBoxTest {
 
         private fun setupMockServer(network: Network): MockServerContainer {
             return MockServerContainer()
-                    .withNetwork(network)
-                    .withNetworkAliases(MockServerHostname)
-                    .waitingFor(Wait.forListeningPort())
+                .withNetwork(network)
+                .withNetworkAliases(MockServerHostname)
+                .waitingFor(Wait.forListeningPort())
         }
 
-        private fun setupSpenn(network: Network): DockerContainer {
-            return DockerContainer(System.getProperty("spenn.image", "spenn:latest"))
-                    .withNetwork(network)
-                    .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
-                    .withEnv("VAULT_TOKEN", VaultRootToken)
-                    .withEnv("MQ_HOSTNAME", MqHostname)
-                    .withEnv("MQ_PORT", "$MqPort")
-                    .withEnv("SECURITYTOKENSERVICE_URL", "http://foo")
-                    .withEnv("SECURITY_TOKEN_SERVICE_REST_URL", "http://$MockServerHostname:$MockServerPort")
-                    .withEnv("AKTORREGISTERET_BASE_URL", "http://$MockServerHostname:$MockServerPort")
-                    .withEnv("SIMULERING_SERVICE_URL", "http://$MockServerHostname:$MockServerPort")
-                    .withEnv("KAFKA_BOOTSTRAP_SERVERS", "$KafkaHostname:$KafkaPort")
-                    .withEnv("KAFKA_USERNAME", "foo")
-                    .withEnv("KAFKA_PASSWORD", "bar")
-                    .withEnv("PLAIN_TEXT_KAFKA", "true")
-                    .withEnv("NAV_TRUSTSTORE_PATH", "foo")
-                    .withEnv("NAV_TRUSTSTORE_PASSWORD", "bar")
-                    .withEnv("STS_SOAP_USERNAME", "foo")
-                    .withEnv("STS_SOAP_PASSWORD", "bar")
-                    .withEnv("DATASOURCE_URL", "jdbc:postgresql://$PostgresHostname:$PostgresPort/$SpennDatabase")
-                    .withEnv("DATASOURCE_VAULT_ENABLED", "true")
-                    .withEnv("DATASOURCE_VAULT_MOUNTPATH", VaultPostgresMountPath)
-                    .withEnv("SCHEDULER_ENABLED", "true")
-                    .withEnv("SCHEDULER_TASKS_SIMULERING", "true")
-                    .withEnv("SCHEDULER_TASKS_OPPDRAG", "true")
-                    .withEnv("SCHEDULER_TASKS_AVSTEMMING", "true")
-                    .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE", "audience")
-                    .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL", "http://$OidcHostname:$OidcPort/.well-known/openid-configuration")
-                    .waitingFor(Wait.forListeningPort())
-                    .withLogConsumer { print("spenn: " + it.utf8String) }
+        object SpennContainer : GenericContainer<SpennContainer>(ImageFromDockerfile()
+            .withFileFromPath(".", Paths.get(".")))
+
+
+        private class LocalSpenn() {
+            val envMap = mutableMapOf<String,String>()
+            fun withEnv(name: String, value:String) : LocalSpenn {
+                envMap[name] = value
+                return this
+            }
+
+            fun start() {
+                var confTxt = this.javaClass.getResource("/application.conf").readText()
+                envMap.forEach {
+                    val regexp = "\\\$\\{\\??${it.key}}"
+                    confTxt = confTxt.replace(regexp.toRegex(), "\"${it.value}\"")
+                }
+                val conf = ConfigFactory.parseString(confTxt)
+                    .resolve(ConfigResolveOptions.defaults())
+                val appConfig = HoconApplicationConfig(conf)
+                spenn(appConfig)
+            }
         }
+
+        private fun localSpenn() {
+
+        }
+
+
+        private fun setupSpenn(network: Network) = LocalSpenn() //SpennContainer
+            //.withNetwork(network)
+            .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
+            .withEnv("VAULT_TOKEN", VaultRootToken)
+            .withEnv("MQ_HOSTNAME", MqHostname)
+            .withEnv("MQ_PORT", "$MqPort")
+            .withEnv("SECURITYTOKENSERVICE_URL", "http://$MockServerHostname:$MockServerPort/soapsts")
+            .withEnv("SECURITY_TOKEN_SERVICE_REST_URL", "http://$MockServerHostname:$MockServerPort")
+            .withEnv("AKTORREGISTERET_BASE_URL", "http://$MockServerHostname:$MockServerPort")
+            .withEnv("SIMULERING_SERVICE_URL", "http://host.testcontainer.internal:${soapMock.port}/ws/simulering")
+            .withEnv("KAFKA_BOOTSTRAP_SERVERS", "$KafkaHostname:$KafkaPort")
+            .withEnv("KAFKA_USERNAME", "foo")
+            .withEnv("KAFKA_PASSWORD", "bar")
+            .withEnv("PLAIN_TEXT_KAFKA", "true")
+            .withEnv("NAV_TRUSTSTORE_PATH", "foo")
+            .withEnv("NAV_TRUSTSTORE_PASSWORD", "bar")
+            .withEnv("STS_SOAP_USERNAME", "foo")
+            .withEnv("STS_SOAP_PASSWORD", "bar")
+            .withEnv("DATASOURCE_URL", "jdbc:postgresql://$PostgresHostname:$PostgresPort/$SpennDatabase")
+            .withEnv("DATASOURCE_VAULT_ENABLED", "true")
+            .withEnv("DATASOURCE_VAULT_MOUNTPATH", VaultPostgresMountPath)
+            .withEnv("SCHEDULER_ENABLED", "true")
+            .withEnv("SCHEDULER_TASKS_SIMULERING", "true")
+            .withEnv("SCHEDULER_TASKS_OPPDRAG", "true")
+            .withEnv("SCHEDULER_TASKS_AVSTEMMING", "true")
+            .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE", "audience")
+            .withEnv(
+                "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL",
+                "http://$OidcHostname:$OidcPort/.well-known/openid-configuration"
+            )
+            //.waitingFor(Wait.forListeningPort())
+            //.withLogConsumer { print("spenn: " + it.utf8String) }
     }
 }
 
