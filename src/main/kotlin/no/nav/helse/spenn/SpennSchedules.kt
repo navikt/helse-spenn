@@ -79,7 +79,7 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
 
         val now = LocalDateTime.now(clock)
         var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
-        if (now.compareTo(nextRun) > 0) {
+        if (now > nextRun) {
             nextRun = nextRun.plusDays(1)
         }
 

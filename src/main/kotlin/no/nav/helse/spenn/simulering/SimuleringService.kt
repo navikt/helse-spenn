@@ -41,6 +41,7 @@ class SimuleringService(val simulerFpService: SimulerFpService,
         if (oppdrag.utbetalingsOppdrag.utbetalingsLinje.isNotEmpty()) {
             return simulerOppdrag(oppdrag.toSimuleringRequest())
         }
+        log.error("Kan ikke simulere betaling: Mangler utbetalingslinjer")
         return SimuleringResult(status=Status.FEIL,feilMelding = "Tomt vedtak")
     }
 

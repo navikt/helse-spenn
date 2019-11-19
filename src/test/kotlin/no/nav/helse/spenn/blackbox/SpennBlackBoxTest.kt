@@ -3,6 +3,9 @@ package no.nav.helse.spenn.blackbox
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.github.dockerjava.api.model.ExposedPort
+import com.github.dockerjava.api.model.PortBinding
+import com.github.dockerjava.api.model.Ports
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
 import io.ktor.config.HoconApplicationConfig
@@ -82,17 +85,33 @@ internal class SpennBlackBoxTest {
         }
     }
 
+
+    /*
+    data class Utbetalingslinje(
+    val grad: Int,
+    val dagsats: BigDecimal,
+    val fom: LocalDate,
+    val tom: LocalDate
+)
+     */
     private fun sendUtbetalingsbehov(aktørId: String): JsonNode {
         return """
 {
     "@behov": "Utbetaling",
     "sakskompleksId": "${UUID.randomUUID()}",
     "aktørId": "$aktørId",
-    "organisasjonsnummer": "666",
+    "organisasjonsnummer": "666666666",
     "saksbehandler": "Z999999",
     "utbetalingsreferanse": "foobar",
     "maksdato": "2019-01-01",
-    "utbetalingslinjer": []
+    "utbetalingslinjer": [
+        {
+            "grad": 100,
+            "dagsats": 1338,
+            "fom": "2018-12-10",
+            "tom": "2018-12-18"
+        }
+    ]
 }""".trimIndent()
             .also { behov ->
                 KafkaProducer(producerProperties(bootstrapServers), StringSerializer(), StringSerializer()).use {
@@ -128,6 +147,7 @@ internal class SpennBlackBoxTest {
 
     private fun MockServerClient.settOppStsMock() {
         this.`when`(request()
+            .withMethod("POST")
             .withPath("/soapsts")
         ).respond(HttpResponse.response()
             .withStatusCode(200)
@@ -200,7 +220,7 @@ internal class SpennBlackBoxTest {
         private const val MqQueueMananagerName = "QM1"
 
         private const val VaultImage = "vault:1.1.0"
-        private const val VaultHostname = "localhost" //""vault"
+        private const val VaultHostname = "vault"
         private const val VaultPort = 8200
         private const val VaultRootToken = "token123"
         private const val VaultPostgresMountPath = "postgresql/preprod-fss"
@@ -212,6 +232,7 @@ internal class SpennBlackBoxTest {
         private const val MockServerPort = MockServerContainer.PORT
 
         private val soapMock = SoapMock()
+
 
         private val objectMapper = ObjectMapper()
         private class PostgreContainer(dockerImageName: String) : PostgreSQLContainer<PostgreContainer>(dockerImageName) {
@@ -245,26 +266,39 @@ internal class SpennBlackBoxTest {
         @JvmStatic
         private fun setupCluster() {
             soapMock.start()
-            val network = Network.newNetwork()
+
+            val network = Network.SHARED //Network.newNetwork()
 
             val postgre = setupPostgre(network)
-            postgre.withExposedPorts(5432)
             postgre.start()
 
-            val zookeeper = setupZooKeeper(network)
-            zookeeper.start()
+            /*val zookeeper = setupZooKeeper(network)
+            zookeeper.start()*/
 
             val kafka = setupKafka(network)
+            //kafka.withExposedPorts(9092)
+            //kafka.withExp
+            /*
+            kafka.withCreateContainerCmdModifier {
+                it.withPortBindings(PortBinding(Ports.Binding.bindPort(9092), ExposedPort(9092)))
+            }
+            //kafka.portBindings = listOf("9092:9092")*/
+
+            kafka.portBindings = listOf("9092:9092")
+            kafka.withNetworkMode("host")
+            //kafka.withNetwork(Network.SHARED)
+
             kafka.start()
 
             setupTopic(kafka)
             bootstrapServers = kafka.bootstrapServers
 
+            println(bootstrapServers)
+
             val mq = setupMq(network)
             mq.start()
 
             val vault = setupVault(network)
-            vault.withExposedPorts(8200)
             vault.start()
 
             val oidcContainer = setupOidc(network)
@@ -274,11 +308,16 @@ internal class SpennBlackBoxTest {
             mockServer.start()
 
             setupPostgreVault(vault)
-
-            val spenn = setupSpenn(network)
-            spenn.start()
+            kafka.networkAliases
+            postgre.networkAliases
+            mockServer.networkAliases
 
             mockClient = MockServerClient(mockServer.containerIpAddress, mockServer.serverPort)
+
+            //val spenn = setupSpenn(network)
+            val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
+            spenn.start()
+
         }
 
         @AfterAll
@@ -307,18 +346,22 @@ internal class SpennBlackBoxTest {
 
         private fun setupKafka(network: Network): KafkaContainer {
             return KafkaContainer("5.1.0")
-                    .withNetwork(network)
-                    .withNetworkAliases(KafkaHostname)
-                    .withExternalZookeeper("$ZooKeeperHostname:$ZooKeeperPort")
+                    //.withNetwork(network)
+                    //.withNetworkAliases(KafkaHostname)
+                    .withNetworkMode("host")
+                    //.withExternalZookeeper("$ZooKeeperHostname:$ZooKeeperPort")
                     .withLogConsumer { print("kafka: " + it.utf8String) }
                     .waitingFor(Wait.forListeningPort())
+
+
         }
 
         private fun setupTopic(kafkaContainer: KafkaContainer) {
             kafkaContainer.execInContainer("kafka-topics", "--create",
                             "--if-not-exists",
                             "--zookeeper",
-                            "$ZooKeeperHostname:$ZooKeeperPort",
+                            //"$ZooKeeperHostname:$ZooKeeperPort",
+                            "localhost:$ZooKeeperPort",
                             "--partitions",
                             "1",
                             "--replication-factor",
@@ -358,12 +401,14 @@ internal class SpennBlackBoxTest {
 
         private fun setupOidc(network: Network): DockerContainer {
             return DockerContainer("qlik/simple-oidc-provider")
-                    .withNetwork(network)
-                    .withNetworkAliases(OidcHostname)
-                    .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-config.json"), "/oidc/config.json")
-                    .withCopyFileToContainer(MountableFile.forClasspathResource("blackbox_test-users.json"), "/oidc/users.json")
-                    .withEnv("USERS_FILE", "/oidc/users.json")
-                    .withEnv("CONFIG_FILE", "/oidc/config.json")
+                .withNetwork(network)
+                .withNetworkAliases(OidcHostname)
+                .withFileSystemBind(
+                    Paths.get(".").resolve("compose").resolve("oidc").toAbsolutePath().toString(),
+                    "/oidc"
+                )
+                .withEnv("USERS_FILE", "/oidc/users.json")
+                .withEnv("CONFIG_FILE", "/oidc/config.json")
         }
 
         private fun setupMockServer(network: Network): MockServerContainer {
@@ -385,14 +430,33 @@ internal class SpennBlackBoxTest {
             }
 
             fun start() {
-                var confTxt = this.javaClass.getResource("/application.conf").readText()
+                Thread(this::dorun).run()
+            }
+
+            private fun dorun() {
+                /*var confTxt = this.javaClass.getResource("/application.conf").readText()
                 envMap.forEach {
                     val regexp = "\\\$\\{\\??${it.key}}"
                     confTxt = confTxt.replace(regexp.toRegex(), "\"${it.value}\"")
-                }
-                val conf = ConfigFactory.parseString(confTxt)
-                    .resolve(ConfigResolveOptions.defaults())
+                }*/
+                /*envMap.forEach {
+                    //setEnv(it.key, it.value)
+                    setEnv(envMap)
+                    //println("------setting [${it.key}] to [${it.value}]")
+                }*/
+                setEnv(envMap)
+
+                val conf = ConfigFactory.parseResources("application.conf")
+                        .resolve(ConfigResolveOptions.defaults())
                 val appConfig = HoconApplicationConfig(conf)
+                /*val conf = ConfigFactory.parseString(confTxt)
+                    .resolve(ConfigResolveOptions.defaults())
+                val appConfig = HoconApplicationConfig(conf)*/
+
+
+                //setEnv("VAULT_TOKEN", "token123")
+
+
                 spenn(appConfig)
             }
         }
@@ -402,8 +466,65 @@ internal class SpennBlackBoxTest {
         }
 
 
-        private fun setupSpenn(network: Network) = LocalSpenn() //SpennContainer
-            //.withNetwork(network)
+        /*private fun toLocalhostPort(containers: List<GenericContainer<DockerContainer>>, hostname: String, port: Int) : Int {
+            containers.forEach {
+                if (it.networkAliases.contains(hostname)) {
+                    return it.getMappedPort(port)
+                }
+            }
+            throw RuntimeException("UGH! Didnt find host with name $hostname")
+        }*/
+
+
+        private fun setupLocalSpenn(containers: List<GenericContainer<*>>) : LocalSpenn {
+
+            val toLocalPort : (String, Int) -> Int = { hostname, port ->
+                containers.filter {
+                    it.getNetworkAliases().contains(hostname)
+                }.map {
+                    val newport = it.getMappedPort(port)
+                    println("--------!!!!!-----------port for $hostname = $newport")
+                    newport
+                }.first()
+            }
+
+
+            return LocalSpenn()
+            .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
+                    .withEnv("VAULT_ADDR", "http://localhost:${toLocalPort(VaultHostname,VaultPort)}")
+                    .withEnv("VAULT_TOKEN", VaultRootToken)
+                    .withEnv("MQ_HOSTNAME", "localhost")
+                    .withEnv("MQ_PORT", "${toLocalPort(MqHostname,MqPort)}")
+                    .withEnv("SECURITYTOKENSERVICE_URL", "http://localhost:${toLocalPort(MockServerHostname,MockServerPort)}/soapsts")
+                    .withEnv("SECURITY_TOKEN_SERVICE_REST_URL", "http://localhost:${toLocalPort(MockServerHostname,MockServerPort)}")
+                    .withEnv("AKTORREGISTERET_BASE_URL", "http://localhost:${toLocalPort(MockServerHostname, MockServerPort)}")
+                    .withEnv("SIMULERING_SERVICE_URL", "http://localhost:${soapMock.port}/ws/simulering")
+                    //.withEnv("KAFKA_BOOTSTRAP_SERVERS", "localhost:${toLocalPort(KafkaHostname, KafkaPort)}")
+                    .withEnv("KAFKA_BOOTSTRAP_SERVERS", bootstrapServers)
+                    .withEnv("KAFKA_USERNAME", "foo")
+                    .withEnv("KAFKA_PASSWORD", "bar")
+                    .withEnv("PLAIN_TEXT_KAFKA", "true")
+                    .withEnv("NAV_TRUSTSTORE_PATH", "foo")
+                    .withEnv("NAV_TRUSTSTORE_PASSWORD", "bar")
+                    .withEnv("STS_SOAP_USERNAME", "foo")
+                    .withEnv("STS_SOAP_PASSWORD", "bar")
+                    .withEnv("DATASOURCE_URL", "jdbc:postgresql://localhost:${toLocalPort(PostgresHostname, PostgresPort)}/$SpennDatabase")
+                    .withEnv("DATASOURCE_VAULT_ENABLED", "true")
+                    .withEnv("DATASOURCE_VAULT_MOUNTPATH", VaultPostgresMountPath)
+                    .withEnv("SCHEDULER_ENABLED", "true")
+                    .withEnv("SCHEDULER_TASKS_SIMULERING", "true")
+                    .withEnv("SCHEDULER_TASKS_OPPDRAG", "true")
+                    .withEnv("SCHEDULER_TASKS_AVSTEMMING", "true")
+                    .withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE", "audience")
+                    .withEnv(
+                            "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL",
+                            "http://localhost:${toLocalPort(OidcHostname,OidcPort)}/.well-known/openid-configuration"
+                    )
+        }
+
+
+        private fun setupSpenn(network: Network) = SpennContainer
+            .withNetwork(network)
             .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
             .withEnv("VAULT_TOKEN", VaultRootToken)
             .withEnv("MQ_HOSTNAME", MqHostname)
@@ -432,8 +553,8 @@ internal class SpennBlackBoxTest {
                 "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL",
                 "http://$OidcHostname:$OidcPort/.well-known/openid-configuration"
             )
-            //.waitingFor(Wait.forListeningPort())
-            //.withLogConsumer { print("spenn: " + it.utf8String) }
+            .waitingFor(Wait.forListeningPort())
+            .withLogConsumer { print("spenn: " + it.utf8String) }
     }
 }
 

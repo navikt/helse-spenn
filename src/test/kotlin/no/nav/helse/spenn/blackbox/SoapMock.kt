@@ -7,12 +7,19 @@ import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.S
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningResponse
 import org.apache.cxf.BusFactory
+import org.apache.cxf.binding.soap.SoapMessage
+import org.apache.cxf.binding.soap.saaj.SAAJInInterceptor
+import org.apache.cxf.jaxws.EndpointImpl
+import org.apache.cxf.message.Message
+import org.apache.cxf.phase.Phase
+import org.apache.cxf.phase.PhaseInterceptor
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.testcontainers.Testcontainers
 import java.net.ServerSocket
+import javax.xml.soap.SOAPMessage
 import javax.xml.ws.Endpoint
 
 class SoapMock : AutoCloseable {
@@ -42,7 +49,31 @@ class SoapMock : AutoCloseable {
         server.start()
 
         BusFactory.setDefaultBus(soapServlet.bus)
-        Endpoint.publish("/simulering", simuleringMock)
+        Endpoint.publish("/simulering", simuleringMock).also {
+            it as EndpointImpl
+            it.inInterceptors.add(object : PhaseInterceptor<SoapMessage> {
+                override fun getBefore(): MutableSet<String> = mutableSetOf()
+
+                override fun handleMessage(msg: SoapMessage) {
+                    SAAJInInterceptor.INSTANCE.handleMessage(msg)
+                    val soapMessage = msg.getContent(SOAPMessage::class.java)
+                    soapMessage.soapHeader.removeContents()
+                }
+
+                override fun handleFault(p0: SoapMessage?) {
+
+                }
+
+                override fun getAdditionalInterceptors(): MutableCollection<PhaseInterceptor<out Message>> = mutableListOf()
+
+                override fun getPhase(): String = Phase.PRE_PROTOCOL
+
+                override fun getId(): String = javaClass.name
+
+                override fun getAfter(): MutableSet<String> = mutableSetOf()
+
+            })
+        }
     }
 
     override fun close() {
