@@ -1,15 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-   <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
-      <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration debug="true">
+
+   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+         <pattern>%green(%d{HH:mm:ss}) %cyan([%-5.5t]) %boldCyan(%0.-5p) %yellow(%-20.20logger{19}) %cyan(:) %m%n</pattern>
+      </encoder>
    </appender>
 
-
-   <logger name="org.jooq.Constants" level="ERROR" />
-   <logger name="org.apache.cxf.ws.addressing" level="ERROR" />
+   <logger name="nav" level="DEBUG"/>
 
    <root level="INFO">
-      <appender-ref ref="STDOUT_JSON"/>
+      <appender-ref ref="CONSOLE"/>
    </root>
-
 </configuration>

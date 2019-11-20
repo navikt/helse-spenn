@@ -3,9 +3,6 @@ package no.nav.helse.spenn.blackbox
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.github.dockerjava.api.model.ExposedPort
-import com.github.dockerjava.api.model.PortBinding
-import com.github.dockerjava.api.model.Ports
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
 import io.ktor.config.HoconApplicationConfig
@@ -25,14 +22,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
-import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse
 import org.testcontainers.containers.*
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.images.builder.ImageFromDockerfile
-import org.testcontainers.utility.MountableFile
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -46,7 +41,6 @@ internal class SpennBlackBoxTest {
         val fnr = "987654321"
 
         mockClient.settOppAktørregisteret(aktørId, fnr)
-        mockClient.settOppStsMock()
 
         val sendtBehov = sendUtbetalingsbehov(aktørId)
         val mottattBehovMedLøsning = ventPåLøsning()
@@ -57,7 +51,8 @@ internal class SpennBlackBoxTest {
 
 
         println("------------------")
-        println("http://host.testcontainer.internal:${soapMock.port}/ws/simulering")
+        println("http://host.testcontainer.internal:${soapMock.httpPort}/ws/simulering")
+        println("https://host.testcontainer.internal:${soapMock.httpsPort}/ws/simulering")
         println("------------------")
 
 
@@ -141,20 +136,6 @@ internal class SpennBlackBoxTest {
                 put(ProducerConfig.RETRIES_CONFIG, "0")
                 put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             }
-
-    //////////
-
-
-    private fun MockServerClient.settOppStsMock() {
-        this.`when`(request()
-            .withMethod("POST")
-            .withPath("/soapsts")
-        ).respond(HttpResponse.response()
-            .withStatusCode(200)
-            .withBody(sts_response))
-    }
-
-    ///////////
 
     private fun MockServerClient.settOppAktørregisteret(aktørId: String, fnr: String) {
         this.`when`(request()
@@ -488,6 +469,8 @@ internal class SpennBlackBoxTest {
                 }.first()
             }
 
+            System.setProperty("javax.net.ssl.trustStore", soapMock.keystorePath.toAbsolutePath().toString())
+            System.setProperty("javax.net.ssl.trustStorePassword", soapMock.keystorePassword)
 
             return LocalSpenn()
             .withEnv("VAULT_ADDR", "http://$VaultHostname:$VaultPort")
@@ -495,10 +478,10 @@ internal class SpennBlackBoxTest {
                     .withEnv("VAULT_TOKEN", VaultRootToken)
                     .withEnv("MQ_HOSTNAME", "localhost")
                     .withEnv("MQ_PORT", "${toLocalPort(MqHostname,MqPort)}")
-                    .withEnv("SECURITYTOKENSERVICE_URL", "http://localhost:${toLocalPort(MockServerHostname,MockServerPort)}/soapsts")
+                    .withEnv("SECURITYTOKENSERVICE_URL", "https://localhost:${soapMock.httpsPort}/ws/SecurityTokenService")
                     .withEnv("SECURITY_TOKEN_SERVICE_REST_URL", "http://localhost:${toLocalPort(MockServerHostname,MockServerPort)}")
                     .withEnv("AKTORREGISTERET_BASE_URL", "http://localhost:${toLocalPort(MockServerHostname, MockServerPort)}")
-                    .withEnv("SIMULERING_SERVICE_URL", "http://localhost:${soapMock.port}/ws/simulering")
+                    .withEnv("SIMULERING_SERVICE_URL", "https://localhost:${soapMock.httpsPort}/ws/simulering")
                     //.withEnv("KAFKA_BOOTSTRAP_SERVERS", "localhost:${toLocalPort(KafkaHostname, KafkaPort)}")
                     .withEnv("KAFKA_BOOTSTRAP_SERVERS", bootstrapServers)
                     .withEnv("KAFKA_USERNAME", "foo")
@@ -532,7 +515,7 @@ internal class SpennBlackBoxTest {
             .withEnv("SECURITYTOKENSERVICE_URL", "http://$MockServerHostname:$MockServerPort/soapsts")
             .withEnv("SECURITY_TOKEN_SERVICE_REST_URL", "http://$MockServerHostname:$MockServerPort")
             .withEnv("AKTORREGISTERET_BASE_URL", "http://$MockServerHostname:$MockServerPort")
-            .withEnv("SIMULERING_SERVICE_URL", "http://host.testcontainer.internal:${soapMock.port}/ws/simulering")
+            .withEnv("SIMULERING_SERVICE_URL", "http://host.testcontainer.internal:${soapMock.httpPort}/ws/simulering")
             .withEnv("KAFKA_BOOTSTRAP_SERVERS", "$KafkaHostname:$KafkaPort")
             .withEnv("KAFKA_USERNAME", "foo")
             .withEnv("KAFKA_PASSWORD", "bar")
