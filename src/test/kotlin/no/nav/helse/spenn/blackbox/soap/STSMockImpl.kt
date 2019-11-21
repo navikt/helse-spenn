@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.blackbox
+package no.nav.helse.spenn.blackbox.soap
 
 import org.apache.cxf.ws.security.sts.provider.model.RequestSecurityTokenCollectionType
 import org.apache.cxf.ws.security.sts.provider.model.RequestSecurityTokenResponseCollectionType
@@ -19,7 +19,7 @@ import javax.xml.ws.Action
     org.apache.cxf.ws.addressing.ObjectFactory::class
 )
 @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
-class StsMockImpl(private val stsResponseGenerator: STSResponseGenerator) {
+class STSMockImpl(private val stsResponseGenerator: STSResponseGenerator) {
     @WebResult(
         name = "RequestSecurityTokenResponseCollection",
         targetNamespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512",

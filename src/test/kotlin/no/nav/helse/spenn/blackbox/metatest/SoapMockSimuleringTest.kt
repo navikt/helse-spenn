@@ -2,7 +2,7 @@ package no.nav.helse.spenn.blackbox.metatest
 
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.helse.spenn.blackbox.SoapMock
+import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.simulering.SimuleringConfig

@@ -1,5 +1,6 @@
-package no.nav.helse.spenn.blackbox
+package no.nav.helse.spenn.blackbox.soap
 
+import no.nav.helse.spenn.blackbox.generateKeystore
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.entiteter.beregningskjema.Beregning
@@ -96,11 +97,14 @@ class SoapMock : AutoCloseable {
             it.inInterceptors.add(ignoreWssHeaderInterceptor)
             it.outInterceptors.add(LoggingOutInterceptor())
         }
-        Endpoint.publish("/SecurityTokenService", StsMockImpl(STSResponseGenerator(
-            keystoreKeyAlias = keystoreKeyAlias,
-            keystorePath = keystorePath.toAbsolutePath().toString(),
-            keystorePassword = keystorePassword
-        ))).also {
+        Endpoint.publish("/SecurityTokenService", STSMockImpl(
+            STSResponseGenerator(
+                keystoreKeyAlias = keystoreKeyAlias,
+                keystorePath = keystorePath.toAbsolutePath().toString(),
+                keystorePassword = keystorePassword
+            )
+        )
+        ).also {
             it as EndpointImpl
             it.inInterceptors.add(LoggingInInterceptor())
             it.inInterceptors.add(ignoreWssHeaderInterceptor)

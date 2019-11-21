@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.blackbox
+package no.nav.helse.spenn.blackbox.soap
 
 import org.apache.cxf.security.SecurityContext
 import org.apache.cxf.sts.StaticSTSProperties
