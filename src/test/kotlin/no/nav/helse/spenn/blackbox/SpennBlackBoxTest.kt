@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
 import io.ktor.config.HoconApplicationConfig
+import no.nav.helse.spenn.blackbox.mq.OppdragMock
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.spenn
 import org.apache.kafka.clients.CommonClientConfigs
@@ -269,6 +270,8 @@ internal class SpennBlackBoxTest {
             val mq = setupMq(network)
             mq.start()
 
+            println("MQ ADMIN = ${mq.getMappedPort(9443)}")
+
             val vault = setupVault(network)
             vault.start()
 
@@ -284,6 +287,18 @@ internal class SpennBlackBoxTest {
             mockServer.networkAliases
 
             mockClient = MockServerClient(mockServer.containerIpAddress, mockServer.serverPort)
+
+            val mockOppdrag = OppdragMock(
+                host = "localhost",
+                port = mq.getMappedPort(MqPort),
+                channel = "DEV.ADMIN.SVRCONN",
+                queueManager = "QM1",
+                user = "admin",
+                password = "passw0rd",
+                oppdragQueue = "DEV.QUEUE.2"
+            ).also {
+                it.listen()
+            }
 
             //val spenn = setupSpenn(network)
             val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))

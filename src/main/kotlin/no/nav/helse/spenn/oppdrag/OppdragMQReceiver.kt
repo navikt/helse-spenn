@@ -1,13 +1,13 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.trygdeetaten.skjema.oppdrag.Oppdrag
-import org.slf4j.LoggerFactory
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.trygdeetaten.skjema.oppdrag.Oppdrag
+import org.slf4j.LoggerFactory
 import javax.jms.Connection
 
 class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
@@ -28,7 +28,7 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
             val body = m.getBody(String::class.java)
             try {
                 val ignored = receiveOppdragResponse(body)
-            } catch (e: IllegalArgumentException) {
+            } catch (e: Exception) {
                 log.error(e.message, e)
             }
         }
