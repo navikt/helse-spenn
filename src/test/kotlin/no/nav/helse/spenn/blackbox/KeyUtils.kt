@@ -1,8 +1,10 @@
 package no.nav.helse.spenn.blackbox
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x509.BasicConstraints
+import org.bouncycastle.asn1.x509.Extension
+import org.bouncycastle.asn1.x509.GeneralName
+import org.bouncycastle.asn1.x509.GeneralNames
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
@@ -12,7 +14,7 @@ import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.cert.Certificate
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.Date
 
 fun generateKeystore(
     alias: String,
@@ -23,11 +25,11 @@ fun generateKeystore(
     val keygen = KeyPairGenerator.getInstance("RSA")
     val keyPair = keygen.genKeyPair()
     setKeyEntry(alias, keyPair.private, password.toCharArray(),
-        arrayOf(generateCertificate(keyPair, "CN=localhost")))
+        arrayOf(generateCertificate(keyPair, "localhost", "host.testcontainers.internal")))
 }
 
-fun generateCertificate(keyPair: KeyPair, subject: String): Certificate {
-    val dnName = X500Name(subject)
+fun generateCertificate(keyPair: KeyPair, vararg domains: String): Certificate {
+    val dnName = X500Name("CN=${domains.first()}")
     val serial = "2458907890".toBigInteger()
 
     val startDate = ZonedDateTime.now().minusDays(1)
@@ -39,7 +41,10 @@ fun generateCertificate(keyPair: KeyPair, subject: String): Certificate {
         .build(keyPair.private)
 
     val certificateHolder = JcaX509v3CertificateBuilder(dnName, serial, validFrom, validUntil, dnName, keyPair.public)
-        .addExtension(ASN1ObjectIdentifier("2.5.29.19"), true, BasicConstraints(true))
+        .addExtension(Extension.basicConstraints, true, BasicConstraints(true))
+        .addExtension(Extension.subjectAlternativeName, false, GeneralNames(
+            domains.map { GeneralName(GeneralName.dNSName, it) }.toTypedArray()
+        ))
         .build(contentSigner)
 
     return JcaX509CertificateConverter().setProvider(BouncyCastleProvider()).getCertificate(certificateHolder)

@@ -25,14 +25,22 @@ import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse
-import org.testcontainers.containers.*
+import org.testcontainers.containers.Container
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.containers.MockServerContainer
+import org.testcontainers.containers.Network
+import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.images.builder.ImageFromDockerfile
+import org.testcontainers.utility.MountableFile
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.HashMap
+import java.util.Properties
+import java.util.UUID
 
 internal class SpennBlackBoxTest {
 
@@ -52,8 +60,8 @@ internal class SpennBlackBoxTest {
 
 
         println("------------------")
-        println("http://host.testcontainer.internal:${soapMock.httpPort}/ws/simulering")
-        println("https://host.testcontainer.internal:${soapMock.httpsPort}/ws/simulering")
+        println("http://host.testcontainers.internal:${soapMock.httpPort}/ws/simulering")
+        println("https://host.testcontainers.internal:${soapMock.httpsPort}/ws/simulering")
         println("------------------")
 
 
@@ -277,8 +285,8 @@ internal class SpennBlackBoxTest {
 
             mockClient = MockServerClient(mockServer.containerIpAddress, mockServer.serverPort)
 
-            val spenn = setupSpenn(network)
-            //val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
+            //val spenn = setupSpenn(network)
+            val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
             spenn.start()
 
         }
@@ -427,8 +435,8 @@ internal class SpennBlackBoxTest {
             withEnv("KAFKA_USERNAME", "foo")
             withEnv("KAFKA_PASSWORD", "bar")
             withEnv("PLAIN_TEXT_KAFKA", "true")
-            withEnv("NAV_TRUSTSTORE_PATH", "foo")
-            withEnv("NAV_TRUSTSTORE_PASSWORD", "bar")
+            withEnv("NAV_TRUSTSTORE_PATH", "/tmp/keystore.p12")
+            withEnv("NAV_TRUSTSTORE_PASSWORD", soapMock.keystorePassword)
             withEnv("STS_SOAP_USERNAME", "foo")
             withEnv("STS_SOAP_PASSWORD", "bar")
             withEnv(
@@ -470,7 +478,7 @@ internal class SpennBlackBoxTest {
 
         private fun setupSpenn(network: Network): SpennContainer {
             fun hostResolverContainer(hostname: String, port: Int): HostInfo = when (hostname) {
-                "localhost" -> HostInfo(hostname = "host.testcontainer.internal", port = port)
+                "localhost" -> HostInfo(hostname = "host.testcontainers.internal", port = port)
                 else -> HostInfo(hostname = hostname, port = port)
             }
             return SpennContainer
@@ -478,6 +486,7 @@ internal class SpennBlackBoxTest {
                 .also { setupEnv(it::withEnv, ::hostResolverContainer) }
                 .withEnv("KAFKA_BOOTSTRAP_SERVERS", "$KafkaHostname:$KafkaPort")
                 .waitingFor(Wait.forListeningPort())
+                .withCopyFileToContainer(MountableFile.forHostPath(soapMock.keystorePath), "/tmp/keystore.p12")
                 .withLogConsumer { print("spenn: " + it.utf8String) }
         }
     }

@@ -34,7 +34,7 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
     val lockingExecutor = DefaultLockingTaskExecutor(lockProvider)
     val defaultMaxWaitForLockInSeconds = 10L
 
-    val runWithLock = fun(lockName: String, fn: () -> Unit) {
+    fun runWithLock(lockName: String, fn: () -> Unit) {
         lockingExecutor.executeWithLock(Runnable {
             try {
                 fn()
