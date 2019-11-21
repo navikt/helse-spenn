@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
 import io.ktor.config.HoconApplicationConfig
-import kotlinx.coroutines.withTimeout
 import no.nav.helse.spenn.blackbox.mq.OppdragMock
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.spenn
@@ -306,8 +305,8 @@ internal class SpennBlackBoxTest {
                 it.listen()
             }
 
-            //val spenn = setupSpenn(network)
-            val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
+            val spenn = setupSpenn(network)
+            //val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
             spenn.start()
 
         }

@@ -31,7 +31,7 @@ jobs:
             docker build -t docker.pkg.github.com/$DOCKER_TAG -t spenn:latest .
       - run:
           name: Blackbox test
-          command: ./mvnw verify -Dtest=SpennBlackBoxTest -Dspenn.image=docker.pkg.github.com/$DOCKER_TAG
+          command: ./mvnw verify -Dtest=SpennBlackBoxTest
       - run:
           name: Docker push
           command: |
