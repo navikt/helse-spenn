@@ -23,7 +23,7 @@ import kotlin.test.assertNotNull
 class SoapMockSimuleringTest {
 
 
-    val soapMock = SoapMock()
+    val soapMock = SoapMock(exposeTestContainerPorts = false)
 
     private lateinit var simuleringService: SimuleringService
 
@@ -32,8 +32,6 @@ class SoapMockSimuleringTest {
         println(soapMock.keystorePath.toAbsolutePath().toString())
         System.setProperty("javax.net.ssl.trustStore", soapMock.keystorePath.toAbsolutePath().toString())
         System.setProperty("javax.net.ssl.trustStorePassword", soapMock.keystorePassword)
-        //System.setProperty("javax.net.debug", "all")
-        //System.setProperty("java.net.ssl.keyStoreType", "PKCS12")
 
         soapMock.start()
 

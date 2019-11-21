@@ -31,7 +31,7 @@ import javax.xml.namespace.QName
 import javax.xml.ws.Endpoint
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningResponse as SimulerBeregningResponseWrapper
 
-class SoapMock : AutoCloseable {
+class SoapMock(private val exposeTestContainerPorts:Boolean = true) : AutoCloseable {
     val httpPort = ServerSocket(0).use { it.localPort }
     val httpsPort = ServerSocket(0).use { it.localPort }
     val keystorePath = Files.createTempFile("keystore", ".p12")
@@ -72,7 +72,9 @@ class SoapMock : AutoCloseable {
             keystore.store(it, keystorePassword.toCharArray())
         }
 
-        Testcontainers.exposeHostPorts(httpPort, httpsPort)
+        if (exposeTestContainerPorts) {
+            Testcontainers.exposeHostPorts(httpPort, httpsPort)
+        }
         val soapServlet = CXFNonSpringServlet()
         val servletHandler = ServletContextHandler()
         servletHandler.addServlet(ServletHolder(soapServlet), "/ws/*")
