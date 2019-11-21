@@ -90,13 +90,13 @@ private fun mapToSimuleringsOppdragslinje(
         saksbehId = saksbehandler
         if (erRefusjonTilArbeidsgiver) {
             refusjonsInfo = RefusjonsInfo().apply {
-                assert(oppdragslinje.utbetalesTil.length == 9)
+                require(oppdragslinje.utbetalesTil.length == 9)
                 this.refunderesId = "00" + oppdragslinje.utbetalesTil
                 this.datoFom = datoVedtakFom
                 this.maksDato = maksDato.format(formatter)
             }
         } else {
-            assert(oppdragslinje.utbetalesTil.length == 11)
+            require(oppdragslinje.utbetalesTil.length == 11)
             utbetalesTilId = oppdragslinje.utbetalesTil
         }
         brukKjoreplan = "N"
@@ -175,13 +175,13 @@ private fun mapTolinje150(
         saksbehId = saksbehandler
         if (erRefusjonTilArbeidsgiver) {
             refusjonsinfo156 = Refusjonsinfo156().apply {
-                assert(oppdragslinje.utbetalesTil.length == 9)
+                require(oppdragslinje.utbetalesTil.length == 9)
                 this.refunderesId = "00" + oppdragslinje.utbetalesTil
                 this.datoFom = datoVedtakFom
                 this.maksDato = OppdragSkjemaConstants.toXMLDate(maksDato)
             }
         } else {
-            assert(oppdragslinje.utbetalesTil.length == 11)
+            require(oppdragslinje.utbetalesTil.length == 11)
             utbetalesTilId = oppdragslinje.utbetalesTil
         }
         brukKjoreplan = "N"

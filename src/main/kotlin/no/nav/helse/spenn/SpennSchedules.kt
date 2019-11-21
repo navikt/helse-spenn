@@ -34,7 +34,7 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
     val lockingExecutor = DefaultLockingTaskExecutor(lockProvider)
     val defaultMaxWaitForLockInSeconds = 10L
 
-    val runWithLock = fun(lockName: String, fn: () -> Unit) {
+    fun runWithLock(lockName: String, fn: () -> Unit) {
         lockingExecutor.executeWithLock(Runnable {
             try {
                 fn()
@@ -79,7 +79,7 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
 
         val now = LocalDateTime.now(clock)
         var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
-        if (now.compareTo(nextRun) > 0) {
+        if (now > nextRun) {
             nextRun = nextRun.plusDays(1)
         }
 

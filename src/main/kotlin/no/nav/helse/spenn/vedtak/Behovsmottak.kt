@@ -52,21 +52,24 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
 
         builder.consumeTopic(SYKEPENGER_BEHOV_TOPIC)
             .filter { _, value -> value["@behov"]?.textValue() == "Utbetaling" }
-            .filter { _, value ->
-                value["@løsning"].let {
-                    it == null || it.isNull
+            .filter { _, value -> !value.hasNonNull("@løsning") }
+            .mapValues { _, value -> value to defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
+            .filter { _, (_, utbetalingsbehov) ->
+                utbetalingsbehov.utbetalingslinjer.isNotEmpty().also { harUtbetalingslinjer ->
+                    if (!harUtbetalingslinjer) {
+                        log.error("Mottok utbetalingsbehov uten utbetalingslinjer")
+                    }
                 }
             }
-            .mapValues { _, value -> value to defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
-            .mapValues { _, (originalMessage, value) ->
+            .mapValues { _, (originalMessage, utbetalingsbehov) ->
                 try {
-                    originalMessage to value.tilUtbetaling(
-                            aktørTilFnrMapper.tilFnr(
-                                    value.aktørId
-                            )
+                    originalMessage to utbetalingsbehov.tilUtbetaling(
+                        aktørTilFnrMapper.tilFnr(
+                            utbetalingsbehov.aktørId
+                        )
                     )
                 } catch (err: AktorNotFoundException) {
-                    log.info("aktør finnes ikke, skipper melding", err)
+                    log.error("aktør finnes ikke, skipper melding", err)
                     null
                 }
             }

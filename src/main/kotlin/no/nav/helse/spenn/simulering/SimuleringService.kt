@@ -41,6 +41,7 @@ class SimuleringService(val simulerFpService: SimulerFpService,
         if (oppdrag.utbetalingsOppdrag.utbetalingsLinje.isNotEmpty()) {
             return simulerOppdrag(oppdrag.toSimuleringRequest())
         }
+        log.error("Kan ikke simulere betaling: Mangler utbetalingslinjer")
         return SimuleringResult(status=Status.FEIL,feilMelding = "Tomt vedtak")
     }
 
@@ -53,11 +54,11 @@ class SimuleringService(val simulerFpService: SimulerFpService,
             mapResponseToResultat(response.response)
         }
         catch (e: SimulerBeregningFeilUnderBehandling) { // TODO
-            log.error("Got error while running Simulering {}", e.faultInfo.errorMessage)
+            log.error("Got error while running Simulering", e)
             SimuleringResult(status = Status.FEIL, feilMelding = e.faultInfo.errorMessage)
         }
         catch (e: Exception) { // TODO
-            log.error("Got unexpected error while running Simulering {}", e)
+            log.error("Got unexpected error while running Simulering", e)
             SimuleringResult(status = Status.FEIL, feilMelding = e.message?:"")
         }
 
