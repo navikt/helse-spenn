@@ -5,6 +5,7 @@ import com.ibm.msg.client.wmq.WMQConstants
 import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.trygdeetaten.skjema.oppdrag.Mmel
+import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 
 val jaxb = JAXBOppdrag()
@@ -31,6 +32,8 @@ class OppdragMock(host: String,
     private val consumer = session
         .createConsumer(session.createQueue(oppdragQueue))
 
+    val messagesReceived = mutableListOf<Oppdrag>()
+
     fun listen() {
         log.info("Setting up listener")
         consumer.setMessageListener {
@@ -38,6 +41,8 @@ class OppdragMock(host: String,
             log.info("Got message: $message")
 
             val oppdrag = jaxb.toOppdrag(message)
+
+            messagesReceived += oppdrag
 
             oppdrag.mmel = Mmel().apply {
                 this.alvorlighetsgrad = KvitteringAlvorlighetsgrad.OK.kode

@@ -648,11 +648,11 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
-                <!--<configuration>
+                <configuration>23
                     <excludes>
                         <exclude>**/SpennBlackBoxTest*</exclude>
                     </excludes>
-                </configuration>-->
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
 import io.ktor.config.HoconApplicationConfig
+import kotlinx.coroutines.withTimeout
 import no.nav.helse.spenn.blackbox.mq.OppdragMock
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.spenn
@@ -19,8 +20,7 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
@@ -70,7 +70,11 @@ internal class SpennBlackBoxTest {
             remove("@løsning")
         }
         assertEquals(sendtBehov, løsningPåBehovUtenLøsning)
-        Thread.sleep(600000)
+        assertTimeoutPreemptively(Duration.ofMinutes(5)) {
+            while (mockOppdrag.messagesReceived.isEmpty()) {
+                Thread.sleep(100)
+            }
+        }
     }
 
     private fun ventPåLøsning(timeout: Duration = Duration.ofSeconds(30)): JsonNode {
@@ -244,6 +248,8 @@ internal class SpennBlackBoxTest {
 
         private lateinit var mockClient: MockServerClient
 
+        private lateinit var mockOppdrag: OppdragMock
+
         @BeforeAll
         @JvmStatic
         private fun setupCluster() {
@@ -288,7 +294,7 @@ internal class SpennBlackBoxTest {
 
             mockClient = MockServerClient(mockServer.containerIpAddress, mockServer.serverPort)
 
-            val mockOppdrag = OppdragMock(
+            mockOppdrag = OppdragMock(
                 host = "localhost",
                 port = mq.getMappedPort(MqPort),
                 channel = "DEV.ADMIN.SVRCONN",
