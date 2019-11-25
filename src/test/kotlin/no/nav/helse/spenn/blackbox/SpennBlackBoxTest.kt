@@ -93,7 +93,6 @@ internal class SpennBlackBoxTest {
     "aktørId": "$aktørId",
     "organisasjonsnummer": "666666666",
     "saksbehandler": "Z999999",
-    "utbetalingsreferanse": "foobar",
     "maksdato": "2019-01-01",
     "utbetalingslinjer": [
         {
@@ -297,8 +296,8 @@ internal class SpennBlackBoxTest {
                 it.listen()
             }
 
-            val spenn = setupSpenn(network)
-            //val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
+//            val spenn = setupSpenn(network)
+            val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
             spenn.start()
 
         }

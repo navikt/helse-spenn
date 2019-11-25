@@ -170,7 +170,9 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
             authConfig = apiAuthConfig,
             simuleringService = simuleringService,
             aktørTilFnrMapper = aktorTilFnrMapper,
-            auditSupport = AuditSupport()
+            auditSupport = AuditSupport(),
+            stateService = oppdragStateService,
+            oppdragMQSender = oppdragMQSender
     ))
 
     ///// ///// /////
