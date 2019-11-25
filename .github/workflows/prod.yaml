@@ -28,7 +28,7 @@ jobs:
       - name: unit test and build
         run: ./mvnw install
       - name: blackbox test
-          run: ./mvnw verify -Dtest=SpennBlackBoxTest
+        run: ./mvnw verify -Dtest=SpennBlackBoxTest
       - name: build docker image
         run: docker build . --pull -t $(cat .docker_image):$(cat .docker_tag)
       - name: push docker image
