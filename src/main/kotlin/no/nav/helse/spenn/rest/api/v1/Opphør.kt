@@ -52,7 +52,11 @@ private fun OppdragStateDTO.lagOpphørsmelding(): Oppdrag {
         fagsystemId = utbetalingsOppdrag.behov.utbetalingsreferanse
         //utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
+
         //datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
+
+        datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(dto.created.toLocalDate())
+
         saksbehId = utbetalingsOppdrag.behov.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
             this.nokkelAvstemming = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
