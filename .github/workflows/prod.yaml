@@ -39,13 +39,13 @@ jobs:
           GITHUB_REPO_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
           GITHUB_REPO_USER: ${{secrets.GITHUB_REPO_USER}}
       - name: deploy to dev
-          uses: navikt/deployment-cli/action@0.4.1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
-            AWAIT_SECONDS: 0
-          with:
-            cluster: dev-fss
-            team: tbd
-            resources: naiserator.yml
-          vars: naiserator-vars-dev.json
+        uses: navikt/deployment-cli/action@0.4.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+          AWAIT_SECONDS: 0
+        with:
+          cluster: dev-fss
+          team: tbd
+          resources: naiserator.yml
+        vars: naiserator-vars-dev.json
 
