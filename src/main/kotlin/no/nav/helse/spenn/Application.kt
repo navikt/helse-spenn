@@ -24,6 +24,7 @@ fun main() {
 @KtorExperimentalAPI
 internal fun spenn(appConfig: ApplicationConfig) {
     log.info("Creating SpennServices...")
+    log.info("OPPHØRSEKSPERIMENT!")
     val services = SpennServices(appConfig)
 
     val schedulerConfig = SpennConfig.from(appConfig)
