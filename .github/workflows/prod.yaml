@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - uses: actions/setup-java@v1
         with:
           java-version: '11.x'
@@ -30,13 +36,4 @@ jobs:
         env:
           GITHUB_REPO_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
           GITHUB_REPO_USER: ${{secrets.GITHUB_REPO_USER}}
-      - name: deploy to dev
-        uses: navikt/deployment-cli/action@0.4.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
-          AWAIT_SECONDS: 0
-        with:
-          cluster: dev-fss
-          team: tbd
-          resources: naiserator.yml
-          vars: naiserator-vars-dev.json
+    
