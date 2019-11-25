@@ -8,6 +8,8 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.spenn.config.SpennApiAuthConfig
+import no.nav.helse.spenn.oppdrag.dao.*
+import no.nav.helse.spenn.overforing.*
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
@@ -39,7 +41,9 @@ fun mockApiEnvironment() = SpennApiEnvironment(
         authConfig = testSpennApiAuthConfig(),
         simuleringService = Mockito.mock(SimuleringService::class.java),
         auditSupport = AuditSupport(),
-        aktørTilFnrMapper = Mockito.mock(AktørTilFnrMapper::class.java)
+        aktørTilFnrMapper = Mockito.mock(AktørTilFnrMapper::class.java),
+        oppdragMQSender = Mockito.mock(OppdragMQSender::class.java),
+        stateService = Mockito.mock(OppdragStateService::class.java)
 )
 
 fun buildClaimSet(subject: String,
