@@ -53,7 +53,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         builder.consumeTopic(SYKEPENGER_BEHOV_TOPIC)
             .filter { _, value -> value.skalOppfyllesAvOss("Utbetaling") }
             .filter { _, value -> !value.hasNonNull("@løsning") }
-            .filter { _, value -> !value["utbetalingsreferanse"].isNull }
+            .filter { _, value -> value.hasNonNull("utbetalingsreferanse") }
             .mapValues { _, value -> value to defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
             .filter { _, (_, utbetalingsbehov) ->
                 utbetalingsbehov.utbetalingslinjer.isNotEmpty().also { harUtbetalingslinjer ->
