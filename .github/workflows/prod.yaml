@@ -47,5 +47,5 @@ jobs:
           cluster: dev-fss
           team: tbd
           resources: naiserator.yml
-        vars: naiserator-vars-dev.json
+          vars: naiserator-vars-dev.json
 
