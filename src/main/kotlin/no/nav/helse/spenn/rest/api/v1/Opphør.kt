@@ -50,7 +50,7 @@ private fun OppdragStateDTO.lagOpphørsmelding(): Oppdrag {
 
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsOppdrag.behov.utbetalingsreferanse
-        //utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
+        utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
 
         //datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
