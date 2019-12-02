@@ -78,7 +78,7 @@ class SimuleringService(val simulerFpService: SimulerFpService,
 
     private fun mapBeregningStoppNivaa(stoppNivaa: BeregningStoppnivaa): Utbetaling {
         return Utbetaling(fagSystemId = stoppNivaa.fagsystemId.trim(), utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(),
-                utbetalesTilId = stoppNivaa.utbetalesTilId, forfall = LocalDate.parse(stoppNivaa.forfall),
+                utbetalesTilId = stoppNivaa.utbetalesTilId.removePrefix("00"), forfall = LocalDate.parse(stoppNivaa.forfall),
                 feilkonto = stoppNivaa.isFeilkonto,
                 detaljer = stoppNivaa.beregningStoppnivaaDetaljer.map {mapDetaljer(it)})
     }
@@ -88,7 +88,7 @@ class SimuleringService(val simulerFpService: SimulerFpService,
                 uforegrad = detaljer.uforeGrad, antallSats = detaljer.antallSats, typeSats = SatsTypeKode.fromKode(detaljer.typeSats.trim()),
                 sats = detaljer.sats, belop = detaljer.belop, konto = detaljer.kontoStreng.trim(), tilbakeforing = detaljer.isTilbakeforing,
                 klassekode = detaljer.klassekode.trim(), klassekodeBeskrivelse = detaljer.klasseKodeBeskrivelse.trim(),
-                utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse), refunderesOrgNr = detaljer.refunderesOrgNr)
+                utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse), refunderesOrgNr = detaljer.refunderesOrgNr.removePrefix("00"))
     }
 
     private fun disableCnCheck(port: SimulerFpService) {
