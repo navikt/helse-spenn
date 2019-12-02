@@ -92,6 +92,7 @@ internal class SpennBlackBoxTest {
     "sakskompleksId": "${UUID.randomUUID()}",
     "aktørId": "$aktørId",
     "organisasjonsnummer": "666666666",
+    "utbetalingsreferanse": "foobar",
     "saksbehandler": "Z999999",
     "maksdato": "2019-01-01",
     "utbetalingslinjer": [
