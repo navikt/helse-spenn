@@ -6,10 +6,10 @@ package no.nav.helse.spenn.jooq;
 
 import javax.annotation.processing.Generated;
 
-import no.nav.helse.spenn.jooq.tables.Avstemming;
-import no.nav.helse.spenn.jooq.tables.Oppdragstate;
-import no.nav.helse.spenn.jooq.tables.records.AvstemmingRecord;
-import no.nav.helse.spenn.jooq.tables.records.OppdragstateRecord;
+import no.nav.helse.spenn.jooq.tables.Oppdrag;
+import no.nav.helse.spenn.jooq.tables.Transaksjon;
+import no.nav.helse.spenn.jooq.tables.records.OppdragRecord;
+import no.nav.helse.spenn.jooq.tables.records.TransaksjonRecord;
 
 import org.jooq.ForeignKey;
 import org.jooq.Identity;
@@ -35,45 +35,45 @@ public class Keys {
     // IDENTITY definitions
     // -------------------------------------------------------------------------
 
-    public static final Identity<AvstemmingRecord, Long> IDENTITY_AVSTEMMING = Identities0.IDENTITY_AVSTEMMING;
-    public static final Identity<OppdragstateRecord, Long> IDENTITY_OPPDRAGSTATE = Identities0.IDENTITY_OPPDRAGSTATE;
+    public static final Identity<OppdragRecord, Long> IDENTITY_OPPDRAG = Identities0.IDENTITY_OPPDRAG;
+    public static final Identity<TransaksjonRecord, Long> IDENTITY_TRANSAKSJON = Identities0.IDENTITY_TRANSAKSJON;
 
     // -------------------------------------------------------------------------
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<AvstemmingRecord> AVSTEMMING_PKEY = UniqueKeys0.AVSTEMMING_PKEY;
-    public static final UniqueKey<AvstemmingRecord> UQ_AVSTEMMING_OPPDRAGSTATE = UniqueKeys0.UQ_AVSTEMMING_OPPDRAGSTATE;
-    public static final UniqueKey<AvstemmingRecord> UQ_AVSTEMMING_NOKKEL = UniqueKeys0.UQ_AVSTEMMING_NOKKEL;
-    public static final UniqueKey<OppdragstateRecord> PK_OPPDRAGSTATE = UniqueKeys0.PK_OPPDRAGSTATE;
-    public static final UniqueKey<OppdragstateRecord> UQ_SAKSKOMPLEKS_ID = UniqueKeys0.UQ_SAKSKOMPLEKS_ID;
-    public static final UniqueKey<OppdragstateRecord> OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = UniqueKeys0.OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY;
+    public static final UniqueKey<OppdragRecord> PK_OPPDRAG = UniqueKeys0.PK_OPPDRAG;
+    public static final UniqueKey<OppdragRecord> UQ_OPPDRAG_SAKSKOMPLEKS_ID = UniqueKeys0.UQ_OPPDRAG_SAKSKOMPLEKS_ID;
+    public static final UniqueKey<OppdragRecord> OPPDRAG_UTBETALINGSREFERANSE_KEY = UniqueKeys0.OPPDRAG_UTBETALINGSREFERANSE_KEY;
+    public static final UniqueKey<TransaksjonRecord> TRANSAKSJON_PKEY = UniqueKeys0.TRANSAKSJON_PKEY;
+    public static final UniqueKey<TransaksjonRecord> UQ_TRANSAKSJON_OPPDRAG_ID = UniqueKeys0.UQ_TRANSAKSJON_OPPDRAG_ID;
+    public static final UniqueKey<TransaksjonRecord> UQ_TRANSAKSJON_NOKKEL = UniqueKeys0.UQ_TRANSAKSJON_NOKKEL;
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<AvstemmingRecord, OppdragstateRecord> AVSTEMMING__AVSTEMMING_OPPDRAGSTATE_ID_FKEY = ForeignKeys0.AVSTEMMING__AVSTEMMING_OPPDRAGSTATE_ID_FKEY;
+    public static final ForeignKey<TransaksjonRecord, OppdragRecord> TRANSAKSJON__TRANSAKSJON_OPPDRAG_ID_FKEY = ForeignKeys0.TRANSAKSJON__TRANSAKSJON_OPPDRAG_ID_FKEY;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
     // -------------------------------------------------------------------------
 
     private static class Identities0 {
-        public static Identity<AvstemmingRecord, Long> IDENTITY_AVSTEMMING = Internal.createIdentity(Avstemming.AVSTEMMING, Avstemming.AVSTEMMING.ID);
-        public static Identity<OppdragstateRecord, Long> IDENTITY_OPPDRAGSTATE = Internal.createIdentity(Oppdragstate.OPPDRAGSTATE, Oppdragstate.OPPDRAGSTATE.ID);
+        public static Identity<OppdragRecord, Long> IDENTITY_OPPDRAG = Internal.createIdentity(Oppdrag.OPPDRAG, Oppdrag.OPPDRAG.ID);
+        public static Identity<TransaksjonRecord, Long> IDENTITY_TRANSAKSJON = Internal.createIdentity(Transaksjon.TRANSAKSJON, Transaksjon.TRANSAKSJON.ID);
     }
 
     private static class UniqueKeys0 {
-        public static final UniqueKey<AvstemmingRecord> AVSTEMMING_PKEY = Internal.createUniqueKey(Avstemming.AVSTEMMING, "avstemming_pkey", Avstemming.AVSTEMMING.ID);
-        public static final UniqueKey<AvstemmingRecord> UQ_AVSTEMMING_OPPDRAGSTATE = Internal.createUniqueKey(Avstemming.AVSTEMMING, "uq_avstemming_oppdragstate", Avstemming.AVSTEMMING.OPPDRAGSTATE_ID);
-        public static final UniqueKey<AvstemmingRecord> UQ_AVSTEMMING_NOKKEL = Internal.createUniqueKey(Avstemming.AVSTEMMING, "uq_avstemming_nokkel", Avstemming.AVSTEMMING.NOKKEL);
-        public static final UniqueKey<OppdragstateRecord> PK_OPPDRAGSTATE = Internal.createUniqueKey(Oppdragstate.OPPDRAGSTATE, "pk_oppdragstate", Oppdragstate.OPPDRAGSTATE.ID);
-        public static final UniqueKey<OppdragstateRecord> UQ_SAKSKOMPLEKS_ID = Internal.createUniqueKey(Oppdragstate.OPPDRAGSTATE, "uq_sakskompleks_id", Oppdragstate.OPPDRAGSTATE.SAKSKOMPLEKS_ID);
-        public static final UniqueKey<OppdragstateRecord> OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = Internal.createUniqueKey(Oppdragstate.OPPDRAGSTATE, "oppdragstate_utbetalingsreferanse_key", Oppdragstate.OPPDRAGSTATE.UTBETALINGSREFERANSE);
+        public static final UniqueKey<OppdragRecord> PK_OPPDRAG = Internal.createUniqueKey(Oppdrag.OPPDRAG, "pk_oppdrag", Oppdrag.OPPDRAG.ID);
+        public static final UniqueKey<OppdragRecord> UQ_OPPDRAG_SAKSKOMPLEKS_ID = Internal.createUniqueKey(Oppdrag.OPPDRAG, "uq_oppdrag_sakskompleks_id", Oppdrag.OPPDRAG.SAKSKOMPLEKS_ID);
+        public static final UniqueKey<OppdragRecord> OPPDRAG_UTBETALINGSREFERANSE_KEY = Internal.createUniqueKey(Oppdrag.OPPDRAG, "oppdrag_utbetalingsreferanse_key", Oppdrag.OPPDRAG.UTBETALINGSREFERANSE);
+        public static final UniqueKey<TransaksjonRecord> TRANSAKSJON_PKEY = Internal.createUniqueKey(Transaksjon.TRANSAKSJON, "transaksjon_pkey", Transaksjon.TRANSAKSJON.ID);
+        public static final UniqueKey<TransaksjonRecord> UQ_TRANSAKSJON_OPPDRAG_ID = Internal.createUniqueKey(Transaksjon.TRANSAKSJON, "uq_transaksjon_oppdrag_id", Transaksjon.TRANSAKSJON.OPPDRAG_ID);
+        public static final UniqueKey<TransaksjonRecord> UQ_TRANSAKSJON_NOKKEL = Internal.createUniqueKey(Transaksjon.TRANSAKSJON, "uq_transaksjon_nokkel", Transaksjon.TRANSAKSJON.NOKKEL);
     }
 
     private static class ForeignKeys0 {
-        public static final ForeignKey<AvstemmingRecord, OppdragstateRecord> AVSTEMMING__AVSTEMMING_OPPDRAGSTATE_ID_FKEY = Internal.createForeignKey(no.nav.helse.spenn.jooq.Keys.PK_OPPDRAGSTATE, Avstemming.AVSTEMMING, "avstemming__avstemming_oppdragstate_id_fkey", Avstemming.AVSTEMMING.OPPDRAGSTATE_ID);
+        public static final ForeignKey<TransaksjonRecord, OppdragRecord> TRANSAKSJON__TRANSAKSJON_OPPDRAG_ID_FKEY = Internal.createForeignKey(no.nav.helse.spenn.jooq.Keys.PK_OPPDRAG, Transaksjon.TRANSAKSJON, "transaksjon__transaksjon_oppdrag_id_fkey", Transaksjon.TRANSAKSJON.OPPDRAG_ID);
     }
 }

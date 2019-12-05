@@ -6,8 +6,8 @@ package no.nav.helse.spenn.jooq;
 
 import javax.annotation.processing.Generated;
 
-import no.nav.helse.spenn.jooq.tables.Avstemming;
-import no.nav.helse.spenn.jooq.tables.Oppdragstate;
+import no.nav.helse.spenn.jooq.tables.Oppdrag;
+import no.nav.helse.spenn.jooq.tables.Transaksjon;
 
 import org.jooq.Index;
 import org.jooq.OrderField;
@@ -31,27 +31,27 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
-    public static final Index AVSTEMMING_PKEY = Indexes0.AVSTEMMING_PKEY;
-    public static final Index UQ_AVSTEMMING_NOKKEL = Indexes0.UQ_AVSTEMMING_NOKKEL;
-    public static final Index UQ_AVSTEMMING_OPPDRAGSTATE = Indexes0.UQ_AVSTEMMING_OPPDRAGSTATE;
-    public static final Index OPPDRAGSTATE_MODIFIED_IDX = Indexes0.OPPDRAGSTATE_MODIFIED_IDX;
-    public static final Index OPPDRAGSTATE_STATUS_IDX = Indexes0.OPPDRAGSTATE_STATUS_IDX;
-    public static final Index OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = Indexes0.OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY;
-    public static final Index PK_OPPDRAGSTATE = Indexes0.PK_OPPDRAGSTATE;
-    public static final Index UQ_SAKSKOMPLEKS_ID = Indexes0.UQ_SAKSKOMPLEKS_ID;
+    public static final Index OPPDRAG_MODIFIED_IDX = Indexes0.OPPDRAG_MODIFIED_IDX;
+    public static final Index OPPDRAG_UTBETALINGSREFERANSE_KEY = Indexes0.OPPDRAG_UTBETALINGSREFERANSE_KEY;
+    public static final Index PK_OPPDRAG = Indexes0.PK_OPPDRAG;
+    public static final Index UQ_OPPDRAG_SAKSKOMPLEKS_ID = Indexes0.UQ_OPPDRAG_SAKSKOMPLEKS_ID;
+    public static final Index TRANSAKSJON_PKEY = Indexes0.TRANSAKSJON_PKEY;
+    public static final Index TRANSAKSJON_STATUS_IDX = Indexes0.TRANSAKSJON_STATUS_IDX;
+    public static final Index UQ_TRANSAKSJON_NOKKEL = Indexes0.UQ_TRANSAKSJON_NOKKEL;
+    public static final Index UQ_TRANSAKSJON_OPPDRAG_ID = Indexes0.UQ_TRANSAKSJON_OPPDRAG_ID;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
     // -------------------------------------------------------------------------
 
     private static class Indexes0 {
-        public static Index AVSTEMMING_PKEY = Internal.createIndex("avstemming_pkey", Avstemming.AVSTEMMING, new OrderField[] { Avstemming.AVSTEMMING.ID }, true);
-        public static Index UQ_AVSTEMMING_NOKKEL = Internal.createIndex("uq_avstemming_nokkel", Avstemming.AVSTEMMING, new OrderField[] { Avstemming.AVSTEMMING.NOKKEL }, true);
-        public static Index UQ_AVSTEMMING_OPPDRAGSTATE = Internal.createIndex("uq_avstemming_oppdragstate", Avstemming.AVSTEMMING, new OrderField[] { Avstemming.AVSTEMMING.OPPDRAGSTATE_ID }, true);
-        public static Index OPPDRAGSTATE_MODIFIED_IDX = Internal.createIndex("oppdragstate_modified_idx", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.MODIFIED }, false);
-        public static Index OPPDRAGSTATE_STATUS_IDX = Internal.createIndex("oppdragstate_status_idx", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.STATUS }, false);
-        public static Index OPPDRAGSTATE_UTBETALINGSREFERANSE_KEY = Internal.createIndex("oppdragstate_utbetalingsreferanse_key", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.UTBETALINGSREFERANSE }, true);
-        public static Index PK_OPPDRAGSTATE = Internal.createIndex("pk_oppdragstate", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.ID }, true);
-        public static Index UQ_SAKSKOMPLEKS_ID = Internal.createIndex("uq_sakskompleks_id", Oppdragstate.OPPDRAGSTATE, new OrderField[] { Oppdragstate.OPPDRAGSTATE.SAKSKOMPLEKS_ID }, true);
+        public static Index OPPDRAG_MODIFIED_IDX = Internal.createIndex("oppdrag_modified_idx", Oppdrag.OPPDRAG, new OrderField[] { Oppdrag.OPPDRAG.MODIFIED }, false);
+        public static Index OPPDRAG_UTBETALINGSREFERANSE_KEY = Internal.createIndex("oppdrag_utbetalingsreferanse_key", Oppdrag.OPPDRAG, new OrderField[] { Oppdrag.OPPDRAG.UTBETALINGSREFERANSE }, true);
+        public static Index PK_OPPDRAG = Internal.createIndex("pk_oppdrag", Oppdrag.OPPDRAG, new OrderField[] { Oppdrag.OPPDRAG.ID }, true);
+        public static Index UQ_OPPDRAG_SAKSKOMPLEKS_ID = Internal.createIndex("uq_oppdrag_sakskompleks_id", Oppdrag.OPPDRAG, new OrderField[] { Oppdrag.OPPDRAG.SAKSKOMPLEKS_ID }, true);
+        public static Index TRANSAKSJON_PKEY = Internal.createIndex("transaksjon_pkey", Transaksjon.TRANSAKSJON, new OrderField[] { Transaksjon.TRANSAKSJON.ID }, true);
+        public static Index TRANSAKSJON_STATUS_IDX = Internal.createIndex("transaksjon_status_idx", Transaksjon.TRANSAKSJON, new OrderField[] { Transaksjon.TRANSAKSJON.STATUS }, false);
+        public static Index UQ_TRANSAKSJON_NOKKEL = Internal.createIndex("uq_transaksjon_nokkel", Transaksjon.TRANSAKSJON, new OrderField[] { Transaksjon.TRANSAKSJON.NOKKEL }, true);
+        public static Index UQ_TRANSAKSJON_OPPDRAG_ID = Internal.createIndex("uq_transaksjon_oppdrag_id", Transaksjon.TRANSAKSJON, new OrderField[] { Transaksjon.TRANSAKSJON.OPPDRAG_ID }, true);
     }
 }

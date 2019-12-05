@@ -29,7 +29,17 @@ public class Sequences {
     public static final Sequence<Long> AVSTEMMING_ID_SEQ = new SequenceImpl<Long>("avstemming_id_seq", Public.PUBLIC, org.jooq.impl.SQLDataType.BIGINT.nullable(false));
 
     /**
+     * The sequence <code>public.oppdrag_id_seq</code>
+     */
+    public static final Sequence<Long> OPPDRAG_ID_SEQ = new SequenceImpl<Long>("oppdrag_id_seq", Public.PUBLIC, org.jooq.impl.SQLDataType.BIGINT.nullable(false));
+
+    /**
      * The sequence <code>public.oppdragstate_id_seq</code>
      */
     public static final Sequence<Long> OPPDRAGSTATE_ID_SEQ = new SequenceImpl<Long>("oppdragstate_id_seq", Public.PUBLIC, org.jooq.impl.SQLDataType.BIGINT.nullable(false));
+
+    /**
+     * The sequence <code>public.transaksjon_id_seq</code>
+     */
+    public static final Sequence<Long> TRANSAKSJON_ID_SEQ = new SequenceImpl<Long>("transaksjon_id_seq", Public.PUBLIC, org.jooq.impl.SQLDataType.BIGINT.nullable(false));
 }

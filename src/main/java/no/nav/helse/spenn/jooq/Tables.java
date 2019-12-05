@@ -6,8 +6,8 @@ package no.nav.helse.spenn.jooq;
 
 import javax.annotation.processing.Generated;
 
-import no.nav.helse.spenn.jooq.tables.Avstemming;
-import no.nav.helse.spenn.jooq.tables.Oppdragstate;
+import no.nav.helse.spenn.jooq.tables.Oppdrag;
+import no.nav.helse.spenn.jooq.tables.Transaksjon;
 
 
 /**
@@ -24,12 +24,12 @@ import no.nav.helse.spenn.jooq.tables.Oppdragstate;
 public class Tables {
 
     /**
-     * The table <code>public.avstemming</code>.
+     * The table <code>public.oppdrag</code>.
      */
-    public static final Avstemming AVSTEMMING = Avstemming.AVSTEMMING;
+    public static final Oppdrag OPPDRAG = Oppdrag.OPPDRAG;
 
     /**
-     * The table <code>public.oppdragstate</code>.
+     * The table <code>public.transaksjon</code>.
      */
-    public static final Oppdragstate OPPDRAGSTATE = Oppdragstate.OPPDRAGSTATE;
+    public static final Transaksjon TRANSAKSJON = Transaksjon.TRANSAKSJON;
 }

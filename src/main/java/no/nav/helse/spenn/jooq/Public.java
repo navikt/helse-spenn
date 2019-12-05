@@ -10,8 +10,8 @@ import java.util.List;
 
 import javax.annotation.processing.Generated;
 
-import no.nav.helse.spenn.jooq.tables.Avstemming;
-import no.nav.helse.spenn.jooq.tables.Oppdragstate;
+import no.nav.helse.spenn.jooq.tables.Oppdrag;
+import no.nav.helse.spenn.jooq.tables.Transaksjon;
 
 import org.jooq.Catalog;
 import org.jooq.Sequence;
@@ -32,7 +32,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Public extends SchemaImpl {
 
-    private static final long serialVersionUID = -2048788138;
+    private static final long serialVersionUID = 925532697;
 
     /**
      * The reference instance of <code>public</code>
@@ -40,14 +40,14 @@ public class Public extends SchemaImpl {
     public static final Public PUBLIC = new Public();
 
     /**
-     * The table <code>public.avstemming</code>.
+     * The table <code>public.oppdrag</code>.
      */
-    public final Avstemming AVSTEMMING = no.nav.helse.spenn.jooq.tables.Avstemming.AVSTEMMING;
+    public final Oppdrag OPPDRAG = no.nav.helse.spenn.jooq.tables.Oppdrag.OPPDRAG;
 
     /**
-     * The table <code>public.oppdragstate</code>.
+     * The table <code>public.transaksjon</code>.
      */
-    public final Oppdragstate OPPDRAGSTATE = no.nav.helse.spenn.jooq.tables.Oppdragstate.OPPDRAGSTATE;
+    public final Transaksjon TRANSAKSJON = no.nav.helse.spenn.jooq.tables.Transaksjon.TRANSAKSJON;
 
     /**
      * No further instances allowed
@@ -72,7 +72,9 @@ public class Public extends SchemaImpl {
     private final List<Sequence<?>> getSequences0() {
         return Arrays.<Sequence<?>>asList(
             Sequences.AVSTEMMING_ID_SEQ,
-            Sequences.OPPDRAGSTATE_ID_SEQ);
+            Sequences.OPPDRAG_ID_SEQ,
+            Sequences.OPPDRAGSTATE_ID_SEQ,
+            Sequences.TRANSAKSJON_ID_SEQ);
     }
 
     @Override
@@ -84,7 +86,7 @@ public class Public extends SchemaImpl {
 
     private final List<Table<?>> getTables0() {
         return Arrays.<Table<?>>asList(
-            Avstemming.AVSTEMMING,
-            Oppdragstate.OPPDRAGSTATE);
+            Oppdrag.OPPDRAG,
+            Transaksjon.TRANSAKSJON);
     }
 }
