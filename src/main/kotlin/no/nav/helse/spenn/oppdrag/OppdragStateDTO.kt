@@ -18,13 +18,10 @@ data class OppdragStateDTO(
     val oppdragResponse: String? = null,
     val simuleringResult: SimuleringResult? = null,
     val feilbeskrivelse: String? = null,
-    val avstemming: AvstemmingDTO? = null
+    val nokkel: LocalDateTime = LocalDateTime.now(),
+    val avstemt: Boolean = false
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class AvstemmingDTO(
-    val id: Long? = null,
-    val oppdragStateId: Long? = null,
-    val nokkel: LocalDateTime = LocalDateTime.now(),
-    val avstemt: Boolean = false
 )

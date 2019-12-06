@@ -17,35 +17,49 @@ class OppdragStateService(val repository: OppdragStateRepository) {
         return toDTO(repository.update(toEntity(dto)))
     }
 
-    //@Transactional(readOnly = true)
+    // Trengs eventuelt kun for å gjøre OPPHør basert på utbetalingsreferanse
     fun fetchOppdragState(utbetalingsreferanse: String): OppdragStateDTO {
         return toDTO(repository.findByUtbetalingsreferanse(utbetalingsreferanse))
     }
 
-    //@Transactional(readOnly = true)
-    fun fetchOppdragStateByAvstemtAndStatus(avstemt: Boolean, status: OppdragStateStatus): List<OppdragStateDTO> {
-        return repository.findAllByAvstemtAndStatus(avstemt, status).map { toDTO(it) }
+    // For å hente ut for å lagre respons fra OS
+    fun fetchTransaction(utbetalingsreferanse: String, avstemmingsNøkkel: LocalDateTime) {
+
     }
 
-    //@Transactional(readOnly = true)
+    // Bare test ????
+    /*fun fetchOppdragStateByAvstemtAndStatus(avstemt: Boolean, status: OppdragStateStatus): List<OppdragStateDTO> {
+        return repository.findAllByAvstemtAndStatus(avstemt, status).map { toDTO(it) }
+    }*/
+
+    // Brukes av SendTilOSTask (status==SIMULERING_OK) og SEndTilSimuleringTask (status==STARTET)
     fun fetchOppdragStateByStatus(status: OppdragStateStatus, limit: Int = 100): List<OppdragStateDTO> {
         return repository.findAllByStatus(status, limit).map { toDTO(it) }
     }
 
-    //@Transactional(readOnly = true)
+    // Brukes av avstemmings-tasken
     fun fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(avstemmingsnokkelMax: LocalDateTime): List<OppdragStateDTO> {
         return repository.findAllNotAvstemtWithAvstemmingsnokkelNotAfter(avstemmingsnokkelMax).map { toDTO(it) }
     }
 
-    //@Transactional(readOnly = true)
-    fun fetchOppdragStateById(id: Long): OppdragStateDTO {
-        return toDTO(repository.findById(id))
+    fun lagreOSResponse(utbetalingsreferanse: String, nøkkelAvstemming: LocalDateTime, status: OppdragStateStatus, xml: String, feilmelding: String?) {
+
     }
+
+    fun lagreOkResponse(utbetalingsreferanse: String, nøkkelAvstemming: LocalDateTime, xml: String) {
+
+    }
+
+
+    // Brukes kun i test
+    /*fun fetchOppdragStateById(id: Long): OppdragStateDTO {
+        return toDTO(repository.findById(id))
+    }*/
 
 
 }
 
-fun toEntity(dto: OppdragStateDTO): OppdragState {
+/*fun toEntity(dto: OppdragStateDTO): OppdragState {
     return OppdragState(id = dto.id,
             utbetalingsOppdrag = defaultObjectMapper.writeValueAsString(dto.utbetalingsOppdrag),
             sakskompleksId = dto.sakskompleksId,
@@ -83,5 +97,5 @@ fun toAvstemmingDTO(entity: Avstemming?): AvstemmingDTO? {
     if (entity == null) return null
     return AvstemmingDTO(id = entity.id, oppdragStateId = entity.oppdragstateId,
             nokkel = entity.nokkel, avstemt = entity.avstemt)
-}
+}*/
 
