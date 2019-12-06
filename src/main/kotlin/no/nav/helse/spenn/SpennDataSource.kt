@@ -5,9 +5,6 @@ import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.spenn.config.SpennDbConfig
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
-import org.jooq.DSLContext
-import org.jooq.SQLDialect
-import org.jooq.impl.DSL
 import org.slf4j.LoggerFactory
 
 class SpennDataSource private constructor(
@@ -17,10 +14,6 @@ class SpennDataSource private constructor(
     private val vaultPostgresUserRole = "helse-spenn-oppdrag-user"
     private val vaultPostgresAdminRole = "helse-spenn-oppdrag-admin"
     private var hikariDataSource: HikariDataSource? = null
-    private var dslContext: DSLContext? = null
-
-    val jooqDslContext: DSLContext
-        get() = dslContext!!
 
     val dataSource: HikariDataSource
         get() = hikariDataSource!!
@@ -84,9 +77,6 @@ class SpennDataSource private constructor(
                     HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(hikariConfig, config.vaultPostgresBackend, vaultPostgresUserRole)
                 else
                     HikariDataSource(hikariConfig)
-        dslContext = DSL.using(
-                hikariDataSource,
-                if (config.jdbcUrl.startsWith("jdbc:h2:")) SQLDialect.H2 else SQLDialect.POSTGRES)
         log.info("ready")
     }
 }

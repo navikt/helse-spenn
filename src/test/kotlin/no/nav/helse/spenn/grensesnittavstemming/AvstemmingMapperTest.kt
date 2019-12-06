@@ -147,7 +147,7 @@ class AvstemmingMapperTest {
         }
     }
 
-    private fun satsSum(oppdrag: OppdragStateDTO) =
+    private fun satsSum(oppdrag: TransaksjonDTO) =
         oppdrag.utbetalingsOppdrag.utbetalingsLinje.map {
             it.sats.toLong()
         }.sum()
@@ -193,7 +193,7 @@ class AvstemmingMapperTest {
         }
     }
 
-    internal fun getKvitteringsMelding(oppdrag: OppdragStateDTO) : Oppdrag? =
+    internal fun getKvitteringsMelding(oppdrag: TransaksjonDTO) : Oppdrag? =
             oppdrag.oppdragResponse?.let {
                 JAXBOppdrag().toOppdrag(it)
             }
@@ -202,11 +202,11 @@ class AvstemmingMapperTest {
     private fun lagOppdrag(status: OppdragStateStatus = OppdragStateStatus.FERDIG,
                            utbetalingsreferanse: String = this.utbetalingsreferanse,
                            alvorlighetsgrad: String = "00",
-                           dagSats: Long = 1345) : OppdragStateDTO {
+                           dagSats: Long = 1345) : TransaksjonDTO {
         val soknadId = UUID.randomUUID()
         val now = LocalDateTime.now().plusDays(oppdragIdSequence)
         val newId = oppdragIdSequence++
-        return OppdragStateDTO(
+        return TransaksjonDTO(
                 id = newId,
                 created = now,
                 modified = now,

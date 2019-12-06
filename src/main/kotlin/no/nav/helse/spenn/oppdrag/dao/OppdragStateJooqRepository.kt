@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.oppdrag.dao
+/*package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.jooq.Tables.AVSTEMMING
 import org.jooq.DSLContext
@@ -182,3 +182,4 @@ private fun AvstemmingRecord?.toAvstemming(): Avstemming? {
 
 
 class OppdragStateNotFound : Throwable()
+*/

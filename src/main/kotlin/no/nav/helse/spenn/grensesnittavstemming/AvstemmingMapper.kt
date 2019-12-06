@@ -5,7 +5,8 @@ import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
+import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
@@ -23,12 +24,12 @@ enum class ØkonomiKodekomponent(val kodekomponent : String) {
 }
 
 class AvstemmingMapper(
-        private val oppdragsliste:List<OppdragStateDTO>,
+        private val oppdragsliste:List<TransaksjonDTO>,
         private val fagområde:FagOmraadekode,
         private val jaxbOppdrag : JAXBOppdrag = JAXBOppdrag()
 ) {
 
-    private val oppdragSorterByAvstemmingsnøkkel = Comparator<OppdragStateDTO>{ a, b ->
+    private val oppdragSorterByAvstemmingsnøkkel = Comparator<TransaksjonDTO>{ a, b ->
         when {
             avstemmingsnøkkelFor(a) > avstemmingsnøkkelFor(b) -> 1
             avstemmingsnøkkelFor(a) < avstemmingsnøkkelFor(b) -> -1
@@ -54,7 +55,7 @@ class AvstemmingMapper(
         internal val objectFactory = ObjectFactory()
         private const val SAKSBEHANDLERS_BRUKER_ID = "SPA"
 
-        private fun tidspunktMelding(oppdrag: OppdragStateDTO) = oppdrag.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)
+        private fun tidspunktMelding(oppdrag: TransaksjonDTO) = oppdrag.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)
 
         private val DETALJER_PR_MELDING = 70
 
@@ -72,7 +73,7 @@ class AvstemmingMapper(
             return if (belop >= 0) Fortegn.T else Fortegn.F
         }
 
-        internal fun List<OppdragStateDTO>.tilTotaldata() : Totaldata {
+        internal fun List<TransaksjonDTO>.tilTotaldata() : Totaldata {
             val totalBeløp = this.flatMap { it.utbetalingsOppdrag.utbetalingsLinje.map { it.sats.toLong() } }.sum()
             val totaldata = objectFactory.createTotaldata()
             totaldata.totalAntall = this.size
@@ -85,7 +86,7 @@ class AvstemmingMapper(
                 LocalDateTime.parse(localDateTimeString, avstemmingsnokkelFormatter)
                         .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
 
-        private fun getBelop(oppdrag: OppdragStateDTO): Long =
+        private fun getBelop(oppdrag: TransaksjonDTO): Long =
                 oppdrag.utbetalingsOppdrag.utbetalingsLinje.map { it.sats }.reduce(BigDecimal::add).toLong()
 
     }
@@ -96,12 +97,12 @@ class AvstemmingMapper(
             else
                 (listOf(lagStartmelding()) + lagDatameldinger() + listOf(lagSluttmelding()))
 
-    internal fun getKvitteringsMelding(oppdrag: OppdragStateDTO) : Oppdrag? =
+    internal fun getKvitteringsMelding(oppdrag: TransaksjonDTO) : Oppdrag? =
         oppdrag.oppdragResponse?.let {
             jaxbOppdrag.toOppdrag(it)
         }
 
-    private fun avstemmingsDetaljtypeForOppdrag(oppdrag: OppdragStateDTO) : DetaljType? =
+    private fun avstemmingsDetaljtypeForOppdrag(oppdrag: TransaksjonDTO) : DetaljType? =
             when (oppdrag.status) {
                 OppdragStateStatus.SENDT_OS -> DetaljType.MANG
                 OppdragStateStatus.FEIL -> DetaljType.AVVI
@@ -166,7 +167,7 @@ class AvstemmingMapper(
             }
 
 
-    private fun avstemmingsnøkkelFor(oppdrag: OppdragStateDTO) =
+    private fun avstemmingsnøkkelFor(oppdrag: TransaksjonDTO) =
             oppdrag.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)
 
     private fun tilAksjonsdata(aksjonType: AksjonType): Aksjonsdata {

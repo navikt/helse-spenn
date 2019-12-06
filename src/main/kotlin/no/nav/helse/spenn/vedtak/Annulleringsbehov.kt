@@ -1,3 +1,3 @@
 package no.nav.helse.spenn.vedtak
 
-data class Annulleringsbehov
+data class Annulleringsbehov(val utbetalingsreferanse: String)

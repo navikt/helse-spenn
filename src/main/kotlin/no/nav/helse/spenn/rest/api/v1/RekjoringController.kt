@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.rest.api.v1
 
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 //import no.nav.helse.spenn.oppdrag.fromFagId
@@ -47,7 +47,7 @@ class RekjoringController(val oppdragStateService: OppdragStateService,
         }
     }
 
-    private fun resetState(it: OppdragStateDTO): String {
+    private fun resetState(it: TransaksjonDTO): String {
         LOG.info("resetting oppdragstate for rerun: ${it.soknadId}")
         oppdragStateService.saveOppdragState(it.copy(status = OppdragStateStatus.STARTET))
         return it.soknadId.toString()

@@ -85,7 +85,7 @@ class SendToOSTaskSanityCheckTest {
 
 
     private fun oppdragMedSats(sats: Long, satsTypeKode : SatsTypeKode = SatsTypeKode.DAGLIG) =
-            OppdragStateDTO(
+            TransaksjonDTO(
                 sakskompleksId = UUID.randomUUID(),
                 utbetalingsreferanse = "1001",
                 utbetalingsOppdrag = UtbetalingsOppdrag(

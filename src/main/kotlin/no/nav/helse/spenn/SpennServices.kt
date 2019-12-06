@@ -17,7 +17,7 @@ import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.OppdragMQReceiver
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
+import no.nav.helse.spenn.oppdrag.dao.OppdragStateRepository
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.overforing.SendToOSTask
@@ -61,9 +61,7 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
             SpennDbConfig.from(appConfig))
 
     val oppdragStateService = OppdragStateService(
-            OppdragStateJooqRepository(
-                    spennDataSource.jooqDslContext
-            )
+            OppdragStateRepository(spennDataSource.dataSource)
     )
 
     ///// STS-REST /////

@@ -15,7 +15,7 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
@@ -71,7 +71,7 @@ class AvstemmingTaskTest {
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
 
-        val oppdrag1 = service.saveOppdragState(OppdragStateDTO(
+        val oppdrag1 = service.saveOppdragState(TransaksjonDTO(
             sakskompleksId = soknadKey,
             utbetalingsreferanse = "2001",
             utbetalingsOppdrag = utbetaling,
@@ -84,7 +84,7 @@ class AvstemmingTaskTest {
                 nokkel = LocalDateTime.now().minusHours(2)
             )
         ))
-        service.saveOppdragState(OppdragStateDTO(
+        service.saveOppdragState(TransaksjonDTO(
             sakskompleksId = soknadKey2,
             utbetalingsreferanse = "2002",
             utbetalingsOppdrag = utbetaling,
@@ -97,7 +97,7 @@ class AvstemmingTaskTest {
                 nokkel = LocalDateTime.now().minusHours(2).plusMinutes(1)
             )
         ))
-        val oppdrag3 = service.saveOppdragState(OppdragStateDTO(
+        val oppdrag3 = service.saveOppdragState(TransaksjonDTO(
             sakskompleksId = soknadKey3,
             utbetalingsreferanse = "2003",
             utbetalingsOppdrag = utbetaling,

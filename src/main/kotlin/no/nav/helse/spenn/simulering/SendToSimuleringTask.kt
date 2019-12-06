@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.appsupport.SIMULERING
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_MAKS_BELOP
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import org.slf4j.LoggerFactory
@@ -35,18 +35,25 @@ class SendToSimuleringTask(val simuleringService: SimuleringService,
             LOG.info("Got ${oppdragList.size} items for simulering")
         }
         oppdragList.forEach {
-            val updated = oppdragStateService.saveOppdragState(simuleringService.runSimulering(it))
-            simuleringMetrics(updated)
+            val result = simuleringService.runSimulering(it)
+            val status = when (result.status) {
+                Status.OK -> OppdragStateStatus.SIMULERING_OK
+                else -> OppdragStateStatus.SIMULERING_FEIL
+            }
+            //return oppdrag.copy(simuleringResult = result, status = status)
+            oppdragStateService.oppdaterSimuleringsresultat(it, result, status)
+            //val updated = oppdragStateService.saveOppdragState(simuleringService.runSimulering(it))
+            simuleringMetrics(result)
         }
     }
 
-    private fun simuleringMetrics(oppdrag: OppdragStateDTO) {
-        if (oppdrag.simuleringResult != null) {
-            if (oppdrag.simuleringResult.status == Status.OK) {
-                meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(oppdrag.simuleringResult.simulering!!.totalBelop.toDouble())
-                maksBelopGauge.set(oppdrag.simuleringResult.simulering.totalBelop.toLong())
+    private fun simuleringMetrics(simuleringResult: SimuleringResult) {
+        if (simuleringResult != null) {
+            if (simuleringResult.status == Status.OK) {
+                meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(simuleringResult.simulering!!.totalBelop.toDouble())
+                maksBelopGauge.set(simuleringResult.simulering.totalBelop.toLong())
             }
-            meterRegistry.counter(SIMULERING, "status", oppdrag.simuleringResult.status.name).increment()
+            meterRegistry.counter(SIMULERING, "status", simuleringResult.status.name).increment()
         }
     }
 }

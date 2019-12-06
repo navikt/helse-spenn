@@ -71,7 +71,7 @@ class MQOppdragReceiverTest {
                 behov = etEnkeltBehov()
         )
         val uuid = UUID.randomUUID()
-        val oppdragState = OppdragStateDTO(
+        val oppdragState = TransaksjonDTO(
             sakskompleksId = uuid,
             utbetalingsreferanse = "3001",
             utbetalingsOppdrag = utbetaling

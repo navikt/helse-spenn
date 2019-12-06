@@ -2,6 +2,7 @@ package no.nav.helse.spenn.oppdrag
 
 import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
@@ -18,7 +19,7 @@ private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpse
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
-fun OppdragStateDTO.toSimuleringRequest(): SimulerBeregningRequest {
+fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
     var simulerFom = LocalDate.MAX
     var simulerTom = LocalDate.MIN
 
@@ -107,8 +108,7 @@ private fun mapToSimuleringsOppdragslinje(
 
 private val objectFactory = ObjectFactory()
 
-fun OppdragStateDTO.toOppdrag(): Oppdrag {
-
+val TransaksjonDTO.oppdragRequest get(): Oppdrag {
     val oppdragsEnhet = objectFactory.createOppdragsEnhet120().apply {
         enhet = OppdragSkjemaConstants.SP_ENHET
         typeEnhet = OppdragSkjemaConstants.BOS
@@ -125,9 +125,9 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
         saksbehId = utbetalingsOppdrag.behov.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
-            this.nokkelAvstemming = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
+            this.nokkelAvstemming = nokkel?.format(avstemmingsnokkelFormatter)
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
-            this.tidspktMelding = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
+            this.tidspktMelding = nokkel?.format(avstemmingsnokkelFormatter)
         }
         oppdragsEnhet120.add(oppdragsEnhet)
         utbetalingsOppdrag.utbetalingsLinje.forEach {
@@ -144,8 +144,6 @@ fun OppdragStateDTO.toOppdrag(): Oppdrag {
     return objectFactory.createOppdrag().apply {
         this.oppdrag110 = oppdrag110
     }
-
-
 }
 
 private fun mapTolinje150(

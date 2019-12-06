@@ -39,7 +39,7 @@ class SimulerOppdragMapperTest {
             utbetalingsLinje = listOf(enOppdragsLinje),
             behov = etEnkeltBehov(maksdato = maksDato)
         )
-        val oppdragState = OppdragStateDTO(
+        val oppdragState = TransaksjonDTO(
             id = 1L,
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",

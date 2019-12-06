@@ -8,7 +8,7 @@ import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AksjonsKode
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -41,7 +41,7 @@ class SendToSimuleringTaskTest {
 
 }
 
-val oppdragEn = OppdragStateDTO(
+val oppdragEn = TransaksjonDTO(
         id = 1L,
         status = OppdragStateStatus.STARTET,
         simuleringResult = null,

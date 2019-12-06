@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.simulering
 
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
@@ -26,8 +26,8 @@ class SimuleringService(val simulerFpService: SimulerFpService,
         private val log = LoggerFactory.getLogger(SimuleringService::class.java)
     }
 
-    fun runSimulering(oppdrag: OppdragStateDTO): OppdragStateDTO {
-        log.info("simulering for sakskompleks ${oppdrag.sakskompleksId} med utbetalingsreferanse ${oppdrag.utbetalingsreferanse}" )
+    /*fun runSimulering(oppdrag: TransaksjonDTO): SimuleringResult {
+        log.info("simulering for utbetalingsreferanse ${oppdrag.utbetalingsreferanse}" )
 
         val result = callSimulering(oppdrag)
         val status = when (result.status) {
@@ -35,9 +35,10 @@ class SimuleringService(val simulerFpService: SimulerFpService,
             else -> OppdragStateStatus.SIMULERING_FEIL
         }
         return oppdrag.copy(simuleringResult = result, status = status)
-    }
+    }*/
 
-    private fun callSimulering(oppdrag: OppdragStateDTO): SimuleringResult {
+    fun runSimulering(oppdrag: TransaksjonDTO): SimuleringResult {
+        log.info("simulering for utbetalingsreferanse ${oppdrag.utbetalingsreferanse}" )
         if (oppdrag.utbetalingsOppdrag.utbetalingsLinje.isNotEmpty()) {
             return simulerOppdrag(oppdrag.toSimuleringRequest())
         }

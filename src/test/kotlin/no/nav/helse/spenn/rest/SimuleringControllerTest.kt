@@ -9,7 +9,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import no.nav.helse.spenn.*
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.simulering.Simulering
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
@@ -44,12 +44,12 @@ class SimuleringControllerTest {
     /*@Test
     fun runSimulering() {
         val vedtak = defaultObjectMapper.readValue(etVedtakJson,Vedtak::class.java)
-        val oppdragStateDTO = OppdragStateDTO(utbetalingsOppdrag = vedtak.tilUtbetaling("12345"), soknadId = vedtak.soknadId,
+        val TransaksjonDTO = TransaksjonDTO(utbetalingsOppdrag = vedtak.tilUtbetaling("12345"), soknadId = vedtak.soknadId,
                 simuleringResult = SimuleringResult(status= Status.OK, simulering = Simulering(gjelderId = "12345678900",
                         gjelderNavn = "Foo Bar", datoBeregnet = LocalDate.now(),
                         totalBelop = BigDecimal.valueOf(1000), periodeList = emptyList())))
         kWhen(apienv.aktørTilFnrMapper.tilFnr("12345")).thenReturn("12345678900")
-        kWhen(apienv.simuleringService.runSimulering(any())).thenReturn(oppdragStateDTO)
+        kWhen(apienv.simuleringService.runSimulering(any())).thenReturn(TransaksjonDTO)
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
                 groups = listOf(apienv.authConfig.requiredGroup),

@@ -8,8 +8,9 @@ import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.*
 import no.nav.helse.spenn.overforing.*
 import no.trygdeetaten.skjema.oppdrag.*
+import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.*
-import java.time.*
+import java.time.LocalDate
 
 private val log = LoggerFactory.getLogger("OPPHØR")
 
@@ -27,7 +28,7 @@ fun Route.opphør(stateService: OppdragStateService, oppdragSender: OppdragMQSen
 }
 
 private val objectFactory = ObjectFactory()
-private fun OppdragStateDTO.lagOpphørsmelding(): Oppdrag {
+private fun TransaksjonDTO.lagOpphørsmelding(): Oppdrag {
 
     val dto = this
 
@@ -53,15 +54,15 @@ private fun OppdragStateDTO.lagOpphørsmelding(): Oppdrag {
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
 
-        //datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
+        datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
 
-        datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(dto.created.toLocalDate())
+        //datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(dto.created.toLocalDate())
 
         saksbehId = utbetalingsOppdrag.behov.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
-            this.nokkelAvstemming = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
+            this.nokkelAvstemming = nokkel?.format(avstemmingsnokkelFormatter)
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
-            this.tidspktMelding = avstemming?.nokkel?.format(avstemmingsnokkelFormatter)
+            this.tidspktMelding = nokkel?.format(avstemmingsnokkelFormatter)
         }
         //oppdragsEnhet120.add(oppdragsEnhet)
         /*utbetalingsOppdrag.utbetalingsLinje.forEach {

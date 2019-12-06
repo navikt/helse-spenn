@@ -6,9 +6,10 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.appsupport.VEDTAK
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
@@ -30,7 +31,6 @@ import org.apache.kafka.streams.errors.LogAndFailExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
-import org.jooq.exception.DataAccessException
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.sql.SQLIntegrityConstraintViolationException
@@ -83,7 +83,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
             .mapValues { _, (originalMessage, utbetaling) -> originalMessage to saveInitialOppdragState(utbetaling) }
             .filter { _, (_, value) -> value != null }
             .peek { _, _ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
-            .mapValues { _, (originalMessage, dto) -> (originalMessage as ObjectNode) to (dto!!.id!!) }
+            .mapValues { _, (originalMessage, dto) -> (originalMessage as ObjectNode) to (avstemmingsnokkelFormatter.format(dto!!.nokkel)) }
             .mapValues { _, (originalMessage, løsningsid) -> originalMessage to Løsning(løsningsid) }
             .mapValues { _, (originalMessage, løsning) ->
                 originalMessage.set<JsonNode>(
@@ -108,20 +108,19 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         if (config.offsetReset) {
             log.info("Running offset reset of ${SYKEPENGER_BEHOV_TOPIC.name} to ${config.timeStampMillis}")
             val configProperties = Properties()
-            configProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, config.bootstrapServersUrl)
-            configProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-            configProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-            configProperties.put(ConsumerConfig.GROUP_ID_CONFIG, config.appId)
-            configProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,false)
-            configProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest")
+            configProperties[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = config.bootstrapServersUrl
+            configProperties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
+            configProperties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
+            configProperties[ConsumerConfig.GROUP_ID_CONFIG] = config.appId
+            configProperties[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+            configProperties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
             if (!config.plainTextKafka) {
-                configProperties.put(SaslConfigs.SASL_MECHANISM, "PLAIN")
-                configProperties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
-                configProperties.put(SaslConfigs.SASL_JAAS_CONFIG,
-                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${config.kafkaUsername}\" password=\"${config.kafkaPassword}\";")
-                configProperties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL")
-                configProperties.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, File(config.navTruststorePath).absolutePath)
-                configProperties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, config.navTruststorePassword)
+                configProperties[SaslConfigs.SASL_MECHANISM] = "PLAIN"
+                configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_PLAINTEXT"
+                configProperties[SaslConfigs.SASL_JAAS_CONFIG] = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${config.kafkaUsername}\" password=\"${config.kafkaPassword}\";"
+                configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
+                configProperties[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = File(config.navTruststorePath!!).absolutePath
+                configProperties[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = config.navTruststorePassword
             }
             val offsetConsumer = KafkaConsumer<String, String>(configProperties)
             offsetConsumer.subscribe(listOf(SYKEPENGER_BEHOV_TOPIC.name),  object: ConsumerRebalanceListener {
@@ -142,7 +141,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
                 }
 
                 override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>) {
-                    log.info("partitions ${partitions.toString()} revoked")
+                    log.info("partitions $partitions revoked")
                 }
             })
             try {
@@ -166,22 +165,19 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         return KafkaStreams(topology, streamConfig)
     }
 
-    private fun saveInitialOppdragState(utbetaling: UtbetalingsOppdrag): OppdragStateDTO? {
+    private fun saveInitialOppdragState(utbetaling: UtbetalingsOppdrag): TransaksjonDTO? {
         return try {
             oppdragStateService.saveOppdragState(
-                OppdragStateDTO(
+                TransaksjonDTO(
                     sakskompleksId = utbetaling.behov.sakskompleksId,
                     utbetalingsreferanse = utbetaling.behov.utbetalingsreferanse,
                     utbetalingsOppdrag = utbetaling
                 )
             )
-        } catch (e: DataAccessException/*DuplicateKeyException*/) {
-            if (e.cause is SQLIntegrityConstraintViolationException) {
-                log.warn("skipping duplicate for key ${utbetaling.behov.sakskompleksId}")
-                meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
-                return null
-            }
-            throw e
+        } catch (e: SQLIntegrityConstraintViolationException) {
+            log.warn("skipping duplicate for key ${utbetaling.behov.sakskompleksId}")
+            meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
+            return null
         }
     }
 

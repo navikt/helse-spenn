@@ -17,6 +17,7 @@ class OppdragMQSender(connection: Connection,
     private val log = LoggerFactory.getLogger(OppdragMQSender::class.java)
 
     fun sendOppdrag(oppdrag: Oppdrag) {
+        log.info("sender til Oppdragsystemet for fagsystemId ${oppdrag.oppdrag110.fagsystemId}")
         val oppdragXml = jaxb.fromOppdragToXml(oppdrag)
         log.debug("sending $oppdragXml")
         log.debug("QUEUE: $sendqueue REPLYTO: $replyTo")

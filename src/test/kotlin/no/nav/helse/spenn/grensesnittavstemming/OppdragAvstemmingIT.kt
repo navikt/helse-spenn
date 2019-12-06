@@ -55,7 +55,7 @@ class OppdragAvstemmingIT {
                 behov = etEnkeltBehov()
         )
 
-        val oppdragStateNew = OppdragStateDTO(
+        val oppdragStateNew = TransaksjonDTO(
             id = null,
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",

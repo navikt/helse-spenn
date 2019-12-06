@@ -3,7 +3,7 @@ package no.nav.helse.spenn.rest.api.v1
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 //import no.nav.helse.spenn.oppdrag.fromFagId
 //import no.nav.security.oidc.api.Protected
@@ -25,7 +25,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     //@GetMapping("/soknad/{soknadId}")
     fun getOppdragStateBySoknadId(//@PathVariable
-                                  soknadId: UUID): OppdragStateDTO {
+                                  soknadId: UUID): TransaksjonDTO {
         LOG.info("Rest retrieve for soknadId: ${soknadId}")
         audit.info("slår opp soknadId=${soknadId}")
         return oppdragStateService.fetchOppdragState(soknadId)
@@ -33,7 +33,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     //@GetMapping("/{id}")
     fun getOpppdragStateById(//@PathVariable
-            id: Long): OppdragStateDTO {
+            id: Long): TransaksjonDTO {
         LOG.info("Rest retrieve for id: ${id}")
         audit.info("slår opp oppdragId=${id}")
         return oppdragStateService.fetchOppdragStateById(id)
@@ -41,7 +41,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     //@GetMapping("/fagId/{fagId}")
     fun getOppdragStateByFagId(//@PathVariable
-                               fagId: String): OppdragStateDTO {
+                               fagId: String): TransaksjonDTO {
         LOG.info("Rest retrive for fagId: ${fagId}")
         audit.info("slår opp fagId=${fagId}")
         return oppdragStateService.fetchOppdragState(fagId.fromFagId())
@@ -50,7 +50,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
     //@PutMapping("/{id}")
     fun updateOppdragState(//@PathVariable
                            id: Long, //@RequestBody
-            dto: OppdragStateDTO): OppdragStateDTO {
+            dto: TransaksjonDTO): TransaksjonDTO {
         LOG.info("Rest update for id: ${id}")
         audit.info("oppdaterer oppdragId=${id}")
         return oppdragStateService.saveOppdragState(dto)
@@ -58,7 +58,7 @@ class OppdragStateController(val oppdragStateService: OppdragStateService,
 
     //@GetMapping("/status/{status}")
     fun getOppdragStateByStatus(//@PathVariable
-                                status: OppdragStateStatus): List<OppdragStateDTO> {
+                                status: OppdragStateStatus): List<TransaksjonDTO> {
         LOG.info("Rest retrieve for status: ${status}")
         audit.info("slår opp oppdrag på status=${status}")
         return oppdragStateService.fetchOppdragStateByStatus(status)

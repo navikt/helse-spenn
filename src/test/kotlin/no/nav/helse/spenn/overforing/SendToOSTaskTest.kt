@@ -8,7 +8,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.oppdrag.OppdragStateDTO
+import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.Status
@@ -36,21 +36,21 @@ class SendToOSTaskTest {
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
 
-        service.saveOppdragState(OppdragStateDTO(
+        service.saveOppdragState(TransaksjonDTO(
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",
             utbetalingsOppdrag = utbetaling,
             simuleringResult = SimuleringResult(status = Status.OK),
             status = OppdragStateStatus.FERDIG
         ))
-        val simulering = service.saveOppdragState(OppdragStateDTO(
+        val simulering = service.saveOppdragState(TransaksjonDTO(
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1002",
             utbetalingsOppdrag = utbetaling,
             simuleringResult = SimuleringResult(status = Status.OK),
             status = OppdragStateStatus.SIMULERING_OK
         ))
-        service.saveOppdragState(OppdragStateDTO(
+        service.saveOppdragState(TransaksjonDTO(
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1003",
             utbetalingsOppdrag = utbetaling,

@@ -63,7 +63,7 @@ class MQOppdragIT {
                 behov = etEnkeltBehov()
         )
 
-        val oppdragState = OppdragStateDTO(
+        val oppdragState = TransaksjonDTO(
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",
             utbetalingsOppdrag = utbetaling,

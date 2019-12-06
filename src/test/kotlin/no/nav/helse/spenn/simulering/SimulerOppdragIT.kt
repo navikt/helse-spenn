@@ -30,7 +30,7 @@ class SimulerOppdragIT {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "995816598", utbetalingsLinje = listOf(linje),
                 behov = etEnkeltBehov())
-        val oppdragState = OppdragStateDTO(
+        val oppdragState = TransaksjonDTO(
             id = 1L,
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",
@@ -63,7 +63,7 @@ class SimulerOppdragIT {
         val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.SIMULERING,
                 oppdragGjelder = "21038014495", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
                 behov = etEnkeltBehov())
-        val oppdragState = OppdragStateDTO(
+        val oppdragState = TransaksjonDTO(
             id = 1L,
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",
@@ -92,7 +92,7 @@ class SimulerOppdragIT {
         println(defaultObjectMapper.writeValueAsString(vedtak))
         val utbetaling = vedtak.tilUtbetaling(aktørTilFnrMapper.tilFnr("123456789"))
 
-        simuleringService.runSimulering(OppdragStateDTO(
+        simuleringService.runSimulering(TransaksjonDTO(
             id=1L,
             sakskompleksId = vedtak.sakskompleksId,
             utbetalingsreferanse = "1001",

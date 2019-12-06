@@ -26,7 +26,7 @@ class OppdragStateServiceTest {
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
         for (i in 1..100) {
-            service.saveOppdragState(OppdragStateDTO(
+            service.saveOppdragState(TransaksjonDTO(
                 sakskompleksId = UUID.randomUUID(),
                 utbetalingsreferanse = "1${i}001",
                 utbetalingsOppdrag = utbetaling
@@ -43,7 +43,7 @@ class OppdragStateServiceTest {
         val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
         val utbetaling = behov.tilUtbetaling("12345678901")
         val soknadId = UUID.randomUUID()
-        service.saveOppdragState(OppdragStateDTO(
+        service.saveOppdragState(TransaksjonDTO(
                 sakskompleksId = soknadId,
                 utbetalingsreferanse = utbetalingsreferanse,
                 status = OppdragStateStatus.SIMULERING_OK,
