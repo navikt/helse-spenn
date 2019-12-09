@@ -57,14 +57,6 @@ internal class SpennBlackBoxTest {
         val løsning = mottattBehovMedLøsning["@løsning"]
         assertTrue(løsning.hasNonNull("oppdragId"))
 
-
-
-        println("------------------")
-        println("http://host.testcontainers.internal:${soapMock.httpPort}/ws/simulering")
-        println("https://host.testcontainers.internal:${soapMock.httpsPort}/ws/simulering")
-        println("------------------")
-
-
         val løsningPåBehovUtenLøsning = (mottattBehovMedLøsning as ObjectNode).apply {
             remove("@løsning")
         }
@@ -424,8 +416,6 @@ internal class SpennBlackBoxTest {
                 spenn(appConfig)
             }
         }
-
-
 
         data class HostInfo(
             val hostname: String,
