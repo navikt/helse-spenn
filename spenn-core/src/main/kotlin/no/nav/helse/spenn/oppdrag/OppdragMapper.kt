@@ -19,7 +19,7 @@ private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpse
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
-fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
+internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
     var simulerFom = LocalDate.MAX
     var simulerTom = LocalDate.MIN
 
@@ -108,7 +108,7 @@ private fun mapToSimuleringsOppdragslinje(
 
 private val objectFactory = ObjectFactory()
 
-val TransaksjonDTO.oppdragRequest get(): Oppdrag {
+internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
     val oppdragsEnhet = objectFactory.createOppdragsEnhet120().apply {
         enhet = OppdragSkjemaConstants.SP_ENHET
         typeEnhet = OppdragSkjemaConstants.BOS

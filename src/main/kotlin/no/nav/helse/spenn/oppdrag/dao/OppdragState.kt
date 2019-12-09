@@ -2,7 +2,7 @@ package no.nav.helse.spenn.oppdrag.dao
 
 import java.time.LocalDateTime
 import java.util.*
-
+/*
 data class OppdragState(
     val id: Long? = null,
     val sakskompleksId: UUID,
@@ -33,4 +33,4 @@ enum class OppdragStateStatus {
     FERDIG,
     FEIL
 }
-
+*/

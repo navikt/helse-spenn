@@ -6,11 +6,14 @@
     <groupId>no.nav.helse</groupId>
     <artifactId>spenn</artifactId>
     <version>0.1-SNAPSHOT</version>
+    <modules>
+        <module>spenn-core</module>
+    </modules>
     <name>helse-spenn</name>
     <description>Utbetaling</description>
     <url>https://github.com/navikt/helse-spenn</url>
 
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <properties>
         <kotlin.version>1.3.50</kotlin.version>
@@ -62,6 +65,11 @@
     </repositories>
 
     <dependencies>
+        <!--dependency>
+            <artifactId>spenn-core</artifactId>
+            <groupId>no.nav.helse</groupId>
+            <version>${project.version}</version>
+        </dependency-->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>

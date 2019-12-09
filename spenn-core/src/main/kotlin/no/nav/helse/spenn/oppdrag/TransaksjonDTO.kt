@@ -1,8 +1,5 @@
 package no.nav.helse.spenn.oppdrag
 
-import java.time.LocalDateTime
-import java.util.*
-
 
 enum class TransaksjonStatus {
     STARTET,

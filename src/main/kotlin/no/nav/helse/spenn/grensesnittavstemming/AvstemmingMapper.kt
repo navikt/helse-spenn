@@ -5,7 +5,6 @@ import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
-import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag

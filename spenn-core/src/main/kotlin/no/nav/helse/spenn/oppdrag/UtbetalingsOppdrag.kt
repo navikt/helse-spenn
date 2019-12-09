@@ -2,6 +2,7 @@ package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import no.nav.helse.spenn.vedtak.Utbetalingsbehov
+//import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -15,7 +16,8 @@ data class UtbetalingsOppdrag(
      * angir hvem som saken/vedtaket er registrert på i fagrutinen
      */
     val oppdragGjelder: String,
-    val utbetalingsLinje: List<UtbetalingsLinje>
+    val utbetalingsLinje: List<UtbetalingsLinje>,
+    val annulering:Boolean = false
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
