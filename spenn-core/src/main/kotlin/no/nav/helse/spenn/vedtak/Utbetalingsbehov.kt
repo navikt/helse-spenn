@@ -5,7 +5,6 @@ import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.system.os.entiteter.oppdragskjema.Avstemmingsnokkel
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
