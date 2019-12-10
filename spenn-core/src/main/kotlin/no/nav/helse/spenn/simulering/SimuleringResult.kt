@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class SimuleringResult(val status: Status,
+data class SimuleringResult(val status: SimuleringStatus,
                             val feilMelding: String = "",
                             val simulering: Simulering? = null,
                             val mottaker: Mottaker? = null)
@@ -42,10 +42,10 @@ data class Periode(val id: String,
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Simulering(val gjelderId: String,
-                     val gjelderNavn: String,
-                     val datoBeregnet: LocalDate,
-                     val totalBelop: BigDecimal,
-                     val periodeList: List<SimulertPeriode>)
+                      val gjelderNavn: String,
+                      val datoBeregnet: LocalDate,
+                      val totalBelop: BigDecimal,
+                      val periodeList: List<SimulertPeriode>)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SimulertPeriode(val fom: LocalDate,
@@ -54,11 +54,11 @@ data class SimulertPeriode(val fom: LocalDate,
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Utbetaling(val fagSystemId: String,
-                              val utbetalesTilId: String,
-                              val utbetalesTilNavn: String,
-                              val forfall: LocalDate,
-                              val feilkonto: Boolean,
-                              val detaljer: List<Detaljer>)
+                      val utbetalesTilId: String,
+                      val utbetalesTilNavn: String,
+                      val forfall: LocalDate,
+                      val feilkonto: Boolean,
+                      val detaljer: List<Detaljer>)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Detaljer(val faktiskFom: LocalDate,
@@ -76,7 +76,7 @@ data class Detaljer(val faktiskFom: LocalDate,
                     val refunderesOrgNr: String)
 
 
-enum class Status {
+enum class SimuleringStatus {
     OK,
     FEIL
 }

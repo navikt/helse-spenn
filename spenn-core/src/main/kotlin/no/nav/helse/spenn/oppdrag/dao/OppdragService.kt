@@ -1,14 +1,18 @@
 package no.nav.helse.spenn.oppdrag.dao
 
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.TransaksjonStatus
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import com.zaxxer.hikari.HikariDataSource
+import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.oppdragRequest
+import no.nav.helse.spenn.simulering.SimuleringResult
+import no.nav.helse.spenn.simulering.SimuleringStatus
+import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-class TransaksjonService internal constructor(private val repository: TransaksjonRepository) {
+class OppdragService(dataSource: HikariDataSource) {
+
+    private val repository = TransaksjonRepository(dataSource)
 
     inner class Transaksjon internal constructor(dto: TransaksjonDTO) {
         private var transaksjonDTO = dto
@@ -18,11 +22,18 @@ class TransaksjonService internal constructor(private val repository: Transaksjo
             return transaksjonDTO.oppdragRequest
         }
 
+        val simuleringRequest: SimulerBeregningRequest get() {
+            require(transaksjonDTO.status == TransaksjonStatus.SENDT_OS)
+            return transaksjonDTO.toSimuleringRequest()
+        }
+
         fun forberedSendingTilOS() {
             performSanityCheck()
-            // TODO: Sett status = SENDT_OS + ny avstemmingsnøkkel
-            val updated = transaksjonDTO.copy(status = TransaksjonStatus.SENDT_OS, nokkel = LocalDateTime.now())
-            transaksjonDTO = updated
+            transaksjonDTO = repository.oppdaterTransaksjonMedStatusOgNøkkel(transaksjonDTO, TransaksjonStatus.SENDT_OS, LocalDateTime.now())
+        }
+
+        fun stopp(feilmelding: String?) {
+            transaksjonDTO = repository.stoppTransaksjon(transaksjonDTO, feilmelding)
         }
 
         fun lagreOSResponse(status: TransaksjonStatus, xml: String, feilmelding: String?) {
@@ -45,6 +56,13 @@ class TransaksjonService internal constructor(private val repository: Transaksjo
             }
         }
 
+        fun oppdaterSimuleringsresultat(result: SimuleringResult) {
+            when (result.status) {
+                SimuleringStatus.OK -> repository.
+                else -> TransaksjonStatus.SIMULERING_FEIL
+            }
+        }
+
     }
 
     fun annulerUtbetaling(oppdrag: UtbetalingsOppdrag) {
@@ -64,10 +82,10 @@ class TransaksjonService internal constructor(private val repository: Transaksjo
     fun hentTransaksjon(utbetalingsreferanse: String, avstemmingsNøkkel: LocalDateTime) =
         Transaksjon(repository.findByRefAndNokkel(utbetalingsreferanse, avstemmingsNøkkel))
 
-    fun hentNyeBehov() =
-        repository.findAllByStatus(TransaksjonStatus.STARTET).map { Transaksjon(it) }
+    fun hentNyeBehov(limit: Int) =
+        repository.findAllByStatus(TransaksjonStatus.STARTET, limit).map { Transaksjon(it) }
 
-    fun hentFerdigsimulerte(limit: Int = 100) =
+    fun hentFerdigsimulerte(limit: Int) =
         repository.findAllByStatus(TransaksjonStatus.SIMULERING_OK, limit).map { Transaksjon(it) }
 
     fun hentEnnåIkkeAvstemteTransaksjonerEldreEnn(maks: LocalDateTime) =
@@ -75,7 +93,7 @@ class TransaksjonService internal constructor(private val repository: Transaksjo
 
 }
 
-internal class SanityCheckException(message : String) : Exception(message)
+class SanityCheckException(message : String) : Exception(message)
 
 // TODO ? Konfig? Sykepenger er maks 6G, maksTillattDagsats kan ikke være lavere enn dette.
 private fun maksTillattDagsats(G: Int = 100_000, hverdagerPrÅr: Int = 260) = BigDecimal(6.5 * G / hverdagerPrÅr)

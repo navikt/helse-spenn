@@ -5,9 +5,7 @@ import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.slf4j.LoggerFactory
-import java.sql.ResultSet
-import java.sql.SQLException
-import java.sql.Timestamp
+import java.sql.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -19,12 +17,13 @@ internal data class TransaksjonDTO(
     val avstemt: Boolean = false,
     val utbetalingsOppdrag: UtbetalingsOppdrag,
     val status: TransaksjonStatus = TransaksjonStatus.STARTET,
+    val simuleringresult: String? = null,
     val oppdragResponse: String? = null
 )
 
-internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
+private val log = LoggerFactory.getLogger(TransaksjonRepository::class.java.name)
 
-    private val log = LoggerFactory.getLogger(TransaksjonRepository::class.java.name)
+internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
 
     fun insertNyttOppdrag(utbetalingsOppdrag: UtbetalingsOppdrag) {
         dataSource.connection.use { conn ->
@@ -74,6 +73,30 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
         }
     }
 
+    fun stoppTransaksjon(dto: TransaksjonDTO, feilmelding: String?): TransaksjonDTO {
+        dataSource.connection.use {
+            it.prepareStatement("update transaksjon set status = ?, feilbeskrivelse = ? where id = ?").use { preparedStatement ->
+                preparedStatement.setString(1, TransaksjonStatus.STOPPET.name)
+                preparedStatement.setString(2, feilmelding)
+                preparedStatement.setLong(3, dto.id)
+                preparedStatement.executeUpdateAssertingOneRow()
+            }
+            return refreshById(it, dto.id)
+        }
+    }
+
+    fun oppdaterTransaksjonMedStatusOgNøkkel(dto: TransaksjonDTO, status: TransaksjonStatus, nøkkel: LocalDateTime): TransaksjonDTO {
+        dataSource.connection.use {
+            it.prepareStatement("update transaksjon set status = ?, nokkel = ? where id = ?").use { preparedStatement ->
+                preparedStatement.setString(1, status.name)
+                preparedStatement.setObject(2, nøkkel)
+                preparedStatement.setLong(3, dto.id)
+                preparedStatement.executeUpdateAssertingOneRow()
+            }
+            return refreshById(it, dto.id)
+        }
+    }
+
     fun lagreOSResponse(utbetalingsreferanse: String, nøkkelAvstemming: LocalDateTime, status: TransaksjonStatus, xml: String, feilbeskrivelse: String?) {
         dataSource.connection.use {
             it.prepareStatement(
@@ -86,9 +109,7 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
                 preparedStatement.setString(3, feilbeskrivelse)
                 preparedStatement.setString(4, utbetalingsreferanse)
                 preparedStatement.setTimestamp(5, nøkkelAvstemming.toTimeStamp())
-                val rowCount = preparedStatement.executeUpdate()
-                log.trace("oppdaterMed: rowcount=$rowCount")
-                require(rowCount == 1)
+                preparedStatement.executeUpdateAssertingOneRow()
             }
         }
     }
@@ -181,10 +202,20 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
         }
     }
 
+    private fun refreshById(conn: Connection, id: Long): TransaksjonDTO {
+        conn.prepareStatement("${DTO.selectString} where transaksjon.id = ?").use { preparedStatement ->
+            preparedStatement.setLong(1, id)
+            preparedStatement.executeQuery().use { resultSet ->
+                resultSet.next()
+                return DTO.parse(resultSet)
+            }
+        }
+    }
+
     private object DTO {
         val selectString = """
         select transaksjon.id as transaksjon_id,
-             sakskompleks_id, utbetalingsreferanse, nokkel, avstemt, utbetalingsoppdrag, status, oppdragresponse
+             sakskompleks_id, utbetalingsreferanse, nokkel, avstemt, utbetalingsoppdrag, status, simuleringresult, oppdragresponse
         from oppdrag join transaksjon on oppdrag.id = transaksjon.oppdrag_id
     """.trimIndent()
 
@@ -199,10 +230,17 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
                     defaultObjectMapper.readValue(it, UtbetalingsOppdrag::class.java)
                 },
                 status = resultSet.getString("status").let { TransaksjonStatus.valueOf(it) },
+                simuleringresult = resultSet.getString("simuleringresult"),
                 oppdragResponse = resultSet.getString("oppdragresponse")
             )
     }
 
     private fun LocalDateTime?.toTimeStamp() = if (this != null) Timestamp.valueOf(this) else null
 
+}
+
+private fun PreparedStatement.executeUpdateAssertingOneRow() {
+    val rowCount = executeUpdate()
+    log.trace("oppdaterMed: rowcount=$rowCount")
+    require(rowCount == 1)
 }
