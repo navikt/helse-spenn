@@ -8,8 +8,7 @@ import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-
-class OppdragStateService internal constructor(private val repository: OppdragStateRepository) {
+class TransaksjonService internal constructor(private val repository: TransaksjonRepository) {
 
     inner class Transaksjon internal constructor(dto: TransaksjonDTO) {
         private var transaksjonDTO = dto
@@ -23,7 +22,6 @@ class OppdragStateService internal constructor(private val repository: OppdragSt
             performSanityCheck()
             // TODO: Sett status = SENDT_OS + ny avstemmingsnøkkel
             val updated = transaksjonDTO.copy(status = TransaksjonStatus.SENDT_OS, nokkel = LocalDateTime.now())
-
             transaksjonDTO = updated
         }
 

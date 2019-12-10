@@ -1,13 +1,8 @@
 package no.nav.helse.spenn.oppdrag.dao
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
-import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.Utbetalingsbehov
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException
+import no.nav.helse.spenn.testsupport.TestData.Companion.etUtbetalingsOppdrag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
@@ -19,16 +14,16 @@ import kotlin.test.assertTrue
 
 internal class RepositoryTest {
 
-    lateinit var repository: OppdragStateRepository
+    private lateinit var repository: TransaksjonRepository
 
     @BeforeEach
     fun setup() {
         val dataSource = TestDb.createMigratedDataSource()
-        dataSource.connection.use {
-            it.prepareStatement("delete from transaksjon").executeUpdate()
-            it.prepareStatement("delete from oppdrag").executeUpdate()
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("delete from transaksjon").executeUpdate()
+            connection.prepareStatement("delete from oppdrag").executeUpdate()
         }
-        repository = OppdragStateRepository(dataSource)
+        repository = TransaksjonRepository(dataSource)
     }
 
     @Test
@@ -61,17 +56,10 @@ internal class RepositoryTest {
         repository.insertNyttOppdrag(utbetaling)
         repository.insertNyTransaksjon(annulering)
         val res = repository.findAllByStatus(TransaksjonStatus.STARTET)
-        println(res)
         assertEquals(2, res.size)
         res.last().apply {
             assertTrue { this.utbetalingsOppdrag.annulering }
         }
-    }
-
-    private fun etUtbetalingsOppdrag() : UtbetalingsOppdrag {
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
-        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
-        return behov.tilUtbetaling("01010112345")
     }
 
 }

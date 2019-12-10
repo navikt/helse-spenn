@@ -23,11 +23,11 @@ internal class TransaksjonRekkefølgeTest {
         kWhen(hikari.connection).thenReturn(conn)
 
         kWhen(conn.prepareStatement(kArgThat {
-            it.endsWith(" order by transaksjon_id")
+            it.contains(" order by transaksjon_id")
         })).thenThrow(BravoException())
 
         assertThrows<BravoException> {
-            OppdragStateRepository(hikari).findAllByStatus(TransaksjonStatus.SIMULERING_OK)
+            TransaksjonRepository(hikari).findAllByStatus(TransaksjonStatus.SIMULERING_OK)
         }
     }
 

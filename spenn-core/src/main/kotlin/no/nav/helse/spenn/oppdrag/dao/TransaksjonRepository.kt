@@ -11,7 +11,6 @@ import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.*
 
-
 internal data class TransaksjonDTO(
     val id: Long,
     val sakskompleksId: UUID,
@@ -23,9 +22,9 @@ internal data class TransaksjonDTO(
     val oppdragResponse: String? = null
 )
 
-internal class OppdragStateRepository(private val dataSource: HikariDataSource) {
+internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
 
-    private val log = LoggerFactory.getLogger(OppdragStateRepository::class.java.name)
+    private val log = LoggerFactory.getLogger(TransaksjonRepository::class.java.name)
 
     fun insertNyttOppdrag(utbetalingsOppdrag: UtbetalingsOppdrag) {
         dataSource.connection.use { conn ->
@@ -180,12 +179,9 @@ internal class OppdragStateRepository(private val dataSource: HikariDataSource) 
                 }
             }
         }
-
     }
 
-
     private object DTO {
-
         val selectString = """
         select transaksjon.id as transaksjon_id,
              sakskompleks_id, utbetalingsreferanse, nokkel, avstemt, utbetalingsoppdrag, status, oppdragresponse
@@ -205,10 +201,8 @@ internal class OppdragStateRepository(private val dataSource: HikariDataSource) 
                 status = resultSet.getString("status").let { TransaksjonStatus.valueOf(it) },
                 oppdragResponse = resultSet.getString("oppdragresponse")
             )
-
     }
 
-    private fun LocalDateTime?.toTimeStamp(): Timestamp? {
-        return if (this != null) Timestamp.valueOf(this) else null
-    }
+    private fun LocalDateTime?.toTimeStamp() = if (this != null) Timestamp.valueOf(this) else null
+
 }
