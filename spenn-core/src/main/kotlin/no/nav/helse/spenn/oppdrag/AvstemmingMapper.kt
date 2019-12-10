@@ -1,10 +1,9 @@
-package no.nav.helse.spenn.grensesnittavstemming
+package no.nav.helse.spenn.oppdrag
 
 import no.nav.helse.spenn.FagOmraadekode
 import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.oppdrag.JAXBOppdrag
+import no.nav.helse.spenn.oppdrag.dao.OppdragService.Transaksjon
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -22,10 +21,10 @@ enum class ØkonomiKodekomponent(val kodekomponent : String) {
     OPPDRAGSSYSTEMET("OS")
 }
 
-class AvstemmingMapper(
-        private val oppdragsliste:List<TransaksjonDTO>,
-        private val fagområde:FagOmraadekode,
-        private val jaxbOppdrag : JAXBOppdrag = JAXBOppdrag()
+class AvstemmingMapper internal constructor(
+    private val oppdragsliste:List<TransaksjonDTO>,
+    private val fagområde:FagOmraadekode,
+    private val jaxbOppdrag : JAXBOppdrag = JAXBOppdrag()
 ) {
 
     private val oppdragSorterByAvstemmingsnøkkel = Comparator<TransaksjonDTO>{ a, b ->
@@ -42,7 +41,8 @@ class AvstemmingMapper(
     private val oppdragslisteNokkelFom = lazy { avstemmingsnøkkelFor(oppdragMedLavestAvstemmingsnøkkel.value) }
     private val oppdragslisteNokkelTom = lazy { avstemmingsnøkkelFor(oppdragMedHøyestAvstemmingsnøkkel.value) }
     // private val tidspunktAvstemmingTom = lazy { oppdragsliste.map { tidspunktMelding(it) }.max() } // TODO: Utgår ?
-    private val avstemmingId = encodeUUIDBase64(UUID.randomUUID())
+    private val avstemmingId =
+        encodeUUIDBase64(UUID.randomUUID())
 
     fun avstemmingsnokkelFom() = oppdragslisteNokkelFom.value
 
@@ -54,7 +54,7 @@ class AvstemmingMapper(
         internal val objectFactory = ObjectFactory()
         private const val SAKSBEHANDLERS_BRUKER_ID = "SPA"
 
-        private fun tidspunktMelding(oppdrag: TransaksjonDTO) = oppdrag.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)
+        private fun tidspunktMelding(oppdrag: TransaksjonDTO) = oppdrag.nokkel!!.format(avstemmingsnokkelFormatter)
 
         private val DETALJER_PR_MELDING = 70
 
@@ -77,7 +77,8 @@ class AvstemmingMapper(
             val totaldata = objectFactory.createTotaldata()
             totaldata.totalAntall = this.size
             totaldata.totalBelop = BigDecimal.valueOf(totalBeløp)
-            totaldata.fortegn = tilFortegn(totalBeløp)
+            totaldata.fortegn =
+                tilFortegn(totalBeløp)
             return totaldata
         }
 
@@ -91,10 +92,15 @@ class AvstemmingMapper(
     }
 
     internal fun lagAvstemmingsMeldinger() : List<Avstemmingsdata> =
-            if (oppdragsliste.isEmpty())
-                emptyList()
-            else
-                (listOf(lagStartmelding()) + lagDatameldinger() + listOf(lagSluttmelding()))
+        if (oppdragsliste.isEmpty()) {
+            emptyList()
+        }
+        else {
+            log.info("Lager avstemmingsmeldinger med Sender avstemmingsmeldinger med avleverendeAvstemmingId=$avstemmingId, "+
+                    "nokkelFom=${avstemmingsnokkelFom()}, nokkelTom=${avstemmingsnokkelTom()}")
+            (listOf(lagStartmelding()) + lagDatameldinger() + listOf(lagSluttmelding()))
+        }
+
 
     internal fun getKvitteringsMelding(oppdrag: TransaksjonDTO) : Oppdrag? =
         oppdrag.oppdragResponse?.let {
@@ -103,13 +109,13 @@ class AvstemmingMapper(
 
     private fun avstemmingsDetaljtypeForOppdrag(oppdrag: TransaksjonDTO) : DetaljType? =
             when (oppdrag.status) {
-                OppdragStateStatus.SENDT_OS -> DetaljType.MANG
-                OppdragStateStatus.FEIL -> DetaljType.AVVI
-                OppdragStateStatus.SIMULERING_OK, OppdragStateStatus.STARTET, OppdragStateStatus.SIMULERING_FEIL, OppdragStateStatus.STOPPET -> {
+                TransaksjonStatus.SENDT_OS -> DetaljType.MANG
+                TransaksjonStatus.FEIL -> DetaljType.AVVI
+                TransaksjonStatus.SIMULERING_OK, TransaksjonStatus.STARTET, TransaksjonStatus.SIMULERING_FEIL, TransaksjonStatus.STOPPET -> {
                     log.error("Uventet status: ${oppdrag.status} på oppdragId=${oppdrag.id}. Håndterer som om 'ferdig'")
                     null
                 }
-                OppdragStateStatus.FERDIG -> {
+                TransaksjonStatus.FERDIG -> {
                     val kvittering = getKvitteringsMelding(oppdrag)
                     if (kvittering!!.mmel.alvorlighetsgrad == KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
                         DetaljType.VARS
@@ -128,7 +134,10 @@ class AvstemmingMapper(
                     this.detaljType = detaljTypeForOppdrag
                     this.offnr = oppdrag.utbetalingsOppdrag.oppdragGjelder
                     this.avleverendeTransaksjonNokkel = oppdrag.utbetalingsreferanse
-                    this.tidspunkt = tidspunktMelding(oppdrag)
+                    this.tidspunkt =
+                        tidspunktMelding(
+                            oppdrag
+                        )
                     if (detaljType in listOf(DetaljType.AVVI, DetaljType.VARS)) {
                         val kvittering = getKvitteringsMelding(oppdrag)
                         this.meldingKode = kvittering!!.mmel.kodeMelding
@@ -167,7 +176,7 @@ class AvstemmingMapper(
 
 
     private fun avstemmingsnøkkelFor(oppdrag: TransaksjonDTO) =
-            oppdrag.avstemming!!.nokkel.format(avstemmingsnokkelFormatter)
+            oppdrag.nokkel!!.format(avstemmingsnokkelFormatter)
 
     private fun tilAksjonsdata(aksjonType: AksjonType): Aksjonsdata {
         val aksjonsdata = objectFactory.createAksjonsdata()
@@ -181,24 +190,40 @@ class AvstemmingMapper(
         aksjonsdata.nokkelTom = oppdragslisteNokkelTom.value.toString()
         //aksjonsdata.tidspunktAvstemmingTom = tidspunktAvstemmingTom.value // TODO: Utgår ? : "Feltet Tidspkt-avstemming-tom skal brukes ved konsistensavstemming" ref: APP030 Interface Spesifikasjoner Avstemming ver 004, side 12
         aksjonsdata.avleverendeAvstemmingId = avstemmingId
-        aksjonsdata.brukerId = SAKSBEHANDLERS_BRUKER_ID
+        aksjonsdata.brukerId =
+            SAKSBEHANDLERS_BRUKER_ID
 
         return aksjonsdata
     }
 
     private fun opprettTotaldata(): Totaldata {
-        val totalBelop = oppdragsliste.map { getBelop(it) }.sum()
+        val totalBelop = oppdragsliste.map {
+            getBelop(
+                it
+            )
+        }.sum()
         val totaldata = objectFactory.createTotaldata()
         totaldata.totalAntall = oppdragsliste.size
         totaldata.totalBelop = BigDecimal.valueOf(totalBelop)
-        totaldata.fortegn = tilFortegn(totalBelop)
+        totaldata.fortegn =
+            tilFortegn(totalBelop)
         return totaldata
     }
 
     private fun opprettPeriodedata(): Periodedata {
         val periodedata = objectFactory.createPeriodedata()
-        periodedata.datoAvstemtFom = tilPeriodeData(tidspunktMelding(oppdragMedLavestAvstemmingsnøkkel.value))
-        periodedata.datoAvstemtTom = tilPeriodeData(tidspunktMelding(oppdragMedHøyestAvstemmingsnøkkel.value))
+        periodedata.datoAvstemtFom =
+            tilPeriodeData(
+                tidspunktMelding(
+                    oppdragMedLavestAvstemmingsnøkkel.value
+                )
+            )
+        periodedata.datoAvstemtTom =
+            tilPeriodeData(
+                tidspunktMelding(
+                    oppdragMedHøyestAvstemmingsnøkkel.value
+                )
+            )
         return periodedata
     }
 
@@ -215,7 +240,7 @@ class AvstemmingMapper(
             val belop = getBelop(oppdrag)
             val kvittering = getKvitteringsMelding(oppdrag)
             val alvorlighetsgrad = kvittering?.mmel?.alvorlighetsgrad
-            if (oppdrag.status == OppdragStateStatus.SENDT_OS) {
+            if (oppdrag.status == TransaksjonStatus.SENDT_OS) {
                 manglerBelop += belop
                 manglerAntall++
             } else if (KvitteringAlvorlighetsgrad.OK.kode == alvorlighetsgrad) {
@@ -233,19 +258,23 @@ class AvstemmingMapper(
 
         grunnlagsdata.godkjentAntall = godkjentAntall
         grunnlagsdata.godkjentBelop = BigDecimal.valueOf(godkjentBelop)
-        grunnlagsdata.godkjentFortegn = tilFortegn(godkjentBelop)
+        grunnlagsdata.godkjentFortegn =
+            tilFortegn(godkjentBelop)
 
         grunnlagsdata.varselAntall = varselAntall
         grunnlagsdata.varselBelop = BigDecimal.valueOf(varselBelop)
-        grunnlagsdata.varselFortegn = tilFortegn(varselBelop)
+        grunnlagsdata.varselFortegn =
+            tilFortegn(varselBelop)
 
         grunnlagsdata.avvistAntall = avvistAntall
         grunnlagsdata.avvistBelop = BigDecimal.valueOf(avvistBelop)
-        grunnlagsdata.avvistFortegn = tilFortegn(avvistBelop)
+        grunnlagsdata.avvistFortegn =
+            tilFortegn(avvistBelop)
 
         grunnlagsdata.manglerAntall = manglerAntall
         grunnlagsdata.manglerBelop = BigDecimal.valueOf(manglerBelop)
-        grunnlagsdata.manglerFortegn = tilFortegn(manglerBelop)
+        grunnlagsdata.manglerFortegn =
+            tilFortegn(manglerBelop)
 
         return grunnlagsdata
     }

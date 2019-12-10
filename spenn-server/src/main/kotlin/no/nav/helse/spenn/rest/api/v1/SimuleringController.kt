@@ -9,7 +9,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.spenn.oppdrag.TransaksjonDTO
+import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
@@ -35,11 +35,8 @@ fun Route.simuleringcontroller(
         }
         LOG.info("simulering called for vedtak: ${behov.sakskompleksId}")
         audit.info("simulering kall for vedtak: ${behov.sakskompleksId}", call.authentication)
-        call.respond(simuleringService.runSimulering(
-            TransaksjonDTO(
-                utbetalingsreferanse = behov.utbetalingsreferanse,
-                utbetalingsOppdrag = behov.tilUtbetaling(aktørTilFnrMapper.tilFnr(behov.aktørId))
-            )
-        ))
+        call.respond(simuleringService.simulerOppdrag(
+            behov.tilUtbetaling(aktørTilFnrMapper.tilFnr(behov.aktørId))
+                .lagPåSidenSimuleringsrequest()))
     }
 }

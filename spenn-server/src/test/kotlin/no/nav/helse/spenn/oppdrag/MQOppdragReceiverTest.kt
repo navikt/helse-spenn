@@ -46,7 +46,7 @@ class MQOppdragReceiverTest {
         val mqReceiver = OppdragMQReceiver(
                 connection = mockConnection,
                 mottakqueue = "mottaksqueue",
-                jaxb = JAXBOppdrag(), oppdragStateService = oppdragStateService,
+                jaxb = JAXBOppdrag(), oppdragService = oppdragStateService,
                 meterRegistry = meterRegistry) //, statusProducer = kafkaProducer)
         val fom1 = LocalDate.of(2019, Month.JANUARY, 1)
         val tom1 = LocalDate.of(2019, Month.JANUARY, 12)

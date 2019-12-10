@@ -392,7 +392,7 @@
     <build>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
         <plugins>
-            <plugin>
+            <!--plugin>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-xjc-plugin</artifactId>
                 <version>3.3.0</version>
@@ -416,8 +416,8 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
+            </plugin-->
+            <!--plugin>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
                 <version>2.3.2</version>
@@ -460,7 +460,7 @@
                         <version>${javax-wsapi.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
+            </plugin-->
 
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>

@@ -2,14 +2,14 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
 import com.ibm.msg.client.wmq.WMQConstants
-import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import org.slf4j.LoggerFactory
 import javax.jms.Connection
 
 open class AvstemmingMQSender(connection: Connection,
                               val sendqueue: String,
-                              val jaxb: JAXBAvstemmingsdata) {
+                              val jaxb: JAXBAvstemmingsdata
+) {
 
     val jmsSession = connection.createSession()
     val producer = jmsSession

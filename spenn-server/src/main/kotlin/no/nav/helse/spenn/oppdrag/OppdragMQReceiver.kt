@@ -5,8 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -15,7 +14,7 @@ import javax.jms.Connection
 class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
                         mottakqueue: String,
                         val jaxb: JAXBOppdrag,
-                        val oppdragStateService: OppdragStateService,
+                        val oppdragService: OppdragService,
                         val meterRegistry: MeterRegistry/*,
                         val statusProducer: OppdragStateKafkaProducer*/) {
 
@@ -39,16 +38,16 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
     companion object {
         private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
 
-        internal fun mapStatus(oppdrag: Oppdrag): OppdragStateStatus {
+        internal fun mapStatus(oppdrag: Oppdrag): TransaksjonStatus {
             when (KvitteringAlvorlighetsgrad.fromKode(oppdrag.mmel.alvorlighetsgrad)) {
-                KvitteringAlvorlighetsgrad.OK -> return OppdragStateStatus.FERDIG
+                KvitteringAlvorlighetsgrad.OK -> return TransaksjonStatus.FERDIG
                 KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL -> {
                     log.warn("Akseptert men noe er feil for ${oppdrag.oppdrag110.fagsystemId} melding ${oppdrag.mmel.beskrMelding}")
-                    return OppdragStateStatus.FERDIG
+                    return TransaksjonStatus.FERDIG
                 }
             }
             log.error("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId} ${oppdrag.mmel.beskrMelding}")
-            return OppdragStateStatus.FEIL
+            return TransaksjonStatus.FEIL
         }
     }
 
@@ -65,12 +64,13 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
         log.info("OppdragResponse for ${utbetalingsreferanse}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
         val nøkkelAvstemming = LocalDateTime.parse(oppdrag.oppdrag110.avstemming115.nokkelAvstemming!!, avstemmingsnokkelFormatter)
         val status = mapStatus(oppdrag)
-        val feilmld = if (status == OppdragStateStatus.FEIL) oppdrag.mmel.beskrMelding else null
+        val feilmld = if (status == TransaksjonStatus.FEIL) oppdrag.mmel.beskrMelding else null
 
-        oppdragStateService.lagreOSResponse(utbetalingsreferanse, nøkkelAvstemming, status, xml, feilmld)
+        oppdragService.hentTransaksjon(utbetalingsreferanse, nøkkelAvstemming)
+            .lagreOSResponse(status, xml, feilmld)
 
         meterRegistry.counter(OPPDRAG, "status", status.name).increment()
-        if (status == OppdragStateStatus.FERDIG) {
+        if (status == TransaksjonStatus.FERDIG) {
             //statusProducer.send(OppdragFerdigInfo(updated.soknadId.toString())) // TODO
         }
     }

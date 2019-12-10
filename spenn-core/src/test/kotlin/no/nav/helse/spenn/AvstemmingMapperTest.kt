@@ -1,10 +1,8 @@
-package no.nav.helse.spenn.grensesnittavstemming
+package no.nav.helse.spenn
 
-import no.nav.helse.spenn.FagOmraadekode
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
+import no.nav.helse.spenn.testsupport.etEnkeltBehov
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -26,21 +24,31 @@ class AvstemmingMapperTest {
     private var utbetalingsLinjeIdSequence = 1L
     private var utbetalingsreferanse = "123"
 
-    private val tidspunktFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSS")
     private val testoppdragsliste1 = listOf(
-            lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1000),
-            lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "08", dagSats = 1000),
-            lagOppdrag(status = OppdragStateStatus.FERDIG, alvorlighetsgrad = "04", dagSats = 1100),
-            lagOppdrag(status = OppdragStateStatus.FEIL, alvorlighetsgrad = "12", dagSats = 1200),
-            lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1300),
-            lagOppdrag(status = OppdragStateStatus.FERDIG, dagSats = 1400),
-            lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1550),
-            lagOppdrag(status = OppdragStateStatus.SENDT_OS, dagSats = 1660)
+            lagOppdrag(status = TransaksjonStatus
+                .FERDIG, dagSats = 1000),
+            lagOppdrag(status = TransaksjonStatus
+                .FEIL, alvorlighetsgrad = "08", dagSats = 1000),
+            lagOppdrag(status = TransaksjonStatus
+                .FERDIG, alvorlighetsgrad = "04", dagSats = 1100),
+            lagOppdrag(status = TransaksjonStatus
+                .FEIL, alvorlighetsgrad = "12", dagSats = 1200),
+            lagOppdrag(status = TransaksjonStatus
+                .FERDIG, dagSats = 1300),
+            lagOppdrag(status = TransaksjonStatus
+                .FERDIG, dagSats = 1400),
+            lagOppdrag(status = TransaksjonStatus
+                .SENDT_OS, dagSats = 1550),
+            lagOppdrag(status = TransaksjonStatus
+                .SENDT_OS, dagSats = 1660)
     )
 
     @Test
     fun avstemmingMapperBørTakleTomListe() {
-        val mapper = AvstemmingMapper(emptyList(), FagOmraadekode.SYKEPENGER_REFUSJON)
+        val mapper = AvstemmingMapper(
+            emptyList(),
+            FagOmraadekode.SYKEPENGER_REFUSJON
+        )
         val meldinger = mapper.lagAvstemmingsMeldinger()
         assertEquals(0, meldinger.size)
     }
@@ -56,13 +64,16 @@ class AvstemmingMapperTest {
             assertEquals("SP", aksjon.avleverendeKomponentKode)
             assertEquals("OS", aksjon.mottakendeKomponentKode)
             assertEquals("SPREF", aksjon.underkomponentKode)
-            assertEquals(oppdragsliste.map { it.avstemming!!.nokkel.format(avstemmingsnokkelFormatter) }.min(), aksjon.nokkelFom)
-            assertEquals(oppdragsliste.map { it.avstemming!!.nokkel.format(avstemmingsnokkelFormatter) }.max(), aksjon.nokkelTom)
+            assertEquals(oppdragsliste.map { it.nokkel!!.format(avstemmingsnokkelFormatter) }.min(), aksjon.nokkelFom)
+            assertEquals(oppdragsliste.map { it.nokkel!!.format(avstemmingsnokkelFormatter) }.max(), aksjon.nokkelTom)
             //assertEquals(oppdragsliste.map { it.modified.format(tidspunktFormatter) }.max(), aksjon.tidspunktAvstemmingTom) // TODO: Utgår?
             assertEquals("SPA", aksjon.brukerId)
         }
 
-        val mapper = AvstemmingMapper(oppdragsliste, FagOmraadekode.SYKEPENGER_REFUSJON)
+        val mapper = AvstemmingMapper(
+            oppdragsliste,
+            FagOmraadekode.SYKEPENGER_REFUSJON
+        )
         val xmlMeldinger = mapper.lagAvstemmingsMeldinger().map { jaxbAvstemming.fromAvstemmingsdataToXml(it) }
         //println(xmlMeldinger)
         val meldinger = xmlMeldinger.map { JAXBAvstemmingsdata().toAvstemmingsdata(it) }
@@ -70,57 +81,64 @@ class AvstemmingMapperTest {
         sjekkAksjon(meldinger.first().aksjon, AksjonType.START)
         sjekkAksjon(meldinger.last().aksjon, AksjonType.AVSL)
 
-        meldinger[1].let {
-            sjekkAksjon(it.aksjon, AksjonType.DATA)
-            sjekkDetaljerForTestoppdragsliste1(it.detalj)
-            it.total.let {
-                assertEquals(Fortegn.T, it.fortegn)
-                assertEquals(oppdragsliste.size, it.totalAntall)
+        meldinger[1].let { avstemmingsdata ->
+            sjekkAksjon(avstemmingsdata.aksjon, AksjonType.DATA)
+            sjekkDetaljerForTestoppdragsliste1(avstemmingsdata.detalj)
+            avstemmingsdata.total.let { totaldata ->
+                assertEquals(Fortegn.T, totaldata.fortegn)
+                assertEquals(oppdragsliste.size, totaldata.totalAntall)
                 assertEquals(oppdragsliste.map {
                     it.utbetalingsOppdrag.utbetalingsLinje.map {
                         it.sats.toLong()
                     }.sum()
-                }.sum(), it.totalBelop.toLong())
+                }.sum(), totaldata.totalBelop.toLong())
             }
-            it.periode.let {
-                assertEquals(oppdragsliste.map { it.created }.min()!!.format(DateTimeFormatter.ofPattern("yyyyMMddHH")),
-                        it.datoAvstemtFom)
-                assertEquals(oppdragsliste.map { it.created }.max()!!.format(DateTimeFormatter.ofPattern("yyyyMMddHH")),
-                        it.datoAvstemtTom)
+            avstemmingsdata.periode.let { periodedata ->
+                assertEquals(oppdragsliste.map { it.nokkel!! }.min()!!.format(DateTimeFormatter.ofPattern("yyyyMMddHH")),
+                        periodedata.datoAvstemtFom)
+                assertEquals(oppdragsliste.map { it.nokkel!! }.max()!!.format(DateTimeFormatter.ofPattern("yyyyMMddHH")),
+                        periodedata.datoAvstemtTom)
             }
-            it.grunnlag.let {
-                val ferdige = oppdragsliste.filter { it.status == OppdragStateStatus.FERDIG && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "00") }
-                assertEquals(ferdige.map { satsSum(it)}.sum(), it.godkjentBelop.toLong())
-                assertEquals(ferdige.size, it.godkjentAntall)
-                assertEquals(Fortegn.T, it.godkjentFortegn)
+            avstemmingsdata.grunnlag.let { grunnlagsdata ->
+                val ferdige = oppdragsliste.filter { it.status == TransaksjonStatus
+                    .FERDIG && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "00") }
+                assertEquals(ferdige.map { satsSum(it)}.sum(), grunnlagsdata.godkjentBelop.toLong())
+                assertEquals(ferdige.size, grunnlagsdata.godkjentAntall)
+                assertEquals(Fortegn.T, grunnlagsdata.godkjentFortegn)
 
                 val avviste = oppdragsliste.filter {
-                    it.status == OppdragStateStatus.FEIL && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad in listOf("08", "12"))
+                    it.status == TransaksjonStatus
+                        .FEIL && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad in listOf("08", "12"))
                 }
-                assertEquals(avviste.map { satsSum(it) }.sum(), it.avvistBelop.toLong())
-                assertEquals(avviste.size, it.avvistAntall)
-                assertEquals(Fortegn.T, it.avvistFortegn)
+                assertEquals(avviste.map { satsSum(it) }.sum(), grunnlagsdata.avvistBelop.toLong())
+                assertEquals(avviste.size, grunnlagsdata.avvistAntall)
+                assertEquals(Fortegn.T, grunnlagsdata.avvistFortegn)
 
                 val godkjentMedVarsel = oppdragsliste.filter {
-                    it.status == OppdragStateStatus.FERDIG && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "04")
+                    it.status == TransaksjonStatus
+                        .FERDIG && (getKvitteringsMelding(it)!!.mmel.alvorlighetsgrad == "04")
                 }
-                assertEquals(godkjentMedVarsel.map { satsSum(it) }.sum(), it.varselBelop.toLong())
-                assertEquals(godkjentMedVarsel.size, it.varselAntall)
-                assertEquals(Fortegn.T, it.varselFortegn)
+                assertEquals(godkjentMedVarsel.map { satsSum(it) }.sum(), grunnlagsdata.varselBelop.toLong())
+                assertEquals(godkjentMedVarsel.size, grunnlagsdata.varselAntall)
+                assertEquals(Fortegn.T, grunnlagsdata.varselFortegn)
 
                 val mangler = oppdragsliste.filter {
-                    it.status == OppdragStateStatus.SENDT_OS
+                    it.status == TransaksjonStatus
+                        .SENDT_OS
                 }
-                assertEquals(mangler.map { satsSum(it) }.sum(), it.manglerBelop.toLong())
-                assertEquals(mangler.size, it.manglerAntall)
-                assertEquals(Fortegn.T, it.manglerFortegn)
+                assertEquals(mangler.map { satsSum(it) }.sum(), grunnlagsdata.manglerBelop.toLong())
+                assertEquals(mangler.size, grunnlagsdata.manglerAntall)
+                assertEquals(Fortegn.T, grunnlagsdata.manglerFortegn)
             }
         }
     }
 
     @Test
     fun testOpprettDetaljdata() {
-        val mapper = AvstemmingMapper(testoppdragsliste1, FagOmraadekode.SYKEPENGER_REFUSJON)
+        val mapper = AvstemmingMapper(
+            testoppdragsliste1,
+            FagOmraadekode.SYKEPENGER_REFUSJON
+        )
 
         val detaljer = mapper.opprettDetaljdata()
 
@@ -199,7 +217,9 @@ class AvstemmingMapperTest {
             }
 
 
-    private fun lagOppdrag(status: OppdragStateStatus = OppdragStateStatus.FERDIG,
+    private fun lagOppdrag(status: TransaksjonStatus
+                           = TransaksjonStatus
+            .FERDIG,
                            utbetalingsreferanse: String = this.utbetalingsreferanse,
                            alvorlighetsgrad: String = "00",
                            dagSats: Long = 1345) : TransaksjonDTO {
@@ -208,12 +228,13 @@ class AvstemmingMapperTest {
         val newId = oppdragIdSequence++
         return TransaksjonDTO(
                 id = newId,
-                created = now,
-                modified = now,
-                oppdragResponse = lagOppdragResponseXml(utbetalingsreferanse,
-                        status == OppdragStateStatus.SENDT_OS,
-                        alvorlighetsgrad),
-                simuleringResult = null,
+                oppdragResponse = lagOppdragResponseXml(
+                    utbetalingsreferanse,
+                    status == TransaksjonStatus
+                        .SENDT_OS,
+                    alvorlighetsgrad
+                ),
+                simuleringresult = null,
                 sakskompleksId = soknadId,
                 utbetalingsreferanse = utbetalingsreferanse,
                 status = status,
@@ -231,12 +252,8 @@ class AvstemmingMapperTest {
                         )),
                         behov = etEnkeltBehov()
                 ),
-                avstemming = AvstemmingDTO(
-                        oppdragStateId = newId,
-                        avstemt = false,
-                        id = 1024,
-                        nokkel = now
-                )
+                avstemt = false,
+                nokkel = now
         )
     }
 

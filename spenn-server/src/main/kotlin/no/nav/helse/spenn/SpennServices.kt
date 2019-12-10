@@ -12,7 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.*
-import no.nav.helse.spenn.grensesnittavstemming.JAXBAvstemmingsdata
+import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag

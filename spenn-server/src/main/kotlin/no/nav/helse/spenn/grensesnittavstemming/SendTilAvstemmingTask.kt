@@ -1,37 +1,29 @@
 package no.nav.helse.spenn.grensesnittavstemming
 
 import io.micrometer.core.instrument.MeterRegistry
-import net.javacrumbs.shedlock.core.SchedulerLock
-import no.nav.helse.spenn.FagOmraadekode
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.appsupport.AVSTEMMING
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
+import no.nav.helse.spenn.oppdrag.dao.OppdragService
+import no.nav.helse.spenn.oppdrag.dao.lagAvstemmingsmeldinger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
-
-/*@Profile(value=["!prod"])
-@ConditionalOnProperty(name = ["scheduler.enabled", "scheduler.tasks.avstemming"], havingValue = "true")*/
-class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
+class SendTilAvstemmingTask(val oppdragStateService: OppdragService,
                             val avstemmingMQSender: AvstemmingMQSender,
                             val meterRegistry: MeterRegistry) {
 
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
 
-    //@Scheduled(cron = "0 0 13 * * *")
-    //@SchedulerLock(name = "sendTilAvstemming")
     fun sendTilAvstemming() {
-        val oppdragList = oppdragStateService.fetchOppdragStateByNotAvstemtAndMaxAvstemmingsnokkel(LocalDateTime.now().minusHours(1))
+        val oppdragList = oppdragStateService.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now().minusHours(1))
         log.info("Fant ${oppdragList.size} oppdrag som skal sendes til avstemming")
-        val mapper = AvstemmingMapper(oppdragList, FagOmraadekode.SYKEPENGER_REFUSJON)
-        val meldinger = mapper.lagAvstemmingsMeldinger()
+        val meldinger = oppdragList.lagAvstemmingsmeldinger()
 
         if (meldinger.isEmpty()) {
             log.info("Ingen avstemmingsmeldinger å sende. Returnerer...")
             return
         }
-        log.info("Sender avstemmingsmeldinger med avleverendeAvstemmingId=${meldinger.first().aksjon.avleverendeAvstemmingId}, "+
-                "nokkelFom=${mapper.avstemmingsnokkelFom()}, nokkelTom=${mapper.avstemmingsnokkelTom()}")
+        log.info("Sender avstemmingsmeldinger med avleverendeAvstemmingId=${meldinger.first().aksjon.avleverendeAvstemmingId}")
 
         meldinger.forEachIndexed { i, melding ->
             try {
@@ -53,10 +45,8 @@ class SendTilAvstemmingTask(val oppdragStateService: OppdragStateService,
             log.error("Error registering metrics", e)
         }
 
-
         oppdragList.forEach {
-            val newState = it.copy(avstemming = it.avstemming!!.copy(avstemt = true))
-            oppdragStateService.saveOppdragState(newState)
+            it.markerSomAvstemt()
         }
     }
 }

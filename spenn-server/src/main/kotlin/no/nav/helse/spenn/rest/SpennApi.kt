@@ -37,7 +37,7 @@ data class SpennApiEnvironment(
         val simuleringService: SimuleringService,
         val aktørTilFnrMapper: AktørTilFnrMapper,
         val auditSupport: AuditSupport,
-        val stateService: OppdragStateService,
+        val stateService: OppdragService,
         val oppdragMQSender: OppdragMQSender
 
 
@@ -86,7 +86,7 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
 
         healthstatuscontroller(env.kafkaStreams, env.meterRegistry)
 
-        opphør(stateService = env.stateService, oppdragSender = env.oppdragMQSender)
+        //opphør(stateService = env.stateService, oppdragSender = env.oppdragMQSender)
 
         authenticate {
             simuleringcontroller(env.simuleringService, env.aktørTilFnrMapper, env.auditSupport)

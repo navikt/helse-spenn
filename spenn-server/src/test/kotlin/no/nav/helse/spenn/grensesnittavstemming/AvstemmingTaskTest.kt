@@ -9,12 +9,14 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.helse.spenn.AvstemmingMapperTest
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AvstemmingDTO
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
+import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
 import no.nav.helse.spenn.simulering.SimuleringResult
@@ -53,7 +55,9 @@ class AvstemmingTaskTest {
 
     @Test
     fun ingenOppdragSkalBliIngenAvstemming() {
-        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue",
+            JAXBAvstemmingsdata()
+        ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
             }
@@ -113,7 +117,9 @@ class AvstemmingTaskTest {
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
 
-        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata() ){
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue",
+            JAXBAvstemmingsdata()
+        ){
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 sendteMeldinger.add(avstemmingsMelding)
             }

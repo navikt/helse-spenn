@@ -75,7 +75,7 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
 
     fun stoppTransaksjon(dto: TransaksjonDTO, feilmelding: String?): TransaksjonDTO {
         dataSource.connection.use {
-            it.prepareStatement("update transaksjon set status = ?, feilbeskrivelse = ? where id = ?").use { preparedStatement ->
+            it.prepareStatement("update transaksjon set status = ?, feilbeskrivelse = ?, modified = now() where id = ?").use { preparedStatement ->
                 preparedStatement.setString(1, TransaksjonStatus.STOPPET.name)
                 preparedStatement.setString(2, feilmelding)
                 preparedStatement.setLong(3, dto.id)
@@ -87,9 +87,21 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
 
     fun oppdaterTransaksjonMedStatusOgNøkkel(dto: TransaksjonDTO, status: TransaksjonStatus, nøkkel: LocalDateTime): TransaksjonDTO {
         dataSource.connection.use {
-            it.prepareStatement("update transaksjon set status = ?, nokkel = ? where id = ?").use { preparedStatement ->
+            it.prepareStatement("update transaksjon set status = ?, nokkel = ?, modified = now()  where id = ?").use { preparedStatement ->
                 preparedStatement.setString(1, status.name)
                 preparedStatement.setObject(2, nøkkel)
+                preparedStatement.setLong(3, dto.id)
+                preparedStatement.executeUpdateAssertingOneRow()
+            }
+            return refreshById(it, dto.id)
+        }
+    }
+
+    fun oppdaterTransaksjonMedStatusOgSimuleringResult(dto: TransaksjonDTO, status: TransaksjonStatus, simuleringresult: String?): TransaksjonDTO {
+        dataSource.connection.use {
+            it.prepareStatement("update transaksjon set status = ?, simuleringresult = ?, modified = now()  where id = ?").use { preparedStatement ->
+                preparedStatement.setString(1, status.name)
+                preparedStatement.setObject(2, simuleringresult)
                 preparedStatement.setLong(3, dto.id)
                 preparedStatement.executeUpdateAssertingOneRow()
             }
@@ -198,6 +210,15 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
                     }
                     return result.first()
                 }
+            }
+        }
+    }
+
+    fun markerSomAvstemt(dto: TransaksjonDTO) {
+        dataSource.connection.use {
+            it.prepareStatement("update transaksjon set avstemt = true, modified = now() where id = ?").use { preparedStatement ->
+                preparedStatement.setLong(1, dto.id)
+                preparedStatement.executeUpdateAssertingOneRow()
             }
         }
     }

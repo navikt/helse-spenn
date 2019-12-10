@@ -36,7 +36,7 @@ internal class ServiceTest {
     fun `lagre utbetalingsoppdrag`() {
         val utbetaling = etUtbetalingsOppdrag()
         service.lagreNyttOppdrag(utbetaling)
-        val transaksjoner = service.hentNyeBehov(5)
+        val transaksjoner = service.hentNyeOppdrag(5)
         assertEquals(1, transaksjoner.size)
         repository.findAllByStatus(TransaksjonStatus.STARTET).first().apply {
             assertEquals(utbetaling.behov.utbetalingsreferanse, this.utbetalingsreferanse)
@@ -60,7 +60,7 @@ internal class ServiceTest {
     fun `test stopp oppdrag`() {
         val utbetaling = etUtbetalingsOppdrag()
         service.lagreNyttOppdrag(utbetaling)
-        val trans = service.hentNyeBehov(5).first()
+        val trans = service.hentNyeOppdrag(5).first()
         trans.stopp("neineinei")
         val stoppede = repository.findAllByStatus(TransaksjonStatus.STOPPET)
         assertEquals(1, stoppede.size)
@@ -74,7 +74,7 @@ internal class ServiceTest {
         val ny = repository.findByRef(utbetaling.behov.utbetalingsreferanse).first()
         assertNull(ny.nokkel)
 
-        service.hentNyeBehov(5).first().forberedSendingTilOS()
+        service.hentNyeOppdrag(5).first().forberedSendingTilOS()
 
         val klarForOS = repository.findByRef(utbetaling.behov.utbetalingsreferanse).first()
         assertNotNull(klarForOS.nokkel)
@@ -91,7 +91,7 @@ internal class ServiceTest {
         println(utbetalingMedForHøyDagsats)
         service.lagreNyttOppdrag(utbetalingMedForHøyDagsats)
         assertThrows<SanityCheckException> {
-            service.hentNyeBehov(5).first().forberedSendingTilOS()
+            service.hentNyeOppdrag(5).first().forberedSendingTilOS()
         }
     }
 
@@ -100,21 +100,43 @@ internal class ServiceTest {
         val utbetaling = etUtbetalingsOppdrag()
         service.lagreNyttOppdrag(utbetaling)
         val result = SimuleringResult(status = SimuleringStatus.OK)
-        service.hentNyeBehov(5).first()
+        service.hentNyeOppdrag(5).first()
             .oppdaterSimuleringsresultat(result)
         val dto = repository.findByRef(utbetalingsreferanse = utbetaling.behov.utbetalingsreferanse).first()
         assertEquals(TransaksjonStatus.SIMULERING_OK, dto.status)
-        assertEquals(defaultObjectMapper.writeValueAsString(result), dto.simuleringresult)
+        assertEquals(result,
+            defaultObjectMapper.readValue(dto.simuleringresult, SimuleringResult::class.java))
     }
 
     @Test
     fun `lagre simuleringsresultat FEIL`() {
         val utbetaling = etUtbetalingsOppdrag()
         service.lagreNyttOppdrag(utbetaling)
-        service.hentNyeBehov(5).first()
+        service.hentNyeOppdrag(5).first()
             .oppdaterSimuleringsresultat(SimuleringResult(status = SimuleringStatus.FEIL))
         val dto = repository.findByRef(utbetalingsreferanse = utbetaling.behov.utbetalingsreferanse).first()
         assertEquals(TransaksjonStatus.SIMULERING_FEIL, dto.status)
+    }
+
+    @Test
+    fun `lagre os-respons`() {
+        val utbetaling = etUtbetalingsOppdrag()
+        service.lagreNyttOppdrag(utbetaling)
+        val trans = service.hentNyeOppdrag(5).first()
+        trans.forberedSendingTilOS()
+        trans.lagreOSResponse(TransaksjonStatus.FERDIG, "whatever", null)
+        val dto = repository.findByRef(utbetalingsreferanse = utbetaling.behov.utbetalingsreferanse).first()
+        assertEquals(TransaksjonStatus.FERDIG, dto.status)
+    }
+
+    @Test
+    fun `sett til avstemt`() {
+        val utbetaling = etUtbetalingsOppdrag()
+        service.lagreNyttOppdrag(utbetaling)
+        val trans = service.hentNyeOppdrag(5).first()
+        trans.markerSomAvstemt()
+        val dto = repository.findByRef(utbetalingsreferanse = utbetaling.behov.utbetalingsreferanse).first()
+        assertTrue(dto.avstemt)
     }
 
 

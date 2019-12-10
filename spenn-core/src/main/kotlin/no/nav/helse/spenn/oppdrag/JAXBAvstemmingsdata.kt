@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.grensesnittavstemming
+package no.nav.helse.spenn.oppdrag
 
 
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata

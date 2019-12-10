@@ -79,7 +79,10 @@ class OppdragAvstemmingIT {
 
         val oppdragListe = listOf(oppdragStateHopefullyWithResponse)
 
-        val mapper = AvstemmingMapper(oppdragListe, FagOmraadekode.SYKEPENGER_REFUSJON)
+        val mapper = AvstemmingMapper(
+            oppdragListe,
+            FagOmraadekode.SYKEPENGER_REFUSJON
+        )
         val meldinger = mapper.lagAvstemmingsMeldinger()
 
         meldinger.forEach{

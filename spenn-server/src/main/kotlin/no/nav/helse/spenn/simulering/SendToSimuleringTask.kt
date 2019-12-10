@@ -28,7 +28,7 @@ class SendToSimuleringTask(private val simuleringService: SimuleringService,
 
     fun sendSimulering() {
         LOG.trace("Running SendToSimulering task")
-        val oppdragList = oppdragService.hentNyeBehov(limit)
+        val oppdragList = oppdragService.hentNyeOppdrag(limit)
         if (oppdragList.isNotEmpty()) {
             LOG.info("Got ${oppdragList.size} items for simulering")
         }

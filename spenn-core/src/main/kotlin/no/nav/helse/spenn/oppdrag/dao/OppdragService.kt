@@ -1,6 +1,8 @@
 package no.nav.helse.spenn.oppdrag.dao
 
 import com.zaxxer.hikari.HikariDataSource
+import no.nav.helse.spenn.FagOmraadekode
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.oppdragRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
@@ -16,6 +18,8 @@ class OppdragService(dataSource: HikariDataSource) {
 
     inner class Transaksjon internal constructor(dto: TransaksjonDTO) {
         private var transaksjonDTO = dto
+
+        internal val dto: TransaksjonDTO get() = transaksjonDTO
 
         val oppdragRequest: Oppdrag get() {
             require(transaksjonDTO.status == TransaksjonStatus.SENDT_OS)
@@ -57,10 +61,15 @@ class OppdragService(dataSource: HikariDataSource) {
         }
 
         fun oppdaterSimuleringsresultat(result: SimuleringResult) {
-            when (result.status) {
-                SimuleringStatus.OK -> repository.
-                else -> TransaksjonStatus.SIMULERING_FEIL
-            }
+            val status = if (result.status == SimuleringStatus.OK) TransaksjonStatus.SIMULERING_OK
+                else TransaksjonStatus.SIMULERING_FEIL
+            transaksjonDTO = repository.oppdaterTransaksjonMedStatusOgSimuleringResult(transaksjonDTO, status,
+                defaultObjectMapper.writeValueAsString(result))
+        }
+
+        fun markerSomAvstemt() {
+            repository.markerSomAvstemt(transaksjonDTO)
+            transaksjonDTO = transaksjonDTO.copy(avstemt = true)
         }
 
     }
@@ -82,7 +91,7 @@ class OppdragService(dataSource: HikariDataSource) {
     fun hentTransaksjon(utbetalingsreferanse: String, avstemmingsNøkkel: LocalDateTime) =
         Transaksjon(repository.findByRefAndNokkel(utbetalingsreferanse, avstemmingsNøkkel))
 
-    fun hentNyeBehov(limit: Int) =
+    fun hentNyeOppdrag(limit: Int) =
         repository.findAllByStatus(TransaksjonStatus.STARTET, limit).map { Transaksjon(it) }
 
     fun hentFerdigsimulerte(limit: Int) =
@@ -92,6 +101,17 @@ class OppdragService(dataSource: HikariDataSource) {
         repository.findAllNotAvstemtWithAvstemmingsnokkelNotAfter(maks).map { Transaksjon(it) }
 
 }
+
+fun UtbetalingsOppdrag.lagPåSidenSimuleringsrequest() =
+    TransaksjonDTO(
+        id = -1,
+        sakskompleksId = this.behov.sakskompleksId,
+        utbetalingsreferanse = this.behov.utbetalingsreferanse,
+        nokkel = LocalDateTime.now(),
+        utbetalingsOppdrag = this).toSimuleringRequest()
+
+fun List<OppdragService.Transaksjon>.lagAvstemmingsmeldinger() =
+    AvstemmingMapper(this.map { it.dto },FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
 
 class SanityCheckException(message : String) : Exception(message)
 

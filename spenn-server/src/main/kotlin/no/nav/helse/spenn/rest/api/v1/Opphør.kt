@@ -1,5 +1,8 @@
 package no.nav.helse.spenn.rest.api.v1
 
+fun test() = 1
+
+/*
 import io.ktor.application.*
 import io.ktor.request.*
 import io.ktor.routing.*
@@ -32,12 +35,6 @@ private fun TransaksjonDTO.lagOpphørsmelding(): Oppdrag {
 
     val dto = this
 
-    /*val oppdragsEnhet = objectFactory.createOppdragsEnhet120().apply {
-        enhet = OppdragSkjemaConstants.SP_ENHET
-        typeEnhet = OppdragSkjemaConstants.BOS
-        datoEnhetFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
-    }*/
-
     val oppdrag110 = objectFactory.createOppdrag110().apply {
         kodeAksjon = utbetalingsOppdrag.operasjon.kode
 
@@ -64,16 +61,6 @@ private fun TransaksjonDTO.lagOpphørsmelding(): Oppdrag {
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
             this.tidspktMelding = nokkel?.format(avstemmingsnokkelFormatter)
         }
-        //oppdragsEnhet120.add(oppdragsEnhet)
-        /*utbetalingsOppdrag.utbetalingsLinje.forEach {
-            oppdragsLinje150.add(
-                    mapTolinje150(
-                            oppdragslinje = it,
-                            maksDato = utbetalingsOppdrag.behov.maksdato,
-                            saksbehandler = utbetalingsOppdrag.behov.saksbehandler
-                    )
-            )
-        }*/
     }
 
     return objectFactory.createOppdrag().apply {
@@ -81,4 +68,4 @@ private fun TransaksjonDTO.lagOpphørsmelding(): Oppdrag {
     }
 
 
-}
+}*/
