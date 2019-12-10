@@ -51,7 +51,7 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
         val builder = StreamsBuilder()
 
         builder.consumeTopic(SYKEPENGER_BEHOV_TOPIC)
-            .filter { _, value -> value["@behov"]?.textValue() == "Utbetaling" }
+            .filter { _, value -> value.skalOppfyllesAvOss("Utbetaling") }
             .filter { _, value -> !value.hasNonNull("@løsning") }
             .mapValues { _, value -> value to defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
             .filter { _, (_, utbetalingsbehov) ->
@@ -94,6 +94,13 @@ class KafkaStreamsConfig(val oppdragStateService: OppdragStateService,
 
         return builder.build()
     }
+
+    private fun JsonNode.skalOppfyllesAvOss(type: String)  =
+            this["@behov"]?.let {
+                if (it.isArray) {
+                    it.map { b -> b.asText() }.any { t -> t == type }
+                } else it.asText() == type
+            } ?: false
 
     @PostConstruct
     fun offsetReset() {
