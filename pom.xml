@@ -8,6 +8,7 @@
     <version>0.1-SNAPSHOT</version>
     <modules>
         <module>spenn-core</module>
+        <module>spenn-server</module>
     </modules>
     <name>helse-spenn</name>
     <description>Utbetaling</description>
