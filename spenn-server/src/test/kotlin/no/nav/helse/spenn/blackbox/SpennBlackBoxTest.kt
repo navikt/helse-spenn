@@ -297,8 +297,8 @@ internal class SpennBlackBoxTest {
                 it.listen()
             }
 
-//            val spenn = setupSpenn(network)
-            val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
+            val spenn = setupSpenn(network)
+            //val spenn = setupLocalSpenn(listOf(postgre, kafka, mq, vault, oidcContainer, mockServer))
             spenn.start()
 
         }
@@ -391,7 +391,7 @@ internal class SpennBlackBoxTest {
         }
 
         object SpennContainer : GenericContainer<SpennContainer>(ImageFromDockerfile()
-            .withFileFromPath(".", Paths.get(".")))
+            .withFileFromPath(".", Paths.get("..")))
 
 
         private class LocalSpenn() {
