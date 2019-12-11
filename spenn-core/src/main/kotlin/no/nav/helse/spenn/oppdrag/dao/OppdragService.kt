@@ -27,7 +27,7 @@ class OppdragService(dataSource: HikariDataSource) {
         }
 
         val simuleringRequest: SimulerBeregningRequest get() {
-            require(transaksjonDTO.status == TransaksjonStatus.SENDT_OS)
+            require(transaksjonDTO.status == TransaksjonStatus.STARTET)
             return transaksjonDTO.toSimuleringRequest()
         }
 
