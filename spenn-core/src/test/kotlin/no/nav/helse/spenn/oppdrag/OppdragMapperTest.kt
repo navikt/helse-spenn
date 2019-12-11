@@ -1,12 +1,16 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.etEnkeltBehov
+import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
+import no.nav.helse.spenn.testsupport.etEnkeltBehov
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.StringWriter
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 import javax.xml.bind.JAXBContext
@@ -14,14 +18,13 @@ import javax.xml.bind.Marshaller
 import javax.xml.datatype.DatatypeFactory
 import kotlin.test.assertNull
 
-
 class OppdragMapperTest {
 
-    @Test
-    fun createOppdragXml() {
-        val maksDato = LocalDate.now().plusYears(1).minusDays(50)
-        val vedtakFom = LocalDate.now().minusWeeks(2)
-        val vedtakTom = LocalDate.now()
+    private val maksDato = LocalDate.now().plusYears(1).minusDays(50)
+    private val vedtakFom = LocalDate.now().minusWeeks(2)
+    private val vedtakTom = LocalDate.now()
+
+    private fun enDTO(): TransaksjonDTO {
         val enOppdragsLinje = UtbetalingsLinje(
             id = "1234567890",
             datoFom = vedtakFom,
@@ -37,13 +40,19 @@ class OppdragMapperTest {
             utbetalingsLinje = listOf(enOppdragsLinje),
             behov = etEnkeltBehov(maksdato = maksDato)
         )
-        val oppdragState = TransaksjonDTO(
+        return TransaksjonDTO(
             id = 1L,
             sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",
-            utbetalingsOppdrag = utbetaling
+            utbetalingsOppdrag = utbetaling,
+            nokkel = LocalDateTime.now()
         )
-        val oppdrag = oppdragState.toOppdrag()
+    }
+
+    @Test
+    fun `mapping av oppdrag request fungerer`() {
+        val oppdragState = enDTO()
+        val oppdrag = oppdragState.oppdragRequest
         val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
         val marshaller = jaxbContext.createMarshaller()
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
@@ -53,6 +62,7 @@ class OppdragMapperTest {
         assertEquals(AksjonsKode.OPPDATER.kode, oppdrag.oppdrag110.kodeAksjon)
         assertEquals("12121212345", oppdrag.oppdrag110.oppdragGjelderId)
         assertEquals("1001", oppdrag.oppdrag110.fagsystemId)
+        assertEquals(avstemmingsnokkelFormatter.format(oppdragState.nokkel), oppdrag.oppdrag110.avstemming115.nokkelAvstemming)
         assertNull(oppdrag.oppdrag110.oppdragsLinje150[0].utbetalesTilId)
         assertEquals("00995816598", oppdrag.oppdrag110.oppdragsLinje150[0].refusjonsinfo156.refunderesId)
         assertEquals(
@@ -71,6 +81,11 @@ class OppdragMapperTest {
             ),
             oppdrag.oppdrag110.oppdragsLinje150[0].refusjonsinfo156.datoFom
         )
+    }
+
+    @Test
+    fun `mapping skal feile hvis nøkkel ikke er satt`() {
+       assertThrows<KotlinNullPointerException> { enDTO().copy(nokkel = null).oppdragRequest }
     }
 }
 

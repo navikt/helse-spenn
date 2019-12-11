@@ -475,7 +475,7 @@ internal class SpennBlackBoxTest {
                 .filter { it.getNetworkAliases().contains(hostname) }
                 .map { it.getMappedPort(port) }
                 .first()
-                .also { println("Port for $hostname=$port") }
+                .also { println("Port for $hostname=$port, mappedPort=$it") }
             fun baseUrlForContainer(hostname: String, port: Int) = when (hostname) {
                 "localhost" -> HostInfo(hostname = "localhost", port = port)
                 else -> HostInfo(hostname = "localhost", port = toLocalPort(hostname, port))

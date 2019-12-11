@@ -3,6 +3,7 @@ package no.nav.helse.spenn
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
+import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -35,6 +36,7 @@ fun testSpennApiAuthConfig() : SpennApiAuthConfig {
             requiredGroup = requiredGroupMembership)
 }
 
+@KtorExperimentalAPI
 fun mockApiEnvironment() = SpennApiEnvironment(
         kafkaStreams = Mockito.mock(KafkaStreams::class.java),
         meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry(), MockClock()),
@@ -43,7 +45,7 @@ fun mockApiEnvironment() = SpennApiEnvironment(
         auditSupport = AuditSupport(),
         aktørTilFnrMapper = Mockito.mock(AktørTilFnrMapper::class.java),
         oppdragMQSender = Mockito.mock(OppdragMQSender::class.java),
-        stateService = Mockito.mock(OppdragStateService::class.java)
+        stateService = Mockito.mock(OppdragService::class.java)
 )
 
 fun buildClaimSet(subject: String,
@@ -53,6 +55,7 @@ fun buildClaimSet(subject: String,
                   expiry: Long = JwtTokenGenerator.EXPIRY,
                   issuedAt: Date = Date(),
                   navIdent: String? = null,
+                  preferredUsername: String? = null,
                   groups: List<String>? = null): JWTClaimsSet {
     val builder = JWTClaimsSet.Builder()
             .subject(subject)
@@ -68,6 +71,9 @@ fun buildClaimSet(subject: String,
             .expirationTime(Date(issuedAt.time + expiry))
     if (navIdent != null) {
         builder.claim("NAVident", navIdent)
+    }
+    if (preferredUsername != null) {
+        builder.claim("preferred_username", preferredUsername)
     }
     if (groups != null) {
         builder.claim("groups", groups)
@@ -111,7 +117,6 @@ fun <T> kArgThat(matcher: (T) -> Boolean): T = Mockito.argThat<T>(matcher)
 
 fun <T> kWhen(methodCall : T) : OngoingStubbing<T> =
     Mockito.`when`(methodCall)
-
 
 class DummyAktørMapper() : AktørTilFnrMapper {
     override fun tilFnr(aktørId: String): Fodselsnummer = aktørId

@@ -1,6 +1,7 @@
-package no.nav.helse.spenn.simulering
+package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.core.defaultObjectMapper
+import no.nav.helse.spenn.simulering.SimuleringResult
 import org.junit.jupiter.api.Test
 
 class SimuleringResultTest {

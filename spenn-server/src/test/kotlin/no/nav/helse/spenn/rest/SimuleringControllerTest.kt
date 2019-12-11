@@ -3,14 +3,29 @@ package no.nav.helse.spenn.rest
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
+import io.ktor.server.testing.withTestApplication
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.*
+import no.nav.helse.spenn.simulering.Simulering
+import no.nav.helse.spenn.simulering.SimuleringResult
+import no.nav.helse.spenn.simulering.SimuleringStatus
+import no.nav.security.token.support.test.JwtTokenGenerator
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.LocalDate
+import kotlin.test.assertEquals
 
+@KtorExperimentalAPI
 class SimuleringControllerTest {
 
     companion object {
-        val server: WireMockServer = WireMockServer(WireMockConfiguration.options().port(33333))
+        private val server: WireMockServer = WireMockServer(WireMockConfiguration.options().port(33333))
         @BeforeAll
         @JvmStatic
         fun before() {
@@ -25,27 +40,27 @@ class SimuleringControllerTest {
         }
     }
 
-    val apienv = mockApiEnvironment()
+    private val apienv = mockApiEnvironment()
 
-    /*@Test
+    @Test
     fun runSimulering() {
-        val vedtak = defaultObjectMapper.readValue(etVedtakJson,Vedtak::class.java)
-        val TransaksjonDTO = TransaksjonDTO(utbetalingsOppdrag = vedtak.tilUtbetaling("12345"), soknadId = vedtak.soknadId,
-                simuleringResult = SimuleringResult(status= Status.OK, simulering = Simulering(gjelderId = "12345678900",
-                        gjelderNavn = "Foo Bar", datoBeregnet = LocalDate.now(),
-                        totalBelop = BigDecimal.valueOf(1000), periodeList = emptyList())))
+        val behov = etEnkeltBehov().copy(aktørId = "12345")
+        val simres = SimuleringResult(status= SimuleringStatus.OK, simulering = Simulering(gjelderId = "12345678900",
+            gjelderNavn = "Foo Bar", datoBeregnet = LocalDate.now(),
+            totalBelop = BigDecimal.valueOf(1000), periodeList = emptyList()))
+
         kWhen(apienv.aktørTilFnrMapper.tilFnr("12345")).thenReturn("12345678900")
-        kWhen(apienv.simuleringService.runSimulering(any())).thenReturn(TransaksjonDTO)
+        kWhen(apienv.simuleringService.simulerOppdrag(any())).thenReturn(simres)
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
                 groups = listOf(apienv.authConfig.requiredGroup),
-                navIdent = "X121212"))
+                preferredUsername = "sara saksbehandler"))
 
         withTestApplication({
             spennApiModule(apienv)
         }) {
             handleRequest(HttpMethod.Post, "/api/v1/simulering") {
-                setBody(etVedtakJson)
+                setBody(defaultObjectMapper.writeValueAsString(behov))
                 addHeader("Accept", "application/json")
                 addHeader("Content-Type", "application/json")
                 addHeader("Authorization", "Bearer ${jwt.serialize()}")
@@ -54,7 +69,5 @@ class SimuleringControllerTest {
                 println(response.content)
             }
         }
-    }*/
+    }
 }
-
-val etVedtakJson = """{"soknadId":"9ada4305-1e45-4d48-ba48-a504bc96040d","aktorId":"12345","vedtaksperioder":[{"fom":"2020-01-15","tom":"2020-01-30","grad":100,"dagsats":1234,"fordeling":[{"mottager":"897654321","andel":100}]}],"maksDato":"2020-09-03"}"""

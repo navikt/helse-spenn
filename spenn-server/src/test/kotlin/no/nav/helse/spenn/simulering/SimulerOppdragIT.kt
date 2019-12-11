@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.simulering
-
-import no.nav.helse.spenn.defaultObjectMapper
+/*
+import no.nav.helse.spenn.core.getDefaultObjectMapper
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.vedtak.Utbetalingsbehov
@@ -103,3 +103,4 @@ class SimulerOppdragIT {
 
 
 }
+*/

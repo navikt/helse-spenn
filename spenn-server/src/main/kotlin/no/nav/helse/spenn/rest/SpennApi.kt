@@ -39,8 +39,6 @@ data class SpennApiEnvironment(
         val auditSupport: AuditSupport,
         val stateService: OppdragService,
         val oppdragMQSender: OppdragMQSender
-
-
 )
 
 @KtorExperimentalAPI

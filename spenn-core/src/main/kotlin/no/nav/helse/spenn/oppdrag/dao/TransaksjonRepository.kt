@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppdrag.dao
 
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.core.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.slf4j.LoggerFactory

@@ -1,84 +1,76 @@
 package no.nav.helse.spenn.overforing
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
-import no.nav.helse.spenn.oppdrag.TransaksjonDTO
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
+import no.nav.helse.spenn.etEnkeltBehov
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.Utbetalingsbehov
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import java.util.*
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
+
+private data class TransRec(val status: String, val utbetalingsreferanse: String)
 
 class SendToOSTaskTest {
 
-    val service = OppdragStateService(
-            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
-    )
+    private val dataSource = TestDb.createMigratedDataSource()
+    private val service = OppdragService(dataSource)
 
-    val mockUtbetalingService = mock(UtbetalingService::class.java)
-    val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
+    private val mockMQSender = mock(OppdragMQSender::class.java)
+    private val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     @Test
     fun afterSimuleringSendToOS() {
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
-        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+        val behov = etEnkeltBehov()
         val utbetaling = behov.tilUtbetaling("12345678901")
 
-        service.saveOppdragState(TransaksjonDTO(
-            sakskompleksId = UUID.randomUUID(),
-            utbetalingsreferanse = "1001",
-            utbetalingsOppdrag = utbetaling,
-            simuleringResult = SimuleringResult(status = SimuleringStatus.OK),
-            status = OppdragStateStatus.FERDIG
-        ))
-        val simulering = service.saveOppdragState(TransaksjonDTO(
-            sakskompleksId = UUID.randomUUID(),
-            utbetalingsreferanse = "1002",
-            utbetalingsOppdrag = utbetaling,
-            simuleringResult = SimuleringResult(status = SimuleringStatus.OK),
-            status = OppdragStateStatus.SIMULERING_OK
-        ))
-        service.saveOppdragState(TransaksjonDTO(
-            sakskompleksId = UUID.randomUUID(),
-            utbetalingsreferanse = "1003",
-            utbetalingsOppdrag = utbetaling,
-            simuleringResult = SimuleringResult(status = SimuleringStatus.OK),
-            status = OppdragStateStatus.SIMULERING_OK
-        ))
-        assertNotNull(simulering)
+        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1001")))
+        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1002")))
+        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1003")))
+        service.hentNyeOppdrag(5).forEach {
+            it.oppdaterSimuleringsresultat(SimuleringResult(status = SimuleringStatus.OK))
+        }
+
+        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1004")))
+        service.hentNyeOppdrag(5).first().oppdaterSimuleringsresultat(SimuleringResult(status = SimuleringStatus.FEIL))
+
+        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1005")))
+
         val sendToOSTask = SendToOSTask(
             oppdragStateService = service,
-            utbetalingService = mockUtbetalingService,
+            oppdragMQSender = mockMQSender,
             meterRegistry = mockMeterRegistry
         )
+
         sendToOSTask.sendToOS()
 
-        val avstemtList = service.fetchOppdragStateByAvstemtAndStatus(false, OppdragStateStatus.SENDT_OS)
-        assertTrue(avstemtList.size>=2)
-        val avstemming = avstemtList[0].avstemming
-        assertNotNull(avstemming)
-        val avstemming2 = avstemtList[1].avstemming
-        assertNotNull(avstemming2)
-        assertNotEquals(avstemming.oppdragStateId, avstemming2.oppdragStateId)
+        val sendtTilOS = hentSendtTilOS()
+        assertEquals(3, sendtTilOS.size)
+        assertEquals(setOf("1001", "1002", "1003"), sendtTilOS.map { it.utbetalingsreferanse }.toSet())
+    }
 
-        val avstemt1 = avstemtList[0].let {
-            it.copy(avstemming = it.avstemming!!.copy(avstemt = true))
+    private fun hentSendtTilOS(): List<TransRec> {
+        dataSource.connection.use {
+            it.prepareStatement("""
+                select transaksjon.id as transaksjon_id, utbetalingsreferanse, status
+                from oppdrag join transaksjon on oppdrag.id = transaksjon.oppdrag_id
+                where status = ?
+            """.trimIndent()).use { preparedStatement ->
+                preparedStatement.setString(1, TransaksjonStatus.SENDT_OS.name)
+                preparedStatement.executeQuery().use { resultSet ->
+                    val result = mutableListOf<TransRec>()
+                    while (resultSet.next()) {
+                        result.add(TransRec(resultSet.getString("status"), resultSet.getString("utbetalingsreferanse")))
+                    }
+                    return result.toList()
+                }
+            }
         }
-        assertNotEquals(avstemt1.id, avstemt1.avstemming!!.id, "hvis oppdragstate.id er i synk med avstemming.id KAN det være vi ikke får testet det vi vil teste")
-        service.saveOppdragState(avstemt1)
-        assertTrue(service.fetchOppdragStateById(avstemt1.id!!).avstemming!!.avstemt)
     }
 
 }

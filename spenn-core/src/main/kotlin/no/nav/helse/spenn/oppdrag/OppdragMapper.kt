@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.FagOmraadekode
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.core.FagOmraadekode
+import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
@@ -125,9 +125,9 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
         saksbehId = utbetalingsOppdrag.behov.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
-            this.nokkelAvstemming = nokkel?.format(avstemmingsnokkelFormatter)
+            this.nokkelAvstemming = nokkel!!.format(avstemmingsnokkelFormatter)
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
-            this.tidspktMelding = nokkel?.format(avstemmingsnokkelFormatter)
+            this.tidspktMelding = nokkel.format(avstemmingsnokkelFormatter)
         }
         oppdragsEnhet120.add(oppdragsEnhet)
         utbetalingsOppdrag.utbetalingsLinje.forEach {

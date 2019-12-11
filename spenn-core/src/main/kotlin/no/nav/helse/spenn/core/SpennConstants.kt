@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.core
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -32,7 +32,7 @@ enum class KvitteringAlvorlighetsgrad(val kode : String) {
 
 val avstemmingsnokkelFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
 
-val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
+internal val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)

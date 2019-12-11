@@ -1,12 +1,11 @@
 package no.nav.helse.spenn.grensesnittavstemming
+/*
 
 
-import no.nav.helse.spenn.FagOmraadekode
+import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.overforing.OppdragMQSender
-import org.jooq.DSLContext
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -14,7 +13,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.*
 import kotlin.test.assertNotNull
-
 class MyRepo(val jooq: DSLContext) {
     fun setOppdragSequence(n:Long) {
         jooq.alterSequence("oppdragstate_id_seq").restartWith(BigInteger.valueOf(n)).execute();
@@ -94,3 +92,4 @@ class OppdragAvstemmingIT {
 
     }
 }
+ */

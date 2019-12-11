@@ -1,7 +1,7 @@
-package no.nav.helse.spenn.simulering
+package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
+import no.nav.helse.spenn.testsupport.etEnkeltBehov
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

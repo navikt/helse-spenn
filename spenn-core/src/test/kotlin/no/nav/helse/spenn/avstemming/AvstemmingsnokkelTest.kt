@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.avstemming
 
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import org.junit.jupiter.api.Test
 import java.nio.ByteBuffer
 import java.time.LocalDateTime

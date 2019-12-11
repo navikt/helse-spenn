@@ -7,6 +7,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.mockApiEnvironment
 import no.nav.helse.spenn.stubOIDCProvider
 import org.junit.jupiter.api.AfterAll
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
+@KtorExperimentalAPI
 class HealthStatusTest {
 
     val apienv = mockApiEnvironment()

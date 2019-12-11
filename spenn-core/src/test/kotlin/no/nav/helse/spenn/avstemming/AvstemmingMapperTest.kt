@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.avstemming
 
-import no.nav.helse.spenn.FagOmraadekode
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.core.FagOmraadekode
+import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.helse.spenn.testsupport.etEnkeltBehov

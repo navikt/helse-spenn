@@ -1,11 +1,12 @@
 package no.nav.helse.spenn.oppdrag.dao
 
-import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.core.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.testsupport.TestData.Companion.etUtbetalingsOppdrag
+import no.nav.helse.spenn.testsupport.kvittering
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -124,7 +125,7 @@ internal class ServiceTest {
         service.lagreNyttOppdrag(utbetaling)
         val trans = service.hentNyeOppdrag(5).first()
         trans.forberedSendingTilOS()
-        trans.lagreOSResponse(TransaksjonStatus.FERDIG, "whatever", null)
+        trans.lagreOSResponse(TransaksjonStatus.FERDIG, kvittering, null)
         val dto = repository.findByRef(utbetalingsreferanse = utbetaling.behov.utbetalingsreferanse).first()
         assertEquals(TransaksjonStatus.FERDIG, dto.status)
     }

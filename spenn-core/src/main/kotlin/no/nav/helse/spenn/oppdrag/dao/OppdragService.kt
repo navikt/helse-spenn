@@ -1,8 +1,8 @@
 package no.nav.helse.spenn.oppdrag.dao
 
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.helse.spenn.FagOmraadekode
-import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.core.FagOmraadekode
+import no.nav.helse.spenn.core.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.oppdragRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
@@ -83,7 +83,7 @@ class OppdragService(dataSource: HikariDataSource) {
     }
 
     fun lagreNyttOppdrag(oppdrag: UtbetalingsOppdrag) {
-        require(oppdrag.annulering == false)
+        require(!oppdrag.annulering)
         repository.insertNyttOppdrag(oppdrag)
     }
 
@@ -111,7 +111,7 @@ fun UtbetalingsOppdrag.lagPåSidenSimuleringsrequest() =
         utbetalingsOppdrag = this).toSimuleringRequest()
 
 fun List<OppdragService.Transaksjon>.lagAvstemmingsmeldinger() =
-    AvstemmingMapper(this.map { it.dto },FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
+    AvstemmingMapper(this.map { it.dto }, FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
 
 class SanityCheckException(message : String) : Exception(message)
 

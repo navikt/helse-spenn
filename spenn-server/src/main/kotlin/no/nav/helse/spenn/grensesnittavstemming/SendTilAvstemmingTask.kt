@@ -8,14 +8,16 @@ import no.nav.helse.spenn.oppdrag.dao.lagAvstemmingsmeldinger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
-class SendTilAvstemmingTask(val oppdragStateService: OppdragService,
-                            val avstemmingMQSender: AvstemmingMQSender,
-                            val meterRegistry: MeterRegistry) {
+class SendTilAvstemmingTask(
+    private val oppdragStateService: OppdragService,
+    private val avstemmingMQSender: AvstemmingMQSender,
+    private val meterRegistry: MeterRegistry,
+    private val marginInHours:Long = 1L) {
 
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
 
     fun sendTilAvstemming() {
-        val oppdragList = oppdragStateService.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now().minusHours(1))
+        val oppdragList = oppdragStateService.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now().minusHours(marginInHours))
         log.info("Fant ${oppdragList.size} oppdrag som skal sendes til avstemming")
         val meldinger = oppdragList.lagAvstemmingsmeldinger()
 

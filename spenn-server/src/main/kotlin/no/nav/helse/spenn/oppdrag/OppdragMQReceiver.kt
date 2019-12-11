@@ -2,9 +2,9 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
+import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.appsupport.OPPDRAG
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
@@ -60,9 +60,11 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
     }
 
     private fun handleResponse(oppdrag: Oppdrag, xml: String) {
-        val utbetalingsreferanse = oppdrag.oppdrag110.fagsystemId!!
-        log.info("OppdragResponse for ${utbetalingsreferanse}  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
-        val nøkkelAvstemming = LocalDateTime.parse(oppdrag.oppdrag110.avstemming115.nokkelAvstemming!!, avstemmingsnokkelFormatter)
+        require(oppdrag.oppdrag110.fagsystemId != null)
+        val utbetalingsreferanse = oppdrag.oppdrag110.fagsystemId
+        log.info("OppdragResponse for $utbetalingsreferanse  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
+        require(oppdrag.oppdrag110.avstemming115.nokkelAvstemming != null)
+        val nøkkelAvstemming = LocalDateTime.parse(oppdrag.oppdrag110.avstemming115.nokkelAvstemming, avstemmingsnokkelFormatter)
         val status = mapStatus(oppdrag)
         val feilmld = if (status == TransaksjonStatus.FEIL) oppdrag.mmel.beskrMelding else null
 

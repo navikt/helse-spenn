@@ -1,9 +1,8 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.FagOmraadekode
-import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.oppdrag.dao.OppdragService.Transaksjon
+import no.nav.helse.spenn.core.FagOmraadekode
+import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
+import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -23,7 +22,7 @@ enum class ØkonomiKodekomponent(val kodekomponent : String) {
 
 class AvstemmingMapper internal constructor(
     private val oppdragsliste:List<TransaksjonDTO>,
-    private val fagområde:FagOmraadekode,
+    private val fagområde: FagOmraadekode,
     private val jaxbOppdrag : JAXBOppdrag = JAXBOppdrag()
 ) {
 
@@ -83,7 +82,9 @@ class AvstemmingMapper internal constructor(
         }
 
         private fun tilPeriodeData(localDateTimeString: String): String =
-                LocalDateTime.parse(localDateTimeString, avstemmingsnokkelFormatter)
+                LocalDateTime.parse(localDateTimeString,
+                    avstemmingsnokkelFormatter
+                )
                         .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
 
         private fun getBelop(oppdrag: TransaksjonDTO): Long =

@@ -5,6 +5,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.SimuleringStatus
@@ -15,15 +16,13 @@ import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SoapMockSimuleringTest {
+internal class SoapMockSimuleringTest {
 
-
-    val soapMock = SoapMock(exposeTestContainerPorts = false)
+    private val soapMock = SoapMock(exposeTestContainerPorts = false)
 
     private lateinit var simuleringService: SimuleringService
 
@@ -68,16 +67,10 @@ class SoapMockSimuleringTest {
             utbetalingsLinje = listOf(enOppdragsLinje),
             behov = etEnkeltBehov(maksdato = maksDato)
         )
-        val oppdragState = TransaksjonDTO(
-            id = 1L,
-            sakskompleksId = UUID.randomUUID(),
-            utbetalingsreferanse = "1001",
-            utbetalingsOppdrag = utbetaling
-        )
 
-        val nyDTO = simuleringService.runSimulering(oppdragState)
-        assertNotNull(nyDTO.simuleringResult, "simuleringresult skal ha blitt satt")
-        assertEquals(SimuleringStatus.OK, nyDTO.simuleringResult!!.status )
-
+        val result = simuleringService.simulerOppdrag(utbetaling.lagPåSidenSimuleringsrequest())
+        assertNotNull(result, "simuleringresult skal ha blitt satt")
+        assertEquals(SimuleringStatus.OK, result.status )
     }
+
 }

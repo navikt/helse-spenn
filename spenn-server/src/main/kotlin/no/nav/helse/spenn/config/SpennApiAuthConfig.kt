@@ -11,7 +11,7 @@ data class SpennApiAuthConfig(
 {
     @KtorExperimentalAPI
     companion object {
-        val ourIssuer = "ourissuer"
+        const val ourIssuer = "ourissuer"
 
         fun from(cfg: ApplicationConfig) : SpennApiAuthConfig {
             return SpennApiAuthConfig(

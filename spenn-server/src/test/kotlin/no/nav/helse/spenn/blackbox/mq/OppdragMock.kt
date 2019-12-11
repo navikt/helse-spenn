@@ -2,7 +2,7 @@ package no.nav.helse.spenn.blackbox.mq
 
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
-import no.nav.helse.spenn.KvitteringAlvorlighetsgrad
+import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -20,7 +20,7 @@ class OppdragMock(host: String,
                   user: String,
                   password: String) {
 
-    val connection = MQConnectionFactory().also {
+    private val connection = MQConnectionFactory().also {
             it.hostName = host
             it.port = port
             it.channel = channel

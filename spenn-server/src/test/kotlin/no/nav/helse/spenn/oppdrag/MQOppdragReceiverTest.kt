@@ -3,11 +3,10 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.kWhen
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateJooqRepository
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,6 +14,7 @@ import org.mockito.Mockito.mock
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Month
 import java.util.*
 import javax.jms.Connection
@@ -23,17 +23,18 @@ import javax.jms.Session
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class MQOppdragReceiverTest {
+private data class TransRec(val status: String, val feilbeskrivelse: String?)
 
-    val oppdragStateService = OppdragStateService(
-            OppdragStateJooqRepository(TestDb.createMigratedDSLContext())
-    )
+internal class MQOppdragReceiverTest {
 
-    val meterRegistry = CompositeMeterRegistry()
+    private val dataSource = TestDb.createMigratedDataSource()
+    private val oppdragService = OppdragService(dataSource)
 
-    val mockConnection = mock(Connection::class.java)
-    val mockJmsSession = mock(Session::class.java)
-    val mockConsumer = mock(MessageConsumer::class.java)
+    private val meterRegistry = CompositeMeterRegistry()
+
+    private val mockConnection = mock(Connection::class.java)
+    private val mockJmsSession = mock(Session::class.java)
+    private val mockConsumer = mock(MessageConsumer::class.java)
 
     @BeforeEach
     fun beforeEach() {
@@ -44,55 +45,103 @@ class MQOppdragReceiverTest {
     @Test
     fun OppdragMQSendAndReceiveTest() {
         val mqReceiver = OppdragMQReceiver(
-                connection = mockConnection,
-                mottakqueue = "mottaksqueue",
-                jaxb = JAXBOppdrag(), oppdragService = oppdragStateService,
-                meterRegistry = meterRegistry) //, statusProducer = kafkaProducer)
+            connection = mockConnection,
+            mottakqueue = "mottaksqueue",
+            jaxb = JAXBOppdrag(), oppdragService = oppdragService,
+            meterRegistry = meterRegistry
+        ) //, statusProducer = kafkaProducer)
         val fom1 = LocalDate.of(2019, Month.JANUARY, 1)
         val tom1 = LocalDate.of(2019, Month.JANUARY, 12)
-        val oppdragslinje1 = UtbetalingsLinje(id = "1", datoFom = fom1,
-                datoTom =tom1, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
-                utbetalesTil = "995816598", grad = BigInteger.valueOf(50))
+        val oppdragslinje1 = UtbetalingsLinje(
+            id = "1", datoFom = fom1,
+            datoTom = tom1, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
+            utbetalesTil = "995816598", grad = BigInteger.valueOf(50)
+        )
 
         val fom2 = LocalDate.of(2019, Month.FEBRUARY, 13)
         val tom2 = LocalDate.of(2019, Month.FEBRUARY, 20)
-        val oppdragslinje2 = UtbetalingsLinje(id = "2", datoFom = fom2,
-                datoTom = tom2, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
-                utbetalesTil = "995816598", grad = BigInteger.valueOf(70))
+        val oppdragslinje2 = UtbetalingsLinje(
+            id = "2", datoFom = fom2,
+            datoTom = tom2, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
+            utbetalesTil = "995816598", grad = BigInteger.valueOf(70)
+        )
 
         val fom3 = LocalDate.of(2019, Month.MARCH, 18)
         val tom3 = LocalDate.of(2019, Month.APRIL, 12)
-        val oppdragslinje3 = UtbetalingsLinje(id = "3", datoFom = fom3,
-                datoTom = tom3, sats = BigDecimal.valueOf(1000), satsTypeKode = SatsTypeKode.DAGLIG,
-                utbetalesTil = "995816598", grad = BigInteger.valueOf(100))
+        val oppdragslinje3 = UtbetalingsLinje(
+            id = "3", datoFom = fom3,
+            datoTom = tom3, sats = BigDecimal.valueOf(1000), satsTypeKode = SatsTypeKode.DAGLIG,
+            utbetalesTil = "995816598", grad = BigInteger.valueOf(100)
+        )
 
-        val utbetaling = UtbetalingsOppdrag(operasjon = AksjonsKode.OPPDATER,
-                oppdragGjelder = "11111111111", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
-                behov = etEnkeltBehov()
+        val utbetaling = UtbetalingsOppdrag(
+            operasjon = AksjonsKode.OPPDATER,
+            oppdragGjelder = "11111111111", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
+            behov = etEnkeltBehov()
         )
         val uuid = UUID.randomUUID()
-        val oppdragState = TransaksjonDTO(
-            sakskompleksId = uuid,
-            utbetalingsreferanse = "3001",
-            utbetalingsOppdrag = utbetaling
-        )
-        val ignored = oppdragStateService.saveOppdragState(oppdragState)
-        val oppdrag = mqReceiver.receiveOppdragResponse(receiveError)
-        assertEquals(OppdragStateStatus.FEIL, oppdrag.status)
-        assertEquals("Mangler verdi i Avst-nøkkel på id-115", oppdrag.feilbeskrivelse)
-        val ok = mqReceiver.receiveOppdragResponse(receiveOK)
-        assertEquals(OppdragStateStatus.FERDIG, ok.status)
-        assertNull(ok.feilbeskrivelse)
+        val oppdrag =
+            utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = uuid, utbetalingsreferanse = "3001"))
+        oppdragService.lagreNyttOppdrag(oppdrag)
+        oppdragService.hentNyeOppdrag(5).first().forberedSendingTilOS()
+
+        val nokkel = LocalDateTime.parse("2019-09-20-13.31.28.572227", avstemmingsnokkelFormatter)
+        overstyrNokkelForUtbetalingsreferanse("3001", nokkel)
+
+        mqReceiver.receiveOppdragResponse(receiveError)
+        val feilTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
+        assertEquals(TransaksjonStatus.FEIL.name, feilTransaksjon.status)
+        assertEquals("Det er noe galt", feilTransaksjon.feilbeskrivelse)
+
+        mqReceiver.receiveOppdragResponse(receiveOK)
+        val okTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
+        assertEquals(TransaksjonStatus.FERDIG.name, okTransaksjon.status)
+        assertNull(okTransaksjon.feilbeskrivelse)
+    }
+
+    private fun overstyrNokkelForUtbetalingsreferanse(referanse: String, nokkel: LocalDateTime) {
+        dataSource.connection.use {
+            it.prepareStatement(
+                """
+                    update transaksjon set nokkel = ? where oppdrag_id in (select id from oppdrag where utbetalingsreferanse = ?)
+                """.trimIndent()
+            ).use { preparedStatement ->
+                preparedStatement.setObject(1, nokkel)
+                preparedStatement.setString(2, referanse)
+                preparedStatement.executeUpdate()
+            }
+        }
+    }
+
+    private fun hentTransaksjonerMedUtbetalingsreferanse(referanse: String): List<TransRec> {
+        dataSource.connection.use {
+            it.prepareStatement(
+                """
+                    select transaksjon.id as transaksjon_id, utbetalingsreferanse, status, feilbeskrivelse
+                    from oppdrag join transaksjon on oppdrag.id = transaksjon.oppdrag_id
+                    where utbetalingsreferanse = ?
+                """.trimIndent()
+            ).use { preparedStatement ->
+                preparedStatement.setString(1, referanse)
+                preparedStatement.executeQuery().use { resultSet ->
+                    val result = mutableListOf<TransRec>()
+                    while (resultSet.next()) {
+                        result.add(TransRec(resultSet.getString("status"), resultSet.getString("feilbeskrivelse")))
+                    }
+                    return result.toList()
+                }
+            }
+        }
     }
 
 }
 
-val receiveError="""<?xml version="1.0" encoding="utf-8"?>
+const val receiveError = """<?xml version="1.0" encoding="utf-8"?>
 <oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag"><mmel>
 <systemId>231-OPPD</systemId>
 <kodeMelding>B100022F</kodeMelding>
 <alvorlighetsgrad>08</alvorlighetsgrad>
-<beskrMelding>Mangler verdi i Avst-nøkkel på id-115</beskrMelding>
+<beskrMelding>Det er noe galt</beskrMelding>
 <programId>K231BB00</programId>
 <sectionNavn>D115-BEHAND-AVST-NOKLER</sectionNavn>
 </mmel><oppdrag-110>
@@ -112,6 +161,8 @@ val receiveError="""<?xml version="1.0" encoding="utf-8"?>
 <saksbehId>SPA</saksbehId>
 <avstemming-115>
     <kodeKomponent>SP</kodeKomponent>
+    <nokkelAvstemming>2019-09-20-13.31.28.572227</nokkelAvstemming>
+    <tidspktMelding>2019-09-20-13.31.28.572227</tidspktMelding>
 </avstemming-115>
 
 <oppdrags-enhet-120>
@@ -238,7 +289,8 @@ val receiveError="""<?xml version="1.0" encoding="utf-8"?>
 
 </oppdrag-110></ns2:oppdrag>
 """
-val receiveOK="""<?xml version="1.0" encoding="utf-8"?>
+
+const val receiveOK = """<?xml version="1.0" encoding="utf-8"?>
 <oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag">
     <mmel>
         <systemId>231-OPPD</systemId>

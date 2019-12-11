@@ -60,7 +60,6 @@ class SoapMock(private val exposeTestContainerPorts:Boolean = true) : AutoClosea
                 }
             }
         }
-
     }
 
     private val server = Server()
