@@ -9,7 +9,7 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.AvstemmingMapperTest
+import no.nav.helse.spenn.avstemming.AvstemmingMapperTest
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragStateService

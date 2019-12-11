@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.Oppdrag110
@@ -20,9 +20,9 @@ class OppdragStatusMappingTest {
     @Test
     fun testStatusMapper() {
         val feilMelding = "OH-oh! Mapping fra alvorlighetsgrad til status er endret. Sjekk om det er andre (mockede) tester som nå også må oppdateres!"
-        assertEquals(OppdragStateStatus.FERDIG, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("00")), feilMelding)
-        assertEquals(OppdragStateStatus.FERDIG, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("04")), feilMelding)
-        assertEquals(OppdragStateStatus.FEIL, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("08")), feilMelding)
-        assertEquals(OppdragStateStatus.FEIL, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("12")), feilMelding)
+        assertEquals(TransaksjonStatus.FERDIG, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("00")), feilMelding)
+        assertEquals(TransaksjonStatus.FERDIG, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("04")), feilMelding)
+        assertEquals(TransaksjonStatus.FEIL, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("08")), feilMelding)
+        assertEquals(TransaksjonStatus.FEIL, OppdragMQReceiver.mapStatus(oppdragMedAlvorlighetsgrad("12")), feilMelding)
     }
 }

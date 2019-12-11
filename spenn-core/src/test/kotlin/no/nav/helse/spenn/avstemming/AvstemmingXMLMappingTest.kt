@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.grensesnittavstemming
+package no.nav.helse.spenn.avstemming
 
 import no.nav.helse.spenn.oppdrag.AvstemmingMapper
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata

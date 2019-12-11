@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.spenn.*
-import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 

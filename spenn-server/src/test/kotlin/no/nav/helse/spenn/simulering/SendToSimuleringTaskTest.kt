@@ -5,11 +5,9 @@ import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.any
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateService
-import no.nav.helse.spenn.oppdrag.dao.OppdragStateStatus
 import no.nav.helse.spenn.oppdrag.AksjonsKode
-import no.nav.helse.spenn.oppdrag.TransaksjonDTO
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.math.BigDecimal
@@ -19,7 +17,7 @@ import java.util.*
 
 class SendToSimuleringTaskTest {
 
-    val mockPersistence = mock(OppdragStateService::class.java)
+    val mockPersistence = mock(OppdragService::class.java)
     val mockSimuleringService = mock(SimuleringService::class.java)
     val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
