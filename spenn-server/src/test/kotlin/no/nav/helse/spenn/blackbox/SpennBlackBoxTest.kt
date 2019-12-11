@@ -376,7 +376,7 @@ internal class SpennBlackBoxTest {
                 .withNetwork(network)
                 .withNetworkAliases(OidcHostname)
                 .withFileSystemBind(
-                    Paths.get(".").resolve("compose").resolve("oidc").toAbsolutePath().toString(),
+                    Paths.get("..").resolve("compose").resolve("oidc").toAbsolutePath().toString(),
                     "/oidc"
                 )
                 .withEnv("USERS_FILE", "/oidc/users.json")
