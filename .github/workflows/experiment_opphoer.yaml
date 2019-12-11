@@ -27,8 +27,8 @@ jobs:
           echo $(echo $GITHUB_SHA | cut -c1-7) > .docker_tag
       - name: unit test and build
         run: ./mvnw install
-      #- name: blackbox test
-      #  run: ./mvnw verify -Dtest=SpennBlackBoxTest
+      - name: blackbox test
+        run: cd spenn-server; ../mvnw verify -Dtest=SpennBlackBoxTest
       - name: build docker image
         run: docker build . --pull -t $(cat .docker_image):$(cat .docker_tag)
       - name: push docker image
@@ -38,14 +38,14 @@ jobs:
         env:
           GITHUB_REPO_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
           GITHUB_REPO_USER: ${{secrets.GITHUB_REPO_USER}}
-      - name: deploy to dev
-        uses: navikt/deployment-cli/action@0.4.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
-          AWAIT_SECONDS: 0
-        with:
-          cluster: dev-fss
-          team: tbd
-          resources: naiserator.yml
-          vars: naiserator-vars-dev.json
+      #- name: deploy to dev
+      #  uses: navikt/deployment-cli/action@0.4.1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
+      #    AWAIT_SECONDS: 0
+      #  with:
+      #    cluster: dev-fss
+      #    team: tbd
+      #    resources: naiserator.yml
+      #    vars: naiserator-vars-dev.json
 
