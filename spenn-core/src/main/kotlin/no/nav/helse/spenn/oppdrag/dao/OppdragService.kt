@@ -76,7 +76,7 @@ class OppdragService(dataSource: HikariDataSource) {
 
     fun annulerUtbetaling(oppdrag: UtbetalingsOppdrag) {
         require(oppdrag.annulering == true)
-        val transaksjoner = repository.findByRef(oppdrag.behov.utbetalingsreferanse)
+        val transaksjoner = repository.findByRef(oppdrag.utbetalingsreferanse)
         require(1 == transaksjoner.size)
         repository.insertNyTransaksjon(oppdrag)
     }
@@ -104,7 +104,7 @@ class OppdragService(dataSource: HikariDataSource) {
 fun UtbetalingsOppdrag.lagPåSidenSimuleringsrequest() =
     TransaksjonDTO(
         id = -1,
-        utbetalingsreferanse = this.behov.utbetalingsreferanse,
+        utbetalingsreferanse = this.utbetalingsreferanse,
         nokkel = LocalDateTime.now(),
         utbetalingsOppdrag = this).toSimuleringRequest()
 

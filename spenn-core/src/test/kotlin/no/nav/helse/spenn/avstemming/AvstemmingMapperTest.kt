@@ -228,6 +228,7 @@ class AvstemmingMapperTest {
         val soknadId = UUID.randomUUID()
         val now = LocalDateTime.now().plusDays(oppdragIdSequence)
         val newId = oppdragIdSequence++
+        val behov = etEnkeltBehov()
         return TransaksjonDTO(
                 id = newId,
                 oppdragResponse = lagOppdragResponseXml(
@@ -251,7 +252,11 @@ class AvstemmingMapperTest {
                                 satsTypeKode = SatsTypeKode.DAGLIG,
                                 utbetalesTil = "999988887"
                         )),
-                        behov = etEnkeltBehov()
+                    utbetalingsreferanse = "1001",
+                    saksbehandler = "yes",
+                    organisasjonsnummer = "897654321",
+                    maksdato = LocalDate.now().plusYears(1),
+                    behov = etEnkeltBehov()
                 ),
                 avstemt = false,
                 nokkel = now

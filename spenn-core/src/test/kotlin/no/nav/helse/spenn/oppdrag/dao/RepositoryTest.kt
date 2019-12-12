@@ -2,12 +2,11 @@ package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.testsupport.TestData.Companion.etUtbetalingsOppdrag
-import org.junit.jupiter.api.Test
+import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.sql.SQLIntegrityConstraintViolationException
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue

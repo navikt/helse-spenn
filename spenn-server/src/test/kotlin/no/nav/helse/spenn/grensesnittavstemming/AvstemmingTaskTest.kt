@@ -5,15 +5,13 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.Utbetalingsbehov
+import no.nav.helse.spenn.vedtak.SpennOppdragFactory
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import no.trygdeetaten.skjema.oppdrag.Mmel
@@ -63,23 +61,22 @@ internal class AvstemmingTaskTest {
         val soknadKey = UUID.randomUUID()
         val soknadKey2 = UUID.randomUUID()
         val soknadKey3 = UUID.randomUUID()
-        val node = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
-        val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
-        val utbetalingTemplate = behov.tilUtbetaling("12345678901")
+        val behov = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val utbetalingTemplate = SpennOppdragFactory.lagOppdragFraBehov(behov, "12345678901")
 
-        service.lagreNyttOppdrag(utbetalingTemplate.copy(behov = utbetalingTemplate.behov.copy(sakskompleksId = soknadKey, utbetalingsreferanse = "2001")))
+        service.lagreNyttOppdrag(utbetalingTemplate.copy(utbetalingsreferanse = "2001"))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
             lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "00")!!, feilmelding = null)
         }
 
-        service.lagreNyttOppdrag(utbetalingTemplate.copy(behov = utbetalingTemplate.behov.copy(sakskompleksId = soknadKey2, utbetalingsreferanse = "2002")))
+        service.lagreNyttOppdrag(utbetalingTemplate.copy(utbetalingsreferanse = "2002"))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
             lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "00")!!, feilmelding = null)
         }
 
-        service.lagreNyttOppdrag(utbetalingTemplate.copy(behov = utbetalingTemplate.behov.copy(sakskompleksId = soknadKey3, utbetalingsreferanse = "2003")))
+        service.lagreNyttOppdrag(utbetalingTemplate.copy(utbetalingsreferanse = "2003"))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
             lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "04")!!, feilmelding = null)

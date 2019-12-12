@@ -44,12 +44,12 @@ class SimuleringControllerTest {
 
     @Test
     fun runSimulering() {
-        val behov = etEnkeltBehov().copy(aktørId = "12345")
+        val behov = etEnkeltBehov()
         val simres = SimuleringResult(status= SimuleringStatus.OK, simulering = Simulering(gjelderId = "12345678900",
             gjelderNavn = "Foo Bar", datoBeregnet = LocalDate.now(),
             totalBelop = BigDecimal.valueOf(1000), periodeList = emptyList()))
 
-        kWhen(apienv.aktørTilFnrMapper.tilFnr("12345")).thenReturn("12345678900")
+        kWhen(apienv.aktørTilFnrMapper.tilFnr("1234567890123")).thenReturn("12345678900")
         kWhen(apienv.simuleringService.simulerOppdrag(any())).thenReturn(simres)
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
@@ -60,7 +60,7 @@ class SimuleringControllerTest {
             spennApiModule(apienv)
         }) {
             handleRequest(HttpMethod.Post, "/api/v1/simulering") {
-                setBody(defaultObjectMapper.writeValueAsString(behov))
+                setBody(behov.toString())
                 addHeader("Accept", "application/json")
                 addHeader("Content-Type", "application/json")
                 addHeader("Authorization", "Bearer ${jwt.serialize()}")

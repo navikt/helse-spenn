@@ -15,8 +15,6 @@ import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.vedtak.Fodselsnummer
-import no.nav.helse.spenn.vedtak.Utbetalingsbehov
-import no.nav.helse.spenn.vedtak.Utbetalingslinje
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.token.support.test.JwkGenerator
 import no.nav.security.token.support.test.JwtTokenGenerator
@@ -94,7 +92,26 @@ fun stubOIDCProvider(server: WireMockServer) {
 fun etEnkeltBehov(
     sakskompleksId: UUID = UUID.randomUUID(),
     maksdato: LocalDate = LocalDate.now().plusYears(1)
-) = Utbetalingsbehov(
+) = defaultObjectMapper.readTree("""
+{
+  "@behov": "Utbetaling",
+  "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
+  "utbetalingsreferanse": "1",
+  "aktørId": "1234567890123",
+  "organisasjonsnummer": "897654321",
+  "maksdato": "${maksdato}",
+  "saksbehandler": "Z999999",
+  "utbetalingslinjer": [
+    {
+      "fom": "2020-01-15",
+      "tom": "2020-01-30",
+      "grad": 100,
+      "dagsats": "1234.0"
+    }
+  ]
+}        
+    """)
+    /*Utbetalingsbehov(
     sakskompleksId = sakskompleksId,
     utbetalingsreferanse = "1001",
     aktørId = "en random aktørid",
@@ -109,7 +126,7 @@ fun etEnkeltBehov(
         )
     ),
     maksdato = maksdato
-)
+)*/
 
 fun <T> any(): T = Mockito.any<T>()
 

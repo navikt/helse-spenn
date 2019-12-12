@@ -9,6 +9,7 @@ import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.SimuleringStatus
+import no.nav.helse.spenn.vedtak.SpennOppdragFactory
 import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -61,12 +62,9 @@ internal class SoapMockSimuleringTest {
             utbetalesTil = "123456789",
             grad = BigInteger.valueOf(100)
         )
-        val utbetaling = UtbetalingsOppdrag(
-            operasjon = AksjonsKode.SIMULERING,
-            oppdragGjelder = "12121212345",
-            utbetalingsLinje = listOf(enOppdragsLinje),
-            behov = etEnkeltBehov(maksdato = maksDato)
-        )
+        val utbetaling = SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(maksdato = maksDato), "12121212345")
+            .copy(utbetalingsLinje = listOf(enOppdragsLinje), operasjon = AksjonsKode.SIMULERING)
+
 
         val result = simuleringService.simulerOppdrag(utbetaling.lagPåSidenSimuleringsrequest())
         assertNotNull(result, "simuleringresult skal ha blitt satt")

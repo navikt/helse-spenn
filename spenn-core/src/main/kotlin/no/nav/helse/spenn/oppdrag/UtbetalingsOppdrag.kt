@@ -1,26 +1,28 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import no.nav.helse.spenn.vedtak.Utbetalingsbehov
-//import no.nav.helse.spenn.vedtak.Utbetalingsbehov
+import com.fasterxml.jackson.databind.JsonNode
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class UtbetalingsOppdrag(
-    val behov: Utbetalingsbehov,
+    val behov: JsonNode,
     val operasjon: AksjonsKode,
     /**
      * angir hvem som saken/vedtaket er registrert på i fagrutinen
      */
+    val utbetalingsreferanse: String,
     val oppdragGjelder: String,
+    val organisasjonsnummer: String,
+    val maksdato: LocalDate,
+    val saksbehandler: String,
+
     val utbetalingsLinje: List<UtbetalingsLinje>,
     val annulering:Boolean = false
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class UtbetalingsLinje(
     /**
      * delytelseId - fagsystemets entydige identifikasjon av oppdragslinjen

@@ -32,14 +32,14 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
                     insert into oppdrag(utbetalingsreferanse)
                     values (?)
                 """.trimIndent()).use { preparedStatement ->
-                    preparedStatement.setString(1, utbetalingsOppdrag.behov.utbetalingsreferanse)
+                    preparedStatement.setString(1, utbetalingsOppdrag.utbetalingsreferanse)
                     preparedStatement.executeUpdate()
                 }
                 conn.prepareStatement("""
                     insert into transaksjon(oppdrag_id, avstemt, status, utbetalingsoppdrag)
                     values((select id from oppdrag where utbetalingsreferanse = ?), ?, ?, ?)
                 """.trimIndent()).use { preparedStatement ->
-                    preparedStatement.setString(1, utbetalingsOppdrag.behov.utbetalingsreferanse)
+                    preparedStatement.setString(1, utbetalingsOppdrag.utbetalingsreferanse)
                     preparedStatement.setBoolean(2, false)
                     preparedStatement.setString(3, TransaksjonStatus.STARTET.name)
                     preparedStatement.setString(4, defaultObjectMapper.writeValueAsString(utbetalingsOppdrag))
@@ -62,7 +62,7 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
                 insert into transaksjon(oppdrag_id, avstemt, status, utbetalingsoppdrag)
                 values((select id from oppdrag where utbetalingsreferanse = ?), ?, ?, ?)
             """.trimIndent()).use { preparedStatement ->
-                preparedStatement.setString(1, utbetalingsOppdrag.behov.utbetalingsreferanse)
+                preparedStatement.setString(1, utbetalingsOppdrag.utbetalingsreferanse)
                 preparedStatement.setBoolean(2, false)
                 preparedStatement.setString(3, TransaksjonStatus.STARTET.name)
                 preparedStatement.setString(4, defaultObjectMapper.writeValueAsString(utbetalingsOppdrag))

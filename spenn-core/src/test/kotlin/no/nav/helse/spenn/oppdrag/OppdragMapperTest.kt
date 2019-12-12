@@ -3,6 +3,7 @@ package no.nav.helse.spenn.oppdrag
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.helse.spenn.testsupport.etEnkeltBehov
+import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -34,15 +35,15 @@ class OppdragMapperTest {
             utbetalesTil = "995816598",
             grad = BigInteger.valueOf(100)
         )
-        val utbetaling = UtbetalingsOppdrag(
-            operasjon = AksjonsKode.OPPDATER,
+        val utbetaling = etUtbetalingsOppdrag().copy(
             oppdragGjelder = "12121212345",
+            utbetalingsreferanse = "1001",
             utbetalingsLinje = listOf(enOppdragsLinje),
-            behov = etEnkeltBehov(maksdato = maksDato)
+            maksdato = maksDato
         )
         return TransaksjonDTO(
             id = 1L,
-            utbetalingsreferanse = "1001",
+            utbetalingsreferanse = utbetaling.utbetalingsreferanse,
             utbetalingsOppdrag = utbetaling,
             nokkel = LocalDateTime.now()
         )

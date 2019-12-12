@@ -9,6 +9,7 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus
 import no.nav.helse.spenn.testsupport.TestDb
+import no.nav.helse.spenn.vedtak.SpennOppdragFactory
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import java.util.*
@@ -27,19 +28,19 @@ class SendToOSTaskTest {
     @Test
     fun afterSimuleringSendToOS() {
         val behov = etEnkeltBehov()
-        val utbetaling = behov.tilUtbetaling("12345678901")
+        val utbetaling = SpennOppdragFactory.lagOppdragFraBehov(behov, "12345678901")
 
-        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1001")))
-        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1002")))
-        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1003")))
+        service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1001"))
+        service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1002"))
+        service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1003"))
         service.hentNyeOppdrag(5).forEach {
             it.oppdaterSimuleringsresultat(SimuleringResult(status = SimuleringStatus.OK))
         }
 
-        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1004")))
+        service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1004"))
         service.hentNyeOppdrag(5).first().oppdaterSimuleringsresultat(SimuleringResult(status = SimuleringStatus.FEIL))
 
-        service.lagreNyttOppdrag(utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = UUID.randomUUID(), utbetalingsreferanse = "1005")))
+        service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1005"))
 
         val sendToOSTask = SendToOSTask(
             oppdragStateService = service,

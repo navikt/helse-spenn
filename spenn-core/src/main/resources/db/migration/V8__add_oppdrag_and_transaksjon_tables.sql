@@ -5,7 +5,7 @@ create table oppdrag(
     id bigint not null default nextval('oppdrag_id_seq'),
     created timestamp not null default now(),
     utbetalingsreferanse varchar(30) not null unique,
-    constraint pk_oppdrag primary key (id),
+    constraint pk_oppdrag primary key (id)
 );
 
 create table transaksjon(

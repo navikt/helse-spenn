@@ -8,6 +8,7 @@ import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.kWhen
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
+import no.nav.helse.spenn.vedtak.SpennOppdragFactory
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -74,14 +75,12 @@ internal class MQOppdragReceiverTest {
             utbetalesTil = "995816598", grad = BigInteger.valueOf(100)
         )
 
-        val utbetaling = UtbetalingsOppdrag(
-            operasjon = AksjonsKode.OPPDATER,
-            oppdragGjelder = "11111111111", utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3),
-            behov = etEnkeltBehov()
-        )
+        val utbetaling = SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(), "11111111111")
+            .copy(utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3), operasjon = AksjonsKode.OPPDATER)
+
         val uuid = UUID.randomUUID()
         val oppdrag =
-            utbetaling.copy(behov = utbetaling.behov.copy(sakskompleksId = uuid, utbetalingsreferanse = "3001"))
+            utbetaling.copy(utbetalingsreferanse = "3001")
         oppdragService.lagreNyttOppdrag(oppdrag)
         oppdragService.hentNyeOppdrag(5).first().forberedSendingTilOS()
 

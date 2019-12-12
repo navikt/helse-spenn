@@ -1,23 +1,46 @@
 package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
 
 typealias Fodselsnummer = String
 
-data class Annuleringsbehov(
-    val utbetalingsreferanse: String,
-    val saksbehandler: String
-)
+internal object SpennOppdragFactory {
+    fun lagOppdragFraBehov(jsonNode : JsonNode, fodselsnummer : String) : UtbetalingsOppdrag {
+        val organisasjonsnummer = jsonNode["organisasjonsnummer"].asText()!!
+        return UtbetalingsOppdrag(
+            behov = jsonNode,
+            utbetalingsreferanse = jsonNode["utbetalingsreferanse"].asText()!!,
+            maksdato = jsonNode["maksdato"].asText()!!.let { LocalDate.parse(it) },
+            oppdragGjelder = fodselsnummer,
+            organisasjonsnummer = organisasjonsnummer,
+            utbetalingsLinje = jsonNode["utbetalingslinjer"].mapIndexed { i, behovsLinje ->
+                UtbetalingsLinje(
+                    id = "${i + 1}",
+                    satsTypeKode = SatsTypeKode.DAGLIG,
+                    utbetalesTil = organisasjonsnummer,
+                    sats = BigDecimal(behovsLinje["dagsats"].asText()!!),
+                    grad = BigInteger.valueOf(behovsLinje["grad"].asLong()),
+                    datoFom = behovsLinje["fom"].asText()!!.let { LocalDate.parse(it) },
+                    datoTom = behovsLinje["tom"].asText()!!.let { LocalDate.parse(it) }
+                )
+            },
+            operasjon = AksjonsKode.OPPDATER,
+            saksbehandler = jsonNode["saksbehandler"].asText()!!
+        )
+    }
+}
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class Utbetalingsbehov(
+/*
+class Utbetalingsbehov(private val jsonNode) {
     val sakskompleksId: UUID,
     val utbetalingsreferanse: String,
     val aktørId: String,
@@ -27,7 +50,7 @@ data class Utbetalingsbehov(
     val utbetalingslinjer: List<Utbetalingslinje>,
     val annulering: Boolean = false,
     val løsning: Løsning? = null
-) {
+
     fun tilUtbetaling(fodselsnummer: Fodselsnummer): UtbetalingsOppdrag {
         if (this.annulering) require(utbetalingslinjer.isEmpty())
         return UtbetalingsOppdrag(
@@ -35,7 +58,11 @@ data class Utbetalingsbehov(
             operasjon = AksjonsKode.OPPDATER,
             oppdragGjelder = fodselsnummer,
             annulering = annulering,
-            utbetalingsLinje = lagLinjer()
+            utbetalingsLinje = lagLinjer(),
+            utbetalingsreferanse = utbetalingsreferanse,
+            organisasjonsnummer = organisasjonsnummer,
+            maksdato = maksdato,
+            saksbehandler = saksbehandler
         )
     }
 
@@ -61,3 +88,4 @@ data class Utbetalingslinje(
     val fom: LocalDate,
     val tom: LocalDate
 )
+*/

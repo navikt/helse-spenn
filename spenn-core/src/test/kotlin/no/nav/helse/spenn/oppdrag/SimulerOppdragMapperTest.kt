@@ -2,6 +2,7 @@ package no.nav.helse.spenn.oppdrag
 
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.helse.spenn.testsupport.etEnkeltBehov
+import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -33,11 +34,10 @@ class SimulerOppdragMapperTest {
             utbetalesTil = "123456789",
             grad = BigInteger.valueOf(100)
         )
-        val utbetaling = UtbetalingsOppdrag(
-            operasjon = AksjonsKode.SIMULERING,
+        val utbetaling = etUtbetalingsOppdrag().copy(
             oppdragGjelder = "12121212345",
             utbetalingsLinje = listOf(enOppdragsLinje),
-            behov = etEnkeltBehov(maksdato = maksDato)
+            maksdato = maksDato
         )
         val oppdragState = TransaksjonDTO(
             id = 1L,

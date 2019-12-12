@@ -51,26 +51,15 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
             .filter { _, value -> value.skalOppfyllesAvOss("Utbetaling") }
             .filter { _, value -> !value.hasNonNull("@løsning") }
             .filter { _, value -> value.hasNonNull("utbetalingsreferanse") }
-            .mapValues { _, value -> value to defaultObjectMapper.treeToValue<Utbetalingsbehov>(value) }
-            .filter { _, (_, utbetalingsbehov) ->
-                utbetalingsbehov.utbetalingslinjer.isNotEmpty().also { harUtbetalingslinjer ->
-                    if (!harUtbetalingslinjer) {
-                        log.error("Mottok utbetalingsbehov uten utbetalingslinjer")
-                    }
-                }
-            }
-            .mapValues { _, (originalMessage, utbetalingsbehov) ->
+            .filter { _, value -> value.hasNonNull("aktørId") }
+            .mapValues { _, value ->
                 try {
-                    originalMessage to utbetalingsbehov.tilUtbetaling(
-                        aktørTilFnrMapper.tilFnr(
-                            utbetalingsbehov.aktørId
-                        )
-                    )
+                    value to SpennOppdragFactory
+                        .lagOppdragFraBehov(value, aktørTilFnrMapper.tilFnr(value["aktørId"].asText()!!))
                 } catch (err: AktorNotFoundException) {
                     log.error("aktør finnes ikke, skipper melding", err)
                     null
-                }
-            }
+                }}
             .filter { _, value ->
                 value != null
             }
@@ -168,7 +157,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
         return try {
             oppdragService.lagreNyttOppdrag(utbetaling)
         } catch (e: SQLIntegrityConstraintViolationException) {
-            log.error("skipping duplicate for key ${utbetaling.behov.sakskompleksId}")
+            log.error("skipping duplicate for key ${utbetaling.utbetalingsreferanse}")
             meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
         }
     }

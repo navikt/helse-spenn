@@ -44,7 +44,7 @@ internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
             oppdragslinje.add(
                 mapToSimuleringsOppdragslinje(
                     oppdragslinje = it,
-                    maksDato = utbetalingsOppdrag.behov.maksdato,
+                    maksDato = utbetalingsOppdrag.maksdato,
                     saksbehandler = OppdragSkjemaConstants.APP
                 )
             )
@@ -119,11 +119,11 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
         kodeAksjon = utbetalingsOppdrag.operasjon.kode
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
-        fagsystemId = utbetalingsOppdrag.behov.utbetalingsreferanse
+        fagsystemId = utbetalingsOppdrag.utbetalingsreferanse
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
         oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
-        saksbehId = utbetalingsOppdrag.behov.saksbehandler
+        saksbehId = utbetalingsOppdrag.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
             this.nokkelAvstemming = nokkel!!.format(avstemmingsnokkelFormatter)
             this.kodeKomponent = KomponentKode.SYKEPENGER.kode
@@ -134,8 +134,8 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
             oppdragsLinje150.add(
                 mapTolinje150(
                     oppdragslinje = it,
-                    maksDato = utbetalingsOppdrag.behov.maksdato,
-                    saksbehandler = utbetalingsOppdrag.behov.saksbehandler
+                    maksDato = utbetalingsOppdrag.maksdato,
+                    saksbehandler = utbetalingsOppdrag.saksbehandler
                 )
             )
         }

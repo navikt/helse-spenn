@@ -1,44 +1,60 @@
 package no.nav.helse.spenn.testsupport
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import no.nav.helse.spenn.core.defaultObjectMapper
+import no.nav.helse.spenn.oppdrag.AksjonsKode
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.vedtak.Utbetalingsbehov
-import no.nav.helse.spenn.vedtak.Utbetalingslinje
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
-import java.util.*
 
-internal class TestData {
-
-    companion object {
-        fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
-            val node = ObjectMapper().readTree(this::class.java.getResource("/et_utbetalingsbehov.json"))
-            val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
-            return behov.tilUtbetaling("01010112345")
-        }
-    }
+fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
+    /*val node = ObjectMapper().readTree(this::class.java.getResource("/et_utbetalingsbehov.json"))
+    val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
+    return behov.tilUtbetaling("01010112345")*/
+    val orgNr = "123456789"
+    return UtbetalingsOppdrag(
+        behov = defaultObjectMapper.readTree("""{ "somejson" : 123 }"""),
+        operasjon = AksjonsKode.OPPDATER,
+        utbetalingsreferanse = "1",
+        oppdragGjelder = "01010112345",
+        maksdato = LocalDate.of(2011, 12, 20),
+        saksbehandler = "Z999999",
+        organisasjonsnummer = orgNr,
+        utbetalingsLinje = listOf(
+            UtbetalingsLinje(
+                id = "1",
+                grad = BigInteger.valueOf(100),
+                datoFom = LocalDate.of(2011, 1, 1),
+                datoTom = LocalDate.of(2011, 1, 31),
+                utbetalesTil = orgNr,
+                sats = BigDecimal.valueOf(1000.0),
+                satsTypeKode = SatsTypeKode.DAGLIG
+            )
+        )
+    )
 }
 
-fun etEnkeltBehov(
-    sakskompleksId: UUID = UUID.randomUUID(),
-    maksdato: LocalDate = LocalDate.now().plusYears(1)
-) = Utbetalingsbehov(
-    sakskompleksId = sakskompleksId,
-    utbetalingsreferanse = "1001",
-    aktørId = "en random aktørid",
-    saksbehandler = "yes",
-    organisasjonsnummer = "897654321",
-    utbetalingslinjer = listOf(
-        Utbetalingslinje(
-            fom = LocalDate.of(2020, 1, 15),
-            tom = LocalDate.of(2020, 1, 30),
-            dagsats = 1234.toBigDecimal(),
-            grad = 100
-        )
-    ),
-    maksdato = maksdato
-)
+fun etEnkeltBehov() = defaultObjectMapper.readTree("""
+{
+  "@behov": "Utbetaling",
+  "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
+  "utbetalingsreferanse": "1",
+  "aktørId": "1234567890123",
+  "organisasjonsnummer": "123456789",
+  "maksdato": "2011-12-20",
+  "saksbehandler": "Z999999",
+  "utbetalingslinjer": [
+    {
+      "fom": "2011-01-01",
+      "tom": "2011-01-31",
+      "grad": 100,
+      "dagsats": "1000.0"
+    }
+  ]
+}        
+    """.trimIndent())
 
 val kvittering = """
     <?xml version="1.0" encoding="utf-8"?><oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag"><mmel><systemId>231-OPPD</systemId><kodeMelding>B110008F</kodeMelding><alvorlighetsgrad>08</alvorlighetsgrad><beskrMelding>Oppdraget finnes fra før</beskrMelding><programId>K231BB10</programId><sectionNavn>CA10-INPUTKONTROLL</sectionNavn></mmel><oppdrag-110>
