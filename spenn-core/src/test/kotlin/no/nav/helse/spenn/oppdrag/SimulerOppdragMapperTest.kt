@@ -41,7 +41,6 @@ class SimulerOppdragMapperTest {
         )
         val oppdragState = TransaksjonDTO(
             id = 1L,
-            sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",
             utbetalingsOppdrag = utbetaling
         )

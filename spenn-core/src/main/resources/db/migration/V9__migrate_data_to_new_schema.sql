@@ -11,8 +11,8 @@ DO $$
             exit when not found;
 
             with rows as (
-                insert into oppdrag (sakskompleks_id, created, modified, utbetalingsreferanse)
-                    values (rec_oppdrag.sakskompleks_id, rec_oppdrag.created, rec_oppdrag.modified, rec_oppdrag.utbetalingsreferanse)
+                insert into oppdrag (created, modified, utbetalingsreferanse)
+                    values (rec_oppdrag.created, rec_oppdrag.modified, rec_oppdrag.utbetalingsreferanse)
                     returning id
             )
             insert into transaksjon (oppdrag_id, nokkel, avstemt, status, utbetalingsoppdrag, oppdragresponse, simuleringresult)

@@ -45,7 +45,7 @@ class OppdragService(dataSource: HikariDataSource) {
             transaksjonDTO = repository.findByRefAndNokkel(transaksjonDTO.utbetalingsreferanse, transaksjonDTO.nokkel!!)
         }
 
-        override fun toString() = "Transaksjon(sakskompleksId=${transaksjonDTO.sakskompleksId}, utbetalingsreferanse=${transaksjonDTO.utbetalingsreferanse}, " +
+        override fun toString() = "Transaksjon(utbetalingsreferanse=${transaksjonDTO.utbetalingsreferanse}, " +
                 "avstemmingsnøkkel=${transaksjonDTO.nokkel})"
 
         private fun performSanityCheck() {
@@ -78,7 +78,6 @@ class OppdragService(dataSource: HikariDataSource) {
         require(oppdrag.annulering == true)
         val transaksjoner = repository.findByRef(oppdrag.behov.utbetalingsreferanse)
         require(1 == transaksjoner.size)
-        require(transaksjoner.first().sakskompleksId == oppdrag.behov.sakskompleksId)
         repository.insertNyTransaksjon(oppdrag)
     }
 
@@ -105,7 +104,6 @@ class OppdragService(dataSource: HikariDataSource) {
 fun UtbetalingsOppdrag.lagPåSidenSimuleringsrequest() =
     TransaksjonDTO(
         id = -1,
-        sakskompleksId = this.behov.sakskompleksId,
         utbetalingsreferanse = this.behov.utbetalingsreferanse,
         nokkel = LocalDateTime.now(),
         utbetalingsOppdrag = this).toSimuleringRequest()

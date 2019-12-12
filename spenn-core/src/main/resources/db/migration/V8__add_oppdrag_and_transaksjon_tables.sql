@@ -3,11 +3,9 @@ create sequence transaksjon_id_seq;
 
 create table oppdrag(
     id bigint not null default nextval('oppdrag_id_seq'),
-    sakskompleks_id uuid not null,
     created timestamp not null default now(),
     utbetalingsreferanse varchar(30) not null unique,
     constraint pk_oppdrag primary key (id),
-    constraint uq_oppdrag_sakskompleks_id unique (sakskompleks_id)
 );
 
 create table transaksjon(

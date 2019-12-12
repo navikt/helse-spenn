@@ -237,7 +237,6 @@ class AvstemmingMapperTest {
                     alvorlighetsgrad
                 ),
                 simuleringresult = null,
-                sakskompleksId = soknadId,
                 utbetalingsreferanse = utbetalingsreferanse,
                 status = status,
                 utbetalingsOppdrag = UtbetalingsOppdrag(

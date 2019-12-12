@@ -33,7 +33,6 @@ internal class RepositoryTest {
         val res = repository.findAllByStatus(TransaksjonStatus.STARTET)
         assertEquals(1, res.size)
         res.first().apply {
-            assertEquals(UUID.fromString("e25ccad5-f5d5-4399-bb9d-43e9fc487888"), this.sakskompleksId)
             assertEquals("1", this.utbetalingsreferanse)
             assertNull(this.nokkel)
             assertEquals(oppdrag, this.utbetalingsOppdrag)

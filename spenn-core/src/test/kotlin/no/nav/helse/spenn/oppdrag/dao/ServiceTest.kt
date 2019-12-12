@@ -41,7 +41,6 @@ internal class ServiceTest {
         assertEquals(1, transaksjoner.size)
         repository.findAllByStatus(TransaksjonStatus.STARTET).first().apply {
             assertEquals(utbetaling.behov.utbetalingsreferanse, this.utbetalingsreferanse)
-            assertEquals(utbetaling.behov.sakskompleksId, this.sakskompleksId)
         }
     }
 

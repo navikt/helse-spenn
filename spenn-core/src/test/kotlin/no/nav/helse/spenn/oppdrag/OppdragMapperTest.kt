@@ -42,7 +42,6 @@ class OppdragMapperTest {
         )
         return TransaksjonDTO(
             id = 1L,
-            sakskompleksId = UUID.randomUUID(),
             utbetalingsreferanse = "1001",
             utbetalingsOppdrag = utbetaling,
             nokkel = LocalDateTime.now()

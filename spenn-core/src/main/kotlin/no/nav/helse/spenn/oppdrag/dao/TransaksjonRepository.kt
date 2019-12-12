@@ -11,7 +11,6 @@ import java.util.*
 
 internal data class TransaksjonDTO(
     val id: Long,
-    val sakskompleksId: UUID,
     val utbetalingsreferanse: String,
     val nokkel: LocalDateTime? = null,
     val avstemt: Boolean = false,
@@ -30,11 +29,10 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
             conn.autoCommit = false
             try {
                 conn.prepareStatement("""
-                    insert into oppdrag(sakskompleks_id, utbetalingsreferanse)
-                    values (?, ?)
+                    insert into oppdrag(utbetalingsreferanse)
+                    values (?)
                 """.trimIndent()).use { preparedStatement ->
-                    preparedStatement.setObject(1, utbetalingsOppdrag.behov.sakskompleksId)
-                    preparedStatement.setString(2, utbetalingsOppdrag.behov.utbetalingsreferanse)
+                    preparedStatement.setString(1, utbetalingsOppdrag.behov.utbetalingsreferanse)
                     preparedStatement.executeUpdate()
                 }
                 conn.prepareStatement("""
@@ -236,14 +234,13 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
     private object DTO {
         val selectString = """
         select transaksjon.id as transaksjon_id,
-             sakskompleks_id, utbetalingsreferanse, nokkel, avstemt, utbetalingsoppdrag, status, simuleringresult, oppdragresponse
+             utbetalingsreferanse, nokkel, avstemt, utbetalingsoppdrag, status, simuleringresult, oppdragresponse
         from oppdrag join transaksjon on oppdrag.id = transaksjon.oppdrag_id
     """.trimIndent()
 
         fun parse(resultSet: ResultSet): TransaksjonDTO =
             TransaksjonDTO(
                 id = resultSet.getLong("transaksjon_id"),
-                sakskompleksId = resultSet.getObject("sakskompleks_id", UUID::class.java),
                 utbetalingsreferanse = resultSet.getString("utbetalingsreferanse"),
                 nokkel = resultSet.getTimestamp("nokkel")?.toLocalDateTime(),
                 avstemt = resultSet.getBoolean("avstemt"),
