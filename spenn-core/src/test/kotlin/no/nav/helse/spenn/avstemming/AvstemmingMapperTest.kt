@@ -241,7 +241,6 @@ class AvstemmingMapperTest {
                 utbetalingsreferanse = utbetalingsreferanse,
                 status = status,
                 utbetalingsOppdrag = UtbetalingsOppdrag(
-                        operasjon = AksjonsKode.OPPDATER,
                         oppdragGjelder = "12121210010",
                         utbetalingsLinje = listOf(UtbetalingsLinje(
                                 id = (utbetalingsLinjeIdSequence++).toString(),

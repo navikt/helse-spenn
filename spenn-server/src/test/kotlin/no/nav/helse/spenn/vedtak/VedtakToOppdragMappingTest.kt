@@ -30,7 +30,6 @@ class VedtakToOppdragMappingTest {
         )
         val målbilde = UtbetalingsOppdrag(
             behov = behov,
-            operasjon = AksjonsKode.OPPDATER,
             oppdragGjelder = "12345678901",
             utbetalingsLinje = listOf(oppdragsLinje),
             saksbehandler = "Z999999",

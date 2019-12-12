@@ -76,7 +76,7 @@ internal class MQOppdragReceiverTest {
         )
 
         val utbetaling = SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(), "11111111111")
-            .copy(utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3), operasjon = AksjonsKode.OPPDATER)
+            .copy(utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
 
         val uuid = UUID.randomUUID()
         val oppdrag =

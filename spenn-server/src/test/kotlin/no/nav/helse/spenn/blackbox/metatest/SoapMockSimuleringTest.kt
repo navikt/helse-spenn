@@ -63,7 +63,7 @@ internal class SoapMockSimuleringTest {
             grad = BigInteger.valueOf(100)
         )
         val utbetaling = SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(maksdato = maksDato), "12121212345")
-            .copy(utbetalingsLinje = listOf(enOppdragsLinje), operasjon = AksjonsKode.SIMULERING)
+            .copy(utbetalingsLinje = listOf(enOppdragsLinje))
 
 
         val result = simuleringService.simulerOppdrag(utbetaling.lagPåSidenSimuleringsrequest())

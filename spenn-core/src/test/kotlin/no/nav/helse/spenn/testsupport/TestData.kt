@@ -16,7 +16,6 @@ fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
     val orgNr = "123456789"
     return UtbetalingsOppdrag(
         behov = defaultObjectMapper.readTree("""{ "somejson" : 123 }"""),
-        operasjon = AksjonsKode.OPPDATER,
         utbetalingsreferanse = "1",
         oppdragGjelder = "01010112345",
         maksdato = LocalDate.of(2011, 12, 20),

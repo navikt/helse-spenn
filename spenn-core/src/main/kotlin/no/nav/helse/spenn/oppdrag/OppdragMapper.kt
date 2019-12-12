@@ -116,7 +116,7 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
     }
 
     val oppdrag110 = objectFactory.createOppdrag110().apply {
-        kodeAksjon = utbetalingsOppdrag.operasjon.kode
+        kodeAksjon = AksjonsKode.OPPDATER.kode
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsOppdrag.utbetalingsreferanse

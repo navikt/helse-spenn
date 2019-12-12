@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.oppdrag
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.JsonNode
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -9,7 +8,6 @@ import java.time.LocalDate
 
 data class UtbetalingsOppdrag(
     val behov: JsonNode,
-    val operasjon: AksjonsKode,
     /**
      * angir hvem som saken/vedtaket er registrert på i fagrutinen
      */
