@@ -86,10 +86,12 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
 
         healthstatuscontroller(env.kafkaStreams, env.meterRegistry)
 
+        opphørscontroller(env.stateService, env.aktørTilFnrMapper, env.auditSupport)
+
         authenticate {
             simuleringcontroller(env.simuleringService, env.aktørTilFnrMapper, env.auditSupport)
 
-            opphørscontroller(env.stateService, env.aktørTilFnrMapper, env.auditSupport)
+            //opphørscontroller(env.stateService, env.aktørTilFnrMapper, env.auditSupport)
         }
 
     }
