@@ -83,11 +83,11 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
     }
 
     private fun JsonNode.skalOppfyllesAvOss(type: String)  =
-            this["@behov"]?.let {
-                if (it.isArray) {
-                    it.map { b -> b.asText() }.any { t -> t == type }
-                } else it.asText() == type
-            } ?: false
+        this["@behov"]?.let {
+            if (it.isArray) {
+                it.map { b -> b.asText() }.any { t -> t == type }
+            } else it.asText() == type
+        } ?: false
 
     @PostConstruct
     fun offsetReset() {

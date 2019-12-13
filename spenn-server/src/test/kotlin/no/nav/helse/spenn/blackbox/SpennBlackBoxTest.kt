@@ -18,18 +18,13 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertTimeoutPreemptively
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse
-import org.testcontainers.containers.Container
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.KafkaContainer
-import org.testcontainers.containers.MockServerContainer
-import org.testcontainers.containers.Network
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.*
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.images.builder.ImageFromDockerfile
@@ -37,9 +32,7 @@ import org.testcontainers.utility.MountableFile
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
-import java.util.HashMap
-import java.util.Properties
-import java.util.UUID
+import java.util.*
 
 internal class SpennBlackBoxTest {
 
@@ -96,7 +89,7 @@ internal class SpennBlackBoxTest {
     private fun sendUtbetalingsbehov(aktørId: String): JsonNode {
         return """
 {
-    "@behov": "Utbetaling",
+    "@behov": ["Utbetaling"],
     "sakskompleksId": "${UUID.randomUUID()}",
     "aktørId": "$aktørId",
     "organisasjonsnummer": "666666666",
