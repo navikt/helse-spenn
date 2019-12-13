@@ -8,6 +8,7 @@ import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
 import no.nav.system.os.entiteter.oppdragskjema.RefusjonsInfo
 import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
+import no.nav.system.os.entiteter.typer.simpletypes.KodeStatus
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
 import no.trygdeetaten.skjema.oppdrag.*
@@ -19,7 +20,12 @@ private val simFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpse
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 private val grensesnittFactory = no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.ObjectFactory()
 
-internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
+internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest =
+    if (utbetalingsOppdrag.utbetaling != null) mapSimuleringRequest()
+    else mapAnnulleringSimuleringRequest()
+
+
+private fun TransaksjonDTO.mapSimuleringRequest(): SimulerBeregningRequest {
     var simulerFom = LocalDate.MAX
     var simulerTom = LocalDate.MIN
 
@@ -63,8 +69,38 @@ internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
                     }
         }
     }
+}
+
+private fun TransaksjonDTO.mapAnnulleringSimuleringRequest(): SimulerBeregningRequest {
+    requireNotNull(utbetalingsOppdrag.statusEndringFom)
+    val simulerFom = utbetalingsOppdrag.statusEndringFom
+    val simulerTom = LocalDate.MAX
+    val oppdrag = simFactory.createOppdrag().apply {
+        kodeEndring = EndringsKode.ENDRING.kode
+        kodeStatus = KodeStatus.OPPH
+        datoStatusFom = utbetalingsOppdrag.statusEndringFom.format(formatter)
+        kodeEndring = EndringsKode.ENDRING.kode
+        kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
+        fagsystemId = utbetalingsreferanse
+        utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
+        oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
+        datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
+        saksbehId = OppdragSkjemaConstants.APP
+    }
+    return grensesnittFactory.createSimulerBeregningRequest().apply {
+        this.request = simFactory.createSimulerBeregningRequest().apply {
+            this.oppdrag = oppdrag
+            simuleringsPeriode =
+                no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
+                    .SimuleringsPeriode().apply {
+                        datoSimulerFom = simulerFom.format(formatter)
+                        datoSimulerTom = simulerTom.format(formatter)
+                    }
+        }
+    }
 
 }
+
 
 private fun mapToSimuleringsOppdragslinje(
     oppdragslinje: UtbetalingsLinje,

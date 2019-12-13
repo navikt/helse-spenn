@@ -4,6 +4,7 @@ import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
+import no.nav.system.os.entiteter.typer.simpletypes.KodeStatus
 import no.trygdeetaten.skjema.oppdrag.TkodeStatus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -133,6 +134,32 @@ class OppdragMapperTest {
         assertTrue(oppdrag.oppdrag110.oppdragsLinje150.isEmpty())
     }
 
+    @Test
+    fun `mapping av annulleringssimuleringsrequest`() {
+        val annulleringsDTO = enDTO().let {
+            it.copy(
+                utbetalingsOppdrag = it.utbetalingsOppdrag.copy(
+                    utbetaling = null,
+                    statusEndringFom = vedtakFom
+                )
+            )
+        }
+        val oppdrag = annulleringsDTO.toSimuleringRequest()
+
+        assertEquals(EndringsKode.ENDRING.kode, oppdrag.request.oppdrag.kodeEndring)
+        assertEquals(KodeStatus.OPPH, oppdrag.request.oppdrag.kodeStatus)
+        assertEquals(
+            annulleringsDTO.utbetalingsOppdrag.statusEndringFom!!.toString(),
+            oppdrag.request.oppdrag.datoStatusFom
+        )
+
+        assertEquals("12121212345", oppdrag.request.oppdrag.oppdragGjelderId)
+        assertEquals("1001", oppdrag.request.oppdrag.fagsystemId)
+        assertEquals(UtbetalingsfrekvensKode.MÅNEDLIG.kode, oppdrag.request.oppdrag.utbetFrekvens)
+        assertEquals(FagOmraadekode.SYKEPENGER_REFUSJON.kode, oppdrag.request.oppdrag.kodeFagomraade)
+
+        assertTrue(oppdrag.request.oppdrag.oppdragslinje.isEmpty())
+    }
     @Test
     fun `mapping skal feile hvis nøkkel ikke er satt`() {
         assertThrows<KotlinNullPointerException> { enDTO().copy(nokkel = null).toOppdragRequest() }
