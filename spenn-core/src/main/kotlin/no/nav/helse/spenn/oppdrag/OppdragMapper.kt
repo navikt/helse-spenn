@@ -74,7 +74,7 @@ private fun TransaksjonDTO.mapSimuleringRequest(): SimulerBeregningRequest {
 private fun TransaksjonDTO.mapAnnulleringSimuleringRequest(): SimulerBeregningRequest {
     requireNotNull(utbetalingsOppdrag.statusEndringFom)
     val simulerFom = utbetalingsOppdrag.statusEndringFom
-    val simulerTom = LocalDate.MAX
+    val simulerTom = utbetalingsOppdrag.statusEndringFom.plusMonths(1) //LocalDate.MAX
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.ENDRING.kode
         kodeStatus = KodeStatus.OPPH
