@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.sql.SQLIntegrityConstraintViolationException
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -50,13 +51,13 @@ internal class RepositoryTest {
     @Test
     fun `opprett annulering`() {
         val utbetaling = etUtbetalingsOppdrag()
-        val annulering = utbetaling.copy(annulering = true)
+        val annulering = utbetaling.copy(utbetaling = null)
         repository.insertNyttOppdrag(utbetaling)
         repository.insertNyTransaksjon(annulering)
         val res = repository.findAllByStatus(TransaksjonStatus.STARTET)
         assertEquals(2, res.size)
         res.last().apply {
-            assertTrue { this.utbetalingsOppdrag.annulering }
+            assertNull(this.utbetalingsOppdrag.utbetaling)
         }
     }
 

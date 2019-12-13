@@ -30,6 +30,8 @@ internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
     }
 
     val oppdrag = simFactory.createOppdrag().apply {
+        val utbetaling = utbetalingsOppdrag.utbetaling
+        requireNotNull(utbetaling)
         kodeEndring = EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsreferanse
@@ -38,13 +40,13 @@ internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest {
         datoOppdragGjelderFom = LocalDate.EPOCH.format(formatter)
         saksbehId = OppdragSkjemaConstants.APP
         enhet.add(oppdragsEnhet)
-        utbetalingsOppdrag.utbetalingsLinje.forEach {
+        utbetaling.utbetalingsLinjer.forEach {
             if (it.datoFom.isBefore(simulerFom)) simulerFom = it.datoFom
             if (it.datoTom.isAfter(simulerTom)) simulerTom = it.datoTom
             oppdragslinje.add(
                 mapToSimuleringsOppdragslinje(
                     oppdragslinje = it,
-                    maksDato = utbetalingsOppdrag.maksdato,
+                    maksDato = utbetaling.maksdato,
                     saksbehandler = OppdragSkjemaConstants.APP
                 )
             )
@@ -116,8 +118,11 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
     }
 
     val oppdrag110 = objectFactory.createOppdrag110().apply {
+        val utbetaling = utbetalingsOppdrag.utbetaling
+        requireNotNull(utbetaling)
         kodeAksjon = AksjonsKode.OPPDATER.kode
         kodeEndring = EndringsKode.NY.kode
+        kodeStatus
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsOppdrag.utbetalingsreferanse
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
@@ -130,11 +135,11 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
             this.tidspktMelding = nokkel.format(avstemmingsnokkelFormatter)
         }
         oppdragsEnhet120.add(oppdragsEnhet)
-        utbetalingsOppdrag.utbetalingsLinje.forEach {
+        utbetaling.utbetalingsLinjer.forEach {
             oppdragsLinje150.add(
                 mapTolinje150(
                     oppdragslinje = it,
-                    maksDato = utbetalingsOppdrag.maksdato,
+                    maksDato = utbetaling.maksdato,
                     saksbehandler = utbetalingsOppdrag.saksbehandler
                 )
             )

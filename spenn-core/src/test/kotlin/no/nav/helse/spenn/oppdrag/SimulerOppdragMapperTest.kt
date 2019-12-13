@@ -34,10 +34,14 @@ class SimulerOppdragMapperTest {
             utbetalesTil = "123456789",
             grad = BigInteger.valueOf(100)
         )
-        val utbetaling = etUtbetalingsOppdrag().copy(
+        val utbetalingTemplate = etUtbetalingsOppdrag()
+        val utbetaling = utbetalingTemplate.copy(
             oppdragGjelder = "12121212345",
-            utbetalingsLinje = listOf(enOppdragsLinje),
-            maksdato = maksDato
+            utbetalingsreferanse = "1001",
+            utbetaling = utbetalingTemplate.utbetaling!!.copy(
+                utbetalingsLinjer = listOf(enOppdragsLinje),
+                maksdato = maksDato
+            )
         )
         val oppdragState = TransaksjonDTO(
             id = 1L,

@@ -35,11 +35,14 @@ class OppdragMapperTest {
             utbetalesTil = "995816598",
             grad = BigInteger.valueOf(100)
         )
-        val utbetaling = etUtbetalingsOppdrag().copy(
+        val utbetalingTemplate = etUtbetalingsOppdrag()
+        val utbetaling = utbetalingTemplate.copy(
             oppdragGjelder = "12121212345",
             utbetalingsreferanse = "1001",
-            utbetalingsLinje = listOf(enOppdragsLinje),
-            maksdato = maksDato
+            utbetaling = utbetalingTemplate.utbetaling!!.copy(
+                utbetalingsLinjer = listOf(enOppdragsLinje),
+                maksdato = maksDato
+            )
         )
         return TransaksjonDTO(
             id = 1L,

@@ -75,8 +75,13 @@ internal class MQOppdragReceiverTest {
             utbetalesTil = "995816598", grad = BigInteger.valueOf(100)
         )
 
-        val utbetaling = SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(), "11111111111")
-            .copy(utbetalingsLinje = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3))
+        val utbetalingTemplate =
+            SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(), "11111111111")
+        val utbetaling = utbetalingTemplate.copy(
+            utbetaling = utbetalingTemplate.utbetaling!!.copy(
+                utbetalingsLinjer = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3)
+            )
+        )
 
         val uuid = UUID.randomUUID()
         val oppdrag =

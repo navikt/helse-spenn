@@ -106,7 +106,7 @@ internal class AvstemmingTaskTest {
             assertEquals(1, this.grunnlag.varselAntall)
             assertEquals(0, this.grunnlag.avvistAntall)
             assertEquals(0, this.grunnlag.manglerAntall)
-            assertEquals(utbetalingTemplate.utbetalingsLinje.first().sats.toLong() * 3, this.total.totalBelop.toLong())
+            assertEquals(utbetalingTemplate.utbetaling!!.utbetalingsLinjer.first().sats.toLong() * 3, this.total.totalBelop.toLong())
 
             assertEquals(1, this.detalj.size)
             assertEquals("04", this.detalj.first().alvorlighetsgrad)

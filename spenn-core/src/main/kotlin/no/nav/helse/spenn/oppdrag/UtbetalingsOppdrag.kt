@@ -8,17 +8,23 @@ import java.time.LocalDate
 
 data class UtbetalingsOppdrag(
     val behov: JsonNode,
-    /**
-     * angir hvem som saken/vedtaket er registrert på i fagrutinen
-     */
     val utbetalingsreferanse: String,
+    val saksbehandler: String,
+    /**
+     * angir hvem som saken/vedtaket er registrert på i fagrutinen (fnr)
+     */
     val oppdragGjelder: String,
+    /**
+     * utbetaling=NULL betyr aNULLer:
+     */
+    val utbetaling:Utbetaling?,
+    val statusEndringFom:LocalDate? = null
+)
+
+data class Utbetaling(
     val organisasjonsnummer: String,
     val maksdato: LocalDate,
-    val saksbehandler: String,
-
-    val utbetalingsLinje: List<UtbetalingsLinje>,
-    val annulering:Boolean = false
+    val utbetalingsLinjer: List<UtbetalingsLinje>
 )
 
 data class UtbetalingsLinje(

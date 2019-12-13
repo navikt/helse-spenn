@@ -71,7 +71,7 @@ class AvstemmingMapper internal constructor(
             return if (belop >= 0) Fortegn.T else Fortegn.F
         }
 
-        internal fun List<TransaksjonDTO>.tilTotaldata() : Totaldata {
+        /*internal fun List<TransaksjonDTO>.tilTotaldata() : Totaldata {
             val totalBeløp = this.flatMap { it.utbetalingsOppdrag.utbetalingsLinje.map { it.sats.toLong() } }.sum()
             val totaldata = objectFactory.createTotaldata()
             totaldata.totalAntall = this.size
@@ -79,17 +79,16 @@ class AvstemmingMapper internal constructor(
             totaldata.fortegn =
                 tilFortegn(totalBeløp)
             return totaldata
-        }
+        }*/
 
         private fun tilPeriodeData(localDateTimeString: String): String =
                 LocalDateTime.parse(localDateTimeString,
                     avstemmingsnokkelFormatter
-                )
-                        .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
+                ).format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
 
         private fun getBelop(oppdrag: TransaksjonDTO): Long =
-                oppdrag.utbetalingsOppdrag.utbetalingsLinje.map { it.sats }.reduce(BigDecimal::add).toLong()
-
+            oppdrag.utbetalingsOppdrag.utbetaling?.utbetalingsLinjer
+                ?.map { it.sats }?.reduce(BigDecimal::add)?.toLong() ?: 0
     }
 
     internal fun lagAvstemmingsMeldinger() : List<Avstemmingsdata> =

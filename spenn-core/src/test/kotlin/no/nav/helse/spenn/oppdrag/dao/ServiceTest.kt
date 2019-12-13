@@ -47,13 +47,19 @@ internal class ServiceTest {
     @Test
     fun `annuler utbetaling`() {
         val utbetaling = etUtbetalingsOppdrag()
-        val annulering = utbetaling.copy(annulering = true)
+        val annulering = utbetaling.copy(utbetaling = null)
         service.lagreNyttOppdrag(utbetaling)
         service.annulerUtbetaling(annulering)
         val transaksjoner = repository.findByRef(utbetaling.utbetalingsreferanse)
         assertEquals(2, transaksjoner.size)
         assertEquals(utbetaling.utbetalingsreferanse, transaksjoner.first().utbetalingsreferanse)
         assertEquals(utbetaling.utbetalingsreferanse, transaksjoner.last().utbetalingsreferanse)
+
+        println(transaksjoner.last().utbetalingsOppdrag)
+        assertEquals(utbetaling.utbetaling!!.utbetalingsLinjer.first().datoFom,
+            transaksjoner.last().utbetalingsOppdrag.statusEndringFom)
+
+
     }
 
     @Test
@@ -86,8 +92,10 @@ internal class ServiceTest {
     @Test
     fun `sanity check`() {
         val utbetaling = etUtbetalingsOppdrag()
-        val utbetalingMedForHøyDagsats = utbetaling.copy(utbetalingsLinje = listOf(utbetaling.utbetalingsLinje.first().copy(
-            sats = BigDecimal.valueOf(3000))))
+        val utbetalingMedForHøyDagsats = utbetaling.copy(
+            utbetaling = utbetaling.utbetaling!!.copy(
+            utbetalingsLinjer = listOf(utbetaling.utbetaling!!.utbetalingsLinjer.first().copy(
+            sats = BigDecimal.valueOf(3000)))))
         println(utbetalingMedForHøyDagsats)
         service.lagreNyttOppdrag(utbetalingMedForHøyDagsats)
         assertThrows<SanityCheckException> {

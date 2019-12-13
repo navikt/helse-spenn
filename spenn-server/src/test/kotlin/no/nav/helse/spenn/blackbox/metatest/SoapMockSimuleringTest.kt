@@ -4,7 +4,8 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
@@ -62,13 +63,17 @@ internal class SoapMockSimuleringTest {
             utbetalesTil = "123456789",
             grad = BigInteger.valueOf(100)
         )
-        val utbetaling = SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(maksdato = maksDato), "12121212345")
-            .copy(utbetalingsLinje = listOf(enOppdragsLinje))
-
+        val utbetalingTemplate =
+            SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(maksdato = maksDato), "12121212345")
+        val utbetaling = utbetalingTemplate.copy(
+            utbetaling = utbetalingTemplate.utbetaling!!.copy(
+                utbetalingsLinjer = listOf(enOppdragsLinje)
+            )
+        )
 
         val result = simuleringService.simulerOppdrag(utbetaling.lagPåSidenSimuleringsrequest())
         assertNotNull(result, "simuleringresult skal ha blitt satt")
-        assertEquals(SimuleringStatus.OK, result.status )
+        assertEquals(SimuleringStatus.OK, result.status)
     }
 
 }

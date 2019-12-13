@@ -89,8 +89,8 @@ class AvstemmingMapperTest {
             avstemmingsdata.total.let { totaldata ->
                 assertEquals(Fortegn.T, totaldata.fortegn)
                 assertEquals(oppdragsliste.size, totaldata.totalAntall)
-                assertEquals(oppdragsliste.map {
-                    it.utbetalingsOppdrag.utbetalingsLinje.map {
+                assertEquals(oppdragsliste.map { transaksjonDTO ->
+                    transaksjonDTO.utbetalingsOppdrag.utbetaling!!.utbetalingsLinjer.map {
                         it.sats.toLong()
                     }.sum()
                 }.sum(), totaldata.totalBelop.toLong())
@@ -168,7 +168,7 @@ class AvstemmingMapperTest {
     }
 
     private fun satsSum(oppdrag: TransaksjonDTO) =
-        oppdrag.utbetalingsOppdrag.utbetalingsLinje.map {
+        oppdrag.utbetalingsOppdrag.utbetaling!!.utbetalingsLinjer.map {
             it.sats.toLong()
         }.sum()
 
@@ -242,7 +242,10 @@ class AvstemmingMapperTest {
                 status = status,
                 utbetalingsOppdrag = UtbetalingsOppdrag(
                         oppdragGjelder = "12121210010",
-                        utbetalingsLinje = listOf(UtbetalingsLinje(
+                        utbetaling = Utbetaling(
+                            organisasjonsnummer = "897654321",
+                            maksdato = LocalDate.now().plusYears(1),
+                            utbetalingsLinjer = listOf(UtbetalingsLinje(
                                 id = (utbetalingsLinjeIdSequence++).toString(),
                                 datoFom = LocalDate.now().minusWeeks(4),
                                 datoTom = LocalDate.now().minusWeeks(1),
@@ -250,11 +253,9 @@ class AvstemmingMapperTest {
                                 sats = BigDecimal.valueOf(dagSats),
                                 satsTypeKode = SatsTypeKode.DAGLIG,
                                 utbetalesTil = "999988887"
-                        )),
+                            ))),
                     utbetalingsreferanse = "1001",
                     saksbehandler = "yes",
-                    organisasjonsnummer = "897654321",
-                    maksdato = LocalDate.now().plusYears(1),
                     behov = etEnkeltBehov()
                 ),
                 avstemt = false,

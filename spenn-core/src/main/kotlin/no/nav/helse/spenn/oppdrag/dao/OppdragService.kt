@@ -49,7 +49,8 @@ class OppdragService(dataSource: HikariDataSource) {
                 "avstemmingsnøkkel=${transaksjonDTO.nokkel})"
 
         private fun performSanityCheck() {
-            transaksjonDTO.utbetalingsOppdrag.utbetalingsLinje.forEach {
+            val utbetaling = transaksjonDTO.utbetalingsOppdrag.utbetaling
+            utbetaling?.utbetalingsLinjer?.forEach {
                 if (it.satsTypeKode != SatsTypeKode.DAGLIG) {
                     throw SanityCheckException("satsTypeKode er ${it.satsTypeKode}. Vi har ikke logikk for å sanity-sjekke dette.")
                 }
@@ -75,14 +76,21 @@ class OppdragService(dataSource: HikariDataSource) {
     }
 
     fun annulerUtbetaling(oppdrag: UtbetalingsOppdrag) {
-        require(oppdrag.annulering == true)
+        require(oppdrag.utbetaling == null)
         val transaksjoner = repository.findByRef(oppdrag.utbetalingsreferanse)
         require(1 == transaksjoner.size)
-        repository.insertNyTransaksjon(oppdrag)
+        val originaltOppdrag = transaksjoner.first().utbetalingsOppdrag
+        require(oppdrag.oppdragGjelder == originaltOppdrag.oppdragGjelder)
+
+        repository.insertNyTransaksjon(oppdrag.copy(
+            statusEndringFom = originaltOppdrag.utbetaling!!
+                .utbetalingsLinjer.minBy { it.datoFom }!!.datoFom
+        ))
     }
 
     fun lagreNyttOppdrag(oppdrag: UtbetalingsOppdrag) {
-        require(!oppdrag.annulering)
+        requireNotNull(oppdrag.utbetaling)
+        require(oppdrag.utbetaling.utbetalingsLinjer.isNotEmpty())
         repository.insertNyttOppdrag(oppdrag)
     }
 

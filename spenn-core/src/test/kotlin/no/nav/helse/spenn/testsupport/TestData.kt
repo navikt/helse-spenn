@@ -1,35 +1,31 @@
 package no.nav.helse.spenn.testsupport
 
 import no.nav.helse.spenn.core.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.AksjonsKode
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 
 fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
-    /*val node = ObjectMapper().readTree(this::class.java.getResource("/et_utbetalingsbehov.json"))
-    val behov: Utbetalingsbehov = defaultObjectMapper.treeToValue(node)
-    return behov.tilUtbetaling("01010112345")*/
     val orgNr = "123456789"
     return UtbetalingsOppdrag(
         behov = defaultObjectMapper.readTree("""{ "somejson" : 123 }"""),
         utbetalingsreferanse = "1",
         oppdragGjelder = "01010112345",
-        maksdato = LocalDate.of(2011, 12, 20),
         saksbehandler = "Z999999",
-        organisasjonsnummer = orgNr,
-        utbetalingsLinje = listOf(
-            UtbetalingsLinje(
-                id = "1",
-                grad = BigInteger.valueOf(100),
-                datoFom = LocalDate.of(2011, 1, 1),
-                datoTom = LocalDate.of(2011, 1, 31),
-                utbetalesTil = orgNr,
-                sats = BigDecimal.valueOf(1000.0),
-                satsTypeKode = SatsTypeKode.DAGLIG
+        utbetaling = Utbetaling(
+            maksdato = LocalDate.of(2011, 12, 20),
+            organisasjonsnummer = orgNr,
+            utbetalingsLinjer = listOf(
+                UtbetalingsLinje(
+                    id = "1",
+                    grad = BigInteger.valueOf(100),
+                    datoFom = LocalDate.of(2011, 1, 1),
+                    datoTom = LocalDate.of(2011, 1, 31),
+                    utbetalesTil = orgNr,
+                    sats = BigDecimal.valueOf(1000.0),
+                    satsTypeKode = SatsTypeKode.DAGLIG
+                )
             )
         )
     )

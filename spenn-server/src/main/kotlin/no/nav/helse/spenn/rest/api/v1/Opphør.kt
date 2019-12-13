@@ -1,8 +1,7 @@
 package no.nav.helse.spenn.rest.api.v1
 
-fun test() = 1
-
 /*
+
 import io.ktor.application.*
 import io.ktor.request.*
 import io.ktor.routing.*
@@ -42,7 +41,7 @@ private fun TransaksjonDTO.lagOpphørsmelding(): Oppdrag {
         kodeEndring = EndringsKode.ENDRING.kode
         kodeStatus = TkodeStatus.OPPH
         datoStatusFom = OppdragSkjemaConstants.toXMLDate(
-                dto.utbetalingsOppdrag.utbetalingsLinje.first().datoFom
+                dto.utbetalingsOppdrag.utbetalingsLinje.sortBy(datoFom).first().datoFom
         )
 
 
@@ -68,4 +67,6 @@ private fun TransaksjonDTO.lagOpphørsmelding(): Oppdrag {
     }
 
 
-}*/
+}
+
+ */

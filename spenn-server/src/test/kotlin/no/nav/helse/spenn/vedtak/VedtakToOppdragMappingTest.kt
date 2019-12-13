@@ -2,8 +2,8 @@ package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.AksjonsKode
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.Utbetaling
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.junit.jupiter.api.Assertions
@@ -31,11 +31,13 @@ class VedtakToOppdragMappingTest {
         val målbilde = UtbetalingsOppdrag(
             behov = behov,
             oppdragGjelder = "12345678901",
-            utbetalingsLinje = listOf(oppdragsLinje),
             saksbehandler = "Z999999",
-            organisasjonsnummer = "897654321",
-            maksdato = LocalDate.now().plusYears(1),
-            utbetalingsreferanse = "1"
+            utbetalingsreferanse = "1",
+            utbetaling = Utbetaling(
+                utbetalingsLinjer = listOf(oppdragsLinje),
+                organisasjonsnummer = "897654321",
+                maksdato = LocalDate.now().plusYears(1)
+            )
         )
 
         val faktisk = SpennOppdragFactory.lagOppdragFraBehov(behov, "12345678901")
@@ -46,6 +48,6 @@ class VedtakToOppdragMappingTest {
     fun testFoersteLinjeIMappetUtbetalingslinjeSkalHaId_lik_1() {
         val behov = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val utbetalingsOppdrag = SpennOppdragFactory.lagOppdragFraBehov(behov, "01010112345")
-        assertEquals(1.toString(), utbetalingsOppdrag.utbetalingsLinje.first().id)
+        assertEquals(1.toString(), utbetalingsOppdrag.utbetaling!!.utbetalingsLinjer.first().id)
     }
 }
