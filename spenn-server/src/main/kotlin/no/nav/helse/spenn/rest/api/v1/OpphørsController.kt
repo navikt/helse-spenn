@@ -3,7 +3,6 @@ package no.nav.helse.spenn.rest.api.v1
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.application.call
-import io.ktor.auth.authentication
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -36,7 +35,7 @@ fun Route.opphørscontroller(
         val aktørId = behov["aktørId"].asText()!!
         val oppdrag = SpennOppdragFactory.lagOppdragFraBehov(behov, aktørTilFnrMapper.tilFnr(aktørId))
         LOG.info("opphør called for utbetalingsreferanse: $utbetalingsreferanse")
-        audit.info("annulering kall for utbetalingsreferanse: $utbetalingsreferanse", call.authentication)
+        //audit.info("annulering kall for utbetalingsreferanse: $utbetalingsreferanse", call.authentication)
         oppdragService.annulerUtbetaling(oppdrag)
         call.respond(HttpStatusCode.Created, "Annuleringsoppdrag lagret")
     }
