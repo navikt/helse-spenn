@@ -112,12 +112,12 @@ class AvstemmingMapper internal constructor(
                 TransaksjonStatus.SENDT_OS -> DetaljType.MANG
                 TransaksjonStatus.FEIL -> DetaljType.AVVI
                 TransaksjonStatus.SIMULERING_OK, TransaksjonStatus.STARTET, TransaksjonStatus.SIMULERING_FEIL, TransaksjonStatus.STOPPET -> {
-                    log.error("Uventet status: ${oppdrag.status} på oppdragId=${oppdrag.id}. Håndterer som om 'ferdig'")
-                    null
+                    error("Uventet status: ${oppdrag.status} på oppdragId=${oppdrag.id}. Burde ikke kommet inn i avstemmingsmapperen")
                 }
                 TransaksjonStatus.FERDIG -> {
                     val kvittering = getKvitteringsMelding(oppdrag)
-                    if (kvittering!!.mmel.alvorlighetsgrad == KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
+                    requireNotNull(kvittering)
+                    if (kvittering.mmel.alvorlighetsgrad == KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL.kode)
                         DetaljType.VARS
                     else
                         null
