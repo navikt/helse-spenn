@@ -1,12 +1,10 @@
 package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.config.SpennKafkaConfig
-import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException

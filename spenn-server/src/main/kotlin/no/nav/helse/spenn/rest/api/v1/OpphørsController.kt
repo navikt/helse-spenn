@@ -10,8 +10,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
-import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.vedtak.SpennOppdragFactory
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.slf4j.LoggerFactory
@@ -19,27 +18,26 @@ import org.slf4j.LoggerFactory
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 
 @KtorExperimentalAPI
-fun Route.simuleringcontroller(
-    simuleringService: SimuleringService,
+fun Route.opphørscontroller(
+    oppdragService: OppdragService,
     aktørTilFnrMapper: AktørTilFnrMapper,
     audit: AuditSupport
 ) {
-
-    post("/api/v1/simulering") {
+    post("/api/v1/opphor") {
         val behov: JsonNode
         try {
-            behov = call.receive<JsonNode>()
+            behov = call.receive()
         } catch (jsonError: JsonProcessingException) {
             LOG.warn("JsonProcessingException: ", jsonError)
             call.respond(HttpStatusCode.BadRequest);
             return@post
         }
-        val sakskompleksId = behov["sakskompleksId"].asText()!!
+        val utbetalingsreferanse = behov["utbetalingsreferanse"].asText()!!
         val aktørId = behov["aktørId"].asText()!!
         val oppdrag = SpennOppdragFactory.lagOppdragFraBehov(behov, aktørTilFnrMapper.tilFnr(aktørId))
-        LOG.info("simulering called for vedtak: $sakskompleksId")
-        audit.info("simulering kall for vedtak: $sakskompleksId", call.authentication)
-        call.respond(simuleringService.simulerOppdrag(
-                oppdrag.lagPåSidenSimuleringsrequest()))
+        LOG.info("opphør called for utbetalingsreferanse: $utbetalingsreferanse")
+        audit.info("annulering kall for utbetalingsreferanse: $utbetalingsreferanse", call.authentication)
+        oppdragService.annulerUtbetaling(oppdrag)
+        call.respond(HttpStatusCode.Created, "Annuleringsoppdrag lagret")
     }
 }
