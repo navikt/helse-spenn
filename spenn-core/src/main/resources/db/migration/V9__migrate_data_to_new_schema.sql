@@ -11,12 +11,13 @@ DO $$
             exit when not found;
 
             with rows as (
-                insert into oppdrag (created, modified, utbetalingsreferanse)
-                    values (rec_oppdrag.created, rec_oppdrag.modified, rec_oppdrag.utbetalingsreferanse)
+                insert into oppdrag (created, utbetalingsreferanse)
+
+                    values (rec_oppdrag.created, rec_oppdrag.utbetalingsreferanse)
                     returning id
             )
-            insert into transaksjon (oppdrag_id, nokkel, avstemt, status, utbetalingsoppdrag, oppdragresponse, simuleringresult)
-            values ((select id from rows), rec_oppdrag.nokkel, rec_oppdrag.avstemt, rec_oppdrag.status, rec_oppdrag.utbetalingsoppdrag, rec_oppdrag.oppdragresponse, rec_oppdrag.simuleringresult);
+            insert into transaksjon (oppdrag_id, modified, nokkel, avstemt, status, utbetalingsoppdrag, oppdragresponse, simuleringresult)
+            values ((select id from rows), rec_oppdrag.modified, rec_oppdrag.nokkel, rec_oppdrag.avstemt, rec_oppdrag.status, rec_oppdrag.utbetalingsoppdrag, rec_oppdrag.oppdragresponse, rec_oppdrag.simuleringresult);
         end loop;
         close cur_oppdrag_state;
     end $$;
