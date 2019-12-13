@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.*
-import no.nav.helse.spenn.oppdrag.oppdragRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
@@ -23,7 +22,7 @@ class OppdragService(dataSource: HikariDataSource) {
 
         val oppdragRequest: Oppdrag get() {
             require(transaksjonDTO.status == TransaksjonStatus.SENDT_OS)
-            return transaksjonDTO.oppdragRequest
+            return transaksjonDTO.toOppdragRequest()
         }
 
         val simuleringRequest: SimulerBeregningRequest get() {

@@ -1,21 +1,20 @@
 package no.nav.helse.spenn.oppdrag
 
+import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
-import no.nav.helse.spenn.testsupport.etEnkeltBehov
 import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
+import no.trygdeetaten.skjema.oppdrag.TkodeStatus
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.StringWriter
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
-import javax.xml.bind.JAXBContext
-import javax.xml.bind.Marshaller
 import javax.xml.datatype.DatatypeFactory
 import kotlin.test.assertNull
 
@@ -53,19 +52,36 @@ class OppdragMapperTest {
     }
 
     @Test
+    fun `mapping av simuleringsrequest fungerer`() {
+        val oppdragState = enDTO()
+        val oppdrag = oppdragState.toSimuleringRequest()
+
+        assertEquals("12121212345", oppdrag.request.oppdrag.oppdragGjelderId)
+        assertEquals("1001", oppdrag.request.oppdrag.fagsystemId)
+        assertEquals(UtbetalingsfrekvensKode.MÅNEDLIG.kode, oppdrag.request.oppdrag.utbetFrekvens)
+        assertEquals(FagOmraadekode.SYKEPENGER_REFUSJON.kode, oppdrag.request.oppdrag.kodeFagomraade)
+
+        assertNull(oppdrag.request.oppdrag.oppdragslinje[0].utbetalesTilId)
+        assertEquals("00995816598", oppdrag.request.oppdrag.oppdragslinje[0].refusjonsInfo.refunderesId)
+        assertEquals(maksDato.toString(), oppdrag.request.oppdrag.oppdragslinje[0].refusjonsInfo.maksDato)
+        assertEquals(vedtakFom.toString(), oppdrag.request.oppdrag.oppdragslinje[0].refusjonsInfo.datoFom)
+    }
+
+    @Test
     fun `mapping av oppdrag request fungerer`() {
         val oppdragState = enDTO()
-        val oppdrag = oppdragState.oppdragRequest
-        val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
-        val marshaller = jaxbContext.createMarshaller()
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-        val stringWriter = StringWriter()
-        marshaller.marshal(oppdrag, stringWriter)
+        val oppdrag = oppdragState.toOppdragRequest()
 
         assertEquals(AksjonsKode.OPPDATER.kode, oppdrag.oppdrag110.kodeAksjon)
         assertEquals("12121212345", oppdrag.oppdrag110.oppdragGjelderId)
         assertEquals("1001", oppdrag.oppdrag110.fagsystemId)
-        assertEquals(avstemmingsnokkelFormatter.format(oppdragState.nokkel), oppdrag.oppdrag110.avstemming115.nokkelAvstemming)
+        assertEquals(UtbetalingsfrekvensKode.MÅNEDLIG.kode, oppdrag.oppdrag110.utbetFrekvens)
+        assertEquals(FagOmraadekode.SYKEPENGER_REFUSJON.kode, oppdrag.oppdrag110.kodeFagomraade)
+
+        assertEquals(
+            avstemmingsnokkelFormatter.format(oppdragState.nokkel),
+            oppdrag.oppdrag110.avstemming115.nokkelAvstemming
+        )
         assertNull(oppdrag.oppdrag110.oppdragsLinje150[0].utbetalesTilId)
         assertEquals("00995816598", oppdrag.oppdrag110.oppdragsLinje150[0].refusjonsinfo156.refunderesId)
         assertEquals(
@@ -87,8 +103,39 @@ class OppdragMapperTest {
     }
 
     @Test
+    fun `mapping av annulleringsrequest fungerer`() {
+        val annulleringsDTO = enDTO().let {
+            it.copy(
+                utbetalingsOppdrag = it.utbetalingsOppdrag.copy(
+                    utbetaling = null,
+                    statusEndringFom = vedtakFom
+                )
+            )
+        }
+        val oppdrag = annulleringsDTO.toOppdragRequest()
+
+        assertEquals(FagOmraadekode.SYKEPENGER_REFUSJON.kode, oppdrag.oppdrag110.kodeFagomraade)
+        assertEquals(AksjonsKode.OPPDATER.kode, oppdrag.oppdrag110.kodeAksjon)
+        assertEquals(EndringsKode.ENDRING.kode, oppdrag.oppdrag110.kodeEndring)
+        assertEquals(TkodeStatus.OPPH, oppdrag.oppdrag110.kodeStatus)
+        assertEquals(
+            OppdragSkjemaConstants.toXMLDate(annulleringsDTO.utbetalingsOppdrag.statusEndringFom!!),
+            oppdrag.oppdrag110.datoStatusFom
+        )
+        assertEquals("12121212345", oppdrag.oppdrag110.oppdragGjelderId)
+        assertEquals("1001", oppdrag.oppdrag110.fagsystemId)
+        assertEquals(
+            avstemmingsnokkelFormatter.format(annulleringsDTO.nokkel),
+            oppdrag.oppdrag110.avstemming115.nokkelAvstemming
+        )
+        assertEquals(UtbetalingsfrekvensKode.MÅNEDLIG.kode, oppdrag.oppdrag110.utbetFrekvens)
+        assertEquals(FagOmraadekode.SYKEPENGER_REFUSJON.kode, oppdrag.oppdrag110.kodeFagomraade)
+        assertTrue(oppdrag.oppdrag110.oppdragsLinje150.isEmpty())
+    }
+
+    @Test
     fun `mapping skal feile hvis nøkkel ikke er satt`() {
-       assertThrows<KotlinNullPointerException> { enDTO().copy(nokkel = null).oppdragRequest }
+        assertThrows<KotlinNullPointerException> { enDTO().copy(nokkel = null).toOppdragRequest() }
     }
 }
 

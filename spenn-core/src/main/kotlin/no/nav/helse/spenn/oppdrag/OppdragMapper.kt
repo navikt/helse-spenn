@@ -110,19 +110,50 @@ private fun mapToSimuleringsOppdragslinje(
 
 private val objectFactory = ObjectFactory()
 
-internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
+internal fun TransaksjonDTO.toOppdragRequest(): Oppdrag {
+    val oppdrag110 =
+        if (utbetalingsOppdrag.utbetaling != null) mapUtbetalingsoppdrag()
+        else mapAnnulleringsoppdrag()
+
+    return objectFactory.createOppdrag().apply {
+        this.oppdrag110 = oppdrag110
+    }
+}
+
+private fun TransaksjonDTO.mapAnnulleringsoppdrag() = objectFactory.createOppdrag110().apply {
+    requireNotNull(utbetalingsOppdrag.statusEndringFom)
+
+    kodeAksjon = AksjonsKode.OPPDATER.kode
+    kodeEndring = EndringsKode.ENDRING.kode
+    kodeStatus = TkodeStatus.OPPH
+    kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
+
+    datoStatusFom = OppdragSkjemaConstants.toXMLDate(utbetalingsOppdrag.statusEndringFom)
+    fagsystemId = utbetalingsOppdrag.utbetalingsreferanse
+    utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
+    oppdragGjelderId = utbetalingsOppdrag.oppdragGjelder
+    datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
+    saksbehId = utbetalingsOppdrag.saksbehandler
+    avstemming115 = objectFactory.createAvstemming115().apply {
+        this.nokkelAvstemming = nokkel?.format(avstemmingsnokkelFormatter)
+        this.kodeKomponent = KomponentKode.SYKEPENGER.kode
+        this.tidspktMelding = nokkel?.format(avstemmingsnokkelFormatter)
+    }
+}
+
+private fun TransaksjonDTO.mapUtbetalingsoppdrag(): Oppdrag110 {
     val oppdragsEnhet = objectFactory.createOppdragsEnhet120().apply {
         enhet = OppdragSkjemaConstants.SP_ENHET
         typeEnhet = OppdragSkjemaConstants.BOS
         datoEnhetFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
     }
 
-    val oppdrag110 = objectFactory.createOppdrag110().apply {
+    return objectFactory.createOppdrag110().apply {
         val utbetaling = utbetalingsOppdrag.utbetaling
         requireNotNull(utbetaling)
         kodeAksjon = AksjonsKode.OPPDATER.kode
         kodeEndring = EndringsKode.NY.kode
-        kodeStatus
+
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsOppdrag.utbetalingsreferanse
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
@@ -130,9 +161,9 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
         datoOppdragGjelderFom = OppdragSkjemaConstants.toXMLDate(LocalDate.EPOCH)
         saksbehId = utbetalingsOppdrag.saksbehandler
         avstemming115 = objectFactory.createAvstemming115().apply {
-            this.nokkelAvstemming = nokkel!!.format(avstemmingsnokkelFormatter)
-            this.kodeKomponent = KomponentKode.SYKEPENGER.kode
-            this.tidspktMelding = nokkel.format(avstemmingsnokkelFormatter)
+            nokkelAvstemming = nokkel!!.format(avstemmingsnokkelFormatter)
+            kodeKomponent = KomponentKode.SYKEPENGER.kode
+            tidspktMelding = nokkel.format(avstemmingsnokkelFormatter)
         }
         oppdragsEnhet120.add(oppdragsEnhet)
         utbetaling.utbetalingsLinjer.forEach {
@@ -144,10 +175,6 @@ internal val TransaksjonDTO.oppdragRequest get(): Oppdrag {
                 )
             )
         }
-    }
-
-    return objectFactory.createOppdrag().apply {
-        this.oppdrag110 = oppdrag110
     }
 }
 
