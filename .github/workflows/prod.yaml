@@ -54,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
           AWAIT_SECONDS: 0
         with:
-          cluster: dev-fss
+          cluster: prod-fss
           team: tbd
           resources: naiserator.yml
           vars: naiserator-vars-prod.json
