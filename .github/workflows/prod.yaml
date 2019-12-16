@@ -33,15 +33,14 @@ jobs:
         run: docker build . --pull -t $(cat .docker_image):$(cat .docker_tag)
       - name: push docker image
         run: |
-          echo "$GITHUB_REPO_TOKEN" | docker login --username "$GITHUB_REPO_USER" --password-stdin https://docker.pkg.github.com
+          echo "$GITHUB_TOKEN" | docker login --username "$GITHUB_REPOSITORY" --password-stdin https://docker.pkg.github.com
           docker push $(cat .docker_image):$(cat .docker_tag)
         env:
-          GITHUB_REPO_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
-          GITHUB_REPO_USER: ${{secrets.GITHUB_REPO_USER}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: deploy to dev
         uses: navikt/deployment-cli/action@0.4.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWAIT_SECONDS: 0
         with:
           cluster: dev-fss
@@ -51,7 +50,7 @@ jobs:
       - name: deploy to prod
         uses: navikt/deployment-cli/action@0.4.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWAIT_SECONDS: 0
         with:
           cluster: prod-fss
