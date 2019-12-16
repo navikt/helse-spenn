@@ -39,9 +39,24 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <!-- wiremock jetty conflicts with ktor -->
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.4.19.v20190610</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- wiremock jetty conflicts with ktor -->
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>9.4.19.v20190610</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- wiremock jetty conflicts with ktor -->
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+            <version>9.4.19.v20190610</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -74,5 +89,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

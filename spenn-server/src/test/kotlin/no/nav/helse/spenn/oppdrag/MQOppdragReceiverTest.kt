@@ -17,7 +17,6 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
-import java.util.*
 import javax.jms.Connection
 import javax.jms.MessageConsumer
 import javax.jms.Session
@@ -83,7 +82,6 @@ internal class MQOppdragReceiverTest {
             )
         )
 
-        val uuid = UUID.randomUUID()
         val oppdrag =
             utbetaling.copy(utbetalingsreferanse = "3001")
         oppdragService.lagreNyttOppdrag(oppdrag)

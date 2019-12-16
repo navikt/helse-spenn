@@ -8,7 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
+import no.nav.helse.spenn.oppdrag.AvstemmingMapper
+import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
+import no.nav.helse.spenn.oppdrag.JAXBOppdrag
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.vedtak.SpennOppdragFactory
@@ -22,7 +26,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.util.*
 import javax.jms.Connection
 import javax.jms.Session
 import kotlin.test.assertEquals
@@ -58,9 +61,6 @@ internal class AvstemmingTaskTest {
 
     @Test
     fun testAtDetSendesLoggesOgOppdateresAvstemminger() {
-        val soknadKey = UUID.randomUUID()
-        val soknadKey2 = UUID.randomUUID()
-        val soknadKey3 = UUID.randomUUID()
         val behov = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
         val utbetalingTemplate = SpennOppdragFactory.lagOppdragFraBehov(behov, "12345678901")
 
