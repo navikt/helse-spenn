@@ -32,19 +32,19 @@ import org.slf4j.LoggerFactory
 
 @KtorExperimentalAPI
 data class SpennApiEnvironment(
-        val port: Int = 8080,
-        val kafkaStreams: KafkaStreams,
-        val meterRegistry: PrometheusMeterRegistry,
-        val authConfig: SpennApiAuthConfig,
-        val simuleringService: SimuleringService,
-        val aktørTilFnrMapper: AktørTilFnrMapper,
-        val auditSupport: AuditSupport,
-        val stateService: OppdragService,
-        val oppdragMQSender: OppdragMQSender
+    val port: Int = 8080,
+    val kafkaStreams: KafkaStreams,
+    val meterRegistry: PrometheusMeterRegistry,
+    val authConfig: SpennApiAuthConfig,
+    val simuleringService: SimuleringService,
+    val aktørTilFnrMapper: AktørTilFnrMapper,
+    val auditSupport: AuditSupport,
+    val stateService: OppdragService,
+    val oppdragMQSender: OppdragMQSender
 )
 
 @KtorExperimentalAPI
-fun spennApiServer(env : SpennApiEnvironment) : ApplicationEngine =
+fun spennApiServer(env: SpennApiEnvironment): ApplicationEngine =
     embeddedServer(factory = Netty, port = env.port, module = { spennApiModule(env) })
 
 @KtorExperimentalAPI
@@ -54,25 +54,25 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
 
     install(Authentication) {
         tokenValidationSupport(config = TokenSupportConfig(
-                IssuerConfig(
-                        name = SpennApiAuthConfig.ourIssuer,
-                        acceptedAudience = listOf(env.authConfig.acceptedAudience),
-                        discoveryUrl = env.authConfig.discoveryUrl.toString()
-                )),
-                additionalValidation = {
-                    val claims = it.getClaims(SpennApiAuthConfig.ourIssuer)
-                    val groups = claims?.getAsList("groups")
-                    val hasGroup = groups != null && groups.contains(env.authConfig.requiredGroup)
-                    if (!hasGroup) log.info("missing required group ${env.authConfig.requiredGroup}")
-                    val hasIdentRequiredForAuditLog = claims?.getStringClaim(identClaimForAuditLog) != null
-                    if (!hasIdentRequiredForAuditLog) log.info("missing claim $identClaimForAuditLog required for auditlog")
-                    hasGroup && hasIdentRequiredForAuditLog
-                })
+            IssuerConfig(
+                name = SpennApiAuthConfig.ourIssuer,
+                acceptedAudience = listOf(env.authConfig.acceptedAudience),
+                discoveryUrl = env.authConfig.discoveryUrl.toString()
+            )
+        ),
+            additionalValidation = {
+                val claims = it.getClaims(SpennApiAuthConfig.ourIssuer)
+                val groups = claims?.getAsList("groups")
+                val hasGroup = groups != null && groups.contains(env.authConfig.requiredGroup)
+                if (!hasGroup) log.info("missing required group ${env.authConfig.requiredGroup}")
+                val hasIdentRequiredForAuditLog = claims?.getStringClaim(identClaimForAuditLog) != null
+                if (!hasIdentRequiredForAuditLog) log.info("missing claim $identClaimForAuditLog required for auditlog")
+                hasGroup && hasIdentRequiredForAuditLog
+            })
     }
 
     install(ContentNegotiation) {
         jackson {
-            //enable(SerializationFeature.INDENT_OUTPUT) // Pretty Prints the JSON
             registerModule(JavaTimeModule())
             disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         }
@@ -83,15 +83,11 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
     }
 
     routing {
-
         healthstatuscontroller(env.kafkaStreams, env.meterRegistry)
-
-        opphørscontroller(env.stateService, env.aktørTilFnrMapper, env.auditSupport)
 
         authenticate {
             simuleringcontroller(env.simuleringService, env.aktørTilFnrMapper, env.auditSupport)
-
-            //opphørscontroller(env.stateService, env.aktørTilFnrMapper, env.auditSupport)
+            opphørscontroller(env.stateService, env.aktørTilFnrMapper, env.auditSupport)
         }
 
     }
