@@ -6,14 +6,18 @@
     <groupId>no.nav.helse</groupId>
     <artifactId>spenn</artifactId>
     <version>0.1-SNAPSHOT</version>
+    <modules>
+        <module>spenn-core</module>
+        <module>spenn-server</module>
+    </modules>
     <name>helse-spenn</name>
     <description>Utbetaling</description>
     <url>https://github.com/navikt/helse-spenn</url>
 
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <properties>
-        <kotlin.version>1.3.50</kotlin.version>
+        <kotlin.version>1.3.61</kotlin.version>
         <ktor.version>1.2.5</ktor.version>
         <junit-jupiter.version>5.5.2</junit-jupiter.version>
         <kafka.version>2.3.1</kafka.version>
@@ -36,7 +40,6 @@
         <postgres.version>42.2.8</postgres.version>
         <testcontainers.version>1.12.3</testcontainers.version>
         <tokensupport.version>1.1.1</tokensupport.version>
-        <jooq.version>3.12.2</jooq.version>
         <logback.version>1.2.3</logback.version>
     </properties>
 
@@ -166,17 +169,6 @@
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             <version>${activation.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq-meta</artifactId>
-            <version>${jooq.version}</version>
-            <!--exclusions>
-                <exclusion>
-                    <groupId>com.h2database</groupId>
-                    <artifactId>h2</artifactId>
-                </exclusion>
-            </exclusions-->
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -325,13 +317,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq-codegen-maven</artifactId>
-            <version>${jooq.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-test-host</artifactId>
             <version>${ktor.version}</version>
@@ -399,113 +384,10 @@
             <version>24.1.1-jre</version>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>jooq</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.dkanejs.maven.plugins</groupId>
-                        <artifactId>docker-compose-maven-plugin</artifactId>
-                        <version>2.5.1</version>
-                        <executions>
-                            <execution>
-                                <id>up</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>up</goal>
-                                </goals>
-                                <configuration>
-                                    <composeFile>${project.basedir}/postgresql-flyway-migrate.yml</composeFile>
-                                    <detachedMode>true</detachedMode>
-                                    <awaitCmd>sleep</awaitCmd>
-                                    <awaitCmdArgs>5</awaitCmdArgs>
-                                    <awaitTimeout>10</awaitTimeout>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>down</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>down</goal>
-                                </goals>
-                                <configuration>
-                                    <composeFile>${project.basedir}/postgresql-flyway-migrate.yml</composeFile>
-                                    <removeVolumes>true</removeVolumes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.jooq</groupId>
-                        <artifactId>jooq-codegen-maven</artifactId>
-                        <version>${jooq.version}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>generate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.postgresql</groupId>
-                                <artifactId>postgresql</artifactId>
-                                <version>${postgres.version}</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>com.sun.xml.bind</groupId>
-                                <artifactId>jaxb-core</artifactId>
-                                <version>${jaxb-core.version}</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>com.sun.xml.bind</groupId>
-                                <artifactId>jaxb-impl</artifactId>
-                                <version>${jaxb-impl.version}</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>javax.activation</groupId>
-                                <artifactId>activation</artifactId>
-                                <version>${activation.version}</version>
-                            </dependency>
-                        </dependencies>
-
-                        <configuration>
-                            <jdbc>
-                                <driver>org.postgresql.Driver</driver>
-                                <url>jdbc:postgresql://localhost:5432/helse-spenn-oppdrag</url>
-                                <user>postgres</user>
-                                <password>postgres</password>
-                            </jdbc>
-                            <generator>
-                                <database>
-                                    <name>org.jooq.meta.postgres.PostgresDatabase</name>
-                                    <includes>.*</includes>
-                                    <excludes>shedlock|flyway.*</excludes>
-                                    <schemata>
-                                        <schema>
-                                            <inputSchema>public</inputSchema>
-                                        </schema>
-                                    </schemata>
-                                </database>
-                                <target>
-                                    <packageName>no.nav.helse.spenn.jooq</packageName>
-                                    <directory>src/main/java</directory>
-                                </target>
-                            </generator>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
     <build>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
         <plugins>
-            <plugin>
+            <!--plugin>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-xjc-plugin</artifactId>
                 <version>3.3.0</version>
@@ -529,8 +411,8 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
+            </plugin-->
+            <!--plugin>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
                 <version>2.3.2</version>
@@ -573,7 +455,7 @@
                         <version>${javax-wsapi.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
+            </plugin-->
 
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
