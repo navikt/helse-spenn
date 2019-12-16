@@ -40,10 +40,10 @@ class SimuleringService(
                 simulerFpService.simulerBeregning(simulerRequest)
             }
             mapResponseToResultat(response.response)
-        } catch (e: SimulerBeregningFeilUnderBehandling) { // TODO
+        } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering", e)
             SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.faultInfo.errorMessage)
-        } catch (e: Exception) { // TODO
+        } catch (e: Exception) {
             log.error("Got unexpected error while running Simulering", e)
             SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.message ?: "")
         }
