@@ -17,7 +17,7 @@ class SendTilAvstemmingTask(
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
 
     fun sendTilAvstemming() {
-        val oppdragList = oppdragStateService.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now())
+        val oppdragList = oppdragStateService.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now().minusHours(marginInHours))
         log.info("Fant ${oppdragList.size} oppdrag som skal sendes til avstemming")
         val meldinger = oppdragList.lagAvstemmingsmeldinger()
 
