@@ -9,10 +9,10 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus
 import no.nav.helse.spenn.testsupport.TestDb
+import no.nav.helse.spenn.testsupport.simuleringsresultat
 import no.nav.helse.spenn.vedtak.SpennOppdragFactory
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import java.util.*
 import kotlin.test.assertEquals
 
 private data class TransRec(val status: String, val utbetalingsreferanse: String)
@@ -34,7 +34,7 @@ class SendToOSTaskTest {
         service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1002"))
         service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1003"))
         service.hentNyeOppdrag(5).forEach {
-            it.oppdaterSimuleringsresultat(SimuleringResult(status = SimuleringStatus.OK))
+            it.oppdaterSimuleringsresultat(simuleringsresultat)
         }
 
         service.lagreNyttOppdrag(utbetaling.copy(utbetalingsreferanse = "1004"))

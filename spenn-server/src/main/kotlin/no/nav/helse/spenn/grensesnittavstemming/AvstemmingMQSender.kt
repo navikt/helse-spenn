@@ -20,8 +20,8 @@ open class AvstemmingMQSender(connection: Connection,
 
     open fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
         val xmlMelding = jaxb.fromAvstemmingsdataToXml(avstemmingsMelding)
-        log.debug("sending $xmlMelding")
-        log.debug("QUEUE: $sendqueue")
+        log.trace("sending $xmlMelding")
+        log.trace("QUEUE: $sendqueue")
         producer.send(jmsSession.createTextMessage(xmlMelding))
     }
 

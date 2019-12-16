@@ -9,16 +9,17 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.spenn.*
-import no.nav.helse.spenn.simulering.Simulering
-import no.nav.helse.spenn.simulering.SimuleringResult
-import no.nav.helse.spenn.simulering.SimuleringStatus
+import no.nav.helse.spenn.any
+import no.nav.helse.spenn.buildClaimSet
+import no.nav.helse.spenn.etEnkeltBehov
+import no.nav.helse.spenn.kWhen
+import no.nav.helse.spenn.mockApiEnvironment
+import no.nav.helse.spenn.stubOIDCProvider
+import no.nav.helse.spenn.testsupport.simuleringsresultat
 import no.nav.security.token.support.test.JwtTokenGenerator
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
-import java.time.LocalDate
 import kotlin.test.assertEquals
 
 @KtorExperimentalAPI
@@ -45,12 +46,9 @@ class SimuleringControllerTest {
     @Test
     fun runSimulering() {
         val behov = etEnkeltBehov()
-        val simres = SimuleringResult(status= SimuleringStatus.OK, simulering = Simulering(gjelderId = "12345678900",
-            gjelderNavn = "Foo Bar", datoBeregnet = LocalDate.now(),
-            totalBelop = BigDecimal.valueOf(1000), periodeList = emptyList()))
 
         kWhen(apienv.aktørTilFnrMapper.tilFnr("1234567890123")).thenReturn("12345678900")
-        kWhen(apienv.simuleringService.simulerOppdrag(any())).thenReturn(simres)
+        kWhen(apienv.simuleringService.simulerOppdrag(any())).thenReturn(simuleringsresultat)
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
                 groups = listOf(apienv.authConfig.requiredGroup),

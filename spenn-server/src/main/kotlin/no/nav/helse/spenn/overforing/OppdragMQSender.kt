@@ -19,8 +19,8 @@ class OppdragMQSender(connection: Connection,
     fun sendOppdrag(oppdrag: Oppdrag) {
         log.info("sender til Oppdragsystemet for fagsystemId ${oppdrag.oppdrag110.fagsystemId}")
         val oppdragXml = jaxb.fromOppdragToXml(oppdrag)
-        log.debug("sending $oppdragXml")
-        log.debug("QUEUE: $sendqueue REPLYTO: $replyTo")
+        log.trace("sending $oppdragXml")
+        log.trace("QUEUE: $sendqueue REPLYTO: $replyTo")
         //jmsTemplate.send(sendqueue, createMessage(oppdragXml))
         val message = jmsSession.createTextMessage(oppdragXml)
         message.jmsReplyTo = MQQueue(replyTo)

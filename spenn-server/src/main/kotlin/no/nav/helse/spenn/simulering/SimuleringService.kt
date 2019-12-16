@@ -17,63 +17,77 @@ import org.apache.cxf.transport.http.HTTPConduit
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
-class SimuleringService(val simulerFpService: SimulerFpService,
-                        val meterRegistry: MeterRegistry) {
+class SimuleringService(
+    private val simulerFpService: SimulerFpService,
+    private val meterRegistry: MeterRegistry,
+    private val disableCNCheck: Boolean = true
+) {
 
     companion object {
         private val log = LoggerFactory.getLogger(SimuleringService::class.java)
     }
 
     fun runSimulering(oppdrag: OppdragService.Transaksjon): SimuleringResult {
-        log.info("simulering for ${oppdrag}" )
+        log.info("simulering for ${oppdrag}")
         return simulerOppdrag(oppdrag.simuleringRequest)
     }
 
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
-        disableCnCheck(simulerFpService)
+        if (disableCNCheck) disableCnCheck(simulerFpService)
+
         return try {
             val response = meterRegistry.timer("simulering").recordCallable {
                 simulerFpService.simulerBeregning(simulerRequest)
             }
             mapResponseToResultat(response.response)
-        }
-        catch (e: SimulerBeregningFeilUnderBehandling) { // TODO
+        } catch (e: SimulerBeregningFeilUnderBehandling) { // TODO
             log.error("Got error while running Simulering", e)
             SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.faultInfo.errorMessage)
-        }
-        catch (e: Exception) { // TODO
+        } catch (e: Exception) { // TODO
             log.error("Got unexpected error while running Simulering", e)
-            SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.message?:"")
+            SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.message ?: "")
         }
 
     }
 
-    private fun mapResponseToResultat(response: SimulerBeregningResponse) : SimuleringResult {
-        val beregning = response.simulering
-        return SimuleringResult(status = SimuleringStatus.OK, simulering = Simulering(
-                gjelderId = beregning.gjelderId, gjelderNavn = beregning.gjelderNavn.trim(), datoBeregnet = LocalDate.parse(beregning.datoBeregnet),
-                totalBelop = beregning.belop, periodeList = beregning.beregningsPeriode.map {mapBeregningsPeriode(it)}))
-    }
+    private fun mapResponseToResultat(response: SimulerBeregningResponse?) = SimuleringResult(
+        status = SimuleringStatus.OK,
+        simulering = response?.let { simulerBeregningResponse ->
+            Simulering(
+                gjelderId = simulerBeregningResponse.simulering.gjelderId,
+                gjelderNavn = simulerBeregningResponse.simulering.gjelderNavn.trim(),
+                datoBeregnet = LocalDate.parse(simulerBeregningResponse.simulering.datoBeregnet),
+                totalBelop = simulerBeregningResponse.simulering.belop,
+                periodeList = simulerBeregningResponse.simulering.beregningsPeriode.map { mapBeregningsPeriode(it) })
+        }
+    )
 
-    private fun mapBeregningsPeriode(periode: BeregningsPeriode): SimulertPeriode {
-        return SimulertPeriode(fom = LocalDate.parse(periode.periodeFom), tom = LocalDate.parse(periode.periodeTom),
-                utbetaling = periode.beregningStoppnivaa.map {mapBeregningStoppNivaa(it)})
-    }
+    private fun mapBeregningsPeriode(periode: BeregningsPeriode) =
+        SimulertPeriode(fom = LocalDate.parse(periode.periodeFom), tom = LocalDate.parse(periode.periodeTom),
+            utbetaling = periode.beregningStoppnivaa.map { mapBeregningStoppNivaa(it) })
 
-    private fun mapBeregningStoppNivaa(stoppNivaa: BeregningStoppnivaa): Utbetaling {
-        return Utbetaling(fagSystemId = stoppNivaa.fagsystemId.trim(), utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(),
-                utbetalesTilId = stoppNivaa.utbetalesTilId.removePrefix("00"), forfall = LocalDate.parse(stoppNivaa.forfall),
-                feilkonto = stoppNivaa.isFeilkonto,
-                detaljer = stoppNivaa.beregningStoppnivaaDetaljer.map {mapDetaljer(it)})
-    }
+    private fun mapBeregningStoppNivaa(stoppNivaa: BeregningStoppnivaa) =
+        Utbetaling(fagSystemId = stoppNivaa.fagsystemId.trim(), utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(),
+            utbetalesTilId = stoppNivaa.utbetalesTilId.removePrefix("00"), forfall = LocalDate.parse(stoppNivaa.forfall),
+            feilkonto = stoppNivaa.isFeilkonto,
+            detaljer = stoppNivaa.beregningStoppnivaaDetaljer.map { mapDetaljer(it) })
 
-    private fun mapDetaljer(detaljer: BeregningStoppnivaaDetaljer): Detaljer {
-        return Detaljer(faktiskFom = LocalDate.parse(detaljer.faktiskFom), faktiskTom = LocalDate.parse(detaljer.faktiskTom),
-                uforegrad = detaljer.uforeGrad, antallSats = detaljer.antallSats, typeSats = SatsTypeKode.fromKode(detaljer.typeSats.trim()),
-                sats = detaljer.sats, belop = detaljer.belop, konto = detaljer.kontoStreng.trim(), tilbakeforing = detaljer.isTilbakeforing,
-                klassekode = detaljer.klassekode.trim(), klassekodeBeskrivelse = detaljer.klasseKodeBeskrivelse.trim(),
-                utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse), refunderesOrgNr = detaljer.refunderesOrgNr.removePrefix("00"))
-    }
+    private fun mapDetaljer(detaljer: BeregningStoppnivaaDetaljer) =
+        Detaljer(
+            faktiskFom = LocalDate.parse(detaljer.faktiskFom),
+            faktiskTom = LocalDate.parse(detaljer.faktiskTom),
+            uforegrad = detaljer.uforeGrad,
+            antallSats = detaljer.antallSats,
+            typeSats = SatsTypeKode.fromKode(detaljer.typeSats.trim()),
+            sats = detaljer.sats,
+            belop = detaljer.belop,
+            konto = detaljer.kontoStreng.trim(),
+            tilbakeforing = detaljer.isTilbakeforing,
+            klassekode = detaljer.klassekode.trim(),
+            klassekodeBeskrivelse = detaljer.klasseKodeBeskrivelse.trim(),
+            utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse),
+            refunderesOrgNr = detaljer.refunderesOrgNr.removePrefix("00")
+        )
 
     private fun disableCnCheck(port: SimulerFpService) {
         val client = ClientProxy.getClient(port)
@@ -82,5 +96,4 @@ class SimuleringService(val simulerFpService: SimulerFpService,
             isDisableCNCheck = true
         }
     }
-
 }

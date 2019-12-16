@@ -7,6 +7,7 @@ import no.nav.helse.spenn.simulering.SimuleringStatus
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
 import no.nav.helse.spenn.testsupport.kvittering
+import no.nav.helse.spenn.testsupport.simuleringsresultat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -58,8 +59,41 @@ internal class ServiceTest {
         println(transaksjoner.last().utbetalingsOppdrag)
         assertEquals(utbetaling.utbetaling!!.utbetalingsLinjer.first().datoFom,
             transaksjoner.last().utbetalingsOppdrag.statusEndringFom)
+    }
 
+    @Test
+    fun `lagre annuleringssimuleringsresultat`() {
+        val utbetaling = etUtbetalingsOppdrag()
+        val annulering = utbetaling.copy(utbetaling = null)
+        service.lagreNyttOppdrag(utbetaling)
+        val trans = service.hentNyeOppdrag(5).first()
+        trans.forberedSendingTilOS()
+        trans.lagreOSResponse(TransaksjonStatus.FERDIG, kvittering, null)
 
+        service.annulerUtbetaling(annulering)
+        val annulleringTrans = service.hentNyeOppdrag(5).first()
+        annulleringTrans.oppdaterSimuleringsresultat(SimuleringResult(
+            status = SimuleringStatus.OK,
+            simulering = null
+        ))
+
+        assertEquals(TransaksjonStatus.SIMULERING_OK, annulleringTrans.dto.status)
+    }
+
+    @Test
+    fun `ikke godta tomt simuleringsresultat for annet enn annulering`() {
+        val utbetaling = etUtbetalingsOppdrag()
+        service.lagreNyttOppdrag(utbetaling)
+        val trans = service.hentNyeOppdrag(5).first()
+
+        assertThrows<IllegalArgumentException> {
+            trans.oppdaterSimuleringsresultat(
+                SimuleringResult(
+                    status = SimuleringStatus.OK,
+                    simulering = null
+                )
+            )
+        }
     }
 
     @Test
@@ -107,9 +141,8 @@ internal class ServiceTest {
     fun `lagre simuleringsresultat OK`() {
         val utbetaling = etUtbetalingsOppdrag()
         service.lagreNyttOppdrag(utbetaling)
-        val result = SimuleringResult(status = SimuleringStatus.OK)
-        service.hentNyeOppdrag(5).first()
-            .oppdaterSimuleringsresultat(result)
+        val result = simuleringsresultat
+        service.hentNyeOppdrag(5).first().oppdaterSimuleringsresultat(result)
         val dto = repository.findByRef(utbetalingsreferanse = utbetaling.utbetalingsreferanse).first()
         assertEquals(TransaksjonStatus.SIMULERING_OK, dto.status)
         assertEquals(result,
@@ -155,6 +188,4 @@ internal class ServiceTest {
         val dto = repository.findByRef(utbetalingsreferanse = utbetaling.utbetalingsreferanse).first()
         assertEquals(etBehov, dto.utbetalingsOppdrag.behov.toString())
     }
-
-
 }

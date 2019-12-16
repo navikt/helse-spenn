@@ -5,7 +5,10 @@ import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -17,8 +20,10 @@ class SendToSimuleringTaskTest {
 
     @Test
     fun sendToSimulering() {
-        val sendToSimuleringTask = SendToSimuleringTask(simuleringService = mockSimuleringService,
-                meterRegistry = mockMeterRegistry, oppdragService = mockPersistence)
+        val sendToSimuleringTask = SendToSimuleringTask(
+            simuleringService = mockSimuleringService,
+            meterRegistry = mockMeterRegistry, oppdragService = mockPersistence
+        )
 
         val trans1 = mock(OppdragService.Transaksjon::class.java)
         val trans2 = mock(OppdragService.Transaksjon::class.java)
@@ -34,8 +39,14 @@ class SendToSimuleringTaskTest {
     }
 }
 
-val simuleringsResultat = SimuleringResult(status = SimuleringStatus.OK,
-        simulering = Simulering(gjelderId = "",gjelderNavn = "",datoBeregnet = LocalDate.now(),
-                totalBelop = BigDecimal.TEN, periodeList = emptyList()), feilMelding = "")
-val simulertOppdragEn = simuleringsResultat.copy(simulering = simuleringsResultat.simulering!!.copy(gjelderNavn = "Førstemann"))
-val simulertOppdragTo = simuleringsResultat.copy(simulering = simuleringsResultat.simulering!!.copy(gjelderNavn = "Andremann"))
+val simuleringsResultat = SimuleringResult(
+    status = SimuleringStatus.OK,
+    simulering = Simulering(
+        gjelderId = "", gjelderNavn = "", datoBeregnet = LocalDate.now(),
+        totalBelop = BigDecimal.TEN, periodeList = emptyList()
+    ), feilMelding = ""
+)
+val simulertOppdragEn =
+    simuleringsResultat.copy(simulering = simuleringsResultat.simulering!!.copy(gjelderNavn = "Førstemann"))
+val simulertOppdragTo =
+    simuleringsResultat.copy(simulering = simuleringsResultat.simulering!!.copy(gjelderNavn = "Andremann"))

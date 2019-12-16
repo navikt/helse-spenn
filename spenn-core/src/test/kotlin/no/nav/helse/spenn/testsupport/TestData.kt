@@ -1,10 +1,24 @@
 package no.nav.helse.spenn.testsupport
 
 import no.nav.helse.spenn.core.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.Utbetaling
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.simulering.Simulering
+import no.nav.helse.spenn.simulering.SimuleringResult
+import no.nav.helse.spenn.simulering.SimuleringStatus
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
+
+val simuleringsresultat = SimuleringResult(
+    status = SimuleringStatus.OK, simulering = Simulering(
+        gjelderId = "12345678900",
+        gjelderNavn = "Foo Bar", datoBeregnet = LocalDate.now(),
+        totalBelop = BigDecimal.valueOf(1000), periodeList = emptyList()
+    )
+)
 
 fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
     val orgNr = "123456789"

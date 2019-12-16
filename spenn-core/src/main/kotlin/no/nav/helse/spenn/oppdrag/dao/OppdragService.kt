@@ -3,9 +3,14 @@ package no.nav.helse.spenn.oppdrag.dao
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.AvstemmingMapper
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.toOppdragRequest
+import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
-import no.nav.helse.spenn.simulering.SimuleringStatus
+import no.nav.helse.spenn.simulering.SimuleringStatus.OK
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import java.math.BigDecimal
@@ -60,11 +65,17 @@ class OppdragService(dataSource: HikariDataSource) {
             }
         }
 
+        private fun erAnnulering() = transaksjonDTO.utbetalingsOppdrag.utbetaling == null
+
         fun oppdaterSimuleringsresultat(result: SimuleringResult) {
-            val status = if (result.status == SimuleringStatus.OK) TransaksjonStatus.SIMULERING_OK
+            if (result.simulering == null && result.status == OK) require(erAnnulering())
+            val status = if (result.status == OK) TransaksjonStatus.SIMULERING_OK
                 else TransaksjonStatus.SIMULERING_FEIL
-            transaksjonDTO = repository.oppdaterTransaksjonMedStatusOgSimuleringResult(transaksjonDTO, status,
-                defaultObjectMapper.writeValueAsString(result))
+            transaksjonDTO = repository.oppdaterTransaksjonMedStatusOgSimuleringResult(
+                transaksjonDTO,
+                status,
+                defaultObjectMapper.writeValueAsString(result)
+            )
         }
 
         fun markerSomAvstemt() {
@@ -81,9 +92,11 @@ class OppdragService(dataSource: HikariDataSource) {
         val originaltOppdrag = transaksjoner.first().utbetalingsOppdrag
         require(oppdrag.oppdragGjelder == originaltOppdrag.oppdragGjelder)
 
+        requireNotNull(originaltOppdrag.utbetaling)
+        require(originaltOppdrag.utbetaling.utbetalingsLinjer.isNotEmpty())
         repository.insertNyTransaksjon(oppdrag.copy(
-            statusEndringFom = originaltOppdrag.utbetaling!!
-                .utbetalingsLinjer.minBy { it.datoFom }!!.datoFom
+            statusEndringFom = originaltOppdrag.utbetaling.utbetalingsLinjer.minBy { it.datoFom }!!.datoFom,
+            opprinneligOppdragTom = originaltOppdrag.utbetaling.utbetalingsLinjer.maxBy { it.datoTom }!!.datoTom
         ))
     }
 

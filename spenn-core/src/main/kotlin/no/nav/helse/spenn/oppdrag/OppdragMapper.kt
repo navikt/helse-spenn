@@ -11,7 +11,14 @@ import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
 import no.nav.system.os.entiteter.typer.simpletypes.KodeStatus
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
-import no.trygdeetaten.skjema.oppdrag.*
+import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest.SimuleringsPeriode
+import no.trygdeetaten.skjema.oppdrag.ObjectFactory
+import no.trygdeetaten.skjema.oppdrag.Oppdrag
+import no.trygdeetaten.skjema.oppdrag.Oppdrag110
+import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
+import no.trygdeetaten.skjema.oppdrag.Refusjonsinfo156
+import no.trygdeetaten.skjema.oppdrag.TfradragTillegg
+import no.trygdeetaten.skjema.oppdrag.TkodeStatus
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -62,19 +69,19 @@ private fun TransaksjonDTO.mapSimuleringRequest(): SimulerBeregningRequest {
         this.request = simFactory.createSimulerBeregningRequest().apply {
             this.oppdrag = oppdrag
             simuleringsPeriode =
-                no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
-                    .SimuleringsPeriode().apply {
-                        datoSimulerFom = simulerFom.format(formatter)
-                        datoSimulerTom = simulerTom.format(formatter)
-                    }
+                SimuleringsPeriode().apply {
+                    datoSimulerFom = simulerFom.format(formatter)
+                    datoSimulerTom = simulerTom.format(formatter)
+                }
         }
     }
 }
 
 private fun TransaksjonDTO.mapAnnulleringSimuleringRequest(): SimulerBeregningRequest {
     requireNotNull(utbetalingsOppdrag.statusEndringFom)
+    requireNotNull(utbetalingsOppdrag.opprinneligOppdragTom)
     val simulerFom = utbetalingsOppdrag.statusEndringFom
-    val simulerTom = utbetalingsOppdrag.statusEndringFom.plusMonths(1) //LocalDate.MAX
+    val simulerTom = utbetalingsOppdrag.opprinneligOppdragTom
     val oppdrag = simFactory.createOppdrag().apply {
         kodeEndring = EndringsKode.ENDRING.kode
         kodeStatus = KodeStatus.OPPH
@@ -90,12 +97,10 @@ private fun TransaksjonDTO.mapAnnulleringSimuleringRequest(): SimulerBeregningRe
     return grensesnittFactory.createSimulerBeregningRequest().apply {
         this.request = simFactory.createSimulerBeregningRequest().apply {
             this.oppdrag = oppdrag
-            simuleringsPeriode =
-                no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
-                    .SimuleringsPeriode().apply {
-                        datoSimulerFom = simulerFom.format(formatter)
-                        datoSimulerTom = simulerTom.format(formatter)
-                    }
+            simuleringsPeriode = SimuleringsPeriode().apply {
+                datoSimulerFom = simulerFom.format(formatter)
+                datoSimulerTom = simulerTom.format(formatter)
+            }
         }
     }
 

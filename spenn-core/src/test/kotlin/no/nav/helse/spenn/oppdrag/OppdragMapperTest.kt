@@ -15,7 +15,7 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
+import java.util.GregorianCalendar
 import javax.xml.datatype.DatatypeFactory
 import kotlin.test.assertNull
 
@@ -140,7 +140,8 @@ class OppdragMapperTest {
             it.copy(
                 utbetalingsOppdrag = it.utbetalingsOppdrag.copy(
                     utbetaling = null,
-                    statusEndringFom = vedtakFom
+                    statusEndringFom = vedtakFom,
+                    opprinneligOppdragTom = vedtakTom
                 )
             )
         }

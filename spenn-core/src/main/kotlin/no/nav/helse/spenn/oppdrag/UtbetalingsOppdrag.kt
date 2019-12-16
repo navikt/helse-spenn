@@ -17,8 +17,9 @@ data class UtbetalingsOppdrag(
     /**
      * utbetaling=NULL betyr aNULLer:
      */
-    val utbetaling:Utbetaling?,
-    val statusEndringFom:LocalDate? = null
+    val utbetaling: Utbetaling?,
+    val statusEndringFom: LocalDate? = null,
+    val opprinneligOppdragTom: LocalDate? = null
 )
 
 data class Utbetaling(

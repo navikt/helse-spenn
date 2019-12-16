@@ -2,8 +2,8 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.appsupport.OPPDRAG
+import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -53,7 +53,7 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
 
     //@JmsListener(destination = "\${oppdrag.queue.mottak}")
     fun receiveOppdragResponse(response: String) {
-        log.debug(response)
+        log.trace(response)
         //rar xml som blir returnert
         val replaced = response.replace("oppdrag xmlns", "ns2:oppdrag xmlns:ns2")
         handleResponse(jaxb.toOppdrag(replaced), replaced)
