@@ -26,7 +26,7 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
                             dataSourceForLockingTable: DataSource,
                             config: SpennConfig,
                             clock: Clock = Clock.systemDefaultZone()): ScheduledExecutorService {
-
+    
     log.info("setting up scheduler")
     val scheduler = Executors.newSingleThreadScheduledExecutor()
 
@@ -74,8 +74,8 @@ internal fun setupSchedules(spennTasks: SpennTaskRunner,
     }
 
     if (config.taskAvstemmingEnabled) {
-        val avstemmingsTidspunktTime = 13
-        val avstemmingsTidspunktMinutt = 55
+        val avstemmingsTidspunktTime = 21
+        val avstemmingsTidspunktMinutt = 0
 
         val now = LocalDateTime.now(clock)
         var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
