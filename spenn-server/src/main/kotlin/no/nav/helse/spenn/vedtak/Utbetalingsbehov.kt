@@ -13,7 +13,8 @@ typealias Fodselsnummer = String
 
 internal object SpennOppdragFactory {
     fun lagOppdragFraBehov(jsonNode : JsonNode, fodselsnummer : String) : UtbetalingsOppdrag {
-        val organisasjonsnummer = jsonNode["organisasjonsnummer"].asText()!!
+
+        fun organisasjonsnummer() = jsonNode["organisasjonsnummer"].asText()!!
         return UtbetalingsOppdrag(
             behov = jsonNode,
             utbetalingsreferanse = jsonNode["utbetalingsreferanse"].asText()!!,
@@ -22,12 +23,12 @@ internal object SpennOppdragFactory {
             utbetaling = jsonNode["utbetalingslinjer"]?.let { utbetalingslinjer ->
                 Utbetaling(
                     maksdato = jsonNode["maksdato"].asText()!!.let { LocalDate.parse(it) },
-                    organisasjonsnummer = organisasjonsnummer,
+                    organisasjonsnummer = organisasjonsnummer(),
                     utbetalingsLinjer = utbetalingslinjer.mapIndexed { i, behovsLinje ->
                         UtbetalingsLinje(
                             id = "${i + 1}",
                             satsTypeKode = SatsTypeKode.DAGLIG,
-                            utbetalesTil = organisasjonsnummer,
+                            utbetalesTil = organisasjonsnummer(),
                             sats = BigDecimal(behovsLinje["dagsats"].asText()!!),
                             grad = BigInteger.valueOf(behovsLinje["grad"].asLong()),
                             datoFom = behovsLinje["fom"].asText()!!.let { LocalDate.parse(it) },
