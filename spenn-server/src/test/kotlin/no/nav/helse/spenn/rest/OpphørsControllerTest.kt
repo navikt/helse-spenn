@@ -38,12 +38,11 @@ class OpphørsControllerTest {
         }
     }
 
-    private val apienv = mockApiEnvironment().copy(
-            stateService = OppdragService(TestDb.createMigratedDataSource())
-    )
-
     @Test
     fun runOpphør() {
+        val apienv = mockApiEnvironment().copy(
+                stateService = OppdragService(TestDb.createMigratedDataSource())
+        )
         val behov = enEnkelAnnulering()
 
         kWhen(apienv.aktørTilFnrMapper.tilFnr("1234567890123")).thenReturn("12345678900")
@@ -69,6 +68,9 @@ class OpphørsControllerTest {
 
     @Test
     fun runDobbeltOpphør() {
+        val apienv = mockApiEnvironment().copy(
+                stateService = OppdragService(TestDb.createMigratedDataSource())
+        )
         val behov = enEnkelAnnulering()
 
         kWhen(apienv.aktørTilFnrMapper.tilFnr("1234567890123")).thenReturn("12345678900")
