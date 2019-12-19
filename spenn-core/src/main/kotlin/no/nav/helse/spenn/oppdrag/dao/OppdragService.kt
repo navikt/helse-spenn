@@ -13,6 +13,7 @@ import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus.OK
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
+import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -88,6 +89,7 @@ class OppdragService(dataSource: HikariDataSource) {
     fun annulerUtbetaling(oppdrag: UtbetalingsOppdrag) {
         require(oppdrag.utbetaling == null)
         val transaksjoner = repository.findByRef(oppdrag.utbetalingsreferanse)
+        if (transaksjoner.size > 1 && transaksjoner.any { it.utbetalingsOppdrag.utbetaling == null }) throw AlleredeAnnulertException("Annulleringen finnes allerede.")
         require(1 == transaksjoner.size)
         val originaltOppdrag = transaksjoner.first().utbetalingsOppdrag
         require(oppdrag.oppdragGjelder == originaltOppdrag.oppdragGjelder)
@@ -132,6 +134,8 @@ fun List<OppdragService.Transaksjon>.lagAvstemmingsmeldinger() =
     AvstemmingMapper(this.map { it.dto }, FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
 
 class SanityCheckException(message : String) : Exception(message)
+
+class AlleredeAnnulertException(message : String) : Exception(message)
 
 // TODO ? Konfig? Sykepenger er maks 6G, maksTillattDagsats kan ikke være lavere enn dette.
 private fun maksTillattDagsats(G: Int = 100_000, hverdagerPrÅr: Int = 260) = BigDecimal(6.5 * G / hverdagerPrÅr)

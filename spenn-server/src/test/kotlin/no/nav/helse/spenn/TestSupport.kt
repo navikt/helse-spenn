@@ -123,6 +123,16 @@ fun etEnkeltBehov(maksdato: LocalDate = LocalDate.now().plusYears(1)) = defaultO
     """
 )
 
+fun enEnkelAnnulering() = defaultObjectMapper.readTree(
+    """
+        {
+          "utbetalingsreferanse": "1",
+          "aktørId": "1234567890123",
+          "saksbehandler": "Z999999"
+        }        
+    """
+)
+
 fun <T> any(): T = Mockito.any<T>()
 
 fun <T> kArgThat(matcher: (T) -> Boolean): T = Mockito.argThat<T>(matcher)

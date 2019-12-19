@@ -10,6 +10,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.spenn.oppdrag.dao.AlleredeAnnulertException
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.vedtak.SpennOppdragFactory
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
@@ -37,7 +38,11 @@ fun Route.opphørscontroller(
         val oppdrag = SpennOppdragFactory.lagOppdragFraBehov(behov, aktørTilFnrMapper.tilFnr(aktørId))
         LOG.info("opphør called for utbetalingsreferanse: $utbetalingsreferanse")
         audit.info("annulering kall for utbetalingsreferanse: $utbetalingsreferanse", call.authentication)
-        oppdragService.annulerUtbetaling(oppdrag)
-        call.respond(HttpStatusCode.Created, "Annuleringsoppdrag lagret")
+        try {
+            oppdragService.annulerUtbetaling(oppdrag)
+            call.respond(HttpStatusCode.Created, "Annuleringsoppdrag lagret")
+        } catch (alleredeAnnulertException: AlleredeAnnulertException) {
+            call.respond(HttpStatusCode.Conflict, "${alleredeAnnulertException.message}")
+        }
     }
 }
