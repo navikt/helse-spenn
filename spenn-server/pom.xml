@@ -49,7 +49,7 @@
             <!-- wiremock jetty conflicts with ktor -->
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
-            <version>9.4.19.v20190610</version>
+            <version>9.4.25.v20191220</version>
             <scope>test</scope>
         </dependency>
         <dependency>
