@@ -26,6 +26,7 @@ import org.apache.kafka.streams.errors.LogAndFailExceptionHandler
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
+import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.sql.SQLIntegrityConstraintViolationException
@@ -157,6 +158,13 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
         } catch (e: SQLIntegrityConstraintViolationException) {
             log.error("skipping duplicate for key ${utbetaling.utbetalingsreferanse}")
             meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
+        } catch (e: PSQLException) { // TODO : FIX
+            if (e.sqlState == "23505") {
+                log.error("skipping duplicate for key ${utbetaling.utbetalingsreferanse}")
+                meterRegistry.counter(VEDTAK, "status", "DUPLIKAT").increment()
+            } else {
+                throw e
+            }
         }
     }
 
