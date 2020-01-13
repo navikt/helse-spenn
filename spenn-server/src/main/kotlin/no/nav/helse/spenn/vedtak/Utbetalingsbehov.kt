@@ -6,7 +6,6 @@ import no.nav.helse.spenn.oppdrag.Utbetaling
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.time.LocalDate
 
 typealias Fodselsnummer = String
@@ -30,7 +29,7 @@ internal object SpennOppdragFactory {
                             satsTypeKode = SatsTypeKode.DAGLIG,
                             utbetalesTil = organisasjonsnummer(),
                             sats = BigDecimal(behovsLinje["dagsats"].asText()!!),
-                            grad = BigInteger.valueOf(behovsLinje["grad"].asLong()),
+                            grad = 100.toBigInteger(), //BigInteger.valueOf(behovsLinje["grad"].asLong()),
                             datoFom = behovsLinje["fom"].asText()!!.let { LocalDate.parse(it) },
                             datoTom = behovsLinje["tom"].asText()!!.let { LocalDate.parse(it) }
                         )
