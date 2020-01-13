@@ -47,7 +47,7 @@
         <repository>
             <name>jcenter</name>
             <id>jcenter</id>
-            <url>http://jcenter.bintray.com/</url>
+            <url>https://jcenter.bintray.com/</url>
         </repository>
         <repository>
             <name>confluent</name>
