@@ -71,7 +71,7 @@ internal class SpennBlackBoxTest {
 
     private fun ventPåLøsning(timeout: Duration = Duration.ofSeconds(30)): JsonNode {
         KafkaConsumer(consumerProperties(bootstrapServers), StringDeserializer(), StringDeserializer()).use { consumer ->
-            consumer.subscribe(listOf(behovTopic))
+            consumer.subscribe(listOf(rapidTopic))
             val endTime = Instant.now() + timeout
 
             while (Instant.now() < endTime) {
@@ -107,7 +107,7 @@ internal class SpennBlackBoxTest {
 }""".trimIndent()
             .also { behov ->
                 KafkaProducer(producerProperties(bootstrapServers), StringSerializer(), StringSerializer()).use {
-                    it.send(ProducerRecord(behovTopic, behov))
+                    it.send(ProducerRecord(rapidTopic, behov))
                 }
             }
             .let { objectMapper.readTree(it) }
@@ -177,7 +177,7 @@ internal class SpennBlackBoxTest {
     }
 
     private companion object {
-        private const val behovTopic = "privat-helse-sykepenger-behov"
+        private const val rapidTopic = "privat-helse-sykepenger-rapid-v1"
 
         private const val PostgresImage = "postgres:11-alpine"
         private const val PostgresHostname = "postgres"
@@ -339,7 +339,7 @@ internal class SpennBlackBoxTest {
                 "--replication-factor",
                 "1",
                 "--topic",
-                behovTopic
+                rapidTopic
             ).print()
         }
 

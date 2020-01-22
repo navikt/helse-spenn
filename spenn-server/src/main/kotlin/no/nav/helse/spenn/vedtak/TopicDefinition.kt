@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory
 private val strings = Serdes.String()
 private val json = Serdes.serdeFrom(JsonSerializer(), JsonDeserializer())
 
-val SYKEPENGER_BEHOV_TOPIC = Topic(
-        name = "privat-helse-sykepenger-behov",
+val SYKEPENGER_RAPID_TOPIC = Topic(
+        name = "privat-helse-sykepenger-rapid-v1",
         keySerde = strings,
         valueSerde = json
 )
