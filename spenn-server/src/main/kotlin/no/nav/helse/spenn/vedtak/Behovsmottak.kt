@@ -46,7 +46,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
     fun mottakslogikk(): Topology {
         val builder = StreamsBuilder()
 
-        builder.consumeTopic(SYKEPENGER_BEHOV_TOPIC)
+        builder.consumeTopic(SYKEPENGER_RAPID_TOPIC)
             .filter { _, value -> value.skalOppfyllesAvOss("Utbetaling") }
             .filter { _, value -> !value.hasNonNull("@løsning") }
             .filter { _, value -> value.hasNonNull("utbetalingsreferanse") }
@@ -93,7 +93,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
     @PostConstruct
     fun offsetReset() {
         if (config.offsetReset) {
-            log.info("Running offset reset of ${SYKEPENGER_BEHOV_TOPIC.name} to ${config.timeStampMillis}")
+            log.info("Running offset reset of ${SYKEPENGER_RAPID_TOPIC.name} to ${config.timeStampMillis}")
             val configProperties = Properties()
             configProperties[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = config.bootstrapServersUrl
             configProperties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
@@ -110,7 +110,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
                 configProperties[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = config.navTruststorePassword
             }
             val offsetConsumer = KafkaConsumer<String, String>(configProperties)
-            offsetConsumer.subscribe(listOf(SYKEPENGER_BEHOV_TOPIC.name),  object: ConsumerRebalanceListener {
+            offsetConsumer.subscribe(listOf(SYKEPENGER_RAPID_TOPIC.name),  object: ConsumerRebalanceListener {
                 override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>) {
                     for (p in partitions) {
                         log.info("assigned to ${p.topic()} to partion: ${p.partition()}")
