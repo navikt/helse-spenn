@@ -47,6 +47,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
         val builder = StreamsBuilder()
 
         builder.consumeTopic(SYKEPENGER_RAPID_TOPIC)
+            .filter { _, value -> value != null }
             .filter { _, value -> value.skalOppfyllesAvOss("Utbetaling") }
             .filter { _, value -> !value.hasNonNull("@løsning") }
             .filter { _, value -> value.hasNonNull("utbetalingsreferanse") }
