@@ -24,7 +24,7 @@ class JsonSerializer: Serializer<JsonNode> {
             defaultObjectMapper.writeValueAsBytes(it)
          }
          catch(e: Exception) {
-            log.warn("Could not serialize JsonNode",e)
+            log.warn("Could not serialize JsonNode: ${e::class.simpleName}")
             null
          }
       }
@@ -45,7 +45,7 @@ class JsonDeserializer: Deserializer<JsonNode> {
          try {
             defaultObjectMapper.readTree(it)
          } catch (e: Exception) {
-            log.warn("Not a valid json",e)
+            log.warn("Not a valid json: ${e::class.simpleName}")
             null
          }
       }
