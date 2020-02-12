@@ -177,7 +177,7 @@ internal class SpennBlackBoxTest {
     }
 
     private companion object {
-        private const val rapidTopic = "privat-helse-sykepenger-rapid-v1"
+        private const val rapidTopic = "helse-rapid-v1"
 
         private const val PostgresImage = "postgres:11-alpine"
         private const val PostgresHostname = "postgres"
