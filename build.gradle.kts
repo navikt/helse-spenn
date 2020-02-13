@@ -35,6 +35,8 @@ allprojects {
         testLogging {
             events("passed", "skipped", "failed")
         }
+        exclude("**/SpennBlackBoxTest*")
+
     }
 
     tasks.withType<Wrapper> {
@@ -68,7 +70,6 @@ subprojects {
 
     tasks {
         "test"(Test::class) {
-            exclude("**/SpennBlackBoxTest*")
         }
     }
 
