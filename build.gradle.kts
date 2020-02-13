@@ -36,7 +36,6 @@ allprojects {
             events("passed", "skipped", "failed")
         }
         exclude("**/SpennBlackBoxTest*")
-
     }
 
     tasks.withType<Wrapper> {
@@ -65,11 +64,6 @@ subprojects {
 
         maven {
             url = uri("http://repo.maven.apache.org/maven2")
-        }
-    }
-
-    tasks {
-        "test"(Test::class) {
         }
     }
 
