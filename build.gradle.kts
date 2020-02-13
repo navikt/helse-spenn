@@ -45,6 +45,7 @@ allprojects {
 subprojects {
 //    apply(plugin = "maven-publish")
     apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "java")
 
     repositories {
         jcenter()
@@ -62,6 +63,12 @@ subprojects {
 
         maven {
             url = uri("http://repo.maven.apache.org/maven2")
+        }
+    }
+
+    tasks {
+        "test"(Test::class) {
+            exclude("**/SpennBlackBoxTest*")
         }
     }
 
