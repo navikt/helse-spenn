@@ -28,7 +28,7 @@ jobs:
       - name: unit test and build
         run: ./gradlew test build
       - name: blackbox test
-        run: cd spenn-server; ../gradlew test --tests="no.nav.helse.spenn.blackbox.SpennBlackBoxTest.*"
+        run: cd spenn-server; ../gradlew test --tests "no.nav.helse.spenn.blackbox.SpennBlackBoxTest"
       - name: build docker image
         run: docker build . --pull -t $(cat .docker_image):$(cat .docker_tag)
       - name: push docker image
