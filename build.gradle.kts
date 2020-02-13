@@ -2,6 +2,8 @@ plugins {
     kotlin("jvm") version "1.3.61"
 }
 
+val junitJupiterVersion = "5.4.0"
+
 allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     group = "no.nav.helse"
@@ -9,12 +11,15 @@ allprojects {
 
     setBuildDir("$projectDir/target")
 
-    repositories{
+    repositories {
         mavenCentral()
     }
 
-    dependencies{
+    dependencies {
         api(kotlin("stdlib-jdk8"))
+        testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     }
 
     java {
@@ -42,11 +47,8 @@ allprojects {
         gradleVersion = "5.6.4"
     }
 }
-
+    
 subprojects {
-//    apply(plugin = "maven-publish")
-    apply(plugin = "org.jetbrains.kotlin.jvm")
-    apply(plugin = "java")
 
     repositories {
         jcenter()
@@ -115,8 +117,9 @@ subprojects {
         implementation("com.google.guava:guava:24.1.1-jre")
         testImplementation("org.apache.cxf.services.sts:cxf-services-sts-core:3.3.3")
         testImplementation("com.h2database:h2:1.4.199")
-        testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
-        testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
         testImplementation("org.jetbrains.kotlin:kotlin-test:1.3.61")
         testImplementation("org.testcontainers:vault:1.12.3")
         testImplementation("org.testcontainers:testcontainers:1.12.3")

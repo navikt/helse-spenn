@@ -1,10 +1,10 @@
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.3.61")
-}
-
 plugins {
     id("com.github.bjornvester.xjc") version "1.3"
     id("uk.co.boothen.gradle.wsimport") version "0.15"
+}
+
+dependencies {
+    implementation(kotlin("stdlib"))
 }
 
 xjc {
@@ -41,3 +41,4 @@ configure<SourceSetContainer> {
         java.srcDir("$buildDir/generated-sources/wsdl2java")
     }
 }
+
