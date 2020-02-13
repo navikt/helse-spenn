@@ -12,13 +12,13 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/cache@v1
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+            restore-keys: |
+              ${{ runner.os }}-gradle-
       - uses: actions/setup-java@v1
         with:
-          java-version: '11.x'
+          java-version: '12.x'
       - name: create docker tag
         env:
           DOCKER_IMAGE: docker.pkg.github.com/${{ github.repository }}/helse-spenn
@@ -26,9 +26,9 @@ jobs:
           echo $DOCKER_IMAGE > .docker_image
           echo $(echo $GITHUB_SHA | cut -c1-7) > .docker_tag
       - name: unit test and build
-        run: ./mvnw install
+        run: ./gradlew test build
       - name: blackbox test
-        run: cd spenn-server; ../mvnw verify -Dtest=SpennBlackBoxTest
+        run: cd spenn-server; ../gradlew test --tests no.nav.helse.spenn.blackbox.SpennBlackBoxTest
       - name: build docker image
         run: docker build . --pull -t $(cat .docker_image):$(cat .docker_tag)
       - name: push docker image
