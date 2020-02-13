@@ -10,8 +10,7 @@ dependencies {
 }
 
 tasks.named<Jar>("jar") {
-    baseName = "app"
-
+    archiveFileName.set("app.jar")
     manifest {
         attributes["Main-Class"] = mainClass
         attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") {
