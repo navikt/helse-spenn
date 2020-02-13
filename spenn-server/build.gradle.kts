@@ -10,7 +10,7 @@ dependencies {
 }
 
 tasks.named<Jar>("jar") {
-    baseName = "app"
+    baseName = "helse-spenn"
 
     manifest {
         attributes["Main-Class"] = mainClass
