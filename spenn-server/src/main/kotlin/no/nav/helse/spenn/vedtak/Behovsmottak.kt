@@ -7,6 +7,7 @@ import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
+import no.nav.helse.spenn.oppdrag.dao.SanityCheckException
 import no.nav.helse.spenn.vedtak.fnr.AktorNotFoundException
 import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import org.apache.kafka.clients.CommonClientConfigs
@@ -166,6 +167,8 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
             } else {
                 throw e
             }
+        } catch (e: SanityCheckException) {
+            log.error("utbetaling med ref=${utbetaling.utbetalingsreferanse} bestod ikke sanitycheck: ${e.message}")
         }
     }
 

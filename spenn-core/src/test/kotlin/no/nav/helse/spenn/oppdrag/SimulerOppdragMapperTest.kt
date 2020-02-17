@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
-import no.nav.helse.spenn.testsupport.etEnkeltBehov
 import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.junit.jupiter.api.Assertions
@@ -10,8 +9,8 @@ import java.io.StringWriter
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 import kotlin.test.assertNull
@@ -46,7 +45,8 @@ class SimulerOppdragMapperTest {
         val oppdragState = TransaksjonDTO(
             id = 1L,
             utbetalingsreferanse = "1001",
-            utbetalingsOppdrag = utbetaling
+            utbetalingsOppdrag = utbetaling,
+            created = LocalDateTime.now()
         )
         val simuleringRequest = oppdragState.toSimuleringRequest()
         val jaxbContext = JAXBContext.newInstance(SimulerBeregningRequest::class.java)

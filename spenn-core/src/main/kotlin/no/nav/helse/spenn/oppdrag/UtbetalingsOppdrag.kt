@@ -25,7 +25,8 @@ data class UtbetalingsOppdrag(
 data class Utbetaling(
     val organisasjonsnummer: String,
     val maksdato: LocalDate,
-    val utbetalingsLinjer: List<UtbetalingsLinje>
+    val utbetalingsLinjer: List<UtbetalingsLinje>,
+    val erEndring: Boolean? = false
 )
 
 data class UtbetalingsLinje(

@@ -286,7 +286,8 @@ class AvstemmingMapperTest {
                 behov = etEnkeltBehov()
             ),
             avstemt = false,
-            nokkel = now
+            nokkel = now,
+            created = LocalDateTime.now()
         )
     }
 
@@ -330,7 +331,8 @@ class AvstemmingMapperTest {
                 behov = etEnkeltBehov()
             ),
             avstemt = false,
-            nokkel = now
+            nokkel = now,
+                    created = LocalDateTime.now()
         )
     }
 

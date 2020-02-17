@@ -45,6 +45,40 @@ fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
     )
 }
 
+fun etUtbetalingsUtvidelsesOppdrag(): UtbetalingsOppdrag {
+    val orgNr = "123456789"
+    return UtbetalingsOppdrag(
+            behov = defaultObjectMapper.readTree("""{ "someOtherjson" : 123 }"""),
+            utbetalingsreferanse = "1",
+            oppdragGjelder = "01010112345",
+            saksbehandler = "Z999999",
+            utbetaling = Utbetaling(
+                    maksdato = LocalDate.of(2011, 12, 20),
+                    organisasjonsnummer = orgNr,
+                    utbetalingsLinjer = listOf(
+                            UtbetalingsLinje(
+                                    id = "1",
+                                    grad = BigInteger.valueOf(100),
+                                    datoFom = LocalDate.of(2011, 1, 1),
+                                    datoTom = LocalDate.of(2011, 1, 31),
+                                    utbetalesTil = orgNr,
+                                    sats = BigDecimal.valueOf(1000.0),
+                                    satsTypeKode = SatsTypeKode.DAGLIG
+                            ),
+                            UtbetalingsLinje(
+                                    id = "2",
+                                    grad = BigInteger.valueOf(100),
+                                    datoFom = LocalDate.of(2011, 2, 1),
+                                    datoTom = LocalDate.of(2011, 2, 28),
+                                    utbetalesTil = orgNr,
+                                    sats = BigDecimal.valueOf(1000.0),
+                                    satsTypeKode = SatsTypeKode.DAGLIG
+                            )
+                    )
+            )
+    )
+}
+
 fun etEnkeltBehov() = defaultObjectMapper.readTree("""
 {
   "@behov": "Utbetaling",

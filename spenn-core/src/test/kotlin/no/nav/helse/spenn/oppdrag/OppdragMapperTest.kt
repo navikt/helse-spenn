@@ -15,7 +15,7 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.GregorianCalendar
+import java.util.*
 import javax.xml.datatype.DatatypeFactory
 import kotlin.test.assertNull
 
@@ -48,7 +48,8 @@ class OppdragMapperTest {
             id = 1L,
             utbetalingsreferanse = utbetaling.utbetalingsreferanse,
             utbetalingsOppdrag = utbetaling,
-            nokkel = LocalDateTime.now()
+            nokkel = LocalDateTime.now(),
+            created = LocalDateTime.now()
         )
     }
 

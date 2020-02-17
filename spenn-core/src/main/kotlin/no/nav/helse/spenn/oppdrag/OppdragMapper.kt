@@ -12,13 +12,7 @@ import no.nav.system.os.entiteter.typer.simpletypes.KodeStatus
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest.SimuleringsPeriode
-import no.trygdeetaten.skjema.oppdrag.ObjectFactory
-import no.trygdeetaten.skjema.oppdrag.Oppdrag
-import no.trygdeetaten.skjema.oppdrag.Oppdrag110
-import no.trygdeetaten.skjema.oppdrag.OppdragsLinje150
-import no.trygdeetaten.skjema.oppdrag.Refusjonsinfo156
-import no.trygdeetaten.skjema.oppdrag.TfradragTillegg
-import no.trygdeetaten.skjema.oppdrag.TkodeStatus
+import no.trygdeetaten.skjema.oppdrag.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -45,7 +39,7 @@ private fun TransaksjonDTO.mapSimuleringRequest(): SimulerBeregningRequest {
     val oppdrag = simFactory.createOppdrag().apply {
         val utbetaling = utbetalingsOppdrag.utbetaling
         requireNotNull(utbetaling)
-        kodeEndring = EndringsKode.NY.kode
+        kodeEndring = if (utbetaling.erEndring == true) EndringsKode.ENDRING.kode else EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsreferanse
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
@@ -193,7 +187,7 @@ private fun TransaksjonDTO.mapUtbetalingsoppdrag(): Oppdrag110 {
         val utbetaling = utbetalingsOppdrag.utbetaling
         requireNotNull(utbetaling)
         kodeAksjon = AksjonsKode.OPPDATER.kode
-        kodeEndring = EndringsKode.NY.kode
+        kodeEndring = if (utbetaling.erEndring == true) EndringsKode.ENDRING.kode else EndringsKode.NY.kode
 
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsOppdrag.utbetalingsreferanse

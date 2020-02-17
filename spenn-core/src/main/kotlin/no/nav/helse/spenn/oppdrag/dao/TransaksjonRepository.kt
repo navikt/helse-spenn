@@ -7,7 +7,6 @@ import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.slf4j.LoggerFactory
 import java.sql.*
 import java.time.LocalDateTime
-import java.util.*
 
 internal data class TransaksjonDTO(
     val id: Long,
@@ -17,7 +16,8 @@ internal data class TransaksjonDTO(
     val utbetalingsOppdrag: UtbetalingsOppdrag,
     val status: TransaksjonStatus = TransaksjonStatus.STARTET,
     val simuleringresult: String? = null,
-    val oppdragResponse: String? = null
+    val oppdragResponse: String? = null,
+    val created: LocalDateTime
 )
 
 private val log = LoggerFactory.getLogger(TransaksjonRepository::class.java.name)
@@ -234,7 +234,7 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
     private object DTO {
         val selectString = """
         select transaksjon.id as transaksjon_id,
-             utbetalingsreferanse, nokkel, avstemt, utbetalingsoppdrag, status, simuleringresult, oppdragresponse
+             utbetalingsreferanse, nokkel, avstemt, utbetalingsoppdrag, status, simuleringresult, oppdragresponse, transaksjon.created created
         from oppdrag join transaksjon on oppdrag.id = transaksjon.oppdrag_id
     """.trimIndent()
 
@@ -249,7 +249,8 @@ internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
                 },
                 status = resultSet.getString("status").let { TransaksjonStatus.valueOf(it) },
                 simuleringresult = resultSet.getString("simuleringresult"),
-                oppdragResponse = resultSet.getString("oppdragresponse")
+                oppdragResponse = resultSet.getString("oppdragresponse"),
+                created = resultSet.getTimestamp("created").toLocalDateTime()
             )
     }
 

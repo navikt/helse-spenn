@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.core.defaultObjectMapper
+import no.nav.helse.spenn.oppdrag.EndringsKode
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus
@@ -164,7 +165,16 @@ internal class ServiceTest {
         val utbetaling = etUtbetalingsOppdrag()
         service.lagreNyttOppdrag(utbetaling)
         val trans = service.hentNyeOppdrag(5).first()
+
+        trans.simuleringRequest.apply {
+            assertEquals(EndringsKode.NY.kode, this.request.oppdrag.kodeEndring)
+        }
+
         trans.forberedSendingTilOS()
+        trans.oppdragRequest.apply {
+            assertEquals(EndringsKode.NY.kode, this.oppdrag110.kodeEndring)
+        }
+
         trans.lagreOSResponse(TransaksjonStatus.FERDIG, kvittering, null)
         val dto = repository.findByRef(utbetalingsreferanse = utbetaling.utbetalingsreferanse).first()
         assertEquals(TransaksjonStatus.FERDIG, dto.status)
