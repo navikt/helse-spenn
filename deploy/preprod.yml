@@ -6,10 +6,9 @@ metadata:
   name: spenn
   namespace: default
 spec:
-  env: []
   image: {{image}}:{{tag}}
   ingresses:
-    - {{ingress}}
+    - https://spenn.nais.preprod.local
   liveness:
     failureThreshold: 10
     initialDelay: 20
@@ -31,7 +30,7 @@ spec:
   resources:
     limits:
       cpu: 2000m
-      memory: {{memorylimit}}
+      memory: 512Mi
     requests:
       cpu: 1000m
       memory: 256Mi
@@ -41,3 +40,10 @@ spec:
   secureLogs:
     enabled: true
   team: tbd
+  env:
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: spenn-1
+    - name: KAFKA_RAPID_TOPIC
+      value: helse-rapid-v1
+    - name: KAFKA_BOOTSTRAP_SERVERS
+      value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443

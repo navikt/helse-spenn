@@ -47,9 +47,10 @@ allprojects {
         gradleVersion = "5.6.4"
     }
 }
-    
-subprojects {
 
+subprojects {
+    val githubUser: String by project
+    val githubPassword: String by project
     repositories {
         jcenter()
         maven {
@@ -65,11 +66,16 @@ subprojects {
         }
 
         maven {
-            url = uri("http://repo.maven.apache.org/maven2")
+            url = uri("https://maven.pkg.github.com/navikt/helse-spleis")
+            credentials {
+                username = githubUser
+                password = githubPassword
+            }
         }
     }
 
     dependencies {
+        implementation("no.nav.helse:rapids-rivers:1.161aa05")
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.61")
         implementation("io.ktor:ktor-server-netty:1.2.5")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0")
