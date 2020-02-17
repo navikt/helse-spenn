@@ -32,6 +32,9 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: blackbox test
         run: cd spenn-server; ../gradlew -Dtest.single=no.nav.helse.spenn.blackbox.SpennBlackBoxTestKt test
+        env:
+          ORG_GRADLE_PROJECT_githubUser: x-access-token
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: build docker image
         run: docker build . --pull -t $(cat .docker_image):$(cat .docker_tag)
       - name: push docker image
