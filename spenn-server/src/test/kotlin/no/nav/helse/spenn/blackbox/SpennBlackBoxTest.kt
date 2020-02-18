@@ -436,10 +436,6 @@ internal class SpennBlackBoxTest {
             withEnv("MQ_PORT", hostResolver(MqHostname, MqPort).port.toString())
             withEnv("SECURITYTOKENSERVICE_URL", "${hostResolver("localhost", soapMock.httpsPort).https}/ws/SecurityTokenService")
             withEnv(
-                "SECURITY_TOKEN_SERVICE_REST_URL",
-                hostResolver(MockServerHostname, MockServerPort).http
-            )
-            withEnv(
                 "AKTORREGISTERET_BASE_URL",
                 hostResolver(MockServerHostname, MockServerPort).http
             )
@@ -460,8 +456,6 @@ internal class SpennBlackBoxTest {
             withEnv("DATASOURCE_VAULT_MOUNTPATH", VaultPostgresMountPath)
             withEnv("SCHEDULER_ENABLED", "true")
             withEnv("SCHEDULER_TASKS_SIMULERING", "true")
-            withEnv("SCHEDULER_TASKS_OPPDRAG", "true")
-            withEnv("SCHEDULER_TASKS_AVSTEMMING", "true")
             withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE", "audience")
             withEnv(
                 "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL",

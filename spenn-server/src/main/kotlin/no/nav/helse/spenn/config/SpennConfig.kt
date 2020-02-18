@@ -32,7 +32,7 @@ class SpennConfig(
                 taskAvstemmingEnabled = getBool("scheduler.tasks.avstemming"),
                 simuleringServiceUrl = cfg.property("simulering.service.url").getString(),
                 stsUrl = cfg.property("sts.soap.url").getString(),
-                stsRestUrl = cfg.property("sts.rest.url").getString(),
+                stsRestUrl = "http://security-token-service.default.svc.nais.local",
                 aktorRegisteretBaseUrl = cfg.property("aktorregisteret.base-url").getString(),
                 serviceUserUsername = cfg.property("serviceuser.username").getString(),
                 serviceUserPassword = cfg.property("serviceuser.password").getString()
