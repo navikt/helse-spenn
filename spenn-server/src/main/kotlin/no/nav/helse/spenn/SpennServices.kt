@@ -12,7 +12,6 @@ import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.SpennConfig
-import no.nav.helse.spenn.config.SpennDbConfig
 import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.config.SpennMQConfig
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
@@ -44,6 +43,7 @@ private val log = LoggerFactory.getLogger("SpennServices")
 
 @KtorExperimentalAPI
 class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
+    private val env = readEnvironment()
 
     ////
 
@@ -58,9 +58,7 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     ////// DATABASE ///////
 
-    val spennDataSource = SpennDataSource.getMigratedDatasourceInstance(
-        SpennDbConfig.from(appConfig)
-    )
+    val spennDataSource = SpennDataSource.getMigratedDatasourceInstance(env.db)
 
     val oppdragService = OppdragService(spennDataSource.dataSource)
 
@@ -158,8 +156,6 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
 
     ///// HTTP API /////
-
-    private val env = readEnvironment()
 
     val spennApiServer = spennApiServer(
         SpennApiEnvironment(

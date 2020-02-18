@@ -20,6 +20,10 @@ fun readEnvironment() = Environment(
         acceptedAudience = System.getenv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE"),
         discoveryUrl = URL(System.getenv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL")),
         requiredGroup = System.getenv("API_ACCESS_REQUIREDGROUP")
+    ),
+    db = DbEnvironment(
+        jdbcUrl =System.getenv("DATASOURCE_URL"),
+        vaultPostgresMountpath = System.getenv("VAULT_POSTGRES_MOUNTPATH")
     )
 )
 
@@ -29,11 +33,17 @@ data class ServiceUser(
 )
 
 data class Environment(
-    val auth: AuthEnvironment
+    val auth: AuthEnvironment,
+    val db: DbEnvironment
 )
 
 data class AuthEnvironment(
     val acceptedAudience: String,
     val discoveryUrl: URL,
     val requiredGroup: String
+)
+
+data class DbEnvironment(
+    val jdbcUrl: String,
+    val vaultPostgresMountpath: String
 )

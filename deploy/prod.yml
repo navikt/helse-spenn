@@ -63,8 +63,10 @@ spec:
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: SIMULERING_SERVICE_URL
       value: https://cics.adeo.no/oppdrag/simulerFpServiceWSBinding
-    - name: SPRING_DATASOURCE_URL
+    - name: DATASOURCE_URL
       value: jdbc:postgresql://fsspgdb.adeo.no:5432/helse-spenn-oppdrag
+    - name: VAULT_POSTGRES_MOUNTPATH
+      value: postgresql/prod-fss
     - name: VAULT_KUBERNETES_PATH
       value: kubernetes/prod/fss
     - name: AKTORREGISTERET_BASE_URL

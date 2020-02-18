@@ -65,8 +65,10 @@ spec:
       value: https://cics-q1.adeo.no/oppdrag/simulerFpServiceWSBinding
     - name: AKTORREGISTERET_BASE_URL
       value: https://app-q1.adeo.no/aktoerregister
-    - name: SPRING_DATASOURCE_URL
+    - name: DATASOURCE_URL
       value: jdbc:postgresql://b27dbvl007.preprod.local:5432/helse-spenn-oppdrag
+    - name: VAULT_POSTGRES_MOUNTPATH
+      value: postgresql/preprod-fss
     - name: MQ_HOSTNAME
       value: b27apvl176.preprod.local
     - name: MQ_CHANNEL
