@@ -2,10 +2,12 @@ package no.nav.helse.spenn
 
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigResolveOptions
+import com.typesafe.config.ConfigValueFactory
 import io.ktor.config.ApplicationConfig
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.config.SpennConfig
+import no.nav.helse.spenn.config.readServiceUserCredentials
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ScheduledExecutorService
 
@@ -15,8 +17,19 @@ private val log = LoggerFactory.getLogger("SpennApplication")
 @KtorExperimentalAPI
 fun main() {
     log.info("Loading config...")
-    val conf = ConfigFactory.parseResources("application.conf")
-            .resolve(ConfigResolveOptions.defaults())
+    val serviceUser = readServiceUserCredentials()
+    val serviceUserConf = ConfigValueFactory
+        .fromMap(
+            mapOf(
+                "username" to serviceUser.username,
+                "password" to serviceUser.password
+            )
+        )
+    val conf = ConfigFactory
+        .parseResources("application.conf")
+        .resolve(ConfigResolveOptions.defaults())
+        .withValue("serviceuser", serviceUserConf)
+
     val appConfig = HoconApplicationConfig(conf)
     spenn(appConfig)
 }
@@ -32,9 +45,10 @@ internal fun spenn(appConfig: ApplicationConfig) {
     if (schedulerConfig.schedulerEnabled) {
         log.info("Setting up schedules...")
         scheduler = setupSchedules(
-                spennTasks = services,
-                dataSourceForLockingTable = services.spennDataSource.dataSource,
-                config = schedulerConfig)
+            spennTasks = services,
+            dataSourceForLockingTable = services.spennDataSource.dataSource,
+            config = schedulerConfig
+        )
     }
 
     log.info("Starting HTTP API services")

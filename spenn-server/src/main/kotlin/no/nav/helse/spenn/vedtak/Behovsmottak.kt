@@ -106,7 +106,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
             if (!config.plainTextKafka) {
                 configProperties[SaslConfigs.SASL_MECHANISM] = "PLAIN"
                 configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_PLAINTEXT"
-                configProperties[SaslConfigs.SASL_JAAS_CONFIG] = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${config.kafkaUsername}\" password=\"${config.kafkaPassword}\";"
+                configProperties[SaslConfigs.SASL_JAAS_CONFIG] = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${config.serviceUserUsername}\" password=\"${config.serviceUserPassword}\";"
                 configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
                 configProperties[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = File(config.navTruststorePath!!).absolutePath
                 configProperties[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = config.navTruststorePassword
@@ -149,7 +149,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
 
     fun kafkaStreams(topology: Topology) : KafkaStreams {
         val streamConfig = if (config.plainTextKafka) streamConfigPlainTextKafka() else streamConfig(config.appId, config.bootstrapServersUrl,
-                config.kafkaUsername to config.kafkaPassword,
+                config.serviceUserUsername to config.serviceUserPassword,
                 config.navTruststorePath to config.navTruststorePassword)
         return KafkaStreams(topology, streamConfig)
     }

@@ -65,8 +65,8 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     val stsRestClient = StsRestClient(
         baseUrl = spennConfig.stsRestUrl,
-        username = spennConfig.stsRestUsername,
-        password = spennConfig.stsRestPassword
+        username = spennConfig.serviceUserUsername,
+        password = spennConfig.serviceUserPassword
     )
 
     ///// AKTØR-reg /////
@@ -105,8 +105,8 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = spennConfig.simuleringServiceUrl,
         stsUrl = spennConfig.stsUrl,
-        stsUsername = spennConfig.stsUsername,
-        stsPassword = spennConfig.stsPassword
+        stsUsername = spennConfig.serviceUserUsername,
+        stsPassword = spennConfig.serviceUserPassword
     )
 
     val simuleringService = SimuleringService(
