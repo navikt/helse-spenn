@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.simulering
 
+import no.nav.helse.spenn.ServiceUser
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12
@@ -7,7 +8,6 @@ import org.apache.cxf.binding.soap.SoapMessage
 import org.apache.cxf.endpoint.Client
 import org.apache.cxf.ext.logging.LoggingFeature
 import org.apache.cxf.frontend.ClientProxy
-import javax.xml.namespace.QName
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.cxf.ws.policy.PolicyBuilder
@@ -17,11 +17,13 @@ import org.apache.cxf.ws.security.SecurityConstants
 import org.apache.cxf.ws.security.trust.STSClient
 import org.apache.neethi.Policy
 import org.slf4j.LoggerFactory
+import javax.xml.namespace.QName
 
-class SimuleringConfig(val simuleringServiceUrl: String,
-                       val stsUrl: String,
-                       val stsUsername: String,
-                       val stsPassword: String) {
+class SimuleringConfig(
+    val simuleringServiceUrl: String,
+    val stsSoapUrl: String,
+    val serviceUser: ServiceUser
+) {
     private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerFpServiceWSBinding.wsdl"
     private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
     private val SERVICE = QName(NAMESPACE, "simulerFpService")
@@ -33,7 +35,7 @@ class SimuleringConfig(val simuleringServiceUrl: String,
         private val log = LoggerFactory.getLogger(SimuleringConfig::class.java)
     }
 
-    fun wrapWithSTSSimulerFpService(bus : Bus): SimulerFpService {
+    fun wrapWithSTSSimulerFpService(bus: Bus): SimulerFpService {
         log.info("using simuleringservice url ${simuleringServiceUrl}")
         val factory = JaxWsProxyFactoryBean().apply {
             address = simuleringServiceUrl
@@ -49,10 +51,10 @@ class SimuleringConfig(val simuleringServiceUrl: String,
                 isEnableAppliesTo = false
                 isAllowRenewing = false
 
-                location = stsUrl
+                location = stsSoapUrl
                 properties = mapOf(
-                        SecurityConstants.USERNAME to stsUsername,
-                        SecurityConstants.PASSWORD to stsPassword
+                    SecurityConstants.USERNAME to serviceUser.username,
+                    SecurityConstants.PASSWORD to serviceUser.password
                 )
                 setPolicy(bus.resolvePolicy(STS_CLIENT_AUTHENTICATION_POLICY))
             }

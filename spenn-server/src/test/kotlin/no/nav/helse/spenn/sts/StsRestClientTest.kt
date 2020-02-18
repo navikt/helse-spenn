@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
+import no.nav.helse.spenn.ServiceUser
 import no.nav.helse.spenn.vedtak.fnr.StsRestClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class StsRestClientTest {
+
+    private val serviceUser = ServiceUser(username = "foo", password = "bar")
 
     companion object {
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
@@ -43,7 +46,7 @@ class StsRestClientTest {
                 .whenScenarioStateIs(STARTED)
                 .willSetStateTo("token acquired"))
 
-        val token: String = StsRestClient(baseUrl = server.baseUrl(), username = "foo", password = "bar").token()
+        val token: String = StsRestClient(serviceUser, server.baseUrl()).token()
         assertEquals("default access token", token)
     }
 
@@ -61,7 +64,7 @@ class StsRestClientTest {
                 .whenScenarioStateIs("token acquired")
         )
 
-        val authHelper = StsRestClient(baseUrl = server.baseUrl(), username = "foo", password = "bar")
+        val authHelper = StsRestClient(serviceUser, server.baseUrl())
         val first = authHelper.token()
 
         val second: String = authHelper.token()
@@ -84,7 +87,7 @@ class StsRestClientTest {
                 .whenScenarioStateIs("expired token sent")
         )
 
-        val client = StsRestClient(baseUrl = server.baseUrl(), username = "foo", password = "bar")
+        val client = StsRestClient(serviceUser, server.baseUrl())
 
         // get the short-lived one
         val token1 = client.token()

@@ -1,21 +1,25 @@
 package no.nav.helse.spenn.vedtak.fnr
 
+import no.nav.helse.spenn.ServiceUser
+import no.nav.helse.spenn.stsRestBaseUrl
 import org.json.JSONObject
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Base64
 
-class StsRestClient(val baseUrl: String, val username: String, val password: String) {
+class StsRestClient(private val serviceUser: ServiceUser, private val stsBaseUrl: String = stsRestBaseUrl) {
     private var cachedOidcToken: Token? = null
 
     fun token(): String {
         if (Token.shouldRenew(cachedOidcToken)) {
-            val encodedAuth = String(Base64.getEncoder().encode("$username:$password".toByteArray()))
+            val encodedAuth =
+                String(Base64.getEncoder().encode("${serviceUser.username}:${serviceUser.password}".toByteArray()))
             val resp = khttp.get(
-                            url = "$baseUrl/rest/v1/sts/token?grant_type=client_credentials&scope=openid",
-                            headers = mapOf(
-                                    "Authorization" to "Basic $encodedAuth",
-                                    "Accept" to "application/json"
-                            ))
+                url = "$stsBaseUrl/rest/v1/sts/token?grant_type=client_credentials&scope=openid",
+                headers = mapOf(
+                    "Authorization" to "Basic $encodedAuth",
+                    "Accept" to "application/json"
+                )
+            )
             if (resp.statusCode != 200) {
                 throw RuntimeException("StsRestClient response got statusCode ${resp.statusCode}")
             }
@@ -25,9 +29,11 @@ class StsRestClient(val baseUrl: String, val username: String, val password: Str
     }
 
     private fun JSONObject.mapToToken(): Token {
-        return Token(getString("access_token"),
-                getString("token_type"),
-                getInt("expires_in"))
+        return Token(
+            getString("access_token"),
+            getString("token_type"),
+            getInt("expires_in")
+        )
     }
 
     data class Token(val accessToken: String, val type: String, val expiresIn: Int) {
@@ -36,7 +42,7 @@ class StsRestClient(val baseUrl: String, val username: String, val password: Str
 
         companion object {
             fun shouldRenew(token: Token?) =
-                    token == null || isExpired(token)
+                token == null || isExpired(token)
 
             private fun isExpired(token: Token): Boolean {
                 return token.expirationTime.isBefore(LocalDateTime.now())

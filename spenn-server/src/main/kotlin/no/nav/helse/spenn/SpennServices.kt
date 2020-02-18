@@ -11,7 +11,6 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.helse.spenn.config.SpennConfig
 import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.config.SpennMQConfig
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
@@ -44,6 +43,7 @@ private val log = LoggerFactory.getLogger("SpennServices")
 @KtorExperimentalAPI
 class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
     private val env = readEnvironment()
+    private val serviceUser = readServiceUserCredentials()
 
     ////
 
@@ -54,7 +54,6 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
     ////
 
     val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT) //Metrics.globalRegistry
-    val spennConfig = SpennConfig.from(appConfig)
 
     ////// DATABASE ///////
 
@@ -64,17 +63,13 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     ///// STS-REST /////
 
-    val stsRestClient = StsRestClient(
-        baseUrl = spennConfig.stsRestUrl,
-        username = spennConfig.serviceUserUsername,
-        password = spennConfig.serviceUserPassword
-    )
+    val stsRestClient = StsRestClient(serviceUser)
 
     ///// AKTØR-reg /////
 
     val aktorTilFnrMapper = AktorRegisteretClient(
         stsRestClient = stsRestClient,
-        aktorRegisteretUrl = spennConfig.aktorRegisteretBaseUrl
+        aktorRegisteretUrl = env.aktorRegisteretBaseUrl
     )
 
     ///// KAFKA /////
@@ -104,10 +99,9 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
     //// SIMULERING ////
 
     val simuleringConfig = SimuleringConfig(
-        simuleringServiceUrl = spennConfig.simuleringServiceUrl,
-        stsUrl = spennConfig.stsUrl,
-        stsUsername = spennConfig.serviceUserUsername,
-        stsPassword = spennConfig.serviceUserPassword
+        simuleringServiceUrl = env.simuleringServiceUrl,
+        stsSoapUrl = env.stsSoapUrl,
+        serviceUser = serviceUser
     )
 
     val simuleringService = SimuleringService(

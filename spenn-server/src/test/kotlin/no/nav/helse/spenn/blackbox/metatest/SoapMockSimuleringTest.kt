@@ -2,6 +2,7 @@ package no.nav.helse.spenn.blackbox.metatest
 
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.helse.spenn.ServiceUser
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
@@ -38,9 +39,8 @@ internal class SoapMockSimuleringTest {
 
         val simuleringConfig = SimuleringConfig(
             simuleringServiceUrl = "https://localhost:${soapMock.httpsPort}/ws/simulering",
-            stsUrl = "https://localhost:${soapMock.httpsPort}/ws/SecurityTokenService",
-            stsUsername = "hackerman",
-            stsPassword = "password123"
+            stsSoapUrl = "https://localhost:${soapMock.httpsPort}/ws/SecurityTokenService",
+            serviceUser = ServiceUser("hackerman", "password123")
         )
 
         simuleringService = SimuleringService(
