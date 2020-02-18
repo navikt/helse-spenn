@@ -11,10 +11,14 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.helse.spenn.config.*
-import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
+import no.nav.helse.spenn.config.SpennApiAuthConfig
+import no.nav.helse.spenn.config.SpennConfig
+import no.nav.helse.spenn.config.SpennDbConfig
+import no.nav.helse.spenn.config.SpennKafkaConfig
+import no.nav.helse.spenn.config.SpennMQConfig
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
+import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.OppdragMQReceiver
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
