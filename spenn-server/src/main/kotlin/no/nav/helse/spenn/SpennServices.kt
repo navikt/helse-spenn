@@ -12,7 +12,6 @@ import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.config.SpennKafkaConfig
-import no.nav.helse.spenn.config.SpennMQConfig
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
@@ -84,17 +83,15 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     ////// MQ ///////
 
-    val mqConfig = SpennMQConfig.from(appConfig)
-
     // TODO if (! mqConfig.mqEnabled) then what?
     val spennMQConnection =
         MQConnectionFactory().apply {
-            hostName = mqConfig.hostname
-            port = mqConfig.port
-            channel = mqConfig.channel
-            queueManager = mqConfig.queueManager
+            hostName = env.mq.hostname
+            port = env.mq.port
+            channel = env.mq.channel
+            queueManager = env.mq.queueManager
             transportType = WMQConstants.WMQ_CM_CLIENT
-        }.createConnection(mqConfig.user, mqConfig.password)
+        }.createConnection(env.mq.user, env.mq.password)
 
     //// SIMULERING ////
 
@@ -119,14 +116,14 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     val oppdragMQSender = OppdragMQSender(
         spennMQConnection,
-        mqConfig.oppdragQueueSend,
-        mqConfig.oppdragQueueMottak,
+        env.mq.oppdragQueueSend,
+        env.mq.oppdragQueueMottak,
         JAXBOppdrag()
     )
 
     val oppdragMQReceiver = OppdragMQReceiver(
         spennMQConnection,
-        mqConfig.oppdragQueueMottak,
+        env.mq.oppdragQueueMottak,
         JAXBOppdrag(),
         oppdragService,
         metrics
@@ -140,7 +137,7 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     val avstemmingMQSender = AvstemmingMQSender(
         spennMQConnection,
-        mqConfig.avstemmingQueueSend,
+        env.mq.avstemmingQueueSend,
         JAXBAvstemmingsdata()
     )
 

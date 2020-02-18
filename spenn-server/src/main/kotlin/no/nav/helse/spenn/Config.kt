@@ -26,8 +26,19 @@ fun readEnvironment() = Environment(
         requiredGroup = System.getenv("API_ACCESS_REQUIREDGROUP")
     ),
     db = DbEnvironment(
-        jdbcUrl =System.getenv("DATASOURCE_URL"),
+        jdbcUrl = System.getenv("DATASOURCE_URL"),
         vaultPostgresMountpath = System.getenv("VAULT_POSTGRES_MOUNTPATH")
+    ),
+    mq = MqEnvironment(
+        queueManager = System.getenv("MQ_QUEUE_MANAGER"),
+        channel = System.getenv("MQ_CHANNEL"),
+        hostname = System.getenv("MQ_HOSTNAME"),
+        port = System.getenv("MQ_PORT").toInt(),
+        user = System.getenv("MQ_USER"),
+        password = System.getenv("MQ_PASSWORD"),
+        oppdragQueueSend = System.getenv("OPPDRAG_QUEUE_SEND"),
+        oppdragQueueMottak = System.getenv("OPPDRAG_QUEUE_MOTTAK"),
+        avstemmingQueueSend = System.getenv("AVSTEMMING_QUEUE_SEND")
     )
 )
 
@@ -41,7 +52,8 @@ data class Environment(
     val stsSoapUrl: String,
     val aktorRegisteretBaseUrl: String,
     val auth: AuthEnvironment,
-    val db: DbEnvironment
+    val db: DbEnvironment,
+    val mq: MqEnvironment
 )
 
 data class AuthEnvironment(
@@ -53,4 +65,16 @@ data class AuthEnvironment(
 data class DbEnvironment(
     val jdbcUrl: String,
     val vaultPostgresMountpath: String
+)
+
+data class MqEnvironment(
+    val queueManager: String,
+    val channel: String,
+    val hostname: String,
+    val port: Int,
+    val user: String,
+    val password: String,
+    val oppdragQueueSend: String,
+    val oppdragQueueMottak: String,
+    val avstemmingQueueSend: String
 )
