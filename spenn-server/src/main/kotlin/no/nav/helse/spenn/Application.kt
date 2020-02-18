@@ -7,7 +7,6 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.config.SpennConfig
-import no.nav.helse.spenn.config.readServiceUserCredentials
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ScheduledExecutorService
 

@@ -1,5 +1,4 @@
-package no.nav.helse.spenn.config
-
+package no.nav.helse.spenn
 
 import java.nio.file.Files
 import java.nio.file.Path
