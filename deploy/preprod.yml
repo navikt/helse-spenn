@@ -2,7 +2,7 @@ apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
   labels:
-    team: tbd
+    team: {{team}}
   name: spenn
   namespace: default
 spec:
@@ -44,7 +44,6 @@ spec:
   webproxy: true
   secureLogs:
     enabled: true
-  team: tbd
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: spenn-1
@@ -52,3 +51,33 @@ spec:
       value: helse-rapid-v1
     - name: KAFKA_BOOTSTRAP_SERVERS
       value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+    - name: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE
+      value: d8f61c0a-ac96-4c5c-9e70-2c630852851a
+    - name: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL
+      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0/.well-known/openid-configuration
+    - name: API_ACCESS_REQUIREDGROUP
+      value: f844f535-2174-445c-a0db-b6c55f2e4780
+    - name: KAFKA_BOOTSTRAP_SERVERS
+      value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
+    - name: SIMULERING_SERVICE_URL
+      value: https://cics-q1.adeo.no/oppdrag/simulerFpServiceWSBinding
+    - name: AKTORREGISTERET_BASE_URL
+      value: https://app-q1.adeo.no/aktoerregister
+    - name: SPRING_DATASOURCE_URL
+      value: jdbc:postgresql://b27dbvl007.preprod.local:5432/helse-spenn-oppdrag
+    - name: MQ_HOSTNAME
+      value: b27apvl176.preprod.local
+    - name: MQ_CHANNEL
+      value: Q1_FPSAK
+    - name: MQ_PORT
+      value: 1413
+    - name: MQ_QUEUE_MANAGER
+      value: MQ1LSC02
+    - name: OPPDRAG_QUEUE_SEND
+      value: QA.Q1_231.OB04_OPPDRAG_FP_XML
+    - name: OPPDRAG_QUEUE_MOTTAK
+      value: QA.Q1_SPENN.OPPDRAG_SP_XML_KVITT
+    - name: AVSTEMMING_QUEUE_SEND
+      value: QA.Q1_234.OB29_AVSTEMMING_XML

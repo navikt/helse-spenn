@@ -2,7 +2,7 @@ apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
   labels:
-    team: tbd
+    team: {{team}}
   name: spenn
   namespace: default
 spec:
@@ -44,7 +44,6 @@ spec:
   webproxy: true
   secureLogs:
     enabled: true
-  team: tbd
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: spenn-1
@@ -52,3 +51,35 @@ spec:
       value: helse-rapid-v1
     - name: KAFKA_BOOTSTRAP_SERVERS
       value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
+    - name: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE
+      value: 3f591062-1747-468c-acda-d62d66c17937
+    - name: NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
+    - name: API_ACCESS_REQUIREDGROUP
+      value: 611669fa-de5c-4dc2-a0e8-6041a019992a
+    - name: KAFKA_BOOTSTRAP_SERVERS
+      value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://sts.adeo.no/SecurityTokenServiceProvider/
+    - name: SIMULERING_SERVICE_URL
+      value: https://cics.adeo.no/oppdrag/simulerFpServiceWSBinding
+    - name: SPRING_DATASOURCE_URL
+      value: jdbc:postgresql://fsspgdb.adeo.no:5432/helse-spenn-oppdrag
+    - name: VAULT_KUBERNETES_PATH
+      value: kubernetes/prod/fss
+    - name: AKTORREGISTERET_BASE_URL
+      value: https://app.adeo.no/aktoerregister
+    - name: MQ_HOSTNAME
+      value: a01apvl063.adeo.no
+    - name: MQ_CHANNEL
+      value: P_SPENN
+    - name: MQ_PORT
+      value: 1414
+    - name: MQ_QUEUE_MANAGER
+      value: MPLSC02
+    - name: OPPDRAG_QUEUE_SEND
+      value: QA.P231.OB04_OPPDRAG_XML
+    - name: OPPDRAG_QUEUE_MOTTAK
+      value: QA.P_SPENN.OPPDRAG_SP_XML_KVITT
+    - name: AVSTEMMING_QUEUE_SEND
+      value: QA.P234.OB29_AVSTEMMING_XML
