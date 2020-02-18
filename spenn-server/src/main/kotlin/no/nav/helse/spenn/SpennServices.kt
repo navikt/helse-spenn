@@ -11,7 +11,6 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.config.SpennConfig
 import no.nav.helse.spenn.config.SpennDbConfig
 import no.nav.helse.spenn.config.SpennKafkaConfig
@@ -160,13 +159,13 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     ///// HTTP API /////
 
-    private val apiAuthConfig = SpennApiAuthConfig.from(appConfig)
+    private val env = readEnvironment()
 
     val spennApiServer = spennApiServer(
         SpennApiEnvironment(
             kafkaStreams = kafkaStreamConsumer.streams,
             meterRegistry = metrics,
-            authConfig = apiAuthConfig,
+            authConfig = env.auth,
             simuleringService = simuleringService,
             aktørTilFnrMapper = aktorTilFnrMapper,
             auditSupport = AuditSupport(),

@@ -15,8 +15,9 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.helse.spenn.config.SpennApiAuthConfig
+import no.nav.helse.spenn.AuthEnvironment
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
+import no.nav.helse.spenn.ourIssuer
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.rest.api.v1.AuditSupport.Companion.identClaimForAuditLog
@@ -35,7 +36,7 @@ data class SpennApiEnvironment(
     val port: Int = 8080,
     val kafkaStreams: KafkaStreams,
     val meterRegistry: PrometheusMeterRegistry,
-    val authConfig: SpennApiAuthConfig,
+    val authConfig: AuthEnvironment,
     val simuleringService: SimuleringService,
     val aktørTilFnrMapper: AktørTilFnrMapper,
     val auditSupport: AuditSupport,
@@ -55,13 +56,13 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
     install(Authentication) {
         tokenValidationSupport(config = TokenSupportConfig(
             IssuerConfig(
-                name = SpennApiAuthConfig.ourIssuer,
+                name = ourIssuer,
                 acceptedAudience = listOf(env.authConfig.acceptedAudience),
                 discoveryUrl = env.authConfig.discoveryUrl.toString()
             )
         ),
             additionalValidation = {
-                val claims = it.getClaims(SpennApiAuthConfig.ourIssuer)
+                val claims = it.getClaims(ourIssuer)
                 val groups = claims?.getAsList("groups")
                 val hasGroup = groups != null && groups.contains(env.authConfig.requiredGroup)
                 if (!hasGroup) log.info("missing required group ${env.authConfig.requiredGroup}")

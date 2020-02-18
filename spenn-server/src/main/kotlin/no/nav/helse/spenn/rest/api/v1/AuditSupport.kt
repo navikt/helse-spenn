@@ -2,7 +2,7 @@ package no.nav.helse.spenn.rest.api.v1
 
 import io.ktor.auth.AuthenticationContext
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.spenn.config.SpennApiAuthConfig
+import no.nav.helse.spenn.ourIssuer
 import no.nav.security.token.support.ktor.TokenValidationContextPrincipal
 import org.slf4j.LoggerFactory
 
@@ -18,7 +18,7 @@ class AuditSupport {
 
     private fun navIdent(auth: AuthenticationContext) : String {
         val ident = auth.principal<TokenValidationContextPrincipal>()?.context
-                ?.getClaims(SpennApiAuthConfig.ourIssuer)
+                ?.getClaims(ourIssuer)
                 ?.getStringClaim(identClaimForAuditLog)
         return ident ?:
         throw IllegalStateException("Using no token or token without required claim in auditlogging")

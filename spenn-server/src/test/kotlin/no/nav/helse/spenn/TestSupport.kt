@@ -8,7 +8,6 @@ import io.micrometer.core.instrument.MockClock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import no.nav.helse.spenn.config.SpennApiAuthConfig
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.rest.SpennApiEnvironment
@@ -28,19 +27,17 @@ import java.util.UUID
 
 const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
-fun testSpennApiAuthConfig(): SpennApiAuthConfig {
-    return SpennApiAuthConfig(
-        acceptedAudience = JwtTokenGenerator.AUD,
-        discoveryUrl = URL("http://localhost:33333/.well-known/openid-configuration"),
-        requiredGroup = requiredGroupMembership
-    )
-}
+fun testAuthEnv() = AuthEnvironment(
+    acceptedAudience = JwtTokenGenerator.AUD,
+    discoveryUrl = URL("http://localhost:33333/.well-known/openid-configuration"),
+    requiredGroup = requiredGroupMembership
+)
 
 @KtorExperimentalAPI
 fun mockApiEnvironment() = SpennApiEnvironment(
     kafkaStreams = Mockito.mock(KafkaStreams::class.java),
     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry(), MockClock()),
-    authConfig = testSpennApiAuthConfig(),
+    authConfig = testAuthEnv(),
     simuleringService = Mockito.mock(SimuleringService::class.java),
     auditSupport = AuditSupport(),
     aktørTilFnrMapper = Mockito.mock(AktørTilFnrMapper::class.java),
