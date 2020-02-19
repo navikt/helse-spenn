@@ -23,16 +23,16 @@ allprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_12
-        targetCompatibility = JavaVersion.VERSION_12
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "12"
+        kotlinOptions.jvmTarget = "11"
     }
 
     tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileTestKotlin") {
-        kotlinOptions.jvmTarget = "12"
+        kotlinOptions.jvmTarget = "11"
     }
 
     tasks.withType<Test> {
@@ -40,7 +40,9 @@ allprojects {
         testLogging {
             events("passed", "skipped", "failed")
         }
-        exclude("**/SpennBlackBoxTest*")
+        if (!project.hasProperty("includeBlackBox")) {
+            exclude("**/SpennBlackBoxTest*")
+        }
     }
 
     tasks.withType<Wrapper> {
