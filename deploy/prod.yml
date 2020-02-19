@@ -11,10 +11,10 @@ spec:
     - https://spenn.nais.adeo.no
   port: 8080
   liveness:
-    initialDelay: 5
+    initialDelay: 10
     path: /isalive
   readiness:
-    initialDelay: 5
+    initialDelay: 10
     path: /isready
   prometheus:
     enabled: true
