@@ -77,7 +77,7 @@ subprojects {
     }
 
     dependencies {
-        implementation("no.nav.helse:rapids-rivers:1.161aa05")
+        implementation("no.nav.helse:rapids-rivers:1.acac29f")
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.61")
         implementation("io.ktor:ktor-server-netty:1.2.5")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0")
