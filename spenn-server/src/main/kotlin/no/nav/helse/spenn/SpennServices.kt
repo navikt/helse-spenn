@@ -7,10 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
-import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
@@ -25,61 +22,22 @@ import no.nav.helse.spenn.rest.spennApiServer
 import no.nav.helse.spenn.simulering.SendToSimuleringTask
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.vedtak.KafkaStreamsConfig
-import no.nav.helse.spenn.vedtak.fnr.AktorRegisteretClient
-import no.nav.helse.spenn.vedtak.fnr.StsRestClient
 import org.apache.cxf.bus.extension.ExtensionManagerBus
-import org.slf4j.LoggerFactory
 
 val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
-private val log = LoggerFactory.getLogger("SpennServices")
-
-@KtorExperimentalAPI
-class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
-    private val env = readEnvironment()
-    private val serviceUser = readServiceUserCredentials()
-
-    ////
+class SpennServices(
+    env: Environment,
+    serviceUser: ServiceUser,
+    oppdragService: OppdragService
+) : SpennTaskRunner {
 
     override fun sendToOS() = sendToOSTask.sendToOS()
     override fun sendSimulering() = sendToSimuleringTask.sendSimulering()
     override fun sendTilAvstemming() = sendTilAvstemmingTask.sendTilAvstemming()
-
-    ////
-
-    val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT) //Metrics.globalRegistry
-
-    ////// DATABASE ///////
-
-    val spennDataSource = SpennDataSource.getMigratedDatasourceInstance(env.db)
-
-    val oppdragService = OppdragService(spennDataSource.dataSource)
-
-    ///// STS-REST /////
-
-    val stsRestClient = StsRestClient(serviceUser)
-
-    ///// AKTØR-reg /////
-
-    val aktorTilFnrMapper = AktorRegisteretClient(
-        stsRestClient = stsRestClient,
-        aktorRegisteretUrl = env.aktorRegisteretBaseUrl
-    )
-
-    ///// KAFKA /////
-
-    val kafkaStreamConsumer = KafkaStreamsConfig(
-        oppdragService = oppdragService,
-        meterRegistry = metrics,
-        aktørTilFnrMapper = aktorTilFnrMapper,
-        env = env.kafka,
-        serviceUser = serviceUser
-    )
-        .streamConsumerStart()
 
     ////// MQ ///////
 
@@ -91,7 +49,7 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
             channel = env.mq.channel
             queueManager = env.mq.queueManager
             transportType = WMQConstants.WMQ_CM_CLIENT
-        }.createConnection(env.mq.user, env.mq.password)
+        }.createConnection(env.mq.user, env.mq.password)!!
 
     //// SIMULERING ////
 
@@ -148,13 +106,12 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
 
     ///// HTTP API /////
 
+    @KtorExperimentalAPI
     val spennApiServer = spennApiServer(
         SpennApiEnvironment(
-            kafkaStreams = kafkaStreamConsumer.streams,
             meterRegistry = metrics,
             authConfig = env.auth,
             simuleringService = simuleringService,
-            aktørTilFnrMapper = aktorTilFnrMapper,
             auditSupport = AuditSupport(),
             stateService = oppdragService,
             oppdragMQSender = oppdragMQSender
@@ -164,14 +121,9 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
     ///// ///// /////
 
     fun shutdown() {
-        log.info("Closing MQ Connection...")
         oppdragMQSender.close()
         oppdragMQReceiver.close()
         avstemmingMQSender.close()
         spennMQConnection.close()
-        log.info("Closing MQ Connection done.")
-        log.info("Closing datasource...")
-        spennDataSource.dataSource.close()
-        log.info("Closing datasource done.")
     }
 }

@@ -47,7 +47,6 @@ class SimuleringControllerTest {
     fun runSimulering() {
         val behov = etEnkeltBehov()
 
-        kWhen(apienv.aktørTilFnrMapper.tilFnr("1234567890123")).thenReturn("12345678900")
         kWhen(apienv.simuleringService.simulerOppdrag(any())).thenReturn(simuleringsresultat)
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",

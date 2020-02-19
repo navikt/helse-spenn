@@ -1,13 +1,12 @@
 package no.nav.helse.spenn.oppdrag
 
-import com.fasterxml.jackson.databind.JsonNode
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 
 
 data class UtbetalingsOppdrag(
-    val behov: JsonNode,
+    val behov: String,
     val utbetalingsreferanse: String,
     val saksbehandler: String,
     /**

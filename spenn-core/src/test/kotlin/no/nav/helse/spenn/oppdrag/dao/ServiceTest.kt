@@ -193,9 +193,9 @@ internal class ServiceTest {
     @Test
     fun `behov skal ikke parses, men forbli inntakt`() {
         val etBehov = """{"heidu":"jauda æøå !! 123","denada":123.44,"apropo":{"a":123,"æøå":"græit"}}"""
-        val utbetaling = etUtbetalingsOppdrag().copy(behov = defaultObjectMapper.readTree(etBehov))
+        val utbetaling = etUtbetalingsOppdrag().copy(etBehov)
         service.lagreNyttOppdrag(utbetaling)
         val dto = repository.findByRef(utbetalingsreferanse = utbetaling.utbetalingsreferanse).first()
-        assertEquals(etBehov, dto.utbetalingsOppdrag.behov.toString())
+        assertEquals(etBehov, dto.utbetalingsOppdrag.behov)
     }
 }

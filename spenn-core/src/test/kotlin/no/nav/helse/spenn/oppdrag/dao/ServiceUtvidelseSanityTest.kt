@@ -1,7 +1,10 @@
 package no.nav.helse.spenn.oppdrag.dao
 
-import no.nav.helse.spenn.core.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus
+import no.nav.helse.spenn.oppdrag.Utbetaling
+import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.testsupport.TestDb
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -138,7 +141,7 @@ internal class ServiceUtvidelseSanityTest {
 
     private fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
         return UtbetalingsOppdrag(
-                behov = defaultObjectMapper.readTree("""{ "somejson" : 123 }"""),
+                behov = """{ "somejson" : 123 }""",
                 utbetalingsreferanse = "ref1",
                 oppdragGjelder = fnr,
                 saksbehandler = "Z999999",

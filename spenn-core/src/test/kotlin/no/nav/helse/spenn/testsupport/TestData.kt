@@ -23,7 +23,7 @@ val simuleringsresultat = SimuleringResult(
 fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
     val orgNr = "123456789"
     return UtbetalingsOppdrag(
-        behov = defaultObjectMapper.readTree("""{ "somejson" : 123 }"""),
+        behov = """{ "somejson" : 123 }""",
         utbetalingsreferanse = "1",
         oppdragGjelder = "01010112345",
         saksbehandler = "Z999999",
@@ -48,7 +48,7 @@ fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
 fun etUtbetalingsUtvidelsesOppdrag(): UtbetalingsOppdrag {
     val orgNr = "123456789"
     return UtbetalingsOppdrag(
-            behov = defaultObjectMapper.readTree("""{ "someOtherjson" : 123 }"""),
+            behov = """{ "someOtherjson" : 123 }""",
             utbetalingsreferanse = "1",
             oppdragGjelder = "01010112345",
             saksbehandler = "Z999999",

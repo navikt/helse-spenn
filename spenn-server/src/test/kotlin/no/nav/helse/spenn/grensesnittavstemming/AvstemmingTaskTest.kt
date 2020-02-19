@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.AvstemmingMapper
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
@@ -15,7 +16,7 @@ import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.SpennOppdragFactory
+import no.nav.helse.spenn.toOppdragsbehov
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import no.trygdeetaten.skjema.oppdrag.Mmel
@@ -62,7 +63,7 @@ internal class AvstemmingTaskTest {
     @Test
     fun testAtDetSendesLoggesOgOppdateresAvstemminger() {
         val behov = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
-        val utbetalingTemplate = SpennOppdragFactory.lagOppdragFraBehov(behov, "12345678901")
+        val utbetalingTemplate = lagOppdragFraBehov(behov.toOppdragsbehov())
 
         service.lagreNyttOppdrag(utbetalingTemplate.copy(utbetalingsreferanse = "2001"))
         service.hentNyeOppdrag(5).first().apply {

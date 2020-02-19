@@ -2,12 +2,12 @@ package no.nav.helse.spenn.blackbox
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigResolveOptions
-import io.ktor.config.HoconApplicationConfig
+import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.spenn.Environment
+import no.nav.helse.spenn.ServiceUser
 import no.nav.helse.spenn.blackbox.mq.OppdragMock
 import no.nav.helse.spenn.blackbox.soap.SoapMock
-import no.nav.helse.spenn.spenn
+import no.nav.helse.spenn.launchApplication
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -24,7 +24,12 @@ import org.junit.jupiter.api.Test
 import org.mockserver.client.MockServerClient
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse
-import org.testcontainers.containers.*
+import org.testcontainers.containers.Container
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.containers.MockServerContainer
+import org.testcontainers.containers.Network
+import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.images.builder.ImageFromDockerfile
@@ -32,7 +37,9 @@ import org.testcontainers.utility.MountableFile
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.HashMap
+import java.util.Properties
+import java.util.UUID
 
 internal class SpennBlackBoxTest {
 
@@ -43,25 +50,13 @@ internal class SpennBlackBoxTest {
 
         mockClient.settOppAktørregisteret(aktørId, fnr)
 
-        val sendtBehov = sendUtbetalingsbehov(aktørId)
-        /*val mottattBehovMedLøsning = ventPåLøsning()
-
-        val løsning = mottattBehovMedLøsning["@løsning"]
-        assertTrue(løsning.hasNonNull("oppdragId"))
-        */
-
+        sendUtbetalingsbehov(aktørId)
 
         println("------------------")
         println("http://host.testcontainers.internal:${soapMock.httpPort}/ws/simulering")
         println("https://host.testcontainers.internal:${soapMock.httpsPort}/ws/simulering")
         println("------------------")
 
-
-        /*val løsningPåBehovUtenLøsning = (mottattBehovMedLøsning as ObjectNode).apply {
-            remove("@løsning")
-        }
-        assertEquals(sendtBehov, løsningPåBehovUtenLøsning)
-         */
         assertTimeoutPreemptively(Duration.ofMinutes(5)) {
             while (mockOppdrag.messagesReceived.isEmpty()) {
                 Thread.sleep(100)
@@ -70,7 +65,11 @@ internal class SpennBlackBoxTest {
     }
 
     private fun ventPåLøsning(timeout: Duration = Duration.ofSeconds(30)): JsonNode {
-        KafkaConsumer(consumerProperties(bootstrapServers), StringDeserializer(), StringDeserializer()).use { consumer ->
+        KafkaConsumer(
+            consumerProperties(bootstrapServers),
+            StringDeserializer(),
+            StringDeserializer()
+        ).use { consumer ->
             consumer.subscribe(listOf(rapidTopic))
             val endTime = Instant.now() + timeout
 
@@ -124,29 +123,34 @@ internal class SpennBlackBoxTest {
     }
 
     private fun producerProperties(bootstrapServer: String) =
-            Properties().apply {
-                put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer)
-                put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "PLAINTEXT")
-                put(ProducerConfig.ACKS_CONFIG, "all")
-                put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "1")
-                put(ProducerConfig.LINGER_MS_CONFIG, "0")
-                put(ProducerConfig.RETRIES_CONFIG, "0")
-                put(SaslConfigs.SASL_MECHANISM, "PLAIN")
-            }
+        Properties().apply {
+            put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer)
+            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "PLAINTEXT")
+            put(ProducerConfig.ACKS_CONFIG, "all")
+            put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "1")
+            put(ProducerConfig.LINGER_MS_CONFIG, "0")
+            put(ProducerConfig.RETRIES_CONFIG, "0")
+            put(SaslConfigs.SASL_MECHANISM, "PLAIN")
+        }
 
     private fun MockServerClient.settOppAktørregisteret(aktørId: String, fnr: String) {
-        this.`when`(request()
+        this.`when`(
+            request()
                 .withPath("/rest/v1/sts/token")
                 .withQueryStringParameter("grant_type", "client_credentials")
                 .withQueryStringParameter("scope", "openid")
-        ).respond(HttpResponse.response()
+        ).respond(
+            HttpResponse.response()
                 .withStatusCode(200)
-                .withBody("""
+                .withBody(
+                    """
 {
     "access_token": "a_token",
     "token_type": "Bearer",
     "expires_in": 3600
-}""".trimIndent()))
+}""".trimIndent()
+                )
+        )
 
         val aktørregisteret_response = """
 {
@@ -167,13 +171,16 @@ internal class SpennBlackBoxTest {
   }
 }""".trimIndent()
 
-        this.`when`(request()
+        this.`when`(
+            request()
                 .withPath("/api/v1/identer")
                 .withQueryStringParameter("gjeldende", "true")
                 .withHeader("Nav-Personidenter", aktørId)
-        ).respond(HttpResponse.response()
+        ).respond(
+            HttpResponse.response()
                 .withStatusCode(200)
-                .withBody(aktørregisteret_response))
+                .withBody(aktørregisteret_response)
+        )
     }
 
     private companion object {
@@ -213,24 +220,74 @@ internal class SpennBlackBoxTest {
 
 
         private val objectMapper = ObjectMapper()
-        private class PostgreContainer(dockerImageName: String) : PostgreSQLContainer<PostgreContainer>(dockerImageName) {
+
+        private class PostgreContainer(dockerImageName: String) :
+            PostgreSQLContainer<PostgreContainer>(dockerImageName) {
             init {
                 withInitScript("an_init_script")
             }
 
             override fun runInitScriptIfRequired() {
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "create role \"$databaseName-admin\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "create role \"$databaseName-user\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "create role \"$databaseName-readonly\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT \"$databaseName-readonly\" TO \"$databaseName-user\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT \"$databaseName-user\" TO \"$databaseName-admin\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-admin\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-user\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-readonly\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select, usage on sequences to \"$databaseName-readonly\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select on tables to \"$databaseName-readonly\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select, insert, update, delete, truncate on tables to \"$databaseName-user\";")
-                ScriptUtils.executeDatabaseScript(databaseDelegate, "an_init_script", "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant all privileges on tables to \"$databaseName-admin\";")
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "create role \"$databaseName-admin\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "create role \"$databaseName-user\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "create role \"$databaseName-readonly\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "GRANT \"$databaseName-readonly\" TO \"$databaseName-user\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "GRANT \"$databaseName-user\" TO \"$databaseName-admin\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-admin\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-user\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "GRANT CONNECT ON DATABASE \"$databaseName\" TO \"$databaseName-readonly\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select, usage on sequences to \"$databaseName-readonly\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select on tables to \"$databaseName-readonly\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant select, insert, update, delete, truncate on tables to \"$databaseName-user\";"
+                )
+                ScriptUtils.executeDatabaseScript(
+                    databaseDelegate,
+                    "an_init_script",
+                    "alter default privileges for role \"$databaseName-admin\" in schema \"public\" grant all privileges on tables to \"$databaseName-admin\";"
+                )
             }
         }
 
@@ -312,11 +369,11 @@ internal class SpennBlackBoxTest {
 
         private fun setupPostgre(network: Network): PostgreContainer {
             return PostgreContainer(PostgresImage)
-                    .withNetwork(network)
-                    .withNetworkAliases(PostgresHostname)
-                    .withDatabaseName(SpennDatabase)
-                    .withUsername(PostgresRootUsername)
-                    .withPassword(PostgresRootPassword)
+                .withNetwork(network)
+                .withNetworkAliases(PostgresHostname)
+                .withDatabaseName(SpennDatabase)
+                .withUsername(PostgresRootUsername)
+                .withPassword(PostgresRootPassword)
         }
 
         private fun setupKafka(network: Network): KafkaContainer {
@@ -345,31 +402,56 @@ internal class SpennBlackBoxTest {
 
         private fun setupMq(network: Network): DockerContainer {
             return DockerContainer("ibmcom/mq:latest")
-                    .withNetwork(network)
-                    .withNetworkAliases(MqHostname)
-                    .withEnv("LICENSE", "accept")
-                    .withEnv("MQ_QMGR_NAME", MqQueueMananagerName)
+                .withNetwork(network)
+                .withNetworkAliases(MqHostname)
+                .withEnv("LICENSE", "accept")
+                .withEnv("MQ_QMGR_NAME", MqQueueMananagerName)
         }
 
         private fun setupVault(network: Network): DockerContainer {
             return DockerContainer(VaultImage)
-                    .withNetwork(network)
-                    .withNetworkAliases(VaultHostname)
-                    .withEnv("VAULT_ADDR", "http://127.0.0.1:$VaultPort")
-                    .withEnv("VAULT_TOKEN", VaultRootToken)
-                    .withEnv("VAULT_DEV_ROOT_TOKEN_ID", VaultRootToken)
-                    .withLogConsumer { print("vault: " + it.utf8String) }
+                .withNetwork(network)
+                .withNetworkAliases(VaultHostname)
+                .withEnv("VAULT_ADDR", "http://127.0.0.1:$VaultPort")
+                .withEnv("VAULT_TOKEN", VaultRootToken)
+                .withEnv("VAULT_DEV_ROOT_TOKEN_ID", VaultRootToken)
+                .withLogConsumer { print("vault: " + it.utf8String) }
         }
 
         private fun setupPostgreVault(vaultContainer: DockerContainer) {
             vaultContainer.execInContainer("vault", "secrets", "enable", "-path=$VaultPostgresMountPath", "database")
-                    .print()
-            vaultContainer.execInContainer("vault", "write", "$VaultPostgresMountPath/config/$SpennDatabase", "plugin_name=postgresql-database-plugin", "allowed_roles=$SpennDatabase-admin,$SpennDatabase-user", "connection_url=postgresql://{{username}}:{{password}}@$PostgresHostname:$PostgresPort?sslmode=disable", "username=$PostgresRootUsername", "password=$PostgresRootPassword")
-                    .print()
-            vaultContainer.execInContainer("vault", "write", "$VaultPostgresMountPath/roles/$SpennDatabase-admin", "db_name=$SpennDatabase", "creation_statements=CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT \"$SpennDatabase-admin\" TO \"{{name}}\";", "default_ttl=5m", "max_ttl=5m")
-                    .print()
-            vaultContainer.execInContainer("vault", "write", "$VaultPostgresMountPath/roles/$SpennDatabase-user", "db_name=$SpennDatabase", "creation_statements=CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT \"$SpennDatabase-user\" TO \"{{name}}\";", "default_ttl=5m", "max_ttl=5m")
-                    .print()
+                .print()
+            vaultContainer.execInContainer(
+                "vault",
+                "write",
+                "$VaultPostgresMountPath/config/$SpennDatabase",
+                "plugin_name=postgresql-database-plugin",
+                "allowed_roles=$SpennDatabase-admin,$SpennDatabase-user",
+                "connection_url=postgresql://{{username}}:{{password}}@$PostgresHostname:$PostgresPort?sslmode=disable",
+                "username=$PostgresRootUsername",
+                "password=$PostgresRootPassword"
+            )
+                .print()
+            vaultContainer.execInContainer(
+                "vault",
+                "write",
+                "$VaultPostgresMountPath/roles/$SpennDatabase-admin",
+                "db_name=$SpennDatabase",
+                "creation_statements=CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT \"$SpennDatabase-admin\" TO \"{{name}}\";",
+                "default_ttl=5m",
+                "max_ttl=5m"
+            )
+                .print()
+            vaultContainer.execInContainer(
+                "vault",
+                "write",
+                "$VaultPostgresMountPath/roles/$SpennDatabase-user",
+                "db_name=$SpennDatabase",
+                "creation_statements=CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT \"$SpennDatabase-user\" TO \"{{name}}\";",
+                "default_ttl=5m",
+                "max_ttl=5m"
+            )
+                .print()
         }
 
         private fun setupOidc(network: Network): DockerContainer {
@@ -391,33 +473,23 @@ internal class SpennBlackBoxTest {
                 .waitingFor(Wait.forListeningPort())
         }
 
-        object SpennContainer : GenericContainer<SpennContainer>(ImageFromDockerfile()
-            .withFileFromPath(".", Paths.get("..")))
+        object SpennContainer : GenericContainer<SpennContainer>(
+            ImageFromDockerfile()
+                .withFileFromPath(".", Paths.get(".."))
+        )
 
 
-        private class LocalSpenn() {
-            val envMap = mutableMapOf<String,String>()
-            fun withEnv(name: String, value:String) : LocalSpenn {
-                envMap[name] = value
-                return this
-            }
+        private class LocalSpenn(val envMap: Map<String, String>) {
 
             fun start() {
                 Thread(this::dorun).run()
             }
 
+            @KtorExperimentalAPI
             private fun dorun() {
-                setEnv(envMap)
-
-                val conf = ConfigFactory.parseResources("application.conf")
-                        .resolve(ConfigResolveOptions.defaults())
-                val appConfig = HoconApplicationConfig(conf)
-
-
-                spenn(appConfig)
+                launchApplication(Environment(envMap), ServiceUser("username", "password"))
             }
         }
-
 
 
         data class HostInfo(
@@ -429,41 +501,33 @@ internal class SpennBlackBoxTest {
             val hostPort get() = "$hostname:$port"
         }
 
-        fun setupEnv(withEnv: (String, String) -> Any, hostResolver: (String, Int) -> HostInfo) {
-            withEnv("VAULT_ADDR", hostResolver(VaultHostname, VaultPort).http)
-            withEnv("VAULT_TOKEN", VaultRootToken)
-            withEnv("MQ_HOSTNAME", hostResolver(MqHostname, MqPort).hostname)
-            withEnv("MQ_PORT", hostResolver(MqHostname, MqPort).port.toString())
-            withEnv("SECURITYTOKENSERVICE_URL", "${hostResolver("localhost", soapMock.httpsPort).https}/ws/SecurityTokenService")
-            withEnv(
-                "AKTORREGISTERET_BASE_URL",
-                hostResolver(MockServerHostname, MockServerPort).http
-            )
-            withEnv("SIMULERING_SERVICE_URL", "${hostResolver("localhost", soapMock.httpsPort).https}/ws/simulering")
-            withEnv("KAFKA_BOOTSTRAP_SERVERS", bootstrapServers)
-            withEnv("KAFKA_USERNAME", "foo")
-            withEnv("KAFKA_PASSWORD", "bar")
-            withEnv("PLAIN_TEXT_KAFKA", "true")
-            withEnv("NAV_TRUSTSTORE_PATH", "/tmp/keystore.p12")
-            withEnv("NAV_TRUSTSTORE_PASSWORD", soapMock.keystorePassword)
-            withEnv("STS_SOAP_USERNAME", "foo")
-            withEnv("STS_SOAP_PASSWORD", "bar")
-            withEnv(
-                "DATASOURCE_URL",
-                "jdbc:postgresql://${hostResolver(PostgresHostname, PostgresPort).hostPort}/$SpennDatabase"
-            )
-            withEnv("DATASOURCE_VAULT_ENABLED", "true")
-            withEnv("DATASOURCE_VAULT_MOUNTPATH", VaultPostgresMountPath)
-            withEnv("SCHEDULER_ENABLED", "true")
-            withEnv("SCHEDULER_TASKS_SIMULERING", "true")
-            withEnv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE", "audience")
-            withEnv(
-                "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL",
-                "${hostResolver(OidcHostname, OidcPort).http}/.well-known/openid-configuration"
-            )
-        }
+        fun setupEnv(
+            additionalEnv: Map<String, String> = mapOf(),
+            hostResolver: (String, Int) -> HostInfo
+        ) = mapOf(
+            "SIMULERING_SERVICE_URL" to "${hostResolver("localhost", soapMock.httpsPort).https}/ws/simulering",
+            "SECURITYTOKENSERVICE_URL" to "${hostResolver("localhost", soapMock.httpsPort).https}/ws/SecurityTokenService",
+            "AKTORREGISTERET_BASE_URL" to hostResolver(MockServerHostname, MockServerPort).http,
+            "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE" to "audience",
+            "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL" to "${hostResolver(OidcHostname, OidcPort).http}/.well-known/openid-configuration",
+            "API_ACCESS_REQUIREDGROUP" to "",
+            "DATASOURCE_URL" to "jdbc:postgresql://${hostResolver(PostgresHostname, PostgresPort).hostPort}/$SpennDatabase",
+            "VAULT_POSTGRES_MOUNTPATH" to VaultPostgresMountPath,
+            "MQ_QUEUE_MANAGER" to "",
+            "MQ_CHANNEL" to "",
+            "MQ_HOSTNAME" to hostResolver(MqHostname, MqPort).hostname,
+            "MQ_PORT" to hostResolver(MqHostname, MqPort).port.toString(),
+            "MQ_USER" to "",
+            "MQ_PASSWORD" to "",
+            "OPPDRAG_QUEUE_SEND" to "",
+            "OPPDRAG_QUEUE_MOTTAK" to "",
+            "AVSTEMMING_QUEUE_SEND" to "",
+            "KAFKA_BOOTSTRAP_SERVERS" to bootstrapServers,
+            "NAV_TRUSTSTORE_PATH" to "/tmp/keystore.p12",
+            "NAV_TRUSTSTORE_PASSWORD" to soapMock.keystorePassword
+        ) + additionalEnv
 
-        private fun setupLocalSpenn(containers: List<GenericContainer<*>>) : LocalSpenn {
+        private fun setupLocalSpenn(containers: List<GenericContainer<*>>): LocalSpenn {
 
             System.setProperty("javax.net.ssl.trustStore", soapMock.keystorePath.toAbsolutePath().toString())
             System.setProperty("javax.net.ssl.trustStorePassword", soapMock.keystorePassword)
@@ -473,13 +537,13 @@ internal class SpennBlackBoxTest {
                 .map { it.getMappedPort(port) }
                 .first()
                 .also { println("Port for $hostname=$port, mappedPort=$it") }
+
             fun baseUrlForContainer(hostname: String, port: Int) = when (hostname) {
                 "localhost" -> HostInfo(hostname = "localhost", port = port)
                 else -> HostInfo(hostname = "localhost", port = toLocalPort(hostname, port))
             }
 
-            return LocalSpenn()
-                .also { setupEnv(it::withEnv, ::baseUrlForContainer) }
+            return LocalSpenn(setupEnv(hostResolver = ::baseUrlForContainer))
         }
 
 
@@ -490,7 +554,7 @@ internal class SpennBlackBoxTest {
             }
             return SpennContainer
                 .withNetwork(network)
-                .also { setupEnv(it::withEnv, ::hostResolverContainer) }
+                .also { setupEnv(hostResolver = ::hostResolverContainer) }
                 .withEnv("KAFKA_BOOTSTRAP_SERVERS", "$KafkaHostname:$KafkaPort")
                 .waitingFor(Wait.forListeningPort())
                 .withCopyFileToContainer(MountableFile.forHostPath(soapMock.keystorePath), "/tmp/keystore.p12")

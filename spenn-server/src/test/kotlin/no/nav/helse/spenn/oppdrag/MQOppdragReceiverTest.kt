@@ -3,12 +3,13 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.kWhen
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.vedtak.SpennOppdragFactory
+import no.nav.helse.spenn.toOppdragsbehov
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -74,8 +75,7 @@ internal class MQOppdragReceiverTest {
             utbetalesTil = "995816598", grad = BigInteger.valueOf(100)
         )
 
-        val utbetalingTemplate =
-            SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(), "11111111111")
+        val utbetalingTemplate = lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov())
         val utbetaling = utbetalingTemplate.copy(
             utbetaling = utbetalingTemplate.utbetaling!!.copy(
                 utbetalingsLinjer = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3)

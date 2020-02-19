@@ -13,11 +13,8 @@ import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.vedtak.Fodselsnummer
-import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.token.support.test.JwkGenerator
 import no.nav.security.token.support.test.JwtTokenGenerator
-import org.apache.kafka.streams.KafkaStreams
 import org.mockito.Mockito
 import org.mockito.stubbing.OngoingStubbing
 import java.net.URL
@@ -35,12 +32,10 @@ fun testAuthEnv() = AuthEnvironment(
 
 @KtorExperimentalAPI
 fun mockApiEnvironment() = SpennApiEnvironment(
-    kafkaStreams = Mockito.mock(KafkaStreams::class.java),
     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry(), MockClock()),
     authConfig = testAuthEnv(),
     simuleringService = Mockito.mock(SimuleringService::class.java),
     auditSupport = AuditSupport(),
-    aktørTilFnrMapper = Mockito.mock(AktørTilFnrMapper::class.java),
     oppdragMQSender = Mockito.mock(OppdragMQSender::class.java),
     stateService = Mockito.mock(OppdragService::class.java)
 )
@@ -105,6 +100,7 @@ fun etEnkeltBehov(maksdato: LocalDate = LocalDate.now().plusYears(1)) = defaultO
           "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
           "utbetalingsreferanse": "1",
           "aktørId": "1234567890123",
+          "fødselsnummer": "12345678901",
           "organisasjonsnummer": "897654321",
           "maksdato": "$maksdato",
           "saksbehandler": "Z999999",
@@ -125,6 +121,7 @@ fun enEnkelAnnulering() = defaultObjectMapper.readTree(
         {
           "utbetalingsreferanse": "1",
           "aktørId": "1234567890123",
+          "fødselsnummer": "12345678901",
           "saksbehandler": "Z999999"
         }        
     """
@@ -136,7 +133,3 @@ fun <T> kArgThat(matcher: (T) -> Boolean): T = Mockito.argThat<T>(matcher)
 
 fun <T> kWhen(methodCall: T): OngoingStubbing<T> =
     Mockito.`when`(methodCall)
-
-class DummyAktørMapper() : AktørTilFnrMapper {
-    override fun tilFnr(aktørId: String): Fodselsnummer = aktørId
-}

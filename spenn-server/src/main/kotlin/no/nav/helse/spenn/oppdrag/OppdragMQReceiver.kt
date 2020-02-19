@@ -11,24 +11,26 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import javax.jms.Connection
 
-class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
-                        mottakqueue: String,
-                        val jaxb: JAXBOppdrag,
-                        val oppdragService: OppdragService,
-                        val meterRegistry: MeterRegistry/*,
-                        val statusProducer: OppdragStateKafkaProducer*/) {
+class OppdragMQReceiver(
+    connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
+    mottakqueue: String,
+    val jaxb: JAXBOppdrag,
+    val oppdragService: OppdragService,
+    val meterRegistry: MeterRegistry/*,
+                        val statusProducer: OppdragStateKafkaProducer*/
+) {
 
     private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
 
     private val jmsSession = connection.createSession()
     private val consumer = jmsSession
-            .createConsumer(MQQueue(mottakqueue))
+        .createConsumer(MQQueue(mottakqueue))
 
     init {
         consumer.setMessageListener { m ->
             val body = m.getBody(String::class.java)
             try {
-                val ignored = receiveOppdragResponse(body)
+                receiveOppdragResponse(body)
             } catch (e: Exception) {
                 log.error(e.message, e)
             }
@@ -38,17 +40,19 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
     companion object {
         private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
 
-        internal fun mapStatus(oppdrag: Oppdrag): TransaksjonStatus {
+        internal fun mapStatus(oppdrag: Oppdrag): TransaksjonStatus =
             when (KvitteringAlvorlighetsgrad.fromKode(oppdrag.mmel.alvorlighetsgrad)) {
-                KvitteringAlvorlighetsgrad.OK -> return TransaksjonStatus.FERDIG
+                KvitteringAlvorlighetsgrad.OK -> TransaksjonStatus.FERDIG
                 KvitteringAlvorlighetsgrad.AKSEPTERT_MEN_NOE_ER_FEIL -> {
                     log.warn("Akseptert men noe er feil for ${oppdrag.oppdrag110.fagsystemId} melding ${oppdrag.mmel.beskrMelding}")
-                    return TransaksjonStatus.FERDIG
+                    TransaksjonStatus.FERDIG
+                }
+                else -> {
+                    log.error("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId} ${oppdrag.mmel.beskrMelding}")
+                    TransaksjonStatus.FEIL
                 }
             }
-            log.error("FEIL for oppdrag ${oppdrag.oppdrag110.fagsystemId} ${oppdrag.mmel.beskrMelding}")
-            return TransaksjonStatus.FEIL
-        }
+
     }
 
     //@JmsListener(destination = "\${oppdrag.queue.mottak}")
@@ -64,7 +68,8 @@ class OppdragMQReceiver(connection: Connection, // NB: It is the responsibility 
         val utbetalingsreferanse = oppdrag.oppdrag110.fagsystemId
         log.info("OppdragResponse for $utbetalingsreferanse  ${oppdrag.mmel.alvorlighetsgrad}  ${oppdrag.mmel.beskrMelding}")
         require(oppdrag.oppdrag110.avstemming115.nokkelAvstemming != null)
-        val nøkkelAvstemming = LocalDateTime.parse(oppdrag.oppdrag110.avstemming115.nokkelAvstemming, avstemmingsnokkelFormatter)
+        val nøkkelAvstemming =
+            LocalDateTime.parse(oppdrag.oppdrag110.avstemming115.nokkelAvstemming, avstemmingsnokkelFormatter)
         val status = mapStatus(oppdrag)
         val feilmld = if (status == TransaksjonStatus.FEIL) oppdrag.mmel.beskrMelding else null
 

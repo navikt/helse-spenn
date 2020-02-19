@@ -9,19 +9,16 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagAnnulleringoppdragFraBehov
 import no.nav.helse.spenn.oppdrag.dao.AlleredeAnnulertException
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
-import no.nav.helse.spenn.vedtak.SpennOppdragFactory
-import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
+import no.nav.helse.spenn.toAnulleringsbehov
 import org.slf4j.LoggerFactory
 
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 
-@KtorExperimentalAPI
 fun Route.opphørscontroller(
     oppdragService: OppdragService,
-    aktørTilFnrMapper: AktørTilFnrMapper,
     audit: AuditSupport
 ) {
     post("/api/v1/opphor") {
@@ -34,8 +31,7 @@ fun Route.opphørscontroller(
             return@post
         }
         val utbetalingsreferanse = behov["utbetalingsreferanse"].asText()!!
-        val aktørId = behov["aktørId"].asText()!!
-        val oppdrag = SpennOppdragFactory.lagOppdragFraBehov(behov, aktørTilFnrMapper.tilFnr(aktørId))
+        val oppdrag = lagAnnulleringoppdragFraBehov(behov.toAnulleringsbehov())
         LOG.info("opphør called for utbetalingsreferanse: $utbetalingsreferanse")
         audit.info("annulering kall for utbetalingsreferanse: $utbetalingsreferanse", call.authentication)
         try {

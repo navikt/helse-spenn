@@ -3,6 +3,7 @@ package no.nav.helse.spenn.blackbox.metatest
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.ServiceUser
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
@@ -11,7 +12,7 @@ import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.SimuleringStatus
-import no.nav.helse.spenn.vedtak.SpennOppdragFactory
+import no.nav.helse.spenn.toOppdragsbehov
 import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -63,8 +64,7 @@ internal class SoapMockSimuleringTest {
             utbetalesTil = "123456789",
             grad = BigInteger.valueOf(100)
         )
-        val utbetalingTemplate =
-            SpennOppdragFactory.lagOppdragFraBehov(etEnkeltBehov(maksdato = maksDato), "12121212345")
+        val utbetalingTemplate = lagOppdragFraBehov(etEnkeltBehov(maksdato = maksDato).toOppdragsbehov())
         val utbetaling = utbetalingTemplate.copy(
             utbetaling = utbetalingTemplate.utbetaling!!.copy(
                 utbetalingsLinjer = listOf(enOppdragsLinje)

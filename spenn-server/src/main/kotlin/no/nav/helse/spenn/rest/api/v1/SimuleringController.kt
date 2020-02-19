@@ -10,10 +10,10 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.vedtak.SpennOppdragFactory
-import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
+import no.nav.helse.spenn.toOppdragsbehov
 import org.slf4j.LoggerFactory
 
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
@@ -21,7 +21,6 @@ private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 @KtorExperimentalAPI
 fun Route.simuleringcontroller(
     simuleringService: SimuleringService,
-    aktørTilFnrMapper: AktørTilFnrMapper,
     audit: AuditSupport
 ) {
 
@@ -31,15 +30,17 @@ fun Route.simuleringcontroller(
             behov = call.receive<JsonNode>()
         } catch (jsonError: JsonProcessingException) {
             LOG.warn("JsonProcessingException: ", jsonError)
-            call.respond(HttpStatusCode.BadRequest);
+            call.respond(HttpStatusCode.BadRequest)
             return@post
         }
         val sakskompleksId = behov["sakskompleksId"].asText()!!
-        val aktørId = behov["aktørId"].asText()!!
-        val oppdrag = SpennOppdragFactory.lagOppdragFraBehov(behov, aktørTilFnrMapper.tilFnr(aktørId))
+        val oppdrag = lagOppdragFraBehov(behov.toOppdragsbehov())
         LOG.info("simulering called for vedtak: $sakskompleksId")
         audit.info("simulering kall for vedtak: $sakskompleksId", call.authentication)
-        call.respond(simuleringService.simulerOppdrag(
-                oppdrag.lagPåSidenSimuleringsrequest()))
+        call.respond(
+            simuleringService.simulerOppdrag(
+                oppdrag.lagPåSidenSimuleringsrequest()
+            )
+        )
     }
 }

@@ -1,63 +1,54 @@
 package no.nav.helse.spenn
 
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigResolveOptions
-import com.typesafe.config.ConfigValueFactory
-import io.ktor.config.ApplicationConfig
-import io.ktor.config.HoconApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
-import org.slf4j.LoggerFactory
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import java.util.concurrent.ScheduledExecutorService
 
 
-private val log = LoggerFactory.getLogger("SpennApplication")
+val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
 @KtorExperimentalAPI
 fun main() {
-    log.info("Loading config...")
-    val serviceUser = readServiceUserCredentials()
-    val serviceUserConf = ConfigValueFactory
-        .fromMap(
-            mapOf(
-                "username" to serviceUser.username,
-                "password" to serviceUser.password
-            )
-        )
-    val conf = ConfigFactory
-        .parseResources("application.conf")
-        .resolve(ConfigResolveOptions.defaults())
-        .withValue("serviceuser", serviceUserConf)
+    val env: Environment = readEnvironment()
+    val serviceUser: ServiceUser = readServiceUserCredentials()
 
-    val appConfig = HoconApplicationConfig(conf)
-    spenn(appConfig)
+    launchApplication(env, serviceUser)
 }
 
 @KtorExperimentalAPI
-internal fun spenn(appConfig: ApplicationConfig) {
-    log.info("Creating SpennServices...")
-    log.info("OPPHØRSEKSPERIMENT!")
-    val services = SpennServices(appConfig)
+internal fun launchApplication(env: Environment, serviceUser: ServiceUser) {
+    val spennDataSource = SpennDataSource.getMigratedDatasourceInstance(env.db)
+    val oppdragService = OppdragService(spennDataSource.dataSource)
+    val rapidsConnection = rapidsConnection(env, oppdragService)
 
-    var scheduler: ScheduledExecutorService? = null
-    log.info("Setting up schedules...")
+
+    val services = SpennServices(env, serviceUser, oppdragService)
+    val scheduler: ScheduledExecutorService?
+
     scheduler = setupSchedules(
         spennTasks = services,
-        dataSourceForLockingTable = services.spennDataSource.dataSource
+        dataSourceForLockingTable = spennDataSource.dataSource
     )
 
-    log.info("Starting HTTP API services")
     services.spennApiServer.start()
-
-    log.info("Starting MQConnection to start cunsuming replies on MQQueue...")
     services.spennMQConnection.start()
+    rapidsConnection.start()
 
     Runtime.getRuntime().addShutdownHook(Thread {
-        log.info("Shutting down scheduler...")
-        scheduler?.shutdown()
-        log.info("Shutting down scheduler done.")
-
-        log.info("Shutting down services...")
+        rapidsConnection.stop()
+        spennDataSource.dataSource.close()
+        scheduler.shutdown()
         services.shutdown()
-        log.info("Shutting down services done.")
     })
+}
+
+@KtorExperimentalAPI
+internal fun rapidsConnection(env: Environment, oppdragService: OppdragService): RapidsConnection {
+    val rapidsConnection = RapidApplication.create(env.raw)
+    UtbetalingLøser(rapidsConnection, oppdragService)
+    return rapidsConnection
 }

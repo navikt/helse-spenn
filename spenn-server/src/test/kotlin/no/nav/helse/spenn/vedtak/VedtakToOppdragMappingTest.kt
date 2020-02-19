@@ -1,11 +1,13 @@
 package no.nav.helse.spenn.vedtak
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.Utbetaling
 import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.toOppdragsbehov
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -29,7 +31,7 @@ class VedtakToOppdragMappingTest {
             grad = BigInteger.valueOf(100)
         )
         val målbilde = UtbetalingsOppdrag(
-            behov = behov,
+            behov = behov.toString(),
             oppdragGjelder = "12345678901",
             saksbehandler = "Z999999",
             utbetalingsreferanse = "1",
@@ -40,14 +42,14 @@ class VedtakToOppdragMappingTest {
             )
         )
 
-        val faktisk = SpennOppdragFactory.lagOppdragFraBehov(behov, "12345678901")
+        val faktisk = lagOppdragFraBehov(behov.toOppdragsbehov())
         Assertions.assertEquals(målbilde, faktisk)
     }
 
     @Test
     fun testFoersteLinjeIMappetUtbetalingslinjeSkalHaId_lik_1() {
         val behov = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
-        val utbetalingsOppdrag = SpennOppdragFactory.lagOppdragFraBehov(behov, "01010112345")
+        val utbetalingsOppdrag = lagOppdragFraBehov(behov.toOppdragsbehov())
         assertEquals(1.toString(), utbetalingsOppdrag.utbetaling!!.utbetalingsLinjer.first().id)
     }
 }

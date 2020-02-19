@@ -24,21 +24,16 @@ import no.nav.helse.spenn.rest.api.v1.AuditSupport.Companion.identClaimForAuditL
 import no.nav.helse.spenn.rest.api.v1.opphørscontroller
 import no.nav.helse.spenn.rest.api.v1.simuleringcontroller
 import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.vedtak.fnr.AktørTilFnrMapper
 import no.nav.security.token.support.ktor.IssuerConfig
 import no.nav.security.token.support.ktor.TokenSupportConfig
 import no.nav.security.token.support.ktor.tokenValidationSupport
-import org.apache.kafka.streams.KafkaStreams
 import org.slf4j.LoggerFactory
 
-@KtorExperimentalAPI
-data class SpennApiEnvironment(
+data class SpennApiEnvironment @KtorExperimentalAPI constructor(
     val port: Int = 8080,
-    val kafkaStreams: KafkaStreams,
     val meterRegistry: PrometheusMeterRegistry,
     val authConfig: AuthEnvironment,
     val simuleringService: SimuleringService,
-    val aktørTilFnrMapper: AktørTilFnrMapper,
     val auditSupport: AuditSupport,
     val stateService: OppdragService,
     val oppdragMQSender: OppdragMQSender
@@ -84,11 +79,9 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
     }
 
     routing {
-        healthstatuscontroller(env.kafkaStreams, env.meterRegistry)
-
         authenticate {
-            simuleringcontroller(env.simuleringService, env.aktørTilFnrMapper, env.auditSupport)
-            opphørscontroller(env.stateService, env.aktørTilFnrMapper, env.auditSupport)
+            simuleringcontroller(env.simuleringService, env.auditSupport)
+            opphørscontroller(env.stateService, env.auditSupport)
         }
 
     }

@@ -9,6 +9,24 @@ const val vaultServiceUserBase = "/var/run/secrets/nais.io/service_user"
 const val stsRestBaseUrl = "http://security-token-service"
 const val ourIssuer = "ourissuer"
 
+const val simuleringServiceUrlKey = "SIMULERING_SERVICE_URL"
+const val stsSoapUrlKey = "SECURITYTOKENSERVICE_URL"
+const val aktorRegisteretBaseUrlKey = "AKTORREGISTERET_BASE_URL"
+const val acceptedAudienceKey = "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE"
+const val discoveryUrlKey = "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL"
+const val requiredGroupKey = "API_ACCESS_REQUIREDGROUP"
+const val datasourceUrlKey = "DATASOURCE_URL"
+const val vaultPostgresMountpathKey = "VAULT_POSTGRES_MOUNTPATH"
+const val mqQueueManagerKey = "MQ_QUEUE_MANAGER"
+const val mqChannelKey = "MQ_CHANNEL"
+const val mqHostnameKey = "MQ_HOSTNAME"
+const val mqPortKey = "MQ_PORT"
+const val mqUserKey = "MQ_USER"
+const val mqPasswordKey = "MQ_PASSWORD"
+const val mqOppdragQueueSendKey = "OPPDRAG_QUEUE_SEND"
+const val mqOppdragQueueMottakKey = "OPPDRAG_QUEUE_MOTTAK"
+const val mqAvvstemmingQueueSendKey = "AVSTEMMING_QUEUE_SEND"
+
 val vaultServiceUserBasePath: Path = Paths.get(vaultServiceUserBase)
 
 fun readServiceUserCredentials() = ServiceUser(
@@ -16,36 +34,7 @@ fun readServiceUserCredentials() = ServiceUser(
     password = Files.readString(vaultServiceUserBasePath.resolve("password"))
 )
 
-fun readEnvironment() = Environment(
-    simuleringServiceUrl = System.getenv("SIMULERING_SERVICE_URL"),
-    stsSoapUrl = System.getenv("SECURITYTOKENSERVICE_URL"),
-    aktorRegisteretBaseUrl = System.getenv("AKTORREGISTERET_BASE_URL"),
-    auth = AuthEnvironment(
-        acceptedAudience = System.getenv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE"),
-        discoveryUrl = URL(System.getenv("NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL")),
-        requiredGroup = System.getenv("API_ACCESS_REQUIREDGROUP")
-    ),
-    db = DbEnvironment(
-        jdbcUrl = System.getenv("DATASOURCE_URL"),
-        vaultPostgresMountpath = System.getenv("VAULT_POSTGRES_MOUNTPATH")
-    ),
-    mq = MqEnvironment(
-        queueManager = System.getenv("MQ_QUEUE_MANAGER"),
-        channel = System.getenv("MQ_CHANNEL"),
-        hostname = System.getenv("MQ_HOSTNAME"),
-        port = System.getenv("MQ_PORT").toInt(),
-        user = System.getenv("MQ_USER"),
-        password = System.getenv("MQ_PASSWORD"),
-        oppdragQueueSend = System.getenv("OPPDRAG_QUEUE_SEND"),
-        oppdragQueueMottak = System.getenv("OPPDRAG_QUEUE_MOTTAK"),
-        avstemmingQueueSend = System.getenv("AVSTEMMING_QUEUE_SEND")
-    ),
-    kafka = KafkaEnvironment(
-        bootstrapServersUrl = System.getenv("KAFKA_BOOTSTRAP_SERVERS"),
-        truststorePath = System.getenv("NAV_TRUSTSTORE_PATH"),
-        truststorePassword = System.getenv("NAV_TRUSTSTORE_PASSWORD")
-    )
-)
+fun readEnvironment() = Environment(System.getenv())
 
 data class ServiceUser(
     val username: String,
@@ -53,14 +42,43 @@ data class ServiceUser(
 )
 
 data class Environment(
+    val raw: Map<String, String>,
     val simuleringServiceUrl: String,
     val stsSoapUrl: String,
     val aktorRegisteretBaseUrl: String,
     val auth: AuthEnvironment,
     val db: DbEnvironment,
-    val mq: MqEnvironment,
-    val kafka: KafkaEnvironment
-)
+    val mq: MqEnvironment
+) {
+    constructor (raw: Map<String, String>) : this(
+        raw = raw,
+        simuleringServiceUrl = raw.hent(simuleringServiceUrlKey),
+        stsSoapUrl = raw.hent(stsSoapUrlKey),
+        aktorRegisteretBaseUrl = raw.hent(aktorRegisteretBaseUrlKey),
+        auth = AuthEnvironment(
+            acceptedAudience = raw.hent(acceptedAudienceKey),
+            discoveryUrl = URL(raw.hent(discoveryUrlKey)),
+            requiredGroup = raw.hent(requiredGroupKey)
+        ),
+        db = DbEnvironment(
+            jdbcUrl = raw.hent(datasourceUrlKey),
+            vaultPostgresMountpath = raw.hent(vaultPostgresMountpathKey)
+        ),
+        mq = MqEnvironment(
+            queueManager = raw.hent(mqQueueManagerKey),
+            channel = raw.hent(mqChannelKey),
+            hostname = raw.hent(mqHostnameKey),
+            port = raw.hent(mqPortKey).toInt(),
+            user = raw.hent(mqUserKey),
+            password = raw.hent(mqPasswordKey),
+            oppdragQueueSend = raw.hent(mqOppdragQueueSendKey),
+            oppdragQueueMottak = raw.hent(mqOppdragQueueMottakKey),
+            avstemmingQueueSend = raw.hent(mqAvvstemmingQueueSendKey)
+        )
+    )
+}
+
+private fun Map<String, String>.hent(key: String): String = requireNotNull(this[key]) { "$key mangler i env" }
 
 data class AuthEnvironment(
     val acceptedAudience: String,
@@ -83,15 +101,4 @@ data class MqEnvironment(
     val oppdragQueueSend: String,
     val oppdragQueueMottak: String,
     val avstemmingQueueSend: String
-)
-
-data class KafkaEnvironment(
-    val appId: String = "spenn-1",
-    val bootstrapServersUrl: String,
-    val truststorePath: String?,
-    val truststorePassword: String?,
-    val plainTextKafka: Boolean = false,
-    val offsetReset: Boolean = false,
-    val timeStampMillis: Long = -1,
-    val streamVedtak: Boolean = true
 )
