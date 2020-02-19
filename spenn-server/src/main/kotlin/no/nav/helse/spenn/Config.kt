@@ -39,6 +39,11 @@ fun readEnvironment() = Environment(
         oppdragQueueSend = System.getenv("OPPDRAG_QUEUE_SEND"),
         oppdragQueueMottak = System.getenv("OPPDRAG_QUEUE_MOTTAK"),
         avstemmingQueueSend = System.getenv("AVSTEMMING_QUEUE_SEND")
+    ),
+    kafka = KafkaEnvironment(
+        bootstrapServersUrl = System.getenv("KAFKA_BOOTSTRAP_SERVERS"),
+        truststorePath = System.getenv("NAV_TRUSTSTORE_PATH"),
+        truststorePassword = System.getenv("NAV_TRUSTSTORE_PASSWORD")
     )
 )
 
@@ -53,7 +58,8 @@ data class Environment(
     val aktorRegisteretBaseUrl: String,
     val auth: AuthEnvironment,
     val db: DbEnvironment,
-    val mq: MqEnvironment
+    val mq: MqEnvironment,
+    val kafka: KafkaEnvironment
 )
 
 data class AuthEnvironment(
@@ -77,4 +83,15 @@ data class MqEnvironment(
     val oppdragQueueSend: String,
     val oppdragQueueMottak: String,
     val avstemmingQueueSend: String
+)
+
+data class KafkaEnvironment(
+    val appId: String = "spenn-1",
+    val bootstrapServersUrl: String,
+    val truststorePath: String?,
+    val truststorePassword: String?,
+    val plainTextKafka: Boolean = false,
+    val offsetReset: Boolean = false,
+    val timeStampMillis: Long = -1,
+    val streamVedtak: Boolean = true
 )

@@ -3,8 +3,9 @@ package no.nav.helse.spenn.vedtak
 import com.fasterxml.jackson.databind.JsonNode
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.helse.spenn.KafkaEnvironment
+import no.nav.helse.spenn.ServiceUser
 import no.nav.helse.spenn.appsupport.VEDTAK
-import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.oppdrag.dao.SanityCheckException
@@ -32,19 +33,22 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.sql.SQLIntegrityConstraintViolationException
 import java.time.Duration
-import java.util.*
+import java.util.Properties
 import javax.annotation.PostConstruct
 
-class KafkaStreamsConfig(val oppdragService: OppdragService,
-                         val meterRegistry: MeterRegistry,
-                         val aktørTilFnrMapper: AktørTilFnrMapper,
-                         val config: SpennKafkaConfig) {
+class KafkaStreamsConfig(
+    val oppdragService: OppdragService,
+    val meterRegistry: MeterRegistry,
+    private val aktørTilFnrMapper: AktørTilFnrMapper,
+    private val env: KafkaEnvironment,
+    private val serviceUser: ServiceUser
+) {
 
     companion object {
         private val log = LoggerFactory.getLogger(KafkaStreamsConfig::class.java)
     }
 
-    fun mottakslogikk(): Topology {
+    private fun mottakslogikk(): Topology {
         val builder = StreamsBuilder()
 
         builder.consumeTopic(SYKEPENGER_RAPID_TOPIC)
@@ -60,7 +64,8 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
                 } catch (err: AktorNotFoundException) {
                     log.error("aktør finnes ikke, skipper melding", err)
                     null
-                }}
+                }
+            }
             .filter { _, value ->
                 value != null
             }
@@ -69,23 +74,10 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
             }
             .mapValues { _, (originalMessage, utbetaling) -> originalMessage to saveInitialOppdragState(utbetaling) }
 
-            /*
-            .filter { _, (_, value) -> value != null }
-            .peek { _, _ -> meterRegistry.counter(VEDTAK, "status", "OK").increment() }
-            .mapValues { _, (originalMessage, dto) -> (originalMessage as ObjectNode) to (avstemmingsnokkelFormatter.format(dto!!.nokkel)) }
-            .mapValues { _, (originalMessage, løsningsid) -> originalMessage to Løsning(løsningsid) }
-            .mapValues { _, (originalMessage, løsning) ->
-                originalMessage.set<JsonNode>(
-                    "@løsning",
-                    defaultObjectMapper.valueToTree<JsonNode>(løsning)
-                )
-            }
-            .toTopic(SYKEPENGER_BEHOV_TOPIC)*/
-
         return builder.build()
     }
 
-    private fun JsonNode.skalOppfyllesAvOss(type: String)  =
+    private fun JsonNode.skalOppfyllesAvOss(type: String) =
         this["@behov"]?.let {
             if (it.isArray) {
                 it.map { b -> b.asText() }.any { t -> t == type }
@@ -94,63 +86,67 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
 
     @PostConstruct
     fun offsetReset() {
-        if (config.offsetReset) {
-            log.info("Running offset reset of ${SYKEPENGER_RAPID_TOPIC.name} to ${config.timeStampMillis}")
-            val configProperties = Properties()
-            configProperties[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = config.bootstrapServersUrl
-            configProperties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
-            configProperties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringDeserializer"
-            configProperties[ConsumerConfig.GROUP_ID_CONFIG] = config.appId
-            configProperties[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
-            configProperties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-            if (!config.plainTextKafka) {
-                configProperties[SaslConfigs.SASL_MECHANISM] = "PLAIN"
-                configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_PLAINTEXT"
-                configProperties[SaslConfigs.SASL_JAAS_CONFIG] = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${config.serviceUserUsername}\" password=\"${config.serviceUserPassword}\";"
-                configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
-                configProperties[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = File(config.navTruststorePath!!).absolutePath
-                configProperties[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = config.navTruststorePassword
-            }
-            val offsetConsumer = KafkaConsumer<String, String>(configProperties)
-            offsetConsumer.subscribe(listOf(SYKEPENGER_RAPID_TOPIC.name),  object: ConsumerRebalanceListener {
-                override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>) {
-                    for (p in partitions) {
-                        log.info("assigned to ${p.topic()} to partion: ${p.partition()}")
-                        val offsetsForTimes = offsetConsumer.offsetsForTimes(mapOf(p to config.timeStampMillis))
-                        log.info("offset for times ${offsetsForTimes.entries}")
-                        offsetsForTimes.forEach { topicPartition, offsetAndTimestamp ->
-                            if (offsetAndTimestamp != null) {
-                                log.info("reset offset to ${offsetAndTimestamp.offset()}")
-                                offsetConsumer.seek(topicPartition, offsetAndTimestamp.offset())
-                                offsetConsumer.commitSync()
-                            }
+        log.info("Running offset reset of ${SYKEPENGER_RAPID_TOPIC.name} to 1559340000000")
+        val configProperties = Properties()
+        configProperties[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = env.bootstrapServersUrl
+        configProperties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] =
+            "org.apache.kafka.common.serialization.StringDeserializer"
+        configProperties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] =
+            "org.apache.kafka.common.serialization.StringDeserializer"
+        configProperties[ConsumerConfig.GROUP_ID_CONFIG] = env.appId
+        configProperties[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
+        configProperties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+        if (!env.plainTextKafka) {
+            configProperties[SaslConfigs.SASL_MECHANISM] = "PLAIN"
+            configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_PLAINTEXT"
+            configProperties[SaslConfigs.SASL_JAAS_CONFIG] =
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${serviceUser.username}\" password=\"${serviceUser.password}\";"
+            configProperties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
+            configProperties[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] =
+                File(env.truststorePath!!).absolutePath
+            configProperties[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = env.truststorePassword
+        }
+        val offsetConsumer = KafkaConsumer<String, String>(configProperties)
+        offsetConsumer.subscribe(listOf(SYKEPENGER_RAPID_TOPIC.name), object : ConsumerRebalanceListener {
+            override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>) {
+                for (p in partitions) {
+                    log.info("assigned to ${p.topic()} to partion: ${p.partition()}")
+                    val offsetsForTimes = offsetConsumer.offsetsForTimes(mapOf(p to 1559340000000))
+                    log.info("offset for times ${offsetsForTimes.entries}")
+                    offsetsForTimes.forEach { (topicPartition, offsetAndTimestamp) ->
+                        if (offsetAndTimestamp != null) {
+                            log.info("reset offset to ${offsetAndTimestamp.offset()}")
+                            offsetConsumer.seek(topicPartition, offsetAndTimestamp.offset())
+                            offsetConsumer.commitSync()
                         }
-
                     }
-                }
 
-                override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>) {
-                    log.info("partitions $partitions revoked")
                 }
-            })
-            try {
-                val records = offsetConsumer.poll(Duration.ofSeconds(5))
-                for (record in records) {
-                    log.info("offset ${record.offset()}")
-                }
-            } catch (ex: WakeupException) {
-                log.error("Exception caught " + ex.message)
-            } finally {
-                offsetConsumer.close()
-                log.info("Closing OffsetConsumer")
             }
+
+            override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>) {
+                log.info("partitions $partitions revoked")
+            }
+        })
+        try {
+            val records = offsetConsumer.poll(Duration.ofSeconds(5))
+            for (record in records) {
+                log.info("offset ${record.offset()}")
+            }
+        } catch (ex: WakeupException) {
+            log.error("Exception caught " + ex.message)
+        } finally {
+            offsetConsumer.close()
+            log.info("Closing OffsetConsumer")
         }
     }
 
-    fun kafkaStreams(topology: Topology) : KafkaStreams {
-        val streamConfig = if (config.plainTextKafka) streamConfigPlainTextKafka() else streamConfig(config.appId, config.bootstrapServersUrl,
-                config.serviceUserUsername to config.serviceUserPassword,
-                config.navTruststorePath to config.navTruststorePassword)
+    fun kafkaStreams(topology: Topology): KafkaStreams {
+        val streamConfig = if (env.plainTextKafka) streamConfigPlainTextKafka() else streamConfig(
+            env.appId, env.bootstrapServersUrl,
+            serviceUser.username to serviceUser.password,
+            env.truststorePath to env.truststorePassword
+        )
         return KafkaStreams(topology, streamConfig)
     }
 
@@ -177,19 +173,23 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
         return consumeTopic(topic, null)
     }
 
-    fun <K: Any, V: Any> StreamsBuilder.consumeTopic(topic: Topic<K, V>, schemaRegistryUrl: String?): KStream<K, V> {
+    fun <K : Any, V : Any> StreamsBuilder.consumeTopic(topic: Topic<K, V>, schemaRegistryUrl: String?): KStream<K, V> {
         schemaRegistryUrl?.let {
-            topic.keySerde.configure(mapOf(
+            topic.keySerde.configure(
+                mapOf(
                     AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG to schemaRegistryUrl
-            ), true)
+                ), true
+            )
 
-            topic.valueSerde.configure(mapOf(
+            topic.valueSerde.configure(
+                mapOf(
                     AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG to schemaRegistryUrl
-            ), false)
+                ), false
+            )
         }
 
         return stream<K, V>(
-                topic.name, Consumed.with(topic.keySerde, topic.valueSerde)
+            topic.name, Consumed.with(topic.keySerde, topic.valueSerde)
         )
     }
 
@@ -197,42 +197,51 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
         return to(topic.name, Produced.with(topic.keySerde, topic.valueSerde))
     }
 
-    fun streamConsumerStart() : StreamConsumer{
+    fun streamConsumerStart(): StreamConsumer {
         return streamConsumer(kafkaStreams(mottakslogikk()))
     }
 
-    fun streamConsumer(kafkaStreams: KafkaStreams) : StreamConsumer {
-        val streamConsumer = StreamConsumer(config.appId, kafkaStreams)
-        if (config.streamVedtak) streamConsumer.start()
+    fun streamConsumer(kafkaStreams: KafkaStreams): StreamConsumer {
+        val streamConsumer = StreamConsumer(env.appId, kafkaStreams)
+        if (env.streamVedtak) streamConsumer.start()
         return streamConsumer
     }
 
 
     private fun streamConfigPlainTextKafka(): Properties = Properties().apply {
         log.warn("Using kafka plain text config only works in development!")
-        put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, config.bootstrapServersUrl)
-        put(StreamsConfig.APPLICATION_ID_CONFIG, config.appId)
+        put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, env.bootstrapServersUrl)
+        put(StreamsConfig.APPLICATION_ID_CONFIG, env.appId)
         put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-        put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndFailExceptionHandler::class.java)
+        put(
+            StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,
+            LogAndFailExceptionHandler::class.java
+        )
     }
 
     private fun streamConfig(
-            appId: String,
-            bootstrapServers: String,
-            credentials: Pair<String?, String?>,
-            truststore: Pair<String?, String?>
+        appId: String,
+        bootstrapServers: String,
+        credentials: Pair<String?, String?>,
+        truststore: Pair<String?, String?>
     ): Properties = Properties().apply {
         put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
         put(StreamsConfig.APPLICATION_ID_CONFIG, appId)
 
         put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-        put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndFailExceptionHandler::class.java)
+        put(
+            StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,
+            LogAndFailExceptionHandler::class.java
+        )
 
         credentials.first?.let {
             log.info("Using user name ${it} to authenticate against Kafka brokers ")
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
-            put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${it}\" password=\"${credentials.second}\";")
+            put(
+                SaslConfigs.SASL_JAAS_CONFIG,
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${it}\" password=\"${credentials.second}\";"
+            )
         }
 
         truststore.first?.let {
@@ -249,7 +258,7 @@ class KafkaStreamsConfig(val oppdragService: OppdragService,
 }
 
 data class Topic<K, V>(
-        val name: String,
-        val keySerde: Serde<K>,
-        val valueSerde: Serde<V>
+    val name: String,
+    val keySerde: Serde<K>,
+    val valueSerde: Serde<V>
 )

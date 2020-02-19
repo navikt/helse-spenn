@@ -11,7 +11,6 @@ import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.nav.helse.spenn.config.SpennKafkaConfig
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
@@ -77,7 +76,8 @@ class SpennServices(appConfig: ApplicationConfig) : SpennTaskRunner {
         oppdragService = oppdragService,
         meterRegistry = metrics,
         aktørTilFnrMapper = aktorTilFnrMapper,
-        config = SpennKafkaConfig.from(appConfig)
+        env = env.kafka,
+        serviceUser = serviceUser
     )
         .streamConsumerStart()
 
