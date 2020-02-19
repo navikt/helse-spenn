@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.oppdrag.dao
 
+import junit.framework.Assert.assertTrue
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.Utbetaling
@@ -38,7 +39,7 @@ internal class ServiceUtvidelseSanityTest {
         val opprinnelig = etUtbetalingsOppdrag()
         val utvidelse = opprinnelig.copy(
                 utbetaling = opprinnelig.utbetaling!!.copy(
-                        utbetalingsLinjer = opprinnelig.utbetaling!!.utbetalingsLinjer + okLinje2
+                        utbetalingsLinjer = listOf(okLinje2)
                 )
         )
         val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))
@@ -46,17 +47,18 @@ internal class ServiceUtvidelseSanityTest {
     }
 
     @Test
-    fun `utvidelse må inneholde alle eksisterende linjer`() {
+    fun `skal feile på annen dagsats`() {
         val opprinnelig = etUtbetalingsOppdrag()
         val utvidelse = opprinnelig.copy(
                 utbetaling = opprinnelig.utbetaling!!.copy(
-                        utbetalingsLinjer = listOf(okLinje2)
+                        utbetalingsLinjer = listOf(okLinje2.copy(sats = okLinje1.sats.plus(1.toBigDecimal())))
                 )
         )
         val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))
-        assertThrows<SanityCheckException> {
+        val ex = assertThrows<SanityCheckException> {
             OppdragService.sanityCheckUtvidelse(eksisterendeTranser, utvidelse)
         }
+        assertTrue(ex.message!!.contains("har ulik dagsats"))
     }
 
     @Test
@@ -64,29 +66,44 @@ internal class ServiceUtvidelseSanityTest {
         val opprinnelig = etUtbetalingsOppdrag()
         val utvidelse = opprinnelig.copy(
                 utbetaling = opprinnelig.utbetaling!!.copy(
-                        utbetalingsLinjer = opprinnelig.utbetaling!!.utbetalingsLinjer + okLinje2
+                        utbetalingsLinjer = listOf(okLinje2)
                 )
         )
         val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.SIMULERING_OK))
-        assertThrows<SanityCheckException> {
+        val ex = assertThrows<SanityCheckException> {
             OppdragService.sanityCheckUtvidelse(eksisterendeTranser, utvidelse)
         }
+        assertTrue(ex.message!!.contains("har status=SIMULERING_OK"))
     }
 
     @Test
-    fun `utvidelse må ha FOM etter TOM på gamle linjer`() {
+    fun `utvidelse må ha FOM lik FOM på gammel linje`() {
         val opprinnelig = etUtbetalingsOppdrag()
         val utvidelse = opprinnelig.copy(
                 utbetaling = opprinnelig.utbetaling!!.copy(
-                        utbetalingsLinjer =  opprinnelig.utbetaling!!.utbetalingsLinjer + okLinje2.copy(
-                                datoFom = okLinje1.datoTom
-                        )
+                        utbetalingsLinjer =  listOf(okLinje2.copy(datoFom = okLinje1.datoFom.plusDays(1)))
                 )
         )
         val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))
-        assertThrows<SanityCheckException> {
+        val ex = assertThrows<SanityCheckException> {
             OppdragService.sanityCheckUtvidelse(eksisterendeTranser, utvidelse)
         }
+        assertTrue(ex.message!!.contains("har annen 'datoFom'"))
+    }
+
+    @Test
+    fun `utvidelse må ha TOM etter TOM på gammel linje`() {
+        val opprinnelig = etUtbetalingsOppdrag()
+        val utvidelse = opprinnelig.copy(
+                utbetaling = opprinnelig.utbetaling!!.copy(
+                        utbetalingsLinjer =  listOf(okLinje2.copy(datoTom = okLinje1.datoTom))
+                )
+        )
+        val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))
+        val ex = assertThrows<SanityCheckException> {
+            OppdragService.sanityCheckUtvidelse(eksisterendeTranser, utvidelse)
+        }
+        assertTrue(ex.message!!.contains("har ikke 'datoTom' etter forrige datoTom"))
     }
 
     @Test
@@ -94,14 +111,15 @@ internal class ServiceUtvidelseSanityTest {
         val opprinnelig = etUtbetalingsOppdrag()
         val utvidelse = opprinnelig.copy(
                 utbetaling = opprinnelig.utbetaling!!.copy(
-                        utbetalingsLinjer = opprinnelig.utbetaling!!.utbetalingsLinjer + okLinje2
+                        utbetalingsLinjer = listOf(okLinje2)
                 ),
                 oppdragGjelder = "01019012345"
         )
         val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))
-        assertThrows<SanityCheckException> {
+        val ex = assertThrows<SanityCheckException> {
             OppdragService.sanityCheckUtvidelse(eksisterendeTranser, utvidelse)
         }
+        assertTrue(ex.message!!.contains("har annen 'oppdragGjelder'"))
     }
 
     @Test
@@ -110,13 +128,14 @@ internal class ServiceUtvidelseSanityTest {
         val utvidelse = opprinnelig.copy(
                 utbetaling = opprinnelig.utbetaling!!.copy(
                         organisasjonsnummer = "999888777",
-                        utbetalingsLinjer = opprinnelig.utbetaling!!.utbetalingsLinjer + okLinje2
+                        utbetalingsLinjer = listOf(okLinje2)
                 )
         )
         val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))
-        assertThrows<SanityCheckException> {
+        val ex = assertThrows<SanityCheckException> {
             OppdragService.sanityCheckUtvidelse(eksisterendeTranser, utvidelse)
         }
+        assertTrue(ex.message!!.contains("har organisasjonsnummer forskjellig fra utvidelse"))
     }
 
 
@@ -130,9 +149,9 @@ internal class ServiceUtvidelseSanityTest {
             satsTypeKode = SatsTypeKode.DAGLIG
     )
     private val okLinje2 = UtbetalingsLinje(
-            id = "2",
+            id = "1",
             grad = BigInteger.valueOf(100),
-            datoFom = LocalDate.of(2011, 2, 1),
+            datoFom = LocalDate.of(2011, 1, 1),
             datoTom = LocalDate.of(2011, 2, 28),
             utbetalesTil = orgNr,
             sats = BigDecimal.valueOf(1000.0),

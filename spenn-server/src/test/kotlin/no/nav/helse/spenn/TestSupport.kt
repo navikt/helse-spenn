@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.MockClock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
+import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.rest.SpennApiEnvironment
@@ -93,24 +94,47 @@ fun stubOIDCProvider(server: WireMockServer) {
     )
 }
 
-fun etEnkeltBehov(maksdato: LocalDate = LocalDate.now().plusYears(1)) = defaultObjectMapper.readTree(
-    """
+data class Behovslinje(
+        val fom: String,
+        val tom: String,
+        val dagsats: String
+)
+
+fun utbetalingMedRef(utbetalingsreferanse: String, dagsats: Double = 1234.0) =
+        Utbetalingsbehov(etEnkeltBehov(utbetalingsreferanse = utbetalingsreferanse, dagsats = dagsats), "12345678901")
+
+fun etEnkeltBehov(
+        maksdato: LocalDate = LocalDate.now().plusYears(1),
+        utbetalingsreferanse: String = "1",
+        dagsats: Double = 1234.0,
+        utbetalingslinje: Behovslinje = Behovslinje(
+                fom = "2020-01-15",
+                tom = "2020-01-30",
+                dagsats = "$dagsats"
+        ),
+        utbetalingslinjer: List<Behovslinje> =
+            listOf(utbetalingslinje)
+) = defaultObjectMapper.readTree(
+        """
         {
           "@behov": "Utbetaling",
           "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
-          "utbetalingsreferanse": "1",
+          "utbetalingsreferanse": "$utbetalingsreferanse",
           "aktørId": "1234567890123",
           "fødselsnummer": "12345678901",
           "organisasjonsnummer": "897654321",
           "maksdato": "$maksdato",
           "saksbehandler": "Z999999",
           "utbetalingslinjer": [
+          ${utbetalingslinjer.map {
+            """
             {
-              "fom": "2020-01-15",
-              "tom": "2020-01-30",
-              "grad": 100,
-              "dagsats": "1234.0"
+                "fom": "${it.fom}",
+                "tom": "${it.tom}",
+                "dagsats": "${it.dagsats}"
             }
+            """
+        }.joinToString(separator = ",")}
           ]
         }        
     """

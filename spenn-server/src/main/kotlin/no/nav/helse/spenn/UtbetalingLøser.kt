@@ -6,10 +6,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.spenn.appsupport.VEDTAK
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.Utbetaling
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
@@ -63,7 +60,7 @@ class UtbetalingLøser(
     }
 
     companion object {
-        internal fun lagOppdragFraBehov(jsonMessage: JsonMessage) = UtbetalingsOppdrag(
+        internal fun lagOppdragFraBehov(jsonMessage: JsonMessage) = Utbetalingsbehov(
             behov = jsonMessage.toJson(),
             utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
             oppdragGjelder = jsonMessage["fødselsnummer"].asText(),
@@ -85,7 +82,7 @@ class UtbetalingLøser(
             )
         )
 
-        internal fun lagAnnulleringoppdragFraBehov(jsonMessage: JsonMessage) = UtbetalingsOppdrag(
+        internal fun lagAnnulleringoppdragFraBehov(jsonMessage: JsonMessage) = Utbetalingsbehov(
             behov = jsonMessage.toJson(),
             utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
             oppdragGjelder = jsonMessage["fødselsnummer"].asText(),

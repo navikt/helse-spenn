@@ -34,13 +34,13 @@ fun Route.simuleringcontroller(
             return@post
         }
         val sakskompleksId = behov["sakskompleksId"].asText()!!
+        val aktørId = behov["aktørId"].asText()!!
+        val erUtvidelse = behov["erUtvidelse"].asBoolean()
+        val oppdrag = Utbetalingsbehov(behov, aktørTilFnrMapper.tilFnr(aktørId))
         val oppdrag = lagOppdragFraBehov(behov.toOppdragsbehov())
         LOG.info("simulering called for vedtak: $sakskompleksId")
         audit.info("simulering kall for vedtak: $sakskompleksId", call.authentication)
-        call.respond(
-            simuleringService.simulerOppdrag(
-                oppdrag.lagPåSidenSimuleringsrequest()
-            )
-        )
+        call.respond(simuleringService.simulerOppdrag(
+                oppdrag.lagPåSidenSimuleringsrequest(erUtvidelse = erUtvidelse)))
     }
 }

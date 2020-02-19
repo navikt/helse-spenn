@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.rest
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
@@ -9,6 +10,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.rapids_rivers.put
 import no.nav.helse.spenn.any
 import no.nav.helse.spenn.buildClaimSet
 import no.nav.helse.spenn.etEnkeltBehov
@@ -46,6 +48,7 @@ class SimuleringControllerTest {
     @Test
     fun runSimulering() {
         val behov = etEnkeltBehov()
+        (behov as ObjectNode).put("erUtvidelse", false)
 
         kWhen(apienv.simuleringService.simulerOppdrag(any())).thenReturn(simuleringsresultat)
 

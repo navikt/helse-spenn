@@ -14,9 +14,12 @@ import no.nav.helse.spenn.oppdrag.AvstemmingMapper
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
+import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.toOppdragsbehov
+import no.nav.helse.spenn.utbetalingMedRef
+
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import no.trygdeetaten.skjema.oppdrag.Mmel
@@ -63,21 +66,28 @@ internal class AvstemmingTaskTest {
     @Test
     fun testAtDetSendesLoggesOgOppdateresAvstemminger() {
         val behov = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
+        val utbetalingTemplate = Utbetalingsbehov(behov, "12345678901")
         val utbetalingTemplate = lagOppdragFraBehov(behov.toOppdragsbehov())
 
-        service.lagreNyttOppdrag(utbetalingTemplate.copy(utbetalingsreferanse = "2001"))
+        val dagsatser = listOf(
+                1000.0,
+                900.0,
+                800.0
+        )
+
+        service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "2001", dagsats = dagsatser[0]))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
             lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "00")!!, feilmelding = null)
         }
 
-        service.lagreNyttOppdrag(utbetalingTemplate.copy(utbetalingsreferanse = "2002"))
+        service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "2002", dagsats = dagsatser[1]))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
             lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "00")!!, feilmelding = null)
         }
 
-        service.lagreNyttOppdrag(utbetalingTemplate.copy(utbetalingsreferanse = "2003"))
+        service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "2003", dagsats = dagsatser[2]))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
             lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "04")!!, feilmelding = null)
@@ -107,7 +117,7 @@ internal class AvstemmingTaskTest {
             assertEquals(1, this.grunnlag.varselAntall)
             assertEquals(0, this.grunnlag.avvistAntall)
             assertEquals(0, this.grunnlag.manglerAntall)
-            assertEquals(utbetalingTemplate.utbetaling!!.utbetalingsLinjer.first().sats.toLong() * 3, this.total.totalBelop.toLong())
+            assertEquals(dagsatser.sum().toLong(), this.total.totalBelop.toLong())
 
             assertEquals(1, this.detalj.size)
             assertEquals("04", this.detalj.first().alvorlighetsgrad)

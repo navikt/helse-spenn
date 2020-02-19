@@ -3,13 +3,13 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
+import no.nav.helse.spenn.*
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.kWhen
+import no.nav.helse.spenn.Behovslinje
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.toOppdragsbehov
+
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -44,46 +44,17 @@ internal class MQOppdragReceiverTest {
     }
 
     @Test
-    fun OppdragMQSendAndReceiveTest() {
+    fun `Oppdrag MQ send and receive`() {
         val mqReceiver = OppdragMQReceiver(
             connection = mockConnection,
             mottakqueue = "mottaksqueue",
             jaxb = JAXBOppdrag(), oppdragService = oppdragService,
             meterRegistry = meterRegistry
-        ) //, statusProducer = kafkaProducer)
-        val fom1 = LocalDate.of(2019, Month.JANUARY, 1)
-        val tom1 = LocalDate.of(2019, Month.JANUARY, 12)
-        val oppdragslinje1 = UtbetalingsLinje(
-            id = "1", datoFom = fom1,
-            datoTom = tom1, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
-            utbetalesTil = "995816598", grad = BigInteger.valueOf(50)
         )
 
-        val fom2 = LocalDate.of(2019, Month.FEBRUARY, 13)
-        val tom2 = LocalDate.of(2019, Month.FEBRUARY, 20)
-        val oppdragslinje2 = UtbetalingsLinje(
-            id = "2", datoFom = fom2,
-            datoTom = tom2, sats = BigDecimal.valueOf(600), satsTypeKode = SatsTypeKode.DAGLIG,
-            utbetalesTil = "995816598", grad = BigInteger.valueOf(70)
-        )
+        val oppdrag = Utbetalingsbehov(etEnkeltBehov(utbetalingsreferanse = "3001"), "11111111111")
+        val utbetalingTemplate = UtbetalingLøser.lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov())
 
-        val fom3 = LocalDate.of(2019, Month.MARCH, 18)
-        val tom3 = LocalDate.of(2019, Month.APRIL, 12)
-        val oppdragslinje3 = UtbetalingsLinje(
-            id = "3", datoFom = fom3,
-            datoTom = tom3, sats = BigDecimal.valueOf(1000), satsTypeKode = SatsTypeKode.DAGLIG,
-            utbetalesTil = "995816598", grad = BigInteger.valueOf(100)
-        )
-
-        val utbetalingTemplate = lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov())
-        val utbetaling = utbetalingTemplate.copy(
-            utbetaling = utbetalingTemplate.utbetaling!!.copy(
-                utbetalingsLinjer = listOf(oppdragslinje1, oppdragslinje2, oppdragslinje3)
-            )
-        )
-
-        val oppdrag =
-            utbetaling.copy(utbetalingsreferanse = "3001")
         oppdragService.lagreNyttOppdrag(oppdrag)
         oppdragService.hentNyeOppdrag(5).first().forberedSendingTilOS()
 

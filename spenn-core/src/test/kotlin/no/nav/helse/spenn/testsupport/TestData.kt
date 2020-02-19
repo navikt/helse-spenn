@@ -20,7 +20,7 @@ val simuleringsresultat = SimuleringResult(
     )
 )
 
-fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
+internal fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
     val orgNr = "123456789"
     return UtbetalingsOppdrag(
         behov = """{ "somejson" : 123 }""",
@@ -45,7 +45,7 @@ fun etUtbetalingsOppdrag(): UtbetalingsOppdrag {
     )
 }
 
-fun etUtbetalingsUtvidelsesOppdrag(): UtbetalingsOppdrag {
+internal fun etUtbetalingsUtvidelsesOppdrag(): UtbetalingsOppdrag {
     val orgNr = "123456789"
     return UtbetalingsOppdrag(
             behov = """{ "someOtherjson" : 123 }""",
@@ -60,15 +60,6 @@ fun etUtbetalingsUtvidelsesOppdrag(): UtbetalingsOppdrag {
                                     id = "1",
                                     grad = BigInteger.valueOf(100),
                                     datoFom = LocalDate.of(2011, 1, 1),
-                                    datoTom = LocalDate.of(2011, 1, 31),
-                                    utbetalesTil = orgNr,
-                                    sats = BigDecimal.valueOf(1000.0),
-                                    satsTypeKode = SatsTypeKode.DAGLIG
-                            ),
-                            UtbetalingsLinje(
-                                    id = "2",
-                                    grad = BigInteger.valueOf(100),
-                                    datoFom = LocalDate.of(2011, 2, 1),
                                     datoTom = LocalDate.of(2011, 2, 28),
                                     utbetalesTil = orgNr,
                                     sats = BigDecimal.valueOf(1000.0),

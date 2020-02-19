@@ -9,6 +9,8 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.spenn.*
+import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.buildClaimSet
 import no.nav.helse.spenn.enEnkelAnnulering
@@ -50,6 +52,7 @@ class OpphørsControllerTest {
         )
         val behov = enEnkelAnnulering()
 
+        apienv.stateService.lagreNyttOppdrag(Utbetalingsbehov(etEnkeltBehov(), "12345678900"))
         apienv.stateService.lagreNyttOppdrag(lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov()))
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
@@ -77,6 +80,7 @@ class OpphørsControllerTest {
         )
         val behov = enEnkelAnnulering()
 
+        apienv.stateService.lagreNyttOppdrag(Utbetalingsbehov(etEnkeltBehov(), "12345678900"))
         apienv.stateService.lagreNyttOppdrag(lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov()))
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",

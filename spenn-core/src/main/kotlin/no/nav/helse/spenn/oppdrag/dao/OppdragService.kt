@@ -85,7 +85,11 @@ class OppdragService(dataSource: HikariDataSource) {
 
     }
 
-    fun annulerUtbetaling(oppdrag: UtbetalingsOppdrag) {
+    fun annulerUtbetaling(behov: Utbetalingsbehov) {
+        annulerUtbetaling(behov.tilUtbetalingsOppdrag())
+    }
+
+    internal fun annulerUtbetaling(oppdrag: UtbetalingsOppdrag) {
         require(oppdrag.utbetaling == null)
         val transaksjoner = repository.findByRef(oppdrag.utbetalingsreferanse)
         if (transaksjoner.size > 1 && transaksjoner.any { it.utbetalingsOppdrag.utbetaling == null }) throw AlleredeAnnulertException("Annulleringen finnes allerede.")
@@ -101,7 +105,12 @@ class OppdragService(dataSource: HikariDataSource) {
         ))
     }
 
-    fun lagreNyttOppdrag(oppdrag: UtbetalingsOppdrag) {
+    fun lagreNyttOppdrag(behov: Utbetalingsbehov) {
+        lagreNyttOppdrag(behov.tilUtbetalingsOppdrag())
+    }
+
+    internal fun lagreNyttOppdrag(oppdrag: UtbetalingsOppdrag)
+    {
         requireNotNull(oppdrag.utbetaling)
         require(oppdrag.utbetaling.utbetalingsLinjer.isNotEmpty())
 
@@ -114,7 +123,11 @@ class OppdragService(dataSource: HikariDataSource) {
                     "Det finnes ${eksisterendeTranser.size} transaksjoner fra før")
             sanityCheckUtvidelse(eksisterendeTranser, oppdrag)
             repository.insertNyTransaksjon(oppdrag.copy(
-                    utbetaling = oppdrag.utbetaling.copy(erEndring = true)
+                    utbetaling = oppdrag.utbetaling.copy(
+                            utbetalingsLinjer = oppdrag.utbetaling.utbetalingsLinjer.map {
+                                it.copy(erEndring = true)
+                            }
+                    )
             ))
         }
     }
@@ -134,44 +147,50 @@ class OppdragService(dataSource: HikariDataSource) {
 
     companion object {
         internal fun sanityCheckUtvidelse(eksisterende: List<TransaksjonDTO>, nyttOppdrag: UtbetalingsOppdrag) {
-            val nyeLinjer = requireNotNull(nyttOppdrag.utbetaling).utbetalingsLinjer
+            requireNotNull(nyttOppdrag.utbetaling)
             val sisteEksisterende = eksisterende.sortedBy { it.created }.last()
-            val errorStringPrefix = "Siste transasksjon med referanse ${nyttOppdrag.utbetalingsreferanse} har "
-            if (sisteEksisterende.status != TransaksjonStatus.FERDIG) {
-                throw SanityCheckException("$errorStringPrefix status=${sisteEksisterende.status}. Vet ikke hvordan håndtere dette")
-            }
-            if (sisteEksisterende.utbetalingsOppdrag.utbetaling == null) {
+
+            val errorStringPrefix = "Siste transasksjon med referanse ${nyttOppdrag.utbetalingsreferanse}"
+
+            if (sisteEksisterende.utbetalingsOppdrag.utbetaling == null)
                 throw SanityCheckException("$errorStringPrefix var en annulering. Vet ikke hvordan håndtere dette")
-            }
-            if (sisteEksisterende.utbetalingsOppdrag.utbetaling.organisasjonsnummer != nyttOppdrag.utbetaling.organisasjonsnummer) {
+
+            val linjerPåForrige = sisteEksisterende.utbetalingsOppdrag.utbetaling.utbetalingsLinjer
+            val linjerPåNy = nyttOppdrag.utbetaling.utbetalingsLinjer
+
+            val erEnkelUtvidelse = linjerPåForrige.size == 1 && linjerPåNy.size == 1 &&
+                    linjerPåForrige.first().id == linjerPåNy.first().id
+            val forrigeLinje = linjerPåForrige[0]
+            val nyLinje = linjerPåNy[0]
+
+            if (!erEnkelUtvidelse)
+                throw SanityCheckException("$errorStringPrefix er ikke en enkel utvidelse")
+            if (sisteEksisterende.status != TransaksjonStatus.FERDIG)
+                throw SanityCheckException("$errorStringPrefix har status=${sisteEksisterende.status}. Vet ikke hvordan håndtere dette")
+            if (sisteEksisterende.utbetalingsOppdrag.utbetaling.organisasjonsnummer != nyttOppdrag.utbetaling.organisasjonsnummer)
                 throw SanityCheckException("$errorStringPrefix har organisasjonsnummer forskjellig fra utvidelse")
-            }
-            if (sisteEksisterende.utbetalingsOppdrag.oppdragGjelder != nyttOppdrag.oppdragGjelder) {
+            if (sisteEksisterende.utbetalingsOppdrag.oppdragGjelder != nyttOppdrag.oppdragGjelder)
                 throw SanityCheckException("$errorStringPrefix har annen 'oppdragGjelder'")
-            }
-            val gamleLinjer = sisteEksisterende.utbetalingsOppdrag.utbetaling.utbetalingsLinjer
-            if (nyeLinjer.size <= gamleLinjer.size) {
-                throw SanityCheckException("$errorStringPrefix minst like mange linjer som utvidelsen")
-            }
-            gamleLinjer.forEachIndexed { index, gammelLinje ->
-                if (!gammelLinje.equals(nyeLinjer[index])) {
-                    throw SanityCheckException("$errorStringPrefix linje # ${gammelLinje.id} som ikke samsvarer med nytt oppdrag")
-                }
-            }
-            if (!gamleLinjer.last().datoTom.isBefore(nyeLinjer[gamleLinjer.size].datoFom)) {
-                throw SanityCheckException("$errorStringPrefix datoTom som ikke er før datoFom på nytt oppdrag")
-            }
+            if (forrigeLinje.datoFom != nyLinje.datoFom)
+                throw SanityCheckException("$errorStringPrefix har annen 'datoFom'")
+            if (!nyLinje.datoTom.isAfter(forrigeLinje.datoTom))
+                throw SanityCheckException("$errorStringPrefix har ikke 'datoTom' etter forrige datoTom")
+            if (nyLinje.sats != forrigeLinje.sats)
+                throw SanityCheckException("$errorStringPrefix har ulik dagsats")
         }
     }
 }
 
-fun UtbetalingsOppdrag.lagPåSidenSimuleringsrequest() =
+internal fun UtbetalingsOppdrag.lagPåSidenSimuleringsrequest() =
         TransaksjonDTO(
                 id = -1,
                 utbetalingsreferanse = this.utbetalingsreferanse,
                 nokkel = LocalDateTime.now(),
                 utbetalingsOppdrag = this,
                 created = LocalDateTime.now()).toSimuleringRequest()
+
+fun Utbetalingsbehov.lagPåSidenSimuleringsrequest(erUtvidelse: Boolean = false) =
+        this.tilUtbetalingsOppdrag(erUtvidelse).lagPåSidenSimuleringsrequest()
 
 fun List<OppdragService.Transaksjon>.lagAvstemmingsmeldinger() =
         AvstemmingMapper(this.map { it.dto }, FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
