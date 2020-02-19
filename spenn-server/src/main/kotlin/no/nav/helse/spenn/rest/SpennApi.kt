@@ -10,9 +10,6 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.routing.routing
-import io.ktor.server.engine.ApplicationEngine
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.AuthEnvironment
@@ -38,10 +35,6 @@ data class SpennApiEnvironment @KtorExperimentalAPI constructor(
     val stateService: OppdragService,
     val oppdragMQSender: OppdragMQSender
 )
-
-@KtorExperimentalAPI
-fun spennApiServer(env: SpennApiEnvironment): ApplicationEngine =
-    embeddedServer(factory = Netty, port = env.port, module = { spennApiModule(env) })
 
 @KtorExperimentalAPI
 internal fun Application.spennApiModule(env: SpennApiEnvironment) {
