@@ -6,7 +6,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 const val vaultServiceUserBase = "/var/run/secrets/nais.io/service_user"
-const val stsRestBaseUrl = "http://security-token-service"
 const val ourIssuer = "ourissuer"
 
 const val simuleringServiceUrlKey = "SIMULERING_SERVICE_URL"
@@ -21,7 +20,7 @@ const val mqQueueManagerKey = "MQ_QUEUE_MANAGER"
 const val mqChannelKey = "MQ_CHANNEL"
 const val mqHostnameKey = "MQ_HOSTNAME"
 const val mqPortKey = "MQ_PORT"
-const val mqUserKey = "MQ_USER"
+const val mqUsernameKey = "MQ_USERNAME"
 const val mqPasswordKey = "MQ_PASSWORD"
 const val mqOppdragQueueSendKey = "OPPDRAG_QUEUE_SEND"
 const val mqOppdragQueueMottakKey = "OPPDRAG_QUEUE_MOTTAK"
@@ -69,7 +68,7 @@ data class Environment(
             channel = raw.hent(mqChannelKey),
             hostname = raw.hent(mqHostnameKey),
             port = raw.hent(mqPortKey).toInt(),
-            user = raw.hent(mqUserKey),
+            user = raw.hent(mqUsernameKey),
             password = raw.hent(mqPasswordKey),
             oppdragQueueSend = raw.hent(mqOppdragQueueSendKey),
             oppdragQueueMottak = raw.hent(mqOppdragQueueMottakKey),

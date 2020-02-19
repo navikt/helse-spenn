@@ -7,6 +7,7 @@ import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.ServiceUser
 import no.nav.helse.spenn.blackbox.mq.OppdragMock
 import no.nav.helse.spenn.blackbox.soap.SoapMock
+import no.nav.helse.spenn.*
 import no.nav.helse.spenn.launchApplication
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -505,23 +506,23 @@ internal class SpennBlackBoxTest {
             additionalEnv: Map<String, String> = mapOf(),
             hostResolver: (String, Int) -> HostInfo
         ) = mapOf(
-            "SIMULERING_SERVICE_URL" to "${hostResolver("localhost", soapMock.httpsPort).https}/ws/simulering",
-            "SECURITYTOKENSERVICE_URL" to "${hostResolver("localhost", soapMock.httpsPort).https}/ws/SecurityTokenService",
-            "AKTORREGISTERET_BASE_URL" to hostResolver(MockServerHostname, MockServerPort).http,
-            "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_ACCEPTED_AUDIENCE" to "audience",
-            "NO_NAV_SECURITY_OIDC_ISSUER_OURISSUER_DISCOVERYURL" to "${hostResolver(OidcHostname, OidcPort).http}/.well-known/openid-configuration",
-            "API_ACCESS_REQUIREDGROUP" to "",
-            "DATASOURCE_URL" to "jdbc:postgresql://${hostResolver(PostgresHostname, PostgresPort).hostPort}/$SpennDatabase",
-            "VAULT_POSTGRES_MOUNTPATH" to VaultPostgresMountPath,
-            "MQ_QUEUE_MANAGER" to "",
-            "MQ_CHANNEL" to "",
-            "MQ_HOSTNAME" to hostResolver(MqHostname, MqPort).hostname,
-            "MQ_PORT" to hostResolver(MqHostname, MqPort).port.toString(),
-            "MQ_USER" to "",
-            "MQ_PASSWORD" to "",
-            "OPPDRAG_QUEUE_SEND" to "",
-            "OPPDRAG_QUEUE_MOTTAK" to "",
-            "AVSTEMMING_QUEUE_SEND" to "",
+            simuleringServiceUrlKey to "${hostResolver("localhost", soapMock.httpsPort).https}/ws/simulering",
+            stsSoapUrlKey to "${hostResolver("localhost", soapMock.httpsPort).https}/ws/SecurityTokenService",
+            aktorRegisteretBaseUrlKey to hostResolver(MockServerHostname, MockServerPort).http,
+            acceptedAudienceKey to "audience",
+            discoveryUrlKey to "${hostResolver(OidcHostname, OidcPort).http}/.well-known/openid-configuration",
+            requiredGroupKey to "",
+            datasourceUrlKey to "jdbc:postgresql://${hostResolver(PostgresHostname, PostgresPort).hostPort}/$SpennDatabase",
+            vaultPostgresMountpathKey to VaultPostgresMountPath,
+            mqQueueManagerKey to "",
+            mqChannelKey to "",
+            mqHostnameKey to hostResolver(MqHostname, MqPort).hostname,
+            mqPortKey to hostResolver(MqHostname, MqPort).port.toString(),
+            mqUsernameKey to "",
+            mqPasswordKey to "",
+            mqOppdragQueueSendKey to "",
+            mqOppdragQueueMottakKey to "",
+            mqAvvstemmingQueueSendKey to "",
             "KAFKA_BOOTSTRAP_SERVERS" to bootstrapServers,
             "NAV_TRUSTSTORE_PATH" to "/tmp/keystore.p12",
             "NAV_TRUSTSTORE_PASSWORD" to soapMock.keystorePassword
