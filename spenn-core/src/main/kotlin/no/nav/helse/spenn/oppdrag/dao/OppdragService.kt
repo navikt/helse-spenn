@@ -6,6 +6,8 @@ import no.nav.helse.spenn.oppdrag.AvstemmingMapper
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
+import no.nav.helse.spenn.oppdrag.tilUtbetalingsOppdrag
 import no.nav.helse.spenn.oppdrag.toOppdragRequest
 import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
