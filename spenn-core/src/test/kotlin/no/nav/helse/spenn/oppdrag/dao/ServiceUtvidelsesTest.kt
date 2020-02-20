@@ -50,12 +50,16 @@ internal class ServiceUtvidelsesTest {
         val fortsettelsesTrans = service.hentNyeOppdrag(5).first()
 
         fortsettelsesTrans.simuleringRequest.apply {
-            assertEquals(EndringsKode.ENDRING.kode, this.request.oppdrag.kodeEndring)
+            assertEquals(EndringsKode.UENDRET.kode, this.request.oppdrag.kodeEndring)
+            assertEquals(1, this.request.oppdrag.oppdragslinje.size)
+            assertEquals(EndringsKode.ENDRING.kode, this.request.oppdrag.oppdragslinje.first().kodeEndringLinje)
         }
 
         fortsettelsesTrans.forberedSendingTilOS()
         fortsettelsesTrans.oppdragRequest.apply {
-            assertEquals(EndringsKode.ENDRING.kode, this.oppdrag110.kodeEndring)
+            assertEquals(EndringsKode.UENDRET.kode, this.oppdrag110.kodeEndring)
+            assertEquals(1, this.oppdrag110.oppdragsLinje150.size)
+            assertEquals(EndringsKode.ENDRING.kode, this.oppdrag110.oppdragsLinje150.first().kodeEndringLinje)
         }
     }
 

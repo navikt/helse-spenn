@@ -6,8 +6,6 @@ import no.nav.helse.spenn.ServiceUser
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
 import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
@@ -17,9 +15,6 @@ import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -51,27 +46,9 @@ internal class SoapMockSimuleringTest {
     }
 
     @Test
-    fun testSimuleringMedSoapOgSTS() {
-        val maksDato = LocalDate.now().plusYears(1).minusDays(50)
-        val vedtakFom = LocalDate.now().minusWeeks(2)
-        val vedtakTom = LocalDate.now()
-        val enOppdragsLinje = UtbetalingsLinje(
-            id = "1234567890",
-            datoFom = vedtakFom,
-            datoTom = vedtakTom,
-            sats = BigDecimal.valueOf(1230),
-            satsTypeKode = SatsTypeKode.MÅNEDLIG,
-            utbetalesTil = "123456789",
-            grad = BigInteger.valueOf(100)
-        )
-        val utbetalingTemplate = lagOppdragFraBehov(etEnkeltBehov(maksdato = maksDato).toOppdragsbehov())
-        val utbetaling = utbetalingTemplate.copy(
-            utbetaling = utbetalingTemplate.utbetaling!!.copy(
-                utbetalingsLinjer = listOf(enOppdragsLinje)
-            )
-        )
-
-        val result = simuleringService.simulerOppdrag(utbetaling.lagPåSidenSimuleringsrequest())
+    fun `Test simulering med Soap og STS`() {
+        val result = simuleringService.simulerOppdrag(lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov())
+                .lagPåSidenSimuleringsrequest())
         assertNotNull(result, "simuleringresult skal ha blitt satt")
         assertEquals(SimuleringStatus.OK, result.status)
     }

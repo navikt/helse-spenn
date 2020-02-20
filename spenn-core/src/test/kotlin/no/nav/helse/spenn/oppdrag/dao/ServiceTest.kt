@@ -129,7 +129,7 @@ internal class ServiceTest {
         val utbetaling = etUtbetalingsOppdrag()
         val utbetalingMedForHøyDagsats = utbetaling.copy(
             utbetaling = utbetaling.utbetaling!!.copy(
-            utbetalingsLinjer = listOf(utbetaling.utbetaling!!.utbetalingsLinjer.first().copy(
+            utbetalingsLinjer = listOf(utbetaling.utbetaling.utbetalingsLinjer.first().copy(
             sats = BigDecimal.valueOf(3000)))))
         println(utbetalingMedForHøyDagsats)
         service.lagreNyttOppdrag(utbetalingMedForHøyDagsats)

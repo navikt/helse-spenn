@@ -26,6 +26,9 @@ internal fun TransaksjonDTO.toSimuleringRequest(): SimulerBeregningRequest =
     else mapAnnulleringSimuleringRequest()
 
 
+private fun Utbetaling.harLinjeEndringer() : Boolean =
+        this.utbetalingsLinjer.find { it.erEndring != null && it.erEndring } != null
+
 private fun TransaksjonDTO.mapSimuleringRequest(): SimulerBeregningRequest {
     var simulerFom = LocalDate.MAX
     var simulerTom = LocalDate.MIN
@@ -39,7 +42,7 @@ private fun TransaksjonDTO.mapSimuleringRequest(): SimulerBeregningRequest {
     val oppdrag = simFactory.createOppdrag().apply {
         val utbetaling = utbetalingsOppdrag.utbetaling
         requireNotNull(utbetaling)
-        kodeEndring = if (utbetaling.erEndring == true) EndringsKode.ENDRING.kode else EndringsKode.NY.kode
+        kodeEndring = if (utbetaling.harLinjeEndringer()) EndringsKode.UENDRET.kode else EndringsKode.NY.kode
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsreferanse
         utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
@@ -54,7 +57,8 @@ private fun TransaksjonDTO.mapSimuleringRequest(): SimulerBeregningRequest {
                 mapToSimuleringsOppdragslinje(
                     oppdragslinje = it,
                     maksDato = utbetaling.maksdato,
-                    saksbehandler = OppdragSkjemaConstants.APP
+                    saksbehandler = OppdragSkjemaConstants.APP,
+                    endringskode = if (it.erEndring()) EndringsKode.ENDRING else EndringsKode.NY
                 )
             )
         }
@@ -104,7 +108,8 @@ private fun TransaksjonDTO.mapAnnulleringSimuleringRequest(): SimulerBeregningRe
 private fun mapToSimuleringsOppdragslinje(
     oppdragslinje: UtbetalingsLinje,
     maksDato: LocalDate,
-    saksbehandler: String
+    saksbehandler: String,
+    endringskode:EndringsKode
 ): Oppdragslinje {
     val erRefusjonTilArbeidsgiver = true
 
@@ -117,7 +122,7 @@ private fun mapToSimuleringsOppdragslinje(
     }
 
     return Oppdragslinje().apply {
-        kodeEndringLinje = EndringsKode.NY.kode
+        kodeEndringLinje = endringskode.kode
         kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = oppdragslinje.datoFom.format(formatter)
         datoVedtakTom = oppdragslinje.datoTom.format(formatter)
@@ -187,7 +192,7 @@ private fun TransaksjonDTO.mapUtbetalingsoppdrag(): Oppdrag110 {
         val utbetaling = utbetalingsOppdrag.utbetaling
         requireNotNull(utbetaling)
         kodeAksjon = AksjonsKode.OPPDATER.kode
-        kodeEndring = if (utbetaling.erEndring == true) EndringsKode.ENDRING.kode else EndringsKode.NY.kode
+        kodeEndring = if (utbetaling.harLinjeEndringer()) EndringsKode.UENDRET.kode else EndringsKode.NY.kode
 
         kodeFagomraade = FagOmraadekode.SYKEPENGER_REFUSJON.kode
         fagsystemId = utbetalingsOppdrag.utbetalingsreferanse
@@ -206,7 +211,8 @@ private fun TransaksjonDTO.mapUtbetalingsoppdrag(): Oppdrag110 {
                 mapTolinje150(
                     oppdragslinje = it,
                     maksDato = utbetaling.maksdato,
-                    saksbehandler = utbetalingsOppdrag.saksbehandler
+                    saksbehandler = utbetalingsOppdrag.saksbehandler,
+                    endringskode = if (it.erEndring()) EndringsKode.ENDRING else EndringsKode.NY
                 )
             )
         }
@@ -216,7 +222,8 @@ private fun TransaksjonDTO.mapUtbetalingsoppdrag(): Oppdrag110 {
 private fun mapTolinje150(
     oppdragslinje: UtbetalingsLinje,
     maksDato: LocalDate,
-    saksbehandler: String
+    saksbehandler: String,
+    endringskode: EndringsKode
 ): OppdragsLinje150 {
     val erRefusjonTilArbeidsgiver = true
 
@@ -229,7 +236,7 @@ private fun mapTolinje150(
     }
 
     return objectFactory.createOppdragsLinje150().apply {
-        kodeEndringLinje = EndringsKode.NY.kode
+        kodeEndringLinje = endringskode.kode
         kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
         datoVedtakFom = OppdragSkjemaConstants.toXMLDate(oppdragslinje.datoFom)
         datoVedtakTom = OppdragSkjemaConstants.toXMLDate(oppdragslinje.datoTom)

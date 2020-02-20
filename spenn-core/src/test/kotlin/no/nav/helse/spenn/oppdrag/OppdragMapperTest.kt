@@ -75,6 +75,7 @@ class OppdragMapperTest {
         val oppdrag = oppdragState.toOppdragRequest()
 
         assertEquals(AksjonsKode.OPPDATER.kode, oppdrag.oppdrag110.kodeAksjon)
+        assertEquals(EndringsKode.NY.kode, oppdrag.oppdrag110.kodeEndring)
         assertEquals("12121212345", oppdrag.oppdrag110.oppdragGjelderId)
         assertEquals("1001", oppdrag.oppdrag110.fagsystemId)
         assertEquals(UtbetalingsfrekvensKode.MÅNEDLIG.kode, oppdrag.oppdrag110.utbetFrekvens)
@@ -85,6 +86,7 @@ class OppdragMapperTest {
             oppdrag.oppdrag110.avstemming115.nokkelAvstemming
         )
         assertNull(oppdrag.oppdrag110.oppdragsLinje150[0].utbetalesTilId)
+        assertEquals(EndringsKode.NY.kode, oppdrag.oppdrag110.oppdragsLinje150[0].kodeEndringLinje)
         assertEquals("00995816598", oppdrag.oppdrag110.oppdragsLinje150[0].refusjonsinfo156.refunderesId)
         assertEquals(
             DatatypeFactory.newInstance().newXMLGregorianCalendar(

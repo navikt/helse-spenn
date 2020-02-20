@@ -9,15 +9,10 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.spenn.*
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
-import no.nav.helse.spenn.buildClaimSet
-import no.nav.helse.spenn.enEnkelAnnulering
-import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.mockApiEnvironment
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
-import no.nav.helse.spenn.stubOIDCProvider
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.toOppdragsbehov
 import no.nav.security.token.support.test.JwtTokenGenerator
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -36,6 +31,7 @@ class OpphørsControllerTest {
             WireMock.configureFor(server.port())
             stubOIDCProvider(server)
         }
+
         @AfterAll
         @JvmStatic
         fun after() {
@@ -46,15 +42,15 @@ class OpphørsControllerTest {
     @Test
     fun runOpphør() {
         val apienv = mockApiEnvironment().copy(
-                stateService = OppdragService(TestDb.createMigratedDataSource())
+            stateService = OppdragService(TestDb.createMigratedDataSource())
         )
-        val behov = enEnkelAnnulering()
 
+        val behov = enEnkelAnnulering()
         apienv.stateService.lagreNyttOppdrag(lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov()))
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
-                groups = listOf(apienv.authConfig.requiredGroup),
-                preferredUsername = "sara saksbehandler"))
+            groups = listOf(apienv.authConfig.requiredGroup),
+            preferredUsername = "sara saksbehandler"))
 
         withTestApplication({
             spennApiModule(apienv)
@@ -73,15 +69,14 @@ class OpphørsControllerTest {
     @Test
     fun runDobbeltOpphør() {
         val apienv = mockApiEnvironment().copy(
-                stateService = OppdragService(TestDb.createMigratedDataSource())
+            stateService = OppdragService(TestDb.createMigratedDataSource())
         )
         val behov = enEnkelAnnulering()
-
         apienv.stateService.lagreNyttOppdrag(lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov()))
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
-                groups = listOf(apienv.authConfig.requiredGroup),
-                preferredUsername = "sara saksbehandler"))
+            groups = listOf(apienv.authConfig.requiredGroup),
+            preferredUsername = "sara saksbehandler"))
 
         withTestApplication({
             spennApiModule(apienv)

@@ -6,10 +6,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.spenn.appsupport.VEDTAK
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.Utbetaling
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
@@ -46,13 +43,13 @@ class UtbetalingLøser(
         saveInitialOppdragState(lagOppdragFraBehov(packet))
     }
 
-    private fun saveInitialOppdragState(utbetaling: UtbetalingsOppdrag) {
+    private fun saveInitialOppdragState(utbetaling: Utbetalingsbehov) {
         try {
             oppdragService.lagreNyttOppdrag(utbetaling)
         } catch (e: SQLIntegrityConstraintViolationException) {
             log.error("skipping duplicate for key ${utbetaling.utbetalingsreferanse}")
             metrics.counter(VEDTAK, "status", "DUPLIKAT").increment()
-        } catch (e: PSQLException) { // TODO : FIX
+        } catch (e: PSQLException) { // TODO : Burde oppdragservice fange disse to og gi spenn duplikat exc?
             if (e.sqlState == "23505") {
                 log.error("skipping duplicate for key ${utbetaling.utbetalingsreferanse}")
                 metrics.counter(VEDTAK, "status", "DUPLIKAT").increment()
@@ -63,29 +60,26 @@ class UtbetalingLøser(
     }
 
     companion object {
-        internal fun lagOppdragFraBehov(jsonMessage: JsonMessage) = UtbetalingsOppdrag(
+        internal fun lagOppdragFraBehov(jsonMessage: JsonMessage) = Utbetalingsbehov(
             behov = jsonMessage.toJson(),
             utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
             oppdragGjelder = jsonMessage["fødselsnummer"].asText(),
             saksbehandler = jsonMessage["saksbehandler"].asText(),
-            utbetaling = Utbetaling(
+            utbetaling = Utbetalingsbehov.Utbetaling(
                 maksdato = jsonMessage["maksdato"].asText().let { LocalDate.parse(it) },
                 organisasjonsnummer = jsonMessage["organisasjonsnummer"].asText(),
-                utbetalingsLinjer = jsonMessage["utbetalingslinjer"].mapIndexed { i, behovsLinje ->
-                    UtbetalingsLinje(
-                        id = "${i + 1}",
-                        satsTypeKode = SatsTypeKode.DAGLIG,
+                utbetalingsLinjer = jsonMessage["utbetalingslinjer"].map { linje ->
+                    Utbetalingsbehov.Linje(
                         utbetalesTil = jsonMessage["organisasjonsnummer"].asText(),
-                        sats = BigDecimal(behovsLinje["dagsats"].asText()),
-                        grad = 100.toBigInteger(),
-                        datoFom = behovsLinje["fom"].asText().let { LocalDate.parse(it) },
-                        datoTom = behovsLinje["tom"].asText().let { LocalDate.parse(it) }
+                        sats = BigDecimal(linje["dagsats"].asText()),
+                        datoFom = linje["fom"].asText().let { LocalDate.parse(it) },
+                        datoTom = linje["tom"].asText().let { LocalDate.parse(it) }
                     )
                 }
             )
         )
 
-        internal fun lagAnnulleringoppdragFraBehov(jsonMessage: JsonMessage) = UtbetalingsOppdrag(
+        internal fun lagAnnulleringsoppdragFraBehov(jsonMessage: JsonMessage) = Utbetalingsbehov(
             behov = jsonMessage.toJson(),
             utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
             oppdragGjelder = jsonMessage["fødselsnummer"].asText(),
