@@ -3,17 +3,13 @@ package no.nav.helse.spenn.overforing
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
-import no.nav.helse.spenn.etEnkeltBehov
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
-import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.testsupport.simuleringsresultat
 import no.nav.helse.spenn.utbetalingMedRef
-import no.nav.helse.spenn.toOppdragsbehov
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import kotlin.test.assertEquals
@@ -30,9 +26,6 @@ class SendToOSTaskTest {
 
     @Test
     fun afterSimuleringSendToOS() {
-        val behov = etEnkeltBehov()
-        val utbetaling = lagOppdragFraBehov(behov.toOppdragsbehov())
-
         service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "1001"))
         service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "1002"))
         service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "1003"))
