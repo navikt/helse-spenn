@@ -3,21 +3,17 @@ package no.nav.helse.spenn.oppdrag
 
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
-import no.nav.helse.spenn.*
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
-import no.nav.helse.spenn.Behovslinje
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.etEnkeltBehov
+import no.nav.helse.spenn.kWhen
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.toOppdragsbehov
-
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.Month
 import javax.jms.Connection
 import javax.jms.MessageConsumer
 import javax.jms.Session
@@ -52,8 +48,7 @@ internal class MQOppdragReceiverTest {
             meterRegistry = meterRegistry
         )
 
-        val oppdrag = Utbetalingsbehov(etEnkeltBehov(utbetalingsreferanse = "3001"), "11111111111")
-        val utbetalingTemplate = UtbetalingLøser.lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov())
+        val oppdrag = lagOppdragFraBehov(etEnkeltBehov(utbetalingsreferanse = "3001").toOppdragsbehov())
 
         oppdragService.lagreNyttOppdrag(oppdrag)
         oppdragService.hentNyeOppdrag(5).first().forberedSendingTilOS()

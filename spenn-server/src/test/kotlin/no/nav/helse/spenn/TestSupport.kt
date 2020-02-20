@@ -1,5 +1,6 @@
 package no.nav.helse.spenn
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
@@ -8,7 +9,7 @@ import io.micrometer.core.instrument.MockClock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.rest.SpennApiEnvironment
@@ -20,8 +21,7 @@ import org.mockito.Mockito
 import org.mockito.stubbing.OngoingStubbing
 import java.net.URL
 import java.time.LocalDate
-import java.util.Date
-import java.util.UUID
+import java.util.*
 
 const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
@@ -81,8 +81,8 @@ fun stubOIDCProvider(server: WireMockServer) {
         WireMock.any(WireMock.urlPathEqualTo("/.well-known/openid-configuration")).willReturn(
             WireMock.okJson(
                 "{\"jwks_uri\": \"${server.baseUrl()}/keys\", " +
-                        "\"subject_types_supported\": [\"pairwise\"], " +
-                        "\"issuer\": \"${JwtTokenGenerator.ISS}\"}"
+                    "\"subject_types_supported\": [\"pairwise\"], " +
+                    "\"issuer\": \"${JwtTokenGenerator.ISS}\"}"
             )
         )
     )
@@ -95,27 +95,32 @@ fun stubOIDCProvider(server: WireMockServer) {
 }
 
 data class Behovslinje(
-        val fom: String,
-        val tom: String,
-        val dagsats: String
+    val fom: String,
+    val tom: String,
+    val dagsats: String
 )
 
 fun utbetalingMedRef(utbetalingsreferanse: String, dagsats: Double = 1234.0) =
-        Utbetalingsbehov(etEnkeltBehov(utbetalingsreferanse = utbetalingsreferanse, dagsats = dagsats), "12345678901")
+    lagOppdragFraBehov(
+        etEnkeltBehov(
+            utbetalingsreferanse = utbetalingsreferanse,
+            dagsats = dagsats
+        ).toOppdragsbehov()
+    )
 
 fun etEnkeltBehov(
-        maksdato: LocalDate = LocalDate.now().plusYears(1),
-        utbetalingsreferanse: String = "1",
-        dagsats: Double = 1234.0,
-        utbetalingslinje: Behovslinje = Behovslinje(
-                fom = "2020-01-15",
-                tom = "2020-01-30",
-                dagsats = "$dagsats"
-        ),
-        utbetalingslinjer: List<Behovslinje> =
-            listOf(utbetalingslinje)
-) = defaultObjectMapper.readTree(
-        """
+    maksdato: LocalDate = LocalDate.now().plusYears(1),
+    utbetalingsreferanse: String = "1",
+    dagsats: Double = 1234.0,
+    utbetalingslinje: Behovslinje = Behovslinje(
+        fom = "2020-01-15",
+        tom = "2020-01-30",
+        dagsats = "$dagsats"
+    ),
+    utbetalingslinjer: List<Behovslinje> =
+        listOf(utbetalingslinje)
+): JsonNode = defaultObjectMapper.readTree(
+    """
         {
           "@behov": "Utbetaling",
           "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
@@ -126,15 +131,15 @@ fun etEnkeltBehov(
           "maksdato": "$maksdato",
           "saksbehandler": "Z999999",
           "utbetalingslinjer": [
-          ${utbetalingslinjer.map {
-            """
-            {
-                "fom": "${it.fom}",
-                "tom": "${it.tom}",
-                "dagsats": "${it.dagsats}"
-            }
-            """
-        }.joinToString(separator = ",")}
+          ${utbetalingslinjer.joinToString(separator = ",") {
+        """
+                  {
+                      "fom": "${it.fom}",
+                      "tom": "${it.tom}",
+                      "dagsats": "${it.dagsats}"
+                  }
+                  """
+    }}
           ]
         }        
     """

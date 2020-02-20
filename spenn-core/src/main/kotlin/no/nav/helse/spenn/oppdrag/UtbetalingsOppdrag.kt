@@ -7,31 +7,29 @@ import java.time.LocalDate
 
 internal fun Utbetalingsbehov.tilUtbetalingsOppdrag(erLinjeEndring: Boolean = false) =
     UtbetalingsOppdrag(
-            behov = this.behov,
-            utbetalingsreferanse = this.utbetalingsreferanse,
-            oppdragGjelder = this.oppdragGjelder,
-            saksbehandler = this.saksbehandler,
-            utbetaling = this.utbetaling?.let { behovUtbetaling ->
-                Utbetaling(
-                        maksdato = behovUtbetaling.maksdato,
-                        organisasjonsnummer = behovUtbetaling.organisasjonsnummer,
-                        utbetalingsLinjer = behovUtbetaling.utbetalingsLinjer.mapIndexed { i, behovsLinje ->
-                            UtbetalingsLinje(
-                                    id = "${i + 1}",
-                                    satsTypeKode = SatsTypeKode.DAGLIG,
-                                    utbetalesTil = behovUtbetaling.organisasjonsnummer,
-                                    sats = behovsLinje.sats,
-                                    grad = 100.toBigInteger(),
-                                    datoFom = behovsLinje.datoFom,
-                                    datoTom = behovsLinje.datoTom,
-                                    erEndring = erLinjeEndring
-                            )
-                        }
-                )
-            }
+        behov = this.behov,
+        utbetalingsreferanse = this.utbetalingsreferanse,
+        oppdragGjelder = this.oppdragGjelder,
+        saksbehandler = this.saksbehandler,
+        utbetaling = this.utbetaling?.let { behovUtbetaling ->
+            Utbetaling(
+                maksdato = behovUtbetaling.maksdato,
+                organisasjonsnummer = behovUtbetaling.organisasjonsnummer,
+                utbetalingsLinjer = behovUtbetaling.utbetalingsLinjer.mapIndexed { i, behovsLinje ->
+                    UtbetalingsLinje(
+                        id = "${i + 1}",
+                        satsTypeKode = SatsTypeKode.DAGLIG,
+                        utbetalesTil = behovUtbetaling.organisasjonsnummer,
+                        sats = behovsLinje.sats,
+                        grad = 100.toBigInteger(),
+                        datoFom = behovsLinje.datoFom,
+                        datoTom = behovsLinje.datoTom,
+                        erEndring = erLinjeEndring
+                    )
+                }
+            )
+        }
     )
-
-
 
 internal data class UtbetalingsOppdrag(
     val behov: String,

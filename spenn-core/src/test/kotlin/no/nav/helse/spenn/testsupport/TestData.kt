@@ -75,6 +75,7 @@ fun etEnkeltBehov() = defaultObjectMapper.readTree("""
   "@behov": "Utbetaling",
   "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
   "utbetalingsreferanse": "1",
+  "fødselsnummer": "12345678901",
   "aktørId": "1234567890123",
   "organisasjonsnummer": "123456789",
   "maksdato": "2011-12-20",

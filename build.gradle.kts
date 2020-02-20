@@ -77,7 +77,6 @@ subprojects {
     }
 
     dependencies {
-        implementation("no.nav.helse:rapids-rivers:1.acac29f")
         implementation("io.ktor:ktor-jackson:1.2.5")
         implementation("org.jetbrains.kotlin:kotlin-reflect:1.3.61")
         implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.2.0")
@@ -122,11 +121,6 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
         testImplementation("org.jetbrains.kotlin:kotlin-test:1.3.61")
-        testImplementation("org.testcontainers:vault:1.12.3")
-        testImplementation("org.testcontainers:testcontainers:1.12.3")
-        testImplementation("org.testcontainers:postgresql:1.12.3")
-        testImplementation("org.testcontainers:kafka:1.12.3")
-        testImplementation("org.testcontainers:mockserver:1.12.3")
         testImplementation("org.mockito:mockito-core:2.23.4")
         testImplementation("io.ktor:ktor-server-test-host:1.2.5")
         testImplementation("no.nav.security:token-validation-test-support:1.1.1")

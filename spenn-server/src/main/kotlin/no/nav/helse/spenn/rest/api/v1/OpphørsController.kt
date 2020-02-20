@@ -9,7 +9,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import no.nav.helse.spenn.UtbetalingLøser.Companion.lagAnnulleringoppdragFraBehov
+import no.nav.helse.spenn.UtbetalingLøser.Companion.lagAnnulleringsoppdragFraBehov
 import no.nav.helse.spenn.oppdrag.dao.AlleredeAnnulertException
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.toAnulleringsbehov
@@ -31,7 +31,7 @@ fun Route.opphørscontroller(
             return@post
         }
         val utbetalingsreferanse = behov["utbetalingsreferanse"].asText()!!
-        val oppdrag = lagAnnulleringoppdragFraBehov(behov.toAnulleringsbehov())
+        val oppdrag = lagAnnulleringsoppdragFraBehov(behov.toAnulleringsbehov())
         LOG.info("opphør called for utbetalingsreferanse: $utbetalingsreferanse")
         audit.info("annulering kall for utbetalingsreferanse: $utbetalingsreferanse", call.authentication)
         try {

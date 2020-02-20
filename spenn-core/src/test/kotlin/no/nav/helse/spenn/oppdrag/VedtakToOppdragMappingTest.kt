@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.spenn.testsupport.etEnkeltBehov
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -13,7 +13,7 @@ class VedtakToOppdragMappingTest {
     @Test
     fun `mapping av et enkelt vedtak`() {
         val råttBehov = etEnkeltBehov()
-        val behov = Utbetalingsbehov(råttBehov, "12345678901")
+        val behov = lagNyttBehov(råttBehov)
 
         val oppdragslinje = UtbetalingsLinje(
             id = "1",
@@ -25,7 +25,7 @@ class VedtakToOppdragMappingTest {
             grad = BigInteger.valueOf(100)
         )
         val målbilde = UtbetalingsOppdrag(
-            behov = råttBehov,
+            behov = råttBehov.toString(),
             oppdragGjelder = "12345678901",
             saksbehandler = "Z999999",
             utbetalingsreferanse = "1",
@@ -40,4 +40,23 @@ class VedtakToOppdragMappingTest {
         assertEquals("1", mappetBehov.utbetaling!!.utbetalingsLinjer.first().id)
         assertEquals(målbilde, mappetBehov)
     }
+
+    fun lagNyttBehov(jsonNode: JsonNode) = Utbetalingsbehov(
+        behov = jsonNode.toString(),
+        utbetalingsreferanse = jsonNode["utbetalingsreferanse"].asText(),
+        oppdragGjelder = jsonNode["fødselsnummer"].asText(),
+        saksbehandler = jsonNode["saksbehandler"].asText(),
+        utbetaling = Utbetalingsbehov.Utbetaling(
+            maksdato = jsonNode["maksdato"].asText().let { LocalDate.parse(it) },
+            organisasjonsnummer = jsonNode["organisasjonsnummer"].asText(),
+            utbetalingsLinjer = jsonNode["utbetalingslinjer"].map { linje ->
+                Utbetalingsbehov.Linje(
+                    utbetalesTil = jsonNode["organisasjonsnummer"].asText(),
+                    sats = BigDecimal(linje["dagsats"].asText()),
+                    datoFom = linje["fom"].asText().let { LocalDate.parse(it) },
+                    datoTom = linje["tom"].asText().let { LocalDate.parse(it) }
+                )
+            }
+        )
+    )
 }

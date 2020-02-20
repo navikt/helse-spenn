@@ -4,22 +4,17 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.AvstemmingMapper
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
-import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.toOppdragsbehov
 import no.nav.helse.spenn.utbetalingMedRef
-
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import no.trygdeetaten.skjema.oppdrag.Mmel
@@ -65,10 +60,6 @@ internal class AvstemmingTaskTest {
 
     @Test
     fun testAtDetSendesLoggesOgOppdateresAvstemminger() {
-        val behov = ObjectMapper().readTree(this.javaClass.getResource("/et_utbetalingsbehov.json"))
-        val utbetalingTemplate = Utbetalingsbehov(behov, "12345678901")
-        val utbetalingTemplate = lagOppdragFraBehov(behov.toOppdragsbehov())
-
         val dagsatser = listOf(
                 1000.0,
                 900.0,

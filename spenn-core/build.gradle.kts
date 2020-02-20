@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation ("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.2")
 }
 
 xjc {

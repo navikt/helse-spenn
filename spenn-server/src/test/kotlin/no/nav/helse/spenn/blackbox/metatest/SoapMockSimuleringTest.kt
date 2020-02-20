@@ -6,7 +6,6 @@ import no.nav.helse.spenn.ServiceUser
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.blackbox.soap.SoapMock
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
 import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
@@ -48,7 +47,7 @@ internal class SoapMockSimuleringTest {
 
     @Test
     fun `Test simulering med Soap og STS`() {
-        val result = simuleringService.simulerOppdrag(Utbetalingsbehov(etEnkeltBehov(), "12121212345")
+        val result = simuleringService.simulerOppdrag(lagOppdragFraBehov(etEnkeltBehov().toOppdragsbehov())
                 .lagPåSidenSimuleringsrequest())
         assertNotNull(result, "simuleringresult skal ha blitt satt")
         assertEquals(SimuleringStatus.OK, result.status)
