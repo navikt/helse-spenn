@@ -2,14 +2,7 @@ package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.AvstemmingMapper
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.TransaksjonStatus
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
-import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
-import no.nav.helse.spenn.oppdrag.tilUtbetalingsOppdrag
-import no.nav.helse.spenn.oppdrag.toOppdragRequest
-import no.nav.helse.spenn.oppdrag.toSimuleringRequest
+import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus.OK
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
@@ -41,6 +34,10 @@ class OppdragService(dataSource: DataSource) {
                 require(transaksjonDTO.status == TransaksjonStatus.STARTET)
                 return transaksjonDTO.toSimuleringRequest()
             }
+
+        fun gjelderId() = transaksjonDTO.utbetalingsOppdrag.oppdragGjelder
+
+        fun opprinneligBehov() = transaksjonDTO.utbetalingsOppdrag.behov
 
         fun forberedSendingTilOS() {
             performSanityCheck()

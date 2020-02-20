@@ -70,6 +70,18 @@ internal fun launchApplication(
 ) {
     val oppdragService = OppdragService(dataSource)
 
+    val rapidsConnection = RapidApplication.Builder(rawEnvironment).withKtorModule {
+        spennApiModule(
+            SpennApiEnvironment(
+                meterRegistry = metrics,
+                authConfig = auth,
+                simuleringService = simuleringService,
+                auditSupport = AuditSupport(),
+                stateService = oppdragService
+            )
+        )
+    }.build()
+
     val oppdragMQSender = OppdragMQSender(
         mqConnection,
         mqQueues.oppdragQueueSend,
@@ -80,6 +92,7 @@ internal fun launchApplication(
     val oppdragMQReceiver = OppdragMQReceiver(
         mqConnection,
         mqQueues.oppdragQueueMottak,
+        rapidsConnection,
         JAXBOppdrag(),
         oppdragService,
         metrics
@@ -98,17 +111,6 @@ internal fun launchApplication(
         avstemmingMQSender = avstemmingMQSender
     )
 
-    val rapidsConnection = RapidApplication.Builder(rawEnvironment).withKtorModule {
-        spennApiModule(
-            SpennApiEnvironment(
-                meterRegistry = metrics,
-                authConfig = auth,
-                simuleringService = simuleringService,
-                auditSupport = AuditSupport(),
-                stateService = oppdragService
-            )
-        )
-    }.build()
 
     UtbetalingLøser(rapidsConnection, oppdragService)
 
@@ -124,6 +126,11 @@ internal fun launchApplication(
     Runtime.getRuntime().addShutdownHook(Thread {
         rapidsConnection.stop()
         dataSource.connection.close()
+
+        oppdragMQSender.close()
+        oppdragMQReceiver.close()
+        avstemmingMQSender.close()
+
         mqConnection.stop()
         scheduler.shutdown()
     })

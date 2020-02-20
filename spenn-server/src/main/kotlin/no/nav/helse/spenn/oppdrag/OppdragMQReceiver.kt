@@ -1,10 +1,15 @@
 package no.nav.helse.spenn.oppdrag
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
@@ -14,6 +19,7 @@ import javax.jms.Connection
 class OppdragMQReceiver(
     connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
     mottakqueue: String,
+    val rapidsConnection: RapidsConnection,
     val jaxb: JAXBOppdrag,
     val oppdragService: OppdragService,
     val meterRegistry: MeterRegistry/*,
@@ -73,12 +79,20 @@ class OppdragMQReceiver(
         val status = mapStatus(oppdrag)
         val feilmld = if (status == TransaksjonStatus.FEIL) oppdrag.mmel.beskrMelding else null
 
-        oppdragService.hentTransaksjon(utbetalingsreferanse, nøkkelAvstemming)
-            .lagreOSResponse(status, xml, feilmld)
+        val transaksjon = oppdragService.hentTransaksjon(utbetalingsreferanse, nøkkelAvstemming)
+
+        transaksjon.lagreOSResponse(status, xml, feilmld)
 
         meterRegistry.counter(OPPDRAG, "status", status.name).increment()
         if (status == TransaksjonStatus.FERDIG) {
-            //statusProducer.send(OppdragFerdigInfo(updated.soknadId.toString())) // TODO
+            val opprinneligBehovAsJsonNode = defaultObjectMapper.readTree(transaksjon.opprinneligBehov())
+
+            rapidsConnection.publish(transaksjon.gjelderId(), opprinneligBehovAsJsonNode.setLøsning(
+                "Utbetaling",
+                mapOf(
+                    "status" to TransaksjonStatus.FERDIG
+                )
+            ).toString())
         }
     }
 
@@ -88,4 +102,13 @@ class OppdragMQReceiver(
         log.info("Closing OppdragMQReceiver::jmsSession")
         jmsSession.close()
     }
+
+    private fun JsonNode.setLøsning(nøkkel: String, data: Any) =
+        (this as ObjectNode).set<JsonNode>(
+            "@løsning", defaultObjectMapper.convertValue(
+            mapOf(
+                nøkkel to data
+            ))
+        )
+
 }

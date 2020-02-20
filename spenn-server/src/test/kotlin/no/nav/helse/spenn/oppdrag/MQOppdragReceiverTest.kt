@@ -1,18 +1,20 @@
 package no.nav.helse.spenn.oppdrag
 
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.spenn.*
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
-import no.nav.helse.spenn.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.kWhen
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
-import no.nav.helse.spenn.toOppdragsbehov
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.*
 import java.time.LocalDateTime
 import javax.jms.Connection
 import javax.jms.MessageConsumer
@@ -32,6 +34,7 @@ internal class MQOppdragReceiverTest {
     private val mockConnection = mock(Connection::class.java)
     private val mockJmsSession = mock(Session::class.java)
     private val mockConsumer = mock(MessageConsumer::class.java)
+    private val mockRapidConnection = mock(RapidsConnection::class.java)
 
     @BeforeEach
     fun beforeEach() {
@@ -43,12 +46,15 @@ internal class MQOppdragReceiverTest {
     fun `Oppdrag MQ send and receive`() {
         val mqReceiver = OppdragMQReceiver(
             connection = mockConnection,
+            rapidsConnection = mockRapidConnection,
             mottakqueue = "mottaksqueue",
             jaxb = JAXBOppdrag(), oppdragService = oppdragService,
             meterRegistry = meterRegistry
         )
 
-        val oppdrag = lagOppdragFraBehov(etEnkeltBehov(utbetalingsreferanse = "3001").toOppdragsbehov())
+        val etEnkeltBehov = etEnkeltBehov(utbetalingsreferanse = "3001")
+
+        val oppdrag = lagOppdragFraBehov(etEnkeltBehov.toOppdragsbehov())
 
         oppdragService.lagreNyttOppdrag(oppdrag)
         oppdragService.hentNyeOppdrag(5).first().forberedSendingTilOS()
@@ -57,11 +63,19 @@ internal class MQOppdragReceiverTest {
         overstyrNokkelForUtbetalingsreferanse("3001", nokkel)
 
         mqReceiver.receiveOppdragResponse(receiveError)
+        verify(mockRapidConnection, never()).publish(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())
         val feilTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
         assertEquals(TransaksjonStatus.FEIL.name, feilTransaksjon.status)
         assertEquals("Det er noe galt", feilTransaksjon.feilbeskrivelse)
 
         mqReceiver.receiveOppdragResponse(receiveOK)
+        verify(mockRapidConnection).publish("12345678901", etEnkeltBehov.setLøsning(
+            "Utbetaling",
+            mapOf(
+                "status" to TransaksjonStatus.FERDIG
+            )
+        ).toString())
+
         val okTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
         assertEquals(TransaksjonStatus.FERDIG.name, okTransaksjon.status)
         assertNull(okTransaksjon.feilbeskrivelse)
@@ -101,8 +115,16 @@ internal class MQOppdragReceiverTest {
             }
         }
     }
-
 }
+
+private fun JsonNode.setLøsning(nøkkel: String, data: Any) =
+    (this as ObjectNode).set<JsonNode>(
+        "@løsning", defaultObjectMapper.convertValue(
+        mapOf(
+            nøkkel to data
+        ))
+    )
+
 
 const val receiveError = """<?xml version="1.0" encoding="utf-8"?>
 <oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag"><mmel>
