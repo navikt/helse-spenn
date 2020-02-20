@@ -11,7 +11,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
-import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.simulering.SimuleringService
@@ -37,7 +36,6 @@ fun mockApiEnvironment() = SpennApiEnvironment(
     authConfig = testAuthEnv(),
     simuleringService = Mockito.mock(SimuleringService::class.java),
     auditSupport = AuditSupport(),
-    oppdragMQSender = Mockito.mock(OppdragMQSender::class.java),
     stateService = Mockito.mock(OppdragService::class.java)
 )
 

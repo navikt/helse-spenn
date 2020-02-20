@@ -19,6 +19,8 @@ import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import org.apache.cxf.bus.extension.ExtensionManagerBus
 import java.util.concurrent.ScheduledExecutorService
+import javax.jms.Connection
+import javax.sql.DataSource
 
 
 val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -27,15 +29,11 @@ val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 fun main() {
     val env: Environment = readEnvironment()
     val serviceUser: ServiceUser = readServiceUserCredentials()
-
-    launchApplication(env, serviceUser)
+    setUpAndLaunchApplication(env, serviceUser)
 }
 
 @KtorExperimentalAPI
-internal fun launchApplication(env: Environment, serviceUser: ServiceUser) {
-    val spennDataSource = SpennDataSource.getMigratedDatasourceInstance(env.db)
-    val oppdragService = OppdragService(spennDataSource.dataSource)
-
+fun setUpAndLaunchApplication(env: Environment, serviceUser: ServiceUser) {
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.simuleringServiceUrl,
         stsSoapUrl = env.stsSoapUrl,
@@ -47,33 +45,49 @@ internal fun launchApplication(env: Environment, serviceUser: ServiceUser) {
         metrics
     )
 
-    val spennMQConnection =
+    val mqConnection =
         MQConnectionFactory().apply {
-            hostName = env.mq.hostname
-            port = env.mq.port
-            channel = env.mq.channel
-            queueManager = env.mq.queueManager
+            hostName = env.mqConnection.hostname
+            port = env.mqConnection.port
+            channel = env.mqConnection.channel
+            queueManager = env.mqConnection.queueManager
             transportType = WMQConstants.WMQ_CM_CLIENT
-        }.createConnection(env.mq.user, env.mq.password)!!
+        }.createConnection(env.mqConnection.user, env.mqConnection.password)!!
+
+    val dataSource = SpennDataSource.getMigratedDatasourceInstance(env.db).dataSource
+
+    launchApplication(simuleringService, mqConnection, dataSource, env.mqQueues, env.auth, env.raw)
+}
+
+@KtorExperimentalAPI
+internal fun launchApplication(
+    simuleringService: SimuleringService,
+    mqConnection: Connection,
+    dataSource: DataSource,
+    mqQueues: MqQueuesEnvironment,
+    auth: AuthEnvironment,
+    rawEnvironment: Map<String, String>
+) {
+    val oppdragService = OppdragService(dataSource)
 
     val oppdragMQSender = OppdragMQSender(
-        spennMQConnection,
-        env.mq.oppdragQueueSend,
-        env.mq.oppdragQueueMottak,
+        mqConnection,
+        mqQueues.oppdragQueueSend,
+        mqQueues.oppdragQueueMottak,
         JAXBOppdrag()
     )
 
     val oppdragMQReceiver = OppdragMQReceiver(
-        spennMQConnection,
-        env.mq.oppdragQueueMottak,
+        mqConnection,
+        mqQueues.oppdragQueueMottak,
         JAXBOppdrag(),
         oppdragService,
         metrics
     )
 
     val avstemmingMQSender = AvstemmingMQSender(
-        spennMQConnection,
-        env.mq.avstemmingQueueSend,
+        mqConnection,
+        mqQueues.avstemmingQueueSend,
         JAXBAvstemmingsdata()
     )
 
@@ -84,15 +98,14 @@ internal fun launchApplication(env: Environment, serviceUser: ServiceUser) {
         avstemmingMQSender = avstemmingMQSender
     )
 
-    val rapidsConnection = RapidApplication.Builder(env.raw).withKtorModule {
+    val rapidsConnection = RapidApplication.Builder(rawEnvironment).withKtorModule {
         spennApiModule(
             SpennApiEnvironment(
                 meterRegistry = metrics,
-                authConfig = env.auth,
+                authConfig = auth,
                 simuleringService = simuleringService,
                 auditSupport = AuditSupport(),
-                stateService = oppdragService,
-                oppdragMQSender = oppdragMQSender
+                stateService = oppdragService
             )
         )
     }.build()
@@ -102,16 +115,16 @@ internal fun launchApplication(env: Environment, serviceUser: ServiceUser) {
     val scheduler: ScheduledExecutorService?
     scheduler = setupSchedules(
         spennTasks = services,
-        dataSourceForLockingTable = spennDataSource.dataSource
+        dataSourceForLockingTable = dataSource
     )
 
-    spennMQConnection.start()
+    mqConnection.start()
     rapidsConnection.start()
 
     Runtime.getRuntime().addShutdownHook(Thread {
         rapidsConnection.stop()
-        spennDataSource.dataSource.close()
-        spennMQConnection.stop()
+        dataSource.connection.close()
+        mqConnection.stop()
         scheduler.shutdown()
     })
 }

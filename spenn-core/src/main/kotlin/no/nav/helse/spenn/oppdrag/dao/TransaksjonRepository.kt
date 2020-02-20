@@ -1,12 +1,16 @@
 package no.nav.helse.spenn.oppdrag.dao
 
-import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.spenn.core.defaultObjectMapper
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
 import org.slf4j.LoggerFactory
-import java.sql.*
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.LocalDateTime
+import javax.sql.DataSource
 
 internal data class TransaksjonDTO(
     val id: Long,
@@ -22,7 +26,7 @@ internal data class TransaksjonDTO(
 
 private val log = LoggerFactory.getLogger(TransaksjonRepository::class.java.name)
 
-internal class TransaksjonRepository(private val dataSource: HikariDataSource) {
+internal class TransaksjonRepository(private val dataSource: DataSource) {
 
     fun insertNyttOppdrag(utbetalingsOppdrag: UtbetalingsOppdrag) {
         dataSource.connection.use { conn ->

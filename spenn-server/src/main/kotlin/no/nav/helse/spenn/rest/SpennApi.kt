@@ -15,7 +15,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.AuthEnvironment
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.ourIssuer
-import no.nav.helse.spenn.overforing.OppdragMQSender
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.rest.api.v1.AuditSupport.Companion.identClaimForAuditLog
 import no.nav.helse.spenn.rest.api.v1.opphørscontroller
@@ -27,13 +26,11 @@ import no.nav.security.token.support.ktor.tokenValidationSupport
 import org.slf4j.LoggerFactory
 
 data class SpennApiEnvironment @KtorExperimentalAPI constructor(
-    val port: Int = 8080,
     val meterRegistry: PrometheusMeterRegistry,
     val authConfig: AuthEnvironment,
     val simuleringService: SimuleringService,
     val auditSupport: AuditSupport,
-    val stateService: OppdragService,
-    val oppdragMQSender: OppdragMQSender
+    val stateService: OppdragService
 )
 
 @KtorExperimentalAPI
@@ -76,6 +73,5 @@ internal fun Application.spennApiModule(env: SpennApiEnvironment) {
             simuleringcontroller(env.simuleringService, env.auditSupport)
             opphørscontroller(env.stateService, env.auditSupport)
         }
-
     }
 }

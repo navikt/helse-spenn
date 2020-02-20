@@ -7,10 +7,12 @@ import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.oppdrag.dao.SanityCheckException
 import org.slf4j.LoggerFactory
 
-class SendToOSTask(private val oppdragStateService: OppdragService,
-                   private val oppdragMQSender: OppdragMQSender,
-                   private val meterRegistry: MeterRegistry,
-                   private val limit: Int = 100) {
+class SendToOSTask(
+    private val oppdragStateService: OppdragService,
+    private val oppdragMQSender: OppdragMQSender,
+    private val meterRegistry: MeterRegistry,
+    private val limit: Int = 100
+) {
 
     private val log = LoggerFactory.getLogger(SendToOSTask::class.java)
 
@@ -22,7 +24,7 @@ class SendToOSTask(private val oppdragStateService: OppdragService,
         if (oppdragList.isNotEmpty()) {
             log.info("We are sending ${oppdragList.size} to OS")
         }
-        oppdragList.forEach {transaksjon ->
+        oppdragList.forEach { transaksjon ->
             try {
                 transaksjon.forberedSendingTilOS()
                 oppdragMQSender.sendOppdrag(transaksjon.oppdragRequest)

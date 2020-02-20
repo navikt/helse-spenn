@@ -125,5 +125,6 @@ subprojects {
         testImplementation("io.ktor:ktor-server-test-host:1.2.5")
         testImplementation("no.nav.security:token-validation-test-support:1.1.1")
         testImplementation("com.github.tomakehurst:wiremock:2.24.1")
+        testImplementation("io.mockk:mockk:1.9.3")
     }
 }

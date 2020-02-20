@@ -1,9 +1,13 @@
 package no.nav.helse.spenn.oppdrag.dao
 
-import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.AvstemmingMapper
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.toOppdragRequest
+import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus.OK
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
@@ -11,10 +15,11 @@ import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import javax.sql.DataSource
 
 private val log = LoggerFactory.getLogger(OppdragService::class.java.name)
 
-class OppdragService(dataSource: HikariDataSource) {
+class OppdragService(dataSource: DataSource) {
 
     private val repository = TransaksjonRepository(dataSource)
 

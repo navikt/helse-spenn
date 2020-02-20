@@ -5,10 +5,26 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.spenn.Environment
 import no.nav.helse.spenn.ServiceUser
+import no.nav.helse.spenn.acceptedAudienceKey
+import no.nav.helse.spenn.aktorRegisteretBaseUrlKey
 import no.nav.helse.spenn.blackbox.mq.OppdragMock
 import no.nav.helse.spenn.blackbox.soap.SoapMock
-import no.nav.helse.spenn.*
-import no.nav.helse.spenn.launchApplication
+import no.nav.helse.spenn.datasourceUrlKey
+import no.nav.helse.spenn.discoveryUrlKey
+import no.nav.helse.spenn.mqAvvstemmingQueueSendKey
+import no.nav.helse.spenn.mqChannelKey
+import no.nav.helse.spenn.mqHostnameKey
+import no.nav.helse.spenn.mqOppdragQueueMottakKey
+import no.nav.helse.spenn.mqOppdragQueueSendKey
+import no.nav.helse.spenn.mqPasswordKey
+import no.nav.helse.spenn.mqPortKey
+import no.nav.helse.spenn.mqQueueManagerKey
+import no.nav.helse.spenn.mqUsernameKey
+import no.nav.helse.spenn.requiredGroupKey
+import no.nav.helse.spenn.setUpAndLaunchApplication
+import no.nav.helse.spenn.simuleringServiceUrlKey
+import no.nav.helse.spenn.stsSoapUrlKey
+import no.nav.helse.spenn.vaultPostgresMountpathKey
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -488,7 +504,7 @@ internal class SpennBlackBoxTest {
 
             @KtorExperimentalAPI
             private fun dorun() {
-                launchApplication(Environment(envMap), ServiceUser("username", "password"))
+                setUpAndLaunchApplication(Environment(envMap), ServiceUser("username", "password"))
             }
         }
 

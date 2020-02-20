@@ -47,7 +47,8 @@ data class Environment(
     val aktorRegisteretBaseUrl: String,
     val auth: AuthEnvironment,
     val db: DbEnvironment,
-    val mq: MqEnvironment
+    val mqConnection: MqConnectionEnvironment,
+    val mqQueues: MqQueuesEnvironment
 ) {
     constructor (raw: Map<String, String>) : this(
         raw = raw,
@@ -63,13 +64,15 @@ data class Environment(
             jdbcUrl = raw.hent(datasourceUrlKey),
             vaultPostgresMountpath = raw.hent(vaultPostgresMountpathKey)
         ),
-        mq = MqEnvironment(
+        mqConnection = MqConnectionEnvironment(
             queueManager = raw.hent(mqQueueManagerKey),
             channel = raw.hent(mqChannelKey),
             hostname = raw.hent(mqHostnameKey),
             port = raw.hent(mqPortKey).toInt(),
             user = raw.hent(mqUsernameKey),
-            password = raw.hent(mqPasswordKey),
+            password = raw.hent(mqPasswordKey)
+        ),
+        mqQueues = MqQueuesEnvironment(
             oppdragQueueSend = raw.hent(mqOppdragQueueSendKey),
             oppdragQueueMottak = raw.hent(mqOppdragQueueMottakKey),
             avstemmingQueueSend = raw.hent(mqAvvstemmingQueueSendKey)
@@ -90,13 +93,16 @@ data class DbEnvironment(
     val vaultPostgresMountpath: String
 )
 
-data class MqEnvironment(
+data class MqConnectionEnvironment(
     val queueManager: String,
     val channel: String,
     val hostname: String,
     val port: Int,
     val user: String,
-    val password: String,
+    val password: String
+)
+
+data class MqQueuesEnvironment(
     val oppdragQueueSend: String,
     val oppdragQueueMottak: String,
     val avstemmingQueueSend: String
