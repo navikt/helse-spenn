@@ -23,6 +23,8 @@ class SimuleringService(
     private val disableCNCheck: Boolean = true
 ) {
 
+    private val sikkerLogg = LoggerFactory.getLogger("sikkerLogg")
+
     companion object {
         private val log = LoggerFactory.getLogger(SimuleringService::class.java)
     }
@@ -32,7 +34,7 @@ class SimuleringService(
         return simulerOppdrag(oppdrag.simuleringRequest)
     }
 
-    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
+    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest, oppdrag:OppdragService.Transaksjon? = null): SimuleringResult {
         if (disableCNCheck) disableCnCheck(simulerFpService)
 
         return try {
@@ -41,7 +43,8 @@ class SimuleringService(
             }
             mapResponseToResultat(response.response)
         } catch (e: SimulerBeregningFeilUnderBehandling) {
-            log.error("Got error while running Simulering", e)
+            log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
+            sikkerLogg.error("Simulering for ${oppdrag} feilet med feilmelding=${e.faultInfo.errorMessage}")
             SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.faultInfo.errorMessage)
         } catch (e: Exception) {
             log.error("Got unexpected error while running Simulering", e)

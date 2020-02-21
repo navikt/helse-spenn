@@ -26,6 +26,9 @@
 
    <logger name="no.nav.helse.spenn" level="INFO" />
 
+   <logger name="sikkerLogg" level="DEBUG" additivity="false">
+      <appender-ref ref="secureLog" />
+   </logger>
 
    <logger name="org.apache.cxf.ws.addressing" level="ERROR" />
 
