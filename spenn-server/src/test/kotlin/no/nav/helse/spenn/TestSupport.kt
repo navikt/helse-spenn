@@ -8,19 +8,17 @@ import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
-import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
-import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.security.token.support.test.JwkGenerator
 import no.nav.security.token.support.test.JwtTokenGenerator
-import org.mockito.Mockito
-import org.mockito.stubbing.OngoingStubbing
 import java.net.URL
 import java.time.LocalDate
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 const val requiredGroupMembership = "12345678-abcd-abcd-eeff-1234567890ab"
 
@@ -34,9 +32,9 @@ fun testAuthEnv() = AuthEnvironment(
 fun mockApiEnvironment() = SpennApiEnvironment(
     meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry(), MockClock()),
     authConfig = testAuthEnv(),
-    simuleringService = Mockito.mock(SimuleringService::class.java),
+    simuleringService = mockk(),
     auditSupport = AuditSupport(),
-    stateService = Mockito.mock(OppdragService::class.java)
+    stateService = mockk()
 )
 
 fun buildClaimSet(
@@ -79,8 +77,8 @@ fun stubOIDCProvider(server: WireMockServer) {
         WireMock.any(WireMock.urlPathEqualTo("/.well-known/openid-configuration")).willReturn(
             WireMock.okJson(
                 "{\"jwks_uri\": \"${server.baseUrl()}/keys\", " +
-                    "\"subject_types_supported\": [\"pairwise\"], " +
-                    "\"issuer\": \"${JwtTokenGenerator.ISS}\"}"
+                        "\"subject_types_supported\": [\"pairwise\"], " +
+                        "\"issuer\": \"${JwtTokenGenerator.ISS}\"}"
             )
         )
     )
@@ -153,10 +151,3 @@ fun enEnkelAnnulering() = defaultObjectMapper.readTree(
         }        
     """
 )
-
-fun <T> any(): T = Mockito.any<T>()
-
-fun <T> kArgThat(matcher: (T) -> Boolean): T = Mockito.argThat<T>(matcher)
-
-fun <T> kWhen(methodCall: T): OngoingStubbing<T> =
-    Mockito.`when`(methodCall)

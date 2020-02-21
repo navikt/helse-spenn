@@ -111,7 +111,6 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
-        testImplementation("org.mockito:mockito-core:2.23.4")
         testImplementation("io.ktor:ktor-server-test-host:1.2.5")
         testImplementation("com.github.tomakehurst:wiremock:2.24.1")
         testImplementation("io.mockk:mockk:1.9.3")

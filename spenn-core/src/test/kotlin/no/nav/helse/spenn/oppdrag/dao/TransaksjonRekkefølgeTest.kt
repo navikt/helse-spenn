@@ -1,34 +1,38 @@
 package no.nav.helse.spenn.oppdrag.dao
 
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.helse.spenn.kArgThat
-import no.nav.helse.spenn.kWhen
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mock
 import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 internal class TransaksjonRekkefølgeTest {
 
-    internal class BravoException : RuntimeException()
-
+    // TODO: Skriv om test til å sjekke order by ved å hente fra en test db.
     @Test
     fun `test at det sendes order by transaksjon_id ved uthenting`() {
         // Det er viktig at oppdragene sendes i rekkefølge ved f.eks. annulering direkte etterfølgende utbetaling
         // Hvis ikke vil annulering feile, og utbetaling vil bli vellykket etterpå.
 
-        val conn = mock(Connection::class.java)
-        val hikari = mock(HikariDataSource::class.java)
-        kWhen(hikari.connection).thenReturn(conn)
+        val connection = mockk<Connection>()
+        val dataSource = mockk<HikariDataSource>()
 
-        kWhen(conn.prepareStatement(kArgThat {
-            it.contains(" order by transaksjon_id")
-        })).thenThrow(BravoException())
-
-        assertThrows<BravoException> {
-            TransaksjonRepository(hikari).findAllByStatus(TransaksjonStatus.SIMULERING_OK)
+        every { connection.close() } returns Unit
+        every { connection.prepareStatement(any()) } returns mockk<PreparedStatement>().apply {
+            every { setString(any(), any()) } returns Unit
+            every { setInt(any(), any()) } returns Unit
+            every { executeQuery() } returns mockk<ResultSet>().apply {
+                every { next() } returns false
+            }
         }
-    }
+        every { dataSource.connection } returns connection
 
+        TransaksjonRepository(dataSource).findAllByStatus(TransaksjonStatus.SIMULERING_OK)
+
+        verify(exactly = 1) { connection.prepareStatement(match { it.contains(" order by transaksjon_id") }) }
+    }
 }

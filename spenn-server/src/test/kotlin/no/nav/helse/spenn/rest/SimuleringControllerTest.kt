@@ -10,7 +10,11 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.spenn.*
+import io.mockk.every
+import no.nav.helse.spenn.buildClaimSet
+import no.nav.helse.spenn.etEnkeltBehov
+import no.nav.helse.spenn.mockApiEnvironment
+import no.nav.helse.spenn.stubOIDCProvider
 import no.nav.helse.spenn.testsupport.simuleringsresultat
 import no.nav.security.token.support.test.JwtTokenGenerator
 import org.junit.jupiter.api.AfterAll
@@ -44,7 +48,7 @@ class SimuleringControllerTest {
         val behov = etEnkeltBehov()
         (behov as ObjectNode).put("erUtvidelse", false)
 
-        kWhen(apienv.simuleringService.simulerOppdrag(any(), any())).thenReturn(simuleringsresultat)
+        every { apienv.simuleringService.simulerOppdrag(any(), any()) } returns simuleringsresultat
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
                 groups = listOf(apienv.authConfig.requiredGroup),

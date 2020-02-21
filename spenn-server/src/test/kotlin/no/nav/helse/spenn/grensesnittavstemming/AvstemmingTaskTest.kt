@@ -7,6 +7,8 @@ import ch.qos.logback.core.read.ListAppender
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import io.mockk.every
+import io.mockk.mockk
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.AvstemmingMapper
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
@@ -22,7 +24,6 @@ import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.Oppdrag110
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import javax.jms.Connection
@@ -36,24 +37,30 @@ internal class AvstemmingTaskTest {
     private val service = OppdragService(TestDb.createMigratedDataSource())
     private val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
-    val mockConnection: Connection = Mockito.mock(Connection::class.java)
-    private val mockJmsSession: Session = Mockito.mock(Session::class.java)
+    private val mockConnection = mockk<Connection>().apply {
+        every { createSession() } returns mockk<Session>().apply {
+            every { createQueue(any()) } returns mockk()
+            every { createProducer(any()) } returns mockk()
+        }
+    }
 
     @BeforeEach
     fun beforeEach() {
         settAltEksisterendeTilAvstemt()
-        Mockito.`when`(mockConnection.createSession()).thenReturn(mockJmsSession)
+
     }
 
     @Test
     fun ingenOppdragSkalBliIngenAvstemming() {
-        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue",
+        class MockSender : AvstemmingMQSender(
+            mockConnection, "tullequeue",
             JAXBAvstemmingsdata()
-        ){
+        ) {
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
             }
         }
+
         val sendTilAvstemmingTask = SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry)
         sendTilAvstemmingTask.sendTilAvstemming()
     }
@@ -61,34 +68,44 @@ internal class AvstemmingTaskTest {
     @Test
     fun testAtDetSendesLoggesOgOppdateresAvstemminger() {
         val dagsatser = listOf(
-                1000.0,
-                900.0,
-                800.0
+            1000.0,
+            900.0,
+            800.0
         )
 
         service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "2001", dagsats = dagsatser[0]))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
-            lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "00")!!, feilmelding = null)
+            lagreOSResponse(
+                TransaksjonStatus.FERDIG,
+                lagOppdragResponseXml("whatever", false, "00")!!,
+                feilmelding = null
+            )
         }
 
         service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "2002", dagsats = dagsatser[1]))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
-            lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "00")!!, feilmelding = null)
+            lagreOSResponse(
+                TransaksjonStatus.FERDIG,
+                lagOppdragResponseXml("whatever", false, "00")!!,
+                feilmelding = null
+            )
         }
 
         service.lagreNyttOppdrag(utbetalingMedRef(utbetalingsreferanse = "2003", dagsats = dagsatser[2]))
         service.hentNyeOppdrag(5).first().apply {
             forberedSendingTilOS()
-            lagreOSResponse(TransaksjonStatus.FERDIG, lagOppdragResponseXml("whatever", false, "04")!!, feilmelding = null)
+            lagreOSResponse(
+                TransaksjonStatus.FERDIG,
+                lagOppdragResponseXml("whatever", false, "04")!!,
+                feilmelding = null
+            )
         }
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
 
-        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue",
-            JAXBAvstemmingsdata()
-        ){
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata()) {
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 sendteMeldinger.add(avstemmingsMelding)
             }
@@ -97,7 +114,7 @@ internal class AvstemmingTaskTest {
         val loglog = createLogAppender()
 
         SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry, marginInHours = 0)
-                .sendTilAvstemming()
+            .sendTilAvstemming()
 
         assertEquals(3, sendteMeldinger.size)
         assertEquals(AksjonType.START, sendteMeldinger.first().aksjon.aksjonType)
@@ -125,11 +142,17 @@ internal class AvstemmingTaskTest {
         assertTrue(loggMeldinger.first().message.contains("nokkelFom="))
         assertTrue(loggMeldinger.first().message.contains("nokkelTom="))
 
-        assertTrue(service.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now()).isEmpty(),
-                "Det skal ikke være igjen noen ikke-avstemte meldinger")
+        assertTrue(
+            service.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now()).isEmpty(),
+            "Det skal ikke være igjen noen ikke-avstemte meldinger"
+        )
     }
 
-    private fun lagOppdragResponseXml(fagsystemId:String, manglerRespons:Boolean=false, alvorlighetsgrad: String) : String? {
+    private fun lagOppdragResponseXml(
+        fagsystemId: String,
+        manglerRespons: Boolean = false,
+        alvorlighetsgrad: String
+    ): String? {
         if (manglerRespons) {
             return null
         }

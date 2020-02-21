@@ -5,21 +5,18 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.defaultObjectMapper
 import no.nav.helse.spenn.etEnkeltBehov
-import no.nav.helse.spenn.kWhen
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.toOppdragsbehov
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.verify
 import java.time.LocalDateTime
 import javax.jms.Connection
 import javax.jms.MessageConsumer
@@ -36,15 +33,16 @@ internal class MQOppdragReceiverTest {
 
     private val meterRegistry = CompositeMeterRegistry()
 
-    private val mockConnection = mock(Connection::class.java)
-    private val mockJmsSession = mock(Session::class.java)
-    private val mockConsumer = mock(MessageConsumer::class.java)
-    private val mockRapidConnection = mock(RapidsConnection::class.java)
-
-    @BeforeEach
-    fun beforeEach() {
-        kWhen(mockConnection.createSession()).thenReturn(mockJmsSession)
-        kWhen(mockJmsSession.createConsumer(ArgumentMatchers.any())).thenReturn(mockConsumer)
+    private val mockConnection = mockk<Connection>().apply {
+        every { createSession() } returns mockk<Session>().apply {
+            every { createConsumer(any()) } returns mockk<MessageConsumer>().apply {
+                every { setMessageListener(any()) } returns Unit
+            }
+            every { createQueue(any()) } returns mockk()
+        }
+    }
+    private val mockRapidConnection = mockk<RapidsConnection>().apply {
+        every { publish(any(), any()) } returns Unit
     }
 
     @Test
@@ -68,27 +66,35 @@ internal class MQOppdragReceiverTest {
         overstyrNokkelForUtbetalingsreferanse("3001", nokkel)
 
         mqReceiver.receiveOppdragResponse(receiveError)
-        verify(mockRapidConnection).publish(
-            "12345678901", etEnkeltBehov.setLøsning(
-            "Utbetaling",
-            mapOf(
-                "status" to TransaksjonStatus.FEIL,
-                "melding" to "Det er noe galt"
+
+        verify {
+            mockRapidConnection.publish(
+                "12345678901", etEnkeltBehov.setLøsning(
+                    "Utbetaling",
+                    mapOf(
+                        "status" to TransaksjonStatus.FEIL,
+                        "melding" to "Det er noe galt"
+                    )
+                ).toString()
             )
-        ).toString())
+        }
 
         val feilTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
         assertEquals(TransaksjonStatus.FEIL.name, feilTransaksjon.status)
         assertEquals("Det er noe galt", feilTransaksjon.feilbeskrivelse)
 
         mqReceiver.receiveOppdragResponse(receiveOK)
-        verify(mockRapidConnection).publish("12345678901", etEnkeltBehov.setLøsning(
-            "Utbetaling",
-            mapOf(
-                "status" to TransaksjonStatus.FERDIG,
-                "melding" to ""
+        verify {
+            mockRapidConnection.publish(
+                "12345678901", etEnkeltBehov.setLøsning(
+                    "Utbetaling",
+                    mapOf(
+                        "status" to TransaksjonStatus.FERDIG,
+                        "melding" to ""
+                    )
+                ).toString()
             )
-        ).toString())
+        }
 
         val okTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
         assertEquals(TransaksjonStatus.FERDIG.name, okTransaksjon.status)
@@ -134,9 +140,10 @@ internal class MQOppdragReceiverTest {
 private fun JsonNode.setLøsning(nøkkel: String, data: Any) =
     (this as ObjectNode).set<JsonNode>(
         "@løsning", defaultObjectMapper.convertValue(
-        mapOf(
-            nøkkel to data
-        ))
+            mapOf(
+                nøkkel to data
+            )
+        )
     )
 
 

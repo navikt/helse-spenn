@@ -67,9 +67,9 @@ class EndToEndTest {
         return mockProducer
     }
 
-    val oppdragProducer = producer(mqQueuesEnv.oppdragQueueSend)
-    val oppdragConsumer = consumer(mqQueuesEnv.oppdragQueueMottak)
-    val avstemmingProducer = producer(mqQueuesEnv.avstemmingQueueSend)
+    private val oppdragProducer = producer(mqQueuesEnv.oppdragQueueSend)
+    private val oppdragConsumer = consumer(mqQueuesEnv.oppdragQueueMottak)
+    private val avstemmingProducer = producer(mqQueuesEnv.avstemmingQueueSend)
 
     @Test
     internal fun test() {

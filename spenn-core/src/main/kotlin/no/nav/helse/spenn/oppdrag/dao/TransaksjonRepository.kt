@@ -32,17 +32,21 @@ internal class TransaksjonRepository(private val dataSource: DataSource) {
         dataSource.connection.use { conn ->
             conn.autoCommit = false
             try {
-                conn.prepareStatement("""
+                conn.prepareStatement(
+                    """
                     insert into oppdrag(utbetalingsreferanse)
                     values (?)
-                """.trimIndent()).use { preparedStatement ->
+                """.trimIndent()
+                ).use { preparedStatement ->
                     preparedStatement.setString(1, utbetalingsOppdrag.utbetalingsreferanse)
                     preparedStatement.executeUpdate()
                 }
-                conn.prepareStatement("""
+                conn.prepareStatement(
+                    """
                     insert into transaksjon(oppdrag_id, avstemt, status, utbetalingsoppdrag)
                     values((select id from oppdrag where utbetalingsreferanse = ?), ?, ?, ?)
-                """.trimIndent()).use { preparedStatement ->
+                """.trimIndent()
+                ).use { preparedStatement ->
                     preparedStatement.setString(1, utbetalingsOppdrag.utbetalingsreferanse)
                     preparedStatement.setBoolean(2, false)
                     preparedStatement.setString(3, TransaksjonStatus.STARTET.name)
@@ -62,10 +66,12 @@ internal class TransaksjonRepository(private val dataSource: DataSource) {
 
     fun insertNyTransaksjon(utbetalingsOppdrag: UtbetalingsOppdrag) {
         dataSource.connection.use {
-            it.prepareStatement("""
+            it.prepareStatement(
+                """
                 insert into transaksjon(oppdrag_id, avstemt, status, utbetalingsoppdrag)
                 values((select id from oppdrag where utbetalingsreferanse = ?), ?, ?, ?)
-            """.trimIndent()).use { preparedStatement ->
+            """.trimIndent()
+            ).use { preparedStatement ->
                 preparedStatement.setString(1, utbetalingsOppdrag.utbetalingsreferanse)
                 preparedStatement.setBoolean(2, false)
                 preparedStatement.setString(3, TransaksjonStatus.STARTET.name)
@@ -77,47 +83,65 @@ internal class TransaksjonRepository(private val dataSource: DataSource) {
 
     fun stoppTransaksjon(dto: TransaksjonDTO, feilmelding: String?): TransaksjonDTO {
         dataSource.connection.use {
-            it.prepareStatement("update transaksjon set status = ?, feilbeskrivelse = ?, modified = now() where id = ?").use { preparedStatement ->
-                preparedStatement.setString(1, TransaksjonStatus.STOPPET.name)
-                preparedStatement.setString(2, feilmelding)
-                preparedStatement.setLong(3, dto.id)
-                preparedStatement.executeUpdateAssertingOneRow()
-            }
+            it.prepareStatement("update transaksjon set status = ?, feilbeskrivelse = ?, modified = now() where id = ?")
+                .use { preparedStatement ->
+                    preparedStatement.setString(1, TransaksjonStatus.STOPPET.name)
+                    preparedStatement.setString(2, feilmelding)
+                    preparedStatement.setLong(3, dto.id)
+                    preparedStatement.executeUpdateAssertingOneRow()
+                }
             return refreshById(it, dto.id)
         }
     }
 
-    fun oppdaterTransaksjonMedStatusOgNøkkel(dto: TransaksjonDTO, status: TransaksjonStatus, nøkkel: LocalDateTime): TransaksjonDTO {
+    fun oppdaterTransaksjonMedStatusOgNøkkel(
+        dto: TransaksjonDTO,
+        status: TransaksjonStatus,
+        nøkkel: LocalDateTime
+    ): TransaksjonDTO {
         dataSource.connection.use {
-            it.prepareStatement("update transaksjon set status = ?, nokkel = ?, modified = now()  where id = ?").use { preparedStatement ->
-                preparedStatement.setString(1, status.name)
-                preparedStatement.setObject(2, nøkkel)
-                preparedStatement.setLong(3, dto.id)
-                preparedStatement.executeUpdateAssertingOneRow()
-            }
+            it.prepareStatement("update transaksjon set status = ?, nokkel = ?, modified = now()  where id = ?")
+                .use { preparedStatement ->
+                    preparedStatement.setString(1, status.name)
+                    preparedStatement.setObject(2, nøkkel)
+                    preparedStatement.setLong(3, dto.id)
+                    preparedStatement.executeUpdateAssertingOneRow()
+                }
             return refreshById(it, dto.id)
         }
     }
 
-    fun oppdaterTransaksjonMedStatusOgSimuleringResult(dto: TransaksjonDTO, status: TransaksjonStatus, simuleringresult: String?): TransaksjonDTO {
+    fun oppdaterTransaksjonMedStatusOgSimuleringResult(
+        dto: TransaksjonDTO,
+        status: TransaksjonStatus,
+        simuleringresult: String?
+    ): TransaksjonDTO {
         dataSource.connection.use {
-            it.prepareStatement("update transaksjon set status = ?, simuleringresult = ?, modified = now()  where id = ?").use { preparedStatement ->
-                preparedStatement.setString(1, status.name)
-                preparedStatement.setObject(2, simuleringresult)
-                preparedStatement.setLong(3, dto.id)
-                preparedStatement.executeUpdateAssertingOneRow()
-            }
+            it.prepareStatement("update transaksjon set status = ?, simuleringresult = ?, modified = now()  where id = ?")
+                .use { preparedStatement ->
+                    preparedStatement.setString(1, status.name)
+                    preparedStatement.setObject(2, simuleringresult)
+                    preparedStatement.setLong(3, dto.id)
+                    preparedStatement.executeUpdateAssertingOneRow()
+                }
             return refreshById(it, dto.id)
         }
     }
 
-    fun lagreOSResponse(utbetalingsreferanse: String, nøkkelAvstemming: LocalDateTime, status: TransaksjonStatus, xml: String, feilbeskrivelse: String?) {
+    fun lagreOSResponse(
+        utbetalingsreferanse: String,
+        nøkkelAvstemming: LocalDateTime,
+        status: TransaksjonStatus,
+        xml: String,
+        feilbeskrivelse: String?
+    ) {
         dataSource.connection.use {
             it.prepareStatement(
                 """
                     update transaksjon set status = ?, oppdragresponse = ?, feilbeskrivelse = ?, modified = now()
                     where oppdrag_id = (select id from oppdrag where utbetalingsreferanse = ?) and nokkel = ?
-                """).use { preparedStatement ->
+                """
+            ).use { preparedStatement ->
                 preparedStatement.setString(1, status.name)
                 preparedStatement.setString(2, xml)
                 preparedStatement.setString(3, feilbeskrivelse)
@@ -128,28 +152,25 @@ internal class TransaksjonRepository(private val dataSource: DataSource) {
         }
     }
 
-    fun findAllByStatus(status: TransaksjonStatus, limit: Int = 100): List<TransaksjonDTO> {
+    fun findAllByStatus(status: TransaksjonStatus, limit: Int = 100) =
         dataSource.connection.use {
-            it.prepareStatement(
+            val preparedStatement = it.prepareStatement(
                 """
                     ${DTO.selectString}
                     where status = ?
                     order by transaksjon_id
                     limit ? 
                 """.trimIndent()
-            ).use { preparedStatement ->
-                preparedStatement.setString(1, status.name)
-                preparedStatement.setInt(2, limit)
-                preparedStatement.executeQuery().use { resultSet ->
-                    val result = mutableListOf<TransaksjonDTO>()
-                    while (resultSet.next()) {
-                        result.add(DTO.parse(resultSet))
-                    }
-                    return result.toList()
-                }
+            )
+            preparedStatement.setString(1, status.name)
+            preparedStatement.setInt(2, limit)
+            val resultSet = preparedStatement.executeQuery()
+            val result = mutableListOf<TransaksjonDTO>()
+            while (resultSet.next()) {
+                result.add(DTO.parse(resultSet))
             }
+            result.toList()
         }
-    }
 
     fun findAllNotAvstemtWithAvstemmingsnokkelNotAfter(avstemmingsnokkelMax: LocalDateTime): List<TransaksjonDTO> {
         dataSource.connection.use {
@@ -171,7 +192,7 @@ internal class TransaksjonRepository(private val dataSource: DataSource) {
         }
     }
 
-    fun findByRef(utbetalingsreferanse: String) : List<TransaksjonDTO> {
+    fun findByRef(utbetalingsreferanse: String): List<TransaksjonDTO> {
         dataSource.connection.use {
             it.prepareStatement(
                 """
@@ -192,7 +213,7 @@ internal class TransaksjonRepository(private val dataSource: DataSource) {
 
     }
 
-    fun findByRefAndNokkel(utbetalingsreferanse: String, avstemmingsNøkkel: LocalDateTime) : TransaksjonDTO {
+    fun findByRefAndNokkel(utbetalingsreferanse: String, avstemmingsNøkkel: LocalDateTime): TransaksjonDTO {
         dataSource.connection.use {
             it.prepareStatement(
                 """
@@ -218,10 +239,11 @@ internal class TransaksjonRepository(private val dataSource: DataSource) {
 
     fun markerSomAvstemt(dto: TransaksjonDTO) {
         dataSource.connection.use {
-            it.prepareStatement("update transaksjon set avstemt = true, modified = now() where id = ?").use { preparedStatement ->
-                preparedStatement.setLong(1, dto.id)
-                preparedStatement.executeUpdateAssertingOneRow()
-            }
+            it.prepareStatement("update transaksjon set avstemt = true, modified = now() where id = ?")
+                .use { preparedStatement ->
+                    preparedStatement.setLong(1, dto.id)
+                    preparedStatement.executeUpdateAssertingOneRow()
+                }
         }
     }
 

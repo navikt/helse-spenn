@@ -3,6 +3,8 @@ package no.nav.helse.spenn.overforing
 import io.micrometer.core.instrument.MockClock
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import io.mockk.every
+import io.mockk.mockk
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.simulering.SimuleringResult
@@ -11,7 +13,6 @@ import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.testsupport.simuleringsresultat
 import no.nav.helse.spenn.utbetalingMedRef
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
 import kotlin.test.assertEquals
 
 private data class TransRec(val status: String, val utbetalingsreferanse: String)
@@ -21,7 +22,9 @@ class SendToOSTaskTest {
     private val dataSource = TestDb.createMigratedDataSource()
     private val service = OppdragService(dataSource)
 
-    private val mockMQSender = mock(OppdragMQSender::class.java)
+    private val mockMQSender = mockk<OppdragMQSender>().apply {
+        every { sendOppdrag(any()) } returns Unit
+    }
     private val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     @Test
