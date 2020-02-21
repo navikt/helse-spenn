@@ -5,10 +5,12 @@ import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12
 import org.apache.cxf.binding.soap.SoapMessage
+import org.apache.cxf.configuration.jsse.TLSClientParameters
 import org.apache.cxf.endpoint.Client
 import org.apache.cxf.ext.logging.LoggingFeature
 import org.apache.cxf.frontend.ClientProxy
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
+import org.apache.cxf.transport.http.HTTPConduit
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.cxf.ws.policy.PolicyBuilder
 import org.apache.cxf.ws.policy.PolicyEngine
@@ -20,9 +22,10 @@ import org.slf4j.LoggerFactory
 import javax.xml.namespace.QName
 
 class SimuleringConfig(
-    val simuleringServiceUrl: String,
-    val stsSoapUrl: String,
-    val serviceUser: ServiceUser
+    private val simuleringServiceUrl: String,
+    private val stsSoapUrl: String,
+    private val serviceUser: ServiceUser,
+    private val disableCNCheck: Boolean
 ) {
     private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerFpServiceWSBinding.wsdl"
     private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
@@ -62,6 +65,12 @@ class SimuleringConfig(
                 requestContext[SecurityConstants.STS_CLIENT] = sts
                 requestContext[SecurityConstants.CACHE_ISSUED_TOKEN_IN_ENDPOINT] = true
                 setClientEndpointPolicy(bus.resolvePolicy(STS_SAML_POLICY))
+                if (disableCNCheck) {
+                    val conduit = conduit as HTTPConduit
+                    conduit.tlsClientParameters = TLSClientParameters().apply {
+                        isDisableCNCheck = true
+                    }
+                }
             }
         }
     }

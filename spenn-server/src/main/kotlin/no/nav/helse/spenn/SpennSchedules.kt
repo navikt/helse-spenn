@@ -54,7 +54,7 @@ internal fun setupSchedules(
         runWithLock("sendToOS") {
             spennTasks.sendToOS()
         }
-    }, 45, 60, TimeUnit.SECONDS)
+    }, 500, 500, TimeUnit.MILLISECONDS)
 
     log.info("Scheduling sendToSimuleringTask")
     scheduler.scheduleAtFixedRate({
@@ -66,7 +66,7 @@ internal fun setupSchedules(
                 spennTasks.sendSimulering()
             }
         }
-    }, 30, 30, TimeUnit.SECONDS)
+    }, 500, 500, TimeUnit.MILLISECONDS)
 
     val avstemmingsTidspunktTime = 22
     val avstemmingsTidspunktMinutt = 0

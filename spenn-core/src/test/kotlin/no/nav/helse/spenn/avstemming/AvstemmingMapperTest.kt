@@ -194,7 +194,7 @@ class AvstemmingMapperTest {
             kvittering.mmel.beskrMelding = "Beskrivelse"
             kvittering.oppdrag110 = Oppdrag110()
             kvittering.oppdrag110.fagsystemId = fagsystemId
-            return JAXBOppdrag().fromOppdragToXml(kvittering)
+            return JAXBOppdrag.fromOppdragToXml(kvittering)
         }
     }
 
@@ -272,7 +272,7 @@ class AvstemmingMapperTest {
 
     internal fun getKvitteringsMelding(oppdrag: TransaksjonDTO): Oppdrag? =
         oppdrag.oppdragResponse?.let {
-            JAXBOppdrag().toOppdrag(it)
+            JAXBOppdrag.toOppdrag(it)
         }
 
 

@@ -10,15 +10,15 @@ import javax.xml.bind.Marshaller
 import javax.xml.stream.XMLInputFactory
 import javax.xml.transform.stream.StreamSource
 
-class JAXBOppdrag {
+object JAXBOppdrag {
 
-    val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
-    val unmarshaller = jaxbContext.createUnmarshaller()
-    val marshaller = jaxbContext.createMarshaller().apply {
+    private val jaxbContext = JAXBContext.newInstance(OppdragSkjemaConstants.JAXB_CLASS)
+    private val unmarshaller = jaxbContext.createUnmarshaller()
+    private val marshaller = jaxbContext.createMarshaller().apply {
         setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
     }
 
-    val xmlInputFactory = XMLInputFactory.newInstance().apply {
+    private val xmlInputFactory = XMLInputFactory.newInstance().apply {
         setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
         setProperty(XMLInputFactory.SUPPORT_DTD, false)
     }

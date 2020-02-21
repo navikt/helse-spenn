@@ -2,13 +2,14 @@ package no.nav.helse.spenn
 
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
-import no.nav.helse.spenn.oppdrag.JAXBOppdrag
 import no.nav.helse.spenn.oppdrag.OppdragMQReceiver
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.overforing.OppdragMQSender
@@ -18,9 +19,7 @@ import no.nav.helse.spenn.rest.spennApiModule
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import org.apache.cxf.bus.extension.ExtensionManagerBus
-import java.util.concurrent.ScheduledExecutorService
 import javax.jms.Connection
-import javax.sql.DataSource
 
 
 val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -37,13 +36,11 @@ fun setUpAndLaunchApplication(env: Environment, serviceUser: ServiceUser) {
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.simuleringServiceUrl,
         stsSoapUrl = env.stsSoapUrl,
-        serviceUser = serviceUser
+        serviceUser = serviceUser,
+        disableCNCheck = true
     )
 
-    val simuleringService = SimuleringService(
-        simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()),
-        metrics
-    )
+    val simuleringService = SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
 
     val mqConnection =
         MQConnectionFactory().apply {
@@ -56,25 +53,13 @@ fun setUpAndLaunchApplication(env: Environment, serviceUser: ServiceUser) {
 
     val dataSource = SpennDataSource.getMigratedDatasourceInstance(env.db).dataSource
 
-    launchApplication(simuleringService, mqConnection, dataSource, env.mqQueues, env.auth, env.raw)
-}
-
-@KtorExperimentalAPI
-internal fun launchApplication(
-    simuleringService: SimuleringService,
-    mqConnection: Connection,
-    dataSource: DataSource,
-    mqQueues: MqQueuesEnvironment,
-    auth: AuthEnvironment,
-    rawEnvironment: Map<String, String>
-) {
     val oppdragService = OppdragService(dataSource)
 
-    val rapidsConnection = RapidApplication.Builder(rawEnvironment).withKtorModule {
+    val rapidsConnection = RapidApplication.Builder(env.raw).withKtorModule {
         spennApiModule(
             SpennApiEnvironment(
                 meterRegistry = metrics,
-                authConfig = auth,
+                authConfig = env.auth,
                 simuleringService = simuleringService,
                 auditSupport = AuditSupport(),
                 stateService = oppdragService
@@ -82,18 +67,28 @@ internal fun launchApplication(
         )
     }.build()
 
+    launchApplication(simuleringService, mqConnection, dataSource, oppdragService, rapidsConnection, env.mqQueues)
+}
+
+@KtorExperimentalAPI
+internal fun launchApplication(
+    simuleringService: SimuleringService,
+    mqConnection: Connection,
+    dataSource: HikariDataSource,
+    oppdragService: OppdragService,
+    rapidsConnection: RapidsConnection,
+    mqQueues: MqQueuesEnvironment
+) {
     val oppdragMQSender = OppdragMQSender(
         mqConnection,
         mqQueues.oppdragQueueSend,
-        mqQueues.oppdragQueueMottak,
-        JAXBOppdrag()
+        mqQueues.oppdragQueueMottak
     )
 
     val oppdragMQReceiver = OppdragMQReceiver(
         mqConnection,
         mqQueues.oppdragQueueMottak,
         rapidsConnection,
-        JAXBOppdrag(),
         oppdragService,
         metrics
     )
@@ -111,11 +106,9 @@ internal fun launchApplication(
         avstemmingMQSender = avstemmingMQSender
     )
 
-
     UtbetalingLøser(rapidsConnection, oppdragService)
 
-    val scheduler: ScheduledExecutorService?
-    scheduler = setupSchedules(
+    val scheduler = setupSchedules(
         spennTasks = services,
         dataSourceForLockingTable = dataSource
     )
@@ -125,13 +118,9 @@ internal fun launchApplication(
 
     Runtime.getRuntime().addShutdownHook(Thread {
         rapidsConnection.stop()
-        dataSource.connection.close()
+        dataSource.close()
 
-        oppdragMQSender.close()
-        oppdragMQReceiver.close()
-        avstemmingMQSender.close()
-
-        mqConnection.stop()
+        mqConnection.close()
         scheduler.shutdown()
     })
 }

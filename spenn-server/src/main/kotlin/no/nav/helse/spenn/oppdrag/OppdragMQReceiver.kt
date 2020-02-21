@@ -3,7 +3,6 @@ package no.nav.helse.spenn.oppdrag
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.convertValue
-import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.appsupport.OPPDRAG
@@ -20,17 +19,15 @@ class OppdragMQReceiver(
     connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
     mottakqueue: String,
     val rapidsConnection: RapidsConnection,
-    val jaxb: JAXBOppdrag,
     val oppdragService: OppdragService,
-    val meterRegistry: MeterRegistry/*,
-                        val statusProducer: OppdragStateKafkaProducer*/
+    val meterRegistry: MeterRegistry
 ) {
 
     private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
 
     private val jmsSession = connection.createSession()
     private val consumer = jmsSession
-        .createConsumer(MQQueue(mottakqueue))
+        .createConsumer(jmsSession.createQueue(mottakqueue))
 
     init {
         consumer.setMessageListener { m ->
@@ -61,12 +58,11 @@ class OppdragMQReceiver(
 
     }
 
-    //@JmsListener(destination = "\${oppdrag.queue.mottak}")
     fun receiveOppdragResponse(response: String) {
         log.trace(response)
         //rar xml som blir returnert
         val replaced = response.replace("oppdrag xmlns", "ns2:oppdrag xmlns:ns2")
-        handleResponse(jaxb.toOppdrag(replaced), replaced)
+        handleResponse(JAXBOppdrag.toOppdrag(replaced), replaced)
     }
 
     private fun handleResponse(oppdrag: Oppdrag, xml: String) {
@@ -94,13 +90,6 @@ class OppdragMQReceiver(
             )
         ).toString())
 
-    }
-
-    fun close() {
-        log.info("Closing OppdragMQReceiver::consumer")
-        consumer.close()
-        log.info("Closing OppdragMQReceiver::jmsSession")
-        jmsSession.close()
     }
 
     private fun JsonNode.setLøsning(nøkkel: String, data: Any) =

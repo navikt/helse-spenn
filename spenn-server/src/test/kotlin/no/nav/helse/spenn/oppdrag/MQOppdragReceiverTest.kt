@@ -4,17 +4,22 @@ package no.nav.helse.spenn.oppdrag
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.convertValue
-import com.ibm.mq.jms.MQQueue
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.spenn.*
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
+import no.nav.helse.spenn.avstemmingsnokkelFormatter
+import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.etEnkeltBehov
+import no.nav.helse.spenn.kWhen
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
+import no.nav.helse.spenn.toOppdragsbehov
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
 import java.time.LocalDateTime
 import javax.jms.Connection
 import javax.jms.MessageConsumer
@@ -39,7 +44,7 @@ internal class MQOppdragReceiverTest {
     @BeforeEach
     fun beforeEach() {
         kWhen(mockConnection.createSession()).thenReturn(mockJmsSession)
-        kWhen(mockJmsSession.createConsumer(MQQueue("mottaksqueue"))).thenReturn(mockConsumer)
+        kWhen(mockJmsSession.createConsumer(ArgumentMatchers.any())).thenReturn(mockConsumer)
     }
 
     @Test
@@ -48,7 +53,7 @@ internal class MQOppdragReceiverTest {
             connection = mockConnection,
             rapidsConnection = mockRapidConnection,
             mottakqueue = "mottaksqueue",
-            jaxb = JAXBOppdrag(), oppdragService = oppdragService,
+            oppdragService = oppdragService,
             meterRegistry = meterRegistry
         )
 

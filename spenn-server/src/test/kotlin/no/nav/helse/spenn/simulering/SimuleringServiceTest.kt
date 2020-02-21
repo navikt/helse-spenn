@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.simulering
 
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
@@ -13,8 +12,6 @@ import kotlin.test.assertEquals
 
 internal class SimuleringServiceTest {
 
-    private val meterRegistry = CompositeMeterRegistry()
-
     @Test
     fun `simuleringsresponse med tomt ressultat skal være greit`() {
         val simulerFpServiceMock = mock(SimulerFpService::class.java)
@@ -24,7 +21,7 @@ internal class SimuleringServiceTest {
         })
         `when`(transaksjonMock.simuleringRequest).thenReturn(SimulerBeregningRequest())
 
-        val simuleringService = SimuleringService(simulerFpServiceMock, meterRegistry, false)
+        val simuleringService = SimuleringService(simulerFpServiceMock)
         val result = simuleringService.runSimulering(transaksjonMock)
 
         assertEquals(SimuleringStatus.OK, result.status)
