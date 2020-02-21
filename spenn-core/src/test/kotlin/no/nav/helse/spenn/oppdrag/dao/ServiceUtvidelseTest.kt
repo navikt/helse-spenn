@@ -66,7 +66,7 @@ internal class ServiceUtvidelseTest {
         fortsettelsesTrans.lagreOSResponse(TransaksjonStatus.FERDIG, kvittering, null)
 
         // replay feiler:
-        assertThrows<SanityCheckException> { service.lagreNyttOppdrag(fortsettelse) }
+        assertThrows<DuplikatException> { service.lagreNyttOppdrag(fortsettelse) }
     }
 
 

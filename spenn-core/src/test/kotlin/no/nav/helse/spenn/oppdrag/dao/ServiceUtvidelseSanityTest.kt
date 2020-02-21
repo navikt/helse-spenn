@@ -88,11 +88,25 @@ internal class ServiceUtvidelseSanityTest {
     }
 
     @Test
+    fun `duplikat gir duplikatException`() {
+        val opprinnelig = etUtbetalingsOppdrag()
+        val utvidelse = opprinnelig.copy(
+            utbetaling = opprinnelig.utbetaling!!.copy(
+                utbetalingsLinjer =  listOf(okLinje1))
+            )
+
+        val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))
+        assertThrows<DuplikatException> {
+            OppdragService.sanityCheckUtvidelse(eksisterendeTranser, utvidelse)
+        }
+    }
+
+    @Test
     fun `utvidelse må ha TOM etter TOM på gammel linje`() {
         val opprinnelig = etUtbetalingsOppdrag()
         val utvidelse = opprinnelig.copy(
                 utbetaling = opprinnelig.utbetaling!!.copy(
-                        utbetalingsLinjer =  listOf(okLinje2.copy(datoTom = okLinje1.datoTom))
+                        utbetalingsLinjer =  listOf(okLinje2.copy(datoTom = okLinje1.datoTom.minusDays(1)))
                 )
         )
         val eksisterendeTranser = listOf(opprinnelig.tilDTO(TransaksjonStatus.FERDIG))

@@ -47,7 +47,7 @@ internal class ServiceTest {
         }
 
         // replay feiler:
-        assertThrows<SanityCheckException> { service.lagreNyttOppdrag(utbetaling) }
+        assertThrows<DuplikatException> { service.lagreNyttOppdrag(utbetaling) }
     }
 
     @Test

@@ -169,6 +169,14 @@ class OppdragService(dataSource: DataSource) {
 
             if (!erEnkelUtvidelse)
                 throw SanityCheckException("$errorStringPrefix er ikke en enkel utvidelse")
+
+            val erDuplikat = forrigeLinje.datoFom == nyLinje.datoFom
+                && forrigeLinje.datoTom == nyLinje.datoTom
+                && forrigeLinje.sats == nyLinje.sats
+
+            if (erDuplikat)
+                throw DuplikatException("$errorStringPrefix er duplikat")
+
             if (sisteEksisterende.status != TransaksjonStatus.FERDIG)
                 throw SanityCheckException("$errorStringPrefix har status=${sisteEksisterende.status}. Vet ikke hvordan håndtere dette")
             if (sisteEksisterende.utbetalingsOppdrag.utbetaling.organisasjonsnummer != nyttOppdrag.utbetaling.organisasjonsnummer)
@@ -199,7 +207,8 @@ fun Utbetalingsbehov.lagPåSidenSimuleringsrequest(erUtvidelse: Boolean = false)
 fun List<OppdragService.Transaksjon>.lagAvstemmingsmeldinger() =
         AvstemmingMapper(this.map { it.dto }, FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
 
-class SanityCheckException(message: String) : Exception(message)
+open class SanityCheckException(message: String) : Exception(message)
+class DuplikatException(message: String) : SanityCheckException(message)
 
 class AlleredeAnnulertException(message: String) : Exception(message)
 
