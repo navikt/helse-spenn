@@ -23,7 +23,7 @@ class UtbetalingLøser(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("@behov", "Utbetaling") }
+            validate { it.requireAll("@behov", listOf("Utbetaling")) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
