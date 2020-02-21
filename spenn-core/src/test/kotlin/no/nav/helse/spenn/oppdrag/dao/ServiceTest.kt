@@ -9,6 +9,7 @@ import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
 import no.nav.helse.spenn.testsupport.kvittering
 import no.nav.helse.spenn.testsupport.simuleringsresultat
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -44,6 +45,9 @@ internal class ServiceTest {
         repository.findAllByStatus(TransaksjonStatus.STARTET).first().apply {
             assertEquals(utbetaling.utbetalingsreferanse, this.utbetalingsreferanse)
         }
+
+        // replay feiler:
+        assertThrows<SanityCheckException> { service.lagreNyttOppdrag(utbetaling) }
     }
 
     @Test

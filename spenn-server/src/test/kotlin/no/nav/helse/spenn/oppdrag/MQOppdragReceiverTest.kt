@@ -63,7 +63,15 @@ internal class MQOppdragReceiverTest {
         overstyrNokkelForUtbetalingsreferanse("3001", nokkel)
 
         mqReceiver.receiveOppdragResponse(receiveError)
-        verify(mockRapidConnection, never()).publish(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())
+        verify(mockRapidConnection).publish(
+            "12345678901", etEnkeltBehov.setLøsning(
+            "Utbetaling",
+            mapOf(
+                "status" to TransaksjonStatus.FEIL,
+                "melding" to "Det er noe galt"
+            )
+        ).toString())
+
         val feilTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
         assertEquals(TransaksjonStatus.FEIL.name, feilTransaksjon.status)
         assertEquals("Det er noe galt", feilTransaksjon.feilbeskrivelse)
@@ -72,7 +80,8 @@ internal class MQOppdragReceiverTest {
         verify(mockRapidConnection).publish("12345678901", etEnkeltBehov.setLøsning(
             "Utbetaling",
             mapOf(
-                "status" to TransaksjonStatus.FERDIG
+                "status" to TransaksjonStatus.FERDIG,
+                "melding" to ""
             )
         ).toString())
 

@@ -6,12 +6,13 @@ import no.nav.helse.spenn.testsupport.TestDb
 import no.nav.helse.spenn.testsupport.etUtbetalingsOppdrag
 import no.nav.helse.spenn.testsupport.etUtbetalingsUtvidelsesOppdrag
 import no.nav.helse.spenn.testsupport.kvittering
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
-internal class ServiceUtvidelsesTest {
+internal class ServiceUtvidelseTest {
 
     private lateinit var repository: TransaksjonRepository
     private lateinit var service: OppdragService
@@ -29,6 +30,7 @@ internal class ServiceUtvidelsesTest {
 
     @Test
     fun `fortsettelse av oppdrag`() {
+
         val utbetaling = etUtbetalingsOppdrag()
         service.lagreNyttOppdrag(utbetaling)
         val transaksjoner = service.hentNyeOppdrag(5)
@@ -61,6 +63,10 @@ internal class ServiceUtvidelsesTest {
             assertEquals(1, this.oppdrag110.oppdragsLinje150.size)
             assertEquals(EndringsKode.ENDRING.kode, this.oppdrag110.oppdragsLinje150.first().kodeEndringLinje)
         }
+        fortsettelsesTrans.lagreOSResponse(TransaksjonStatus.FERDIG, kvittering, null)
+
+        // replay feiler:
+        assertThrows<SanityCheckException> { service.lagreNyttOppdrag(fortsettelse) }
     }
 
 

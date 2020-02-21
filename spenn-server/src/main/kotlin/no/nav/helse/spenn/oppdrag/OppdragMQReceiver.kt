@@ -84,16 +84,16 @@ class OppdragMQReceiver(
         transaksjon.lagreOSResponse(status, xml, feilmld)
 
         meterRegistry.counter(OPPDRAG, "status", status.name).increment()
-        if (status == TransaksjonStatus.FERDIG) {
-            val opprinneligBehovAsJsonNode = defaultObjectMapper.readTree(transaksjon.opprinneligBehov())
+        val opprinneligBehovAsJsonNode = defaultObjectMapper.readTree(transaksjon.opprinneligBehov())
 
-            rapidsConnection.publish(transaksjon.gjelderId(), opprinneligBehovAsJsonNode.setLøsning(
-                "Utbetaling",
-                mapOf(
-                    "status" to TransaksjonStatus.FERDIG
-                )
-            ).toString())
-        }
+        rapidsConnection.publish(transaksjon.gjelderId(), opprinneligBehovAsJsonNode.setLøsning(
+            "Utbetaling",
+            mapOf(
+                "status" to status,
+                "melding" to (oppdrag.mmel.beskrMelding ?: "")
+            )
+        ).toString())
+
     }
 
     fun close() {

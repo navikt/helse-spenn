@@ -178,7 +178,7 @@ class OppdragService(dataSource: DataSource) {
             if (forrigeLinje.datoFom != nyLinje.datoFom)
                 throw SanityCheckException("$errorStringPrefix har annen 'datoFom'")
             if (!nyLinje.datoTom.isAfter(forrigeLinje.datoTom))
-                throw SanityCheckException("$errorStringPrefix har ikke 'datoTom' etter forrige datoTom")
+                throw SanityCheckException("$errorStringPrefix har ikke 'datoTom' etter forrige datoTom (antakeligvis duplikat)")
             if (nyLinje.sats != forrigeLinje.sats)
                 throw SanityCheckException("$errorStringPrefix har ulik dagsats")
         }

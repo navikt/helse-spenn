@@ -21,7 +21,7 @@ enum class KvitteringAlvorlighetsgrad(val kode : String) {
 
     companion object {
         fun fromKode(kode: String) : KvitteringAlvorlighetsgrad {
-            KvitteringAlvorlighetsgrad.values().forEach {
+            values().forEach {
                 if (it.kode == kode) return it
             }
             throw IllegalArgumentException("No enum constant with kode=$kode")
