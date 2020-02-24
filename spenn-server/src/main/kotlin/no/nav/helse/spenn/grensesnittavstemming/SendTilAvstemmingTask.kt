@@ -2,7 +2,6 @@ package no.nav.helse.spenn.grensesnittavstemming
 
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.appsupport.AVSTEMMING
-import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.oppdrag.dao.lagAvstemmingsmeldinger
 import org.slf4j.LoggerFactory

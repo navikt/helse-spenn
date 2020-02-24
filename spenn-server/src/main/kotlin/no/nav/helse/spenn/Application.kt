@@ -8,7 +8,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.spenn.oppdrag.AvstemmingMQSender
+import no.nav.helse.spenn.grensesnittavstemming.AvstemmingMQSender
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.helse.spenn.oppdrag.OppdragMQReceiver
 import no.nav.helse.spenn.oppdrag.dao.OppdragService

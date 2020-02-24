@@ -1,11 +1,7 @@
 package no.nav.helse.spenn
 
 import io.ktor.util.KtorExperimentalAPI
-import io.mockk.CapturingSlot
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
+import io.mockk.*
 import no.nav.helse.rapids_rivers.inMemoryRapid
 import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.oppdrag.JAXBOppdrag
@@ -18,14 +14,9 @@ import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.UUID
-import javax.jms.Connection
-import javax.jms.MessageConsumer
-import javax.jms.MessageListener
-import javax.jms.MessageProducer
+import java.util.*
+import javax.jms.*
 import javax.jms.Queue
-import javax.jms.Session
-import javax.jms.TextMessage
 import kotlin.test.assertEquals
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningResponse as SimulerBeregningResponseWrapper
 
@@ -52,7 +43,7 @@ class EndToEndTest {
 
         every { mqSession.createQueue(queueName) } returns mockQueue
         every { mqSession.createConsumer(mockQueue) } returns mockConsumer
-        every { mockConsumer.setMessageListener(capture(slot)) } returns Unit
+        every { mockConsumer.messageListener = capture(slot) } returns Unit
 
         return slot
     }

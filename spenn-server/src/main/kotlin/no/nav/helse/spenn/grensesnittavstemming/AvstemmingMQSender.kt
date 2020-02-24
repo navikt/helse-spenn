@@ -1,5 +1,6 @@
-package no.nav.helse.spenn.oppdrag
+package no.nav.helse.spenn.grensesnittavstemming
 
+import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import org.slf4j.LoggerFactory
 import javax.jms.Connection

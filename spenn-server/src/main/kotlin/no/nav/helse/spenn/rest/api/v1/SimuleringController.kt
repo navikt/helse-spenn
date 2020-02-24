@@ -27,14 +27,14 @@ fun Route.simuleringcontroller(
     post("/api/v1/simulering") {
         val behov: JsonNode
         try {
-            behov = call.receive<JsonNode>()
+            behov = call.receive()
         } catch (jsonError: JsonProcessingException) {
             LOG.warn("JsonProcessingException: ", jsonError)
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
         val sakskompleksId = behov["sakskompleksId"].asText()!!
-        val erUtvidelse = behov["erUtvidelse"].asBoolean()
+        val erUtvidelse = if (behov.hasNonNull("erUtvidelse")) behov["erUtvidelse"].asBoolean() else false
         val oppdrag = lagOppdragFraBehov(behov.toOppdragsbehov())
         LOG.info("simulering called for vedtak: $sakskompleksId")
         audit.info("simulering kall for vedtak: $sakskompleksId", call.authentication)
