@@ -8,6 +8,7 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.helse.spenn.appsupport.VEDTAK
 import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
+import no.nav.helse.spenn.oppdrag.dao.SanityCheckException
 import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
@@ -54,6 +55,8 @@ class UtbetalingLøser(
             } else {
                 throw e
             }
+        } catch (e: SanityCheckException) {
+            log.warn(e.message)
         }
     }
 
