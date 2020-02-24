@@ -38,7 +38,10 @@ fun Route.simuleringcontroller(
         val oppdrag = lagOppdragFraBehov(behov.toOppdragsbehov())
         LOG.info("simulering called for vedtak: $sakskompleksId")
         audit.info("simulering kall for vedtak: $sakskompleksId", call.authentication)
-        call.respond(simuleringService.simulerOppdrag(
-                oppdrag.lagPåSidenSimuleringsrequest(erUtvidelse = erUtvidelse)))
+        call.respond(
+            simuleringService.simulerOppdrag(
+                oppdrag.lagPåSidenSimuleringsrequest(erUtvidelse = erUtvidelse)
+            )
+        )
     }
 }

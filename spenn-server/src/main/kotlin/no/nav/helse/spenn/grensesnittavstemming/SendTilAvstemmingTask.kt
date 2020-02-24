@@ -12,12 +12,14 @@ class SendTilAvstemmingTask(
     private val oppdragStateService: OppdragService,
     private val avstemmingMQSender: AvstemmingMQSender,
     private val meterRegistry: MeterRegistry,
-    private val marginInHours:Long = 1L) {
+    private val marginInHours: Long = 1L
+) {
 
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
 
     fun sendTilAvstemming() {
-        val oppdragList = oppdragStateService.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now().minusHours(marginInHours))
+        val oppdragList =
+            oppdragStateService.hentEnnåIkkeAvstemteTransaksjonerEldreEnn(LocalDateTime.now().minusHours(marginInHours))
         log.info("Fant ${oppdragList.size} oppdrag som skal sendes til avstemming")
         val meldinger = oppdragList.lagAvstemmingsmeldinger()
 
@@ -30,9 +32,11 @@ class SendTilAvstemmingTask(
         meldinger.forEachIndexed { i, melding ->
             try {
                 avstemmingMQSender.sendAvstemmingsmelding(melding)
-            }
-            catch(e: Exception) {
-                log.error("Got exeption while sending message ${i+1} of ${meldinger.size}, having aksjonsType=${melding.aksjon.aksjonType.value()}. Cancelling and returning" , e)
+            } catch (e: Exception) {
+                log.error(
+                    "Got exeption while sending message ${i + 1} of ${meldinger.size}, having aksjonsType=${melding.aksjon.aksjonType.value()}. Cancelling and returning",
+                    e
+                )
                 return
             }
         }
@@ -43,7 +47,7 @@ class SendTilAvstemmingTask(
                 meterRegistry.counter(AVSTEMMING, "type", "mangler").increment(this.manglerAntall.toDouble())
                 meterRegistry.counter(AVSTEMMING, "type", "varsel").increment(this.varselAntall.toDouble())
             }
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             log.error("Error registering metrics", e)
         }
 

@@ -9,11 +9,12 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicLong
 import javax.annotation.PostConstruct
 
-class SendToSimuleringTask(private val simuleringService: SimuleringService,
-                           private val oppdragService: OppdragService,
-                           private val meterRegistry: MeterRegistry,
-                           private val limit: Int = 100) {
-
+class SendToSimuleringTask(
+    private val simuleringService: SimuleringService,
+    private val oppdragService: OppdragService,
+    private val meterRegistry: MeterRegistry,
+    private val limit: Int = 100
+) {
     private val maksBelopGauge = AtomicLong(0)
 
     companion object {
@@ -32,7 +33,7 @@ class SendToSimuleringTask(private val simuleringService: SimuleringService,
         if (oppdragList.isNotEmpty()) {
             LOG.info("Got ${oppdragList.size} items for simulering")
         }
-        oppdragList.forEach {transaksjon ->
+        oppdragList.forEach { transaksjon ->
             val result = simuleringService.runSimulering(transaksjon)
 
             transaksjon.oppdaterSimuleringsresultat(result)

@@ -82,22 +82,25 @@ class OppdragMQReceiver(
         meterRegistry.counter(OPPDRAG, "status", status.name).increment()
         val opprinneligBehovAsJsonNode = defaultObjectMapper.readTree(transaksjon.opprinneligBehov())
 
-        rapidsConnection.publish(transaksjon.gjelderId(), opprinneligBehovAsJsonNode.setLøsning(
-            "Utbetaling",
-            mapOf(
-                "status" to status,
-                "melding" to (oppdrag.mmel.beskrMelding ?: "")
-            )
-        ).toString())
+        rapidsConnection.publish(
+            transaksjon.gjelderId(), opprinneligBehovAsJsonNode.setLøsning(
+                "Utbetaling",
+                mapOf(
+                    "status" to status,
+                    "melding" to (oppdrag.mmel.beskrMelding ?: "")
+                )
+            ).toString()
+        )
 
     }
 
     private fun JsonNode.setLøsning(nøkkel: String, data: Any) =
         (this as ObjectNode).set<JsonNode>(
             "@løsning", defaultObjectMapper.convertValue(
-            mapOf(
-                nøkkel to data
-            ))
+                mapOf(
+                    nøkkel to data
+                )
+            )
         )
 
 }

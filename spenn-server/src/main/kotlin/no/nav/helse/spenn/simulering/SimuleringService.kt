@@ -26,7 +26,10 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         return simulerOppdrag(oppdrag.simuleringRequest)
     }
 
-    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest, oppdrag:OppdragService.Transaksjon? = null): SimuleringResult {
+    fun simulerOppdrag(
+        simulerRequest: SimulerBeregningRequest,
+        oppdrag: OppdragService.Transaksjon? = null
+    ): SimuleringResult {
         return try {
             val response = metrics.timer("simulering").recordCallable {
                 simulerFpService.simulerBeregning(simulerRequest)
@@ -60,8 +63,10 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             utbetaling = periode.beregningStoppnivaa.map { mapBeregningStoppNivaa(it) })
 
     private fun mapBeregningStoppNivaa(stoppNivaa: BeregningStoppnivaa) =
-        Utbetaling(fagSystemId = stoppNivaa.fagsystemId.trim(), utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(),
-            utbetalesTilId = stoppNivaa.utbetalesTilId.removePrefix("00"), forfall = LocalDate.parse(stoppNivaa.forfall),
+        Utbetaling(fagSystemId = stoppNivaa.fagsystemId.trim(),
+            utbetalesTilNavn = stoppNivaa.utbetalesTilNavn.trim(),
+            utbetalesTilId = stoppNivaa.utbetalesTilId.removePrefix("00"),
+            forfall = LocalDate.parse(stoppNivaa.forfall),
             feilkonto = stoppNivaa.isFeilkonto,
             detaljer = stoppNivaa.beregningStoppnivaaDetaljer.map { mapDetaljer(it) })
 
