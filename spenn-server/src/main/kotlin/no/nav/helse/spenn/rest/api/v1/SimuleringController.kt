@@ -15,6 +15,7 @@ import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.toOppdragsbehov
 import org.slf4j.LoggerFactory
+import java.lang.RuntimeException
 
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 
@@ -33,7 +34,7 @@ fun Route.simuleringcontroller(
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val sakskompleksId = behov["sakskompleksId"].asText()!!
+        val sakskompleksId = behov["vedtaksperiodeId"].asText() ?: throw RuntimeException("Mangler vedtaksperiodeId i requestbody")
         val erUtvidelse = if (behov.hasNonNull("erUtvidelse")) behov["erUtvidelse"].asBoolean() else false
         val oppdrag = lagOppdragFraBehov(behov.toOppdragsbehov())
         LOG.info("simulering called for vedtak: $sakskompleksId")

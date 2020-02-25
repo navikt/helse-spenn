@@ -119,7 +119,7 @@ fun etEnkeltBehov(
     """
         {
           "@behov": "Utbetaling",
-          "sakskompleksId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
+          "vedtaksperiodeId": "e25ccad5-f5d5-4399-bb9d-43e9fc487888",
           "utbetalingsreferanse": "$utbetalingsreferanse",
           "aktørId": "1234567890123",
           "fødselsnummer": "12345678901",
