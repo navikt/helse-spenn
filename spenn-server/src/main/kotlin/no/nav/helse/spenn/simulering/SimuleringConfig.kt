@@ -39,7 +39,7 @@ class SimuleringConfig(
     }
 
     fun wrapWithSTSSimulerFpService(bus: Bus): SimulerFpService {
-        log.info("using simuleringservice url ${simuleringServiceUrl}")
+        log.info("using simuleringservice url $simuleringServiceUrl")
         val factory = JaxWsProxyFactoryBean().apply {
             address = simuleringServiceUrl
             wsdlURL = WSDL

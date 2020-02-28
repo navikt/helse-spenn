@@ -7,7 +7,6 @@ import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_MAKS_BELOP
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicLong
-import javax.annotation.PostConstruct
 
 class SendToSimuleringTask(
     private val simuleringService: SimuleringService,
@@ -21,8 +20,7 @@ class SendToSimuleringTask(
         private val LOG = LoggerFactory.getLogger(SendToSimuleringTask::class.java)
     }
 
-    @PostConstruct
-    fun init() {
+    init {
         LOG.info("init gauge maksBeløp")
         meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, maksBelopGauge)
     }

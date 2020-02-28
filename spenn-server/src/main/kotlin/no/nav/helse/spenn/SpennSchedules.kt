@@ -69,7 +69,7 @@ internal fun setupSchedules(
     }, 500, 500, TimeUnit.MILLISECONDS)
 
     val avstemmingsTidspunktTime = 15
-    val avstemmingsTidspunktMinutt = 30
+    val avstemmingsTidspunktMinutt = 40
 
     val now = LocalDateTime.now(clock)
     var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
@@ -77,7 +77,7 @@ internal fun setupSchedules(
         nextRun = nextRun.plusDays(1)
     }
 
-    log.info("Scheduling sendTilAvstemmingTask (first will be at ${nextRun})")
+    log.info("Scheduling sendTilAvstemmingTask (first will be at $nextRun)")
 
     val initialDelay = Duration.between(now, nextRun).seconds
 

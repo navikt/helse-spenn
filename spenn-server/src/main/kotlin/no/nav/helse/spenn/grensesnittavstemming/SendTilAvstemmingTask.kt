@@ -11,7 +11,7 @@ class SendTilAvstemmingTask(
     private val oppdragStateService: OppdragService,
     private val avstemmingMQSender: AvstemmingMQSender,
     private val meterRegistry: MeterRegistry,
-    private val marginInHours: Long = 1L
+    private val marginInHours: Long = 0L
 ) {
 
     private val log = LoggerFactory.getLogger(SendTilAvstemmingTask::class.java)
