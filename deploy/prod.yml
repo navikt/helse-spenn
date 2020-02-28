@@ -81,4 +81,4 @@ spec:
       value: QA.P_SPENN.OPPDRAG_SP_XML_KVITT
     - name: AVSTEMMING_QUEUE_SEND
       # Setter target client = 1 for bakoverkompabilitet med stormaskin
-      value: queue://QA.P234.OB29_AVSTEMMING_XML?targetClient=1
+      value: queue:///QA.P234.OB29_AVSTEMMING_XML?targetClient=1
