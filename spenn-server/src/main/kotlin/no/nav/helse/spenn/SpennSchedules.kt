@@ -69,7 +69,7 @@ internal fun setupSchedules(
     }, 500, 500, TimeUnit.MILLISECONDS)
 
     val avstemmingsTidspunktTime = 15
-    val avstemmingsTidspunktMinutt = 0
+    val avstemmingsTidspunktMinutt = 15
 
     val now = LocalDateTime.now(clock)
     var nextRun = now.withHour(avstemmingsTidspunktTime).withMinute(avstemmingsTidspunktMinutt).withSecond(0)
