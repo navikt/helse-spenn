@@ -22,14 +22,15 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
     }
 
     fun runSimulering(oppdrag: OppdragService.Transaksjon): SimuleringResult {
-        log.info("simulering for ${oppdrag}")
-        return simulerOppdrag(oppdrag.simuleringRequest)
+        return simulerOppdrag(oppdrag.simuleringRequest, oppdrag)
     }
 
     fun simulerOppdrag(
         simulerRequest: SimulerBeregningRequest,
         oppdrag: OppdragService.Transaksjon? = null
     ): SimuleringResult {
+        log.info("simulerer oppdrag")
+        sikkerLogg.info("simulering for $oppdrag")
         return try {
             val response = metrics.timer("simulering").recordCallable {
                 simulerFpService.simulerBeregning(simulerRequest)
@@ -37,7 +38,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             mapResponseToResultat(response.response)
         } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
-            sikkerLogg.error("Simulering for ${oppdrag} feilet med feilmelding=${e.faultInfo.errorMessage}")
+            sikkerLogg.error("Simulering for $oppdrag feilet med feilmelding=${e.faultInfo.errorMessage}", e)
             SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.faultInfo.errorMessage)
         } catch (e: Exception) {
             log.error("Got unexpected error while running Simulering", e)
