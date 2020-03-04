@@ -52,7 +52,7 @@ class SimuleringControllerTest {
         val behov = etEnkeltBehov()
 
         val simuleringRequestSlot = slot<SimulerBeregningRequest>()
-        every { apienv.simuleringService.simulerOppdrag(capture(simuleringRequestSlot), any()) } returns simuleringsresultat
+        every { apienv.simuleringService.simulerOppdrag(capture(simuleringRequestSlot)) } returns simuleringsresultat
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
             groups = listOf(apienv.authConfig.requiredGroup),
@@ -81,7 +81,7 @@ class SimuleringControllerTest {
         (behov as ObjectNode).put("erUtvidelse", true)
 
         val simuleringRequestSlot = slot<SimulerBeregningRequest>()
-        every { apienv.simuleringService.simulerOppdrag(capture(simuleringRequestSlot), any()) } returns simuleringsresultat
+        every { apienv.simuleringService.simulerOppdrag(capture(simuleringRequestSlot)) } returns simuleringsresultat
 
         val jwt = JwtTokenGenerator.createSignedJWT(buildClaimSet(subject = "testuser",
             groups = listOf(apienv.authConfig.requiredGroup),
