@@ -15,7 +15,6 @@ import no.nav.helse.spenn.oppdrag.dao.lagPåSidenSimuleringsrequest
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.toOppdragsbehov
 import org.slf4j.LoggerFactory
-import java.lang.RuntimeException
 
 private val LOG = LoggerFactory.getLogger("simuleringcontroller")
 
@@ -41,7 +40,7 @@ fun Route.simuleringcontroller(
         audit.info("simulering kall for vedtak: $sakskompleksId", call.authentication)
         call.respond(
             simuleringService.simulerOppdrag(
-                oppdrag.lagPåSidenSimuleringsrequest(erUtvidelse = erUtvidelse)
+                oppdrag.lagPåSidenSimuleringsrequest(erUtvidelse)
             )
         )
     }

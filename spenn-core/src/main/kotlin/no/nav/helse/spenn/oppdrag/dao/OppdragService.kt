@@ -2,7 +2,14 @@ package no.nav.helse.spenn.oppdrag.dao
 
 import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.defaultObjectMapper
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.AvstemmingMapper
+import no.nav.helse.spenn.oppdrag.SatsTypeKode
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus
+import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
+import no.nav.helse.spenn.oppdrag.tilUtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.toOppdragRequest
+import no.nav.helse.spenn.oppdrag.toSimuleringRequest
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringStatus.OK
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
@@ -41,7 +48,11 @@ class OppdragService(dataSource: DataSource) {
 
         fun forberedSendingTilOS() {
             performSanityCheck()
-            transaksjonDTO = repository.oppdaterTransaksjonMedStatusOgNøkkel(transaksjonDTO, TransaksjonStatus.SENDT_OS, LocalDateTime.now())
+            transaksjonDTO = repository.oppdaterTransaksjonMedStatusOgNøkkel(
+                transaksjonDTO,
+                TransaksjonStatus.SENDT_OS,
+                LocalDateTime.now()
+            )
         }
 
         fun stopp(feilmelding: String?) {
@@ -49,7 +60,13 @@ class OppdragService(dataSource: DataSource) {
         }
 
         fun lagreOSResponse(status: TransaksjonStatus, xml: String, feilmelding: String?) {
-            repository.lagreOSResponse(transaksjonDTO.utbetalingsreferanse, transaksjonDTO.nokkel!!, status, xml, feilmelding)
+            repository.lagreOSResponse(
+                transaksjonDTO.utbetalingsreferanse,
+                transaksjonDTO.nokkel!!,
+                status,
+                xml,
+                feilmelding
+            )
             transaksjonDTO = repository.findByRefAndNokkel(transaksjonDTO.utbetalingsreferanse, transaksjonDTO.nokkel!!)
         }
 
@@ -76,9 +93,9 @@ class OppdragService(dataSource: DataSource) {
             val status = if (result.status == OK) TransaksjonStatus.SIMULERING_OK
             else TransaksjonStatus.SIMULERING_FEIL
             transaksjonDTO = repository.oppdaterTransaksjonMedStatusOgSimuleringResult(
-                    transaksjonDTO,
-                    status,
-                    defaultObjectMapper.writeValueAsString(result)
+                transaksjonDTO,
+                status,
+                defaultObjectMapper.writeValueAsString(result)
             )
         }
 
@@ -96,25 +113,28 @@ class OppdragService(dataSource: DataSource) {
     internal fun annulerUtbetaling(oppdrag: UtbetalingsOppdrag) {
         require(oppdrag.utbetaling == null)
         val transaksjoner = repository.findByRef(oppdrag.utbetalingsreferanse)
-        if (transaksjoner.size > 1 && transaksjoner.any { it.utbetalingsOppdrag.utbetaling == null }) throw AlleredeAnnulertException("Annulleringen finnes allerede.")
+        if (transaksjoner.size > 1 && transaksjoner.any { it.utbetalingsOppdrag.utbetaling == null }) throw AlleredeAnnulertException(
+            "Annulleringen finnes allerede."
+        )
         require(1 == transaksjoner.size)
         val originaltOppdrag = transaksjoner.first().utbetalingsOppdrag
         require(oppdrag.oppdragGjelder == originaltOppdrag.oppdragGjelder)
 
         requireNotNull(originaltOppdrag.utbetaling)
         require(originaltOppdrag.utbetaling.utbetalingsLinjer.isNotEmpty())
-        repository.insertNyTransaksjon(oppdrag.copy(
+        repository.insertNyTransaksjon(
+            oppdrag.copy(
                 statusEndringFom = originaltOppdrag.utbetaling.utbetalingsLinjer.minBy { it.datoFom }!!.datoFom,
                 opprinneligOppdragTom = originaltOppdrag.utbetaling.utbetalingsLinjer.maxBy { it.datoTom }!!.datoTom
-        ))
+            )
+        )
     }
 
     fun lagreNyttOppdrag(behov: Utbetalingsbehov) {
         lagreNyttOppdrag(behov.tilUtbetalingsOppdrag())
     }
 
-    internal fun lagreNyttOppdrag(oppdrag: UtbetalingsOppdrag)
-    {
+    internal fun lagreNyttOppdrag(oppdrag: UtbetalingsOppdrag) {
         requireNotNull(oppdrag.utbetaling)
         require(oppdrag.utbetaling.utbetalingsLinjer.isNotEmpty())
 
@@ -123,38 +143,40 @@ class OppdragService(dataSource: DataSource) {
             log.info("Helt nytt oppdrag med utbetalingsreferanse=${oppdrag.utbetalingsreferanse}")
             repository.insertNyttOppdrag(oppdrag)
         } else {
-            log.info("Utvidelsesoppdrag (eksisterende utbetalingsreferanse=${oppdrag.utbetalingsreferanse}). " +
-                    "Det finnes ${eksisterendeTranser.size} transaksjoner fra før")
+            log.info(
+                "Utvidelsesoppdrag (eksisterende utbetalingsreferanse=${oppdrag.utbetalingsreferanse}). " +
+                        "Det finnes ${eksisterendeTranser.size} transaksjoner fra før"
+            )
             sanityCheckUtvidelse(eksisterendeTranser, oppdrag)
             repository.insertNyTransaksjon(oppdrag.copy(
-                    utbetaling = oppdrag.utbetaling.copy(
-                            utbetalingsLinjer = oppdrag.utbetaling.utbetalingsLinjer.map {
-                                it.copy(erEndring = true)
-                            }
-                    )
+                utbetaling = oppdrag.utbetaling.copy(
+                    utbetalingsLinjer = oppdrag.utbetaling.utbetalingsLinjer.map {
+                        it.copy(erEndring = true)
+                    }
+                )
             ))
         }
     }
 
     // For å hente ut for å lagre respons fra OS
     fun hentTransaksjon(utbetalingsreferanse: String, avstemmingsNøkkel: LocalDateTime) =
-            Transaksjon(repository.findByRefAndNokkel(utbetalingsreferanse, avstemmingsNøkkel))
+        Transaksjon(repository.findByRefAndNokkel(utbetalingsreferanse, avstemmingsNøkkel))
 
     fun hentNyeOppdrag(limit: Int) =
-            repository.findAllByStatus(TransaksjonStatus.STARTET, limit).map { Transaksjon(it) }
+        repository.findAllByStatus(TransaksjonStatus.STARTET, limit).map { Transaksjon(it) }
 
     fun hentFerdigsimulerte(limit: Int) =
-            repository.findAllByStatus(TransaksjonStatus.SIMULERING_OK, limit).map { Transaksjon(it) }
+        repository.findAllByStatus(TransaksjonStatus.SIMULERING_OK, limit).map { Transaksjon(it) }
 
     fun hentEnnåIkkeAvstemteTransaksjonerEldreEnn(maks: LocalDateTime) =
-            repository.findAllNotAvstemtWithAvstemmingsnokkelNotAfter(maks).map { Transaksjon(it) }
+        repository.findAllNotAvstemtWithAvstemmingsnokkelNotAfter(maks).map { Transaksjon(it) }
 
     companion object {
         internal fun sanityCheckUtvidelse(eksisterende: List<TransaksjonDTO>, nyttOppdrag: UtbetalingsOppdrag) {
             requireNotNull(nyttOppdrag.utbetaling)
-            val sisteEksisterende = eksisterende.sortedBy { it.created }.last()
-
             val errorStringPrefix = "Siste transasksjon med referanse ${nyttOppdrag.utbetalingsreferanse}"
+
+            val sisteEksisterende = eksisterende.maxBy { it.created }!!
 
             if (sisteEksisterende.utbetalingsOppdrag.utbetaling == null)
                 throw SanityCheckException("$errorStringPrefix var en annulering. Vet ikke hvordan håndtere dette")
@@ -164,19 +186,18 @@ class OppdragService(dataSource: DataSource) {
 
             val erEnkelUtvidelse = linjerPåForrige.size == 1 && linjerPåNy.size == 1 &&
                     linjerPåForrige.first().id == linjerPåNy.first().id
-            val forrigeLinje = linjerPåForrige[0]
-            val nyLinje = linjerPåNy[0]
 
             if (!erEnkelUtvidelse)
                 throw SanityCheckException("$errorStringPrefix er ikke en enkel utvidelse")
 
+            val forrigeLinje = linjerPåForrige[0]
+            val nyLinje = linjerPåNy[0]
             val erDuplikat = forrigeLinje.datoFom == nyLinje.datoFom
-                && forrigeLinje.datoTom == nyLinje.datoTom
-                && forrigeLinje.sats == nyLinje.sats
+                    && forrigeLinje.datoTom == nyLinje.datoTom
+                    && forrigeLinje.sats == nyLinje.sats
 
             if (erDuplikat)
                 throw DuplikatException("$errorStringPrefix er duplikat")
-
             if (sisteEksisterende.status != TransaksjonStatus.FERDIG)
                 throw SanityCheckException("$errorStringPrefix har status=${sisteEksisterende.status}. Vet ikke hvordan håndtere dette")
             if (sisteEksisterende.utbetalingsOppdrag.utbetaling.organisasjonsnummer != nyttOppdrag.utbetaling.organisasjonsnummer)
@@ -194,18 +215,19 @@ class OppdragService(dataSource: DataSource) {
 }
 
 internal fun UtbetalingsOppdrag.lagPåSidenSimuleringsrequest() =
-        TransaksjonDTO(
-                id = -1,
-                utbetalingsreferanse = this.utbetalingsreferanse,
-                nokkel = LocalDateTime.now(),
-                utbetalingsOppdrag = this,
-                created = LocalDateTime.now()).toSimuleringRequest()
+    TransaksjonDTO(
+        id = -1,
+        utbetalingsreferanse = this.utbetalingsreferanse,
+        nokkel = LocalDateTime.now(),
+        utbetalingsOppdrag = this,
+        created = LocalDateTime.now()
+    ).toSimuleringRequest()
 
 fun Utbetalingsbehov.lagPåSidenSimuleringsrequest(erUtvidelse: Boolean = false) =
-        this.tilUtbetalingsOppdrag(erUtvidelse).lagPåSidenSimuleringsrequest()
+    this.tilUtbetalingsOppdrag(erUtvidelse).lagPåSidenSimuleringsrequest()
 
 fun List<OppdragService.Transaksjon>.lagAvstemmingsmeldinger() =
-        AvstemmingMapper(this.map { it.dto }, FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
+    AvstemmingMapper(this.map { it.dto }, FagOmraadekode.SYKEPENGER_REFUSJON).lagAvstemmingsMeldinger()
 
 open class SanityCheckException(message: String) : Exception(message)
 class DuplikatException(message: String) : SanityCheckException(message)

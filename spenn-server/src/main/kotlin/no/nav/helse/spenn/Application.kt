@@ -1,5 +1,10 @@
 package no.nav.helse.spenn
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
 import com.zaxxer.hikari.HikariDataSource
@@ -9,13 +14,16 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.grensesnittavstemming.AvstemmingMQSender
+import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
 import no.nav.helse.spenn.oppdrag.OppdragMQReceiver
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.overforing.OppdragMQSender
+import no.nav.helse.spenn.overforing.SendToOSTask
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
 import no.nav.helse.spenn.rest.spennApiModule
+import no.nav.helse.spenn.simulering.SendToSimuleringTask
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import org.apache.cxf.bus.extension.ExtensionManagerBus
@@ -23,6 +31,10 @@ import javax.jms.Connection
 
 
 val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
+    .registerModule(JavaTimeModule())
+    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
 @KtorExperimentalAPI
 fun main() {
@@ -97,17 +109,12 @@ internal fun launchApplication(
         JAXBAvstemmingsdata()
     )
 
-    val services = SpennServices(
-        oppdragService = oppdragService,
-        simuleringService = simuleringService,
-        oppdragMQSender = oppdragMQSender,
-        avstemmingMQSender = avstemmingMQSender
-    )
-
     UtbetalingLøser(rapidsConnection, oppdragService)
 
     val scheduler = setupSchedules(
-        spennServices = services,
+        sendToOSTask = SendToOSTask(oppdragService, oppdragMQSender),
+        sendToSimuleringTask = SendToSimuleringTask(simuleringService, oppdragService),
+        sendTilAvstemmingTask = SendTilAvstemmingTask(oppdragService, avstemmingMQSender),
         dataSourceForLockingTable = dataSource
     )
 

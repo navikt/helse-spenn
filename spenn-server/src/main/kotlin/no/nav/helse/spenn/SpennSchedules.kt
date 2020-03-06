@@ -3,6 +3,9 @@ package no.nav.helse.spenn
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
 import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider
+import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
+import no.nav.helse.spenn.overforing.SendToOSTask
+import no.nav.helse.spenn.simulering.SendToSimuleringTask
 import org.slf4j.LoggerFactory
 import java.time.Clock
 import java.time.Duration
@@ -16,7 +19,9 @@ import javax.sql.DataSource
 private val log = LoggerFactory.getLogger("SpennSchedules")
 
 internal fun setupSchedules(
-    spennServices: SpennServices,
+    sendToOSTask: SendToOSTask,
+    sendToSimuleringTask: SendToSimuleringTask,
+    sendTilAvstemmingTask: SendTilAvstemmingTask,
     dataSourceForLockingTable: DataSource,
     clock: Clock = Clock.systemDefaultZone()
 ): ScheduledExecutorService {
@@ -46,7 +51,7 @@ internal fun setupSchedules(
     log.info("Scheduling sendToOSTask")
     scheduler.scheduleAtFixedRate({
         runWithLock("sendToOS") {
-            spennServices.sendToOS()
+            sendToOSTask.sendToOS()
         }
     }, 500, 500, TimeUnit.MILLISECONDS)
 
@@ -57,7 +62,7 @@ internal fun setupSchedules(
             log.trace("Skipping sendToSimuleringTask between 21-7")
         } else {
             runWithLock("sendToSimulering") {
-                spennServices.sendSimulering()
+                sendToSimuleringTask.sendSimulering()
             }
         }
     }, 500, 500, TimeUnit.MILLISECONDS)
@@ -77,7 +82,7 @@ internal fun setupSchedules(
 
     scheduler.scheduleAtFixedRate({
         runWithLock("sendTilAvstemming") {
-            spennServices.sendTilAvstemming()
+            sendTilAvstemmingTask.sendTilAvstemming()
         }
     }, initialDelay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS)
 
