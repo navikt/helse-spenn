@@ -60,7 +60,7 @@ internal fun setupSchedules(
     scheduler.scheduleAtFixedRate({
         val now = LocalDateTime.now(clock)
         if (now.hour < 7 || now.hour > 20) {
-            log.info("Skipping sendToSimuleringTask between 21-7")
+            log.trace("Skipping sendToSimuleringTask between 21-7")
         } else {
             runWithLock("sendToSimulering") {
                 spennTasks.sendSimulering()
