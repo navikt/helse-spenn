@@ -1,8 +1,5 @@
 package no.nav.helse.spenn.overforing
 
-import io.micrometer.core.instrument.MockClock
-import io.micrometer.core.instrument.simple.SimpleConfig
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
@@ -25,7 +22,6 @@ class SendToOSTaskTest {
     private val mockMQSender = mockk<OppdragMQSender>().apply {
         every { sendOppdrag(any()) } returns Unit
     }
-    private val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     @Test
     fun afterSimuleringSendToOS() {
@@ -43,8 +39,7 @@ class SendToOSTaskTest {
 
         val sendToOSTask = SendToOSTask(
             oppdragStateService = service,
-            oppdragMQSender = mockMQSender,
-            meterRegistry = mockMeterRegistry
+            oppdragMQSender = mockMQSender
         )
 
         sendToOSTask.sendToOS()

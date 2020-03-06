@@ -4,7 +4,6 @@ package no.nav.helse.spenn.oppdrag
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.convertValue
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -31,8 +30,6 @@ internal class MQOppdragReceiverTest {
     private val dataSource = TestDb.createMigratedDataSource()
     private val oppdragService = OppdragService(dataSource)
 
-    private val meterRegistry = CompositeMeterRegistry()
-
     private val mockConnection = mockk<Connection>().apply {
         every { createSession() } returns mockk<Session>().apply {
             every { createConsumer(any()) } returns mockk<MessageConsumer>().apply {
@@ -51,8 +48,7 @@ internal class MQOppdragReceiverTest {
             connection = mockConnection,
             rapidsConnection = mockRapidConnection,
             mottakqueue = "mottaksqueue",
-            oppdragService = oppdragService,
-            meterRegistry = meterRegistry
+            oppdragService = oppdragService
         )
 
         val etEnkeltBehov = etEnkeltBehov(utbetalingsreferanse = "3001")

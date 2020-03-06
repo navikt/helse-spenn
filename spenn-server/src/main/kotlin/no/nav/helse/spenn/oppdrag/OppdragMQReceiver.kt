@@ -3,12 +3,12 @@ package no.nav.helse.spenn.oppdrag
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.convertValue
-import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.appsupport.OPPDRAG
 import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.defaultObjectMapper
+import no.nav.helse.spenn.metrics
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
@@ -19,8 +19,7 @@ class OppdragMQReceiver(
     connection: Connection, // NB: It is the responsibility of the caller to call connection.start()
     mottakqueue: String,
     val rapidsConnection: RapidsConnection,
-    val oppdragService: OppdragService,
-    val meterRegistry: MeterRegistry
+    val oppdragService: OppdragService
 ) {
 
     private val log = LoggerFactory.getLogger(OppdragMQReceiver::class.java)
@@ -79,7 +78,7 @@ class OppdragMQReceiver(
 
         transaksjon.lagreOSResponse(status, xml, feilmld)
 
-        meterRegistry.counter(OPPDRAG, "status", status.name).increment()
+        metrics.counter(OPPDRAG, "status", status.name).increment()
         val opprinneligBehovAsJsonNode = defaultObjectMapper.readTree(transaksjon.opprinneligBehov())
 
         rapidsConnection.publish(

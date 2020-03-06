@@ -30,15 +30,14 @@ class SpennServices(
 
     private val sendToSimuleringTask = SendToSimuleringTask(
         simuleringService,
-        oppdragService,
-        metrics
+        oppdragService
     )
 
     private val sendToOSTask = SendToOSTask(
-        oppdragService, oppdragMQSender, metrics
+        oppdragService, oppdragMQSender
     )
 
     private val sendTilAvstemmingTask = SendTilAvstemmingTask(
-        oppdragService, avstemmingMQSender, metrics
+        oppdragService, avstemmingMQSender
     )
 }

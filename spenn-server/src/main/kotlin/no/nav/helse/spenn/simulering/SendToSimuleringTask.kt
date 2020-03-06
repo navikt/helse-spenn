@@ -1,9 +1,9 @@
 package no.nav.helse.spenn.simulering
 
-import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.appsupport.SIMULERING
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_BELOP
 import no.nav.helse.spenn.appsupport.SIMULERING_UTBETALT_MAKS_BELOP
+import no.nav.helse.spenn.metrics
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicLong
@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicLong
 class SendToSimuleringTask(
     private val simuleringService: SimuleringService,
     private val oppdragService: OppdragService,
-    private val meterRegistry: MeterRegistry,
     private val limit: Int = 100
 ) {
     private val maksBelopGauge = AtomicLong(0)
@@ -22,7 +21,7 @@ class SendToSimuleringTask(
 
     init {
         LOG.info("init gauge maksBeløp")
-        meterRegistry.gauge(SIMULERING_UTBETALT_MAKS_BELOP, maksBelopGauge)
+        metrics.gauge(SIMULERING_UTBETALT_MAKS_BELOP, maksBelopGauge)
     }
 
     fun sendSimulering() {
@@ -42,9 +41,9 @@ class SendToSimuleringTask(
     private fun simuleringMetrics(simuleringResult: SimuleringResult) {
         val simulering = simuleringResult.simulering
         if (simuleringResult.status == SimuleringStatus.OK && simulering != null) {
-            meterRegistry.counter(SIMULERING_UTBETALT_BELOP).increment(simulering.totalBelop.toDouble())
+            metrics.counter(SIMULERING_UTBETALT_BELOP).increment(simulering.totalBelop.toDouble())
             maksBelopGauge.set(simulering.totalBelop.toLong())
         }
-        meterRegistry.counter(SIMULERING, "status", simuleringResult.status.name).increment()
+        metrics.counter(SIMULERING, "status", simuleringResult.status.name).increment()
     }
 }

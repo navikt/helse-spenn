@@ -4,9 +4,6 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import io.micrometer.core.instrument.MockClock
-import io.micrometer.core.instrument.simple.SimpleConfig
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.spenn.oppdrag.AvstemmingMapper
@@ -34,7 +31,6 @@ import kotlin.test.assertTrue
 internal class AvstemmingTaskTest {
 
     private val service = OppdragService(TestDb.createMigratedDataSource())
-    private val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     private val mockConnection = mockk<Connection>().apply {
         every { createSession() } returns mockk<Session>().apply {
@@ -60,7 +56,7 @@ internal class AvstemmingTaskTest {
             }
         }
 
-        val sendTilAvstemmingTask = SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry)
+        val sendTilAvstemmingTask = SendTilAvstemmingTask(service, MockSender())
         sendTilAvstemmingTask.sendTilAvstemming()
     }
 
@@ -112,7 +108,7 @@ internal class AvstemmingTaskTest {
 
         val loglog = createLogAppender()
 
-        SendTilAvstemmingTask(service, MockSender(), mockMeterRegistry, marginInHours = 0)
+        SendTilAvstemmingTask(service, MockSender(), marginInHours = 0)
             .sendTilAvstemming()
 
         assertEquals(3, sendteMeldinger.size)

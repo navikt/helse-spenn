@@ -1,8 +1,5 @@
 package no.nav.helse.spenn.simulering
 
-import io.micrometer.core.instrument.MockClock
-import io.micrometer.core.instrument.simple.SimpleConfig
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -15,13 +12,11 @@ class SendToSimuleringTaskTest {
 
     private val mockPersistence = mockk<OppdragService>()
     private val mockSimuleringService = mockk<SimuleringService>()
-    private val mockMeterRegistry = SimpleMeterRegistry(SimpleConfig.DEFAULT, MockClock())
 
     @Test
     fun sendToSimulering() {
         val sendToSimuleringTask = SendToSimuleringTask(
             simuleringService = mockSimuleringService,
-            meterRegistry = mockMeterRegistry,
             oppdragService = mockPersistence
         )
 

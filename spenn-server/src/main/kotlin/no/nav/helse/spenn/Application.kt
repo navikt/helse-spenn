@@ -84,12 +84,11 @@ internal fun launchApplication(
         mqQueues.oppdragQueueMottak
     )
 
-    val oppdragMQReceiver = OppdragMQReceiver(
+    OppdragMQReceiver(
         mqConnection,
         mqQueues.oppdragQueueMottak,
         rapidsConnection,
-        oppdragService,
-        metrics
+        oppdragService
     )
 
     val avstemmingMQSender = AvstemmingMQSender(
