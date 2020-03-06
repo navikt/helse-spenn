@@ -5,11 +5,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.nimbusds.jwt.JWTClaimsSet
 import io.ktor.util.KtorExperimentalAPI
-import io.micrometer.core.instrument.MockClock
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.mockk.mockk
-import io.prometheus.client.CollectorRegistry
 import no.nav.helse.spenn.UtbetalingLøser.Companion.lagOppdragFraBehov
 import no.nav.helse.spenn.rest.SpennApiEnvironment
 import no.nav.helse.spenn.rest.api.v1.AuditSupport
@@ -30,7 +26,6 @@ fun testAuthEnv() = AuthEnvironment(
 
 @KtorExperimentalAPI
 fun mockApiEnvironment() = SpennApiEnvironment(
-    meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry(), MockClock()),
     authConfig = testAuthEnv(),
     simuleringService = mockk(),
     auditSupport = AuditSupport(),

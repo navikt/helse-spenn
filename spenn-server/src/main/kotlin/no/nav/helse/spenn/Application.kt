@@ -58,7 +58,6 @@ fun setUpAndLaunchApplication(env: Environment, serviceUser: ServiceUser) {
     val rapidsConnection = RapidApplication.Builder(env.raw).withKtorModule {
         spennApiModule(
             SpennApiEnvironment(
-                meterRegistry = metrics,
                 authConfig = env.auth,
                 simuleringService = simuleringService,
                 auditSupport = AuditSupport(),
@@ -109,7 +108,7 @@ internal fun launchApplication(
     UtbetalingLøser(rapidsConnection, oppdragService)
 
     val scheduler = setupSchedules(
-        spennTasks = services,
+        spennServices = services,
         dataSourceForLockingTable = dataSource
     )
 

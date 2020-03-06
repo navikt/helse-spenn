@@ -10,7 +10,6 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
 import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
-import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.spenn.AuthEnvironment
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.ourIssuer
@@ -25,7 +24,6 @@ import no.nav.security.token.support.ktor.tokenValidationSupport
 import org.slf4j.LoggerFactory
 
 data class SpennApiEnvironment @KtorExperimentalAPI constructor(
-    val meterRegistry: PrometheusMeterRegistry,
     val authConfig: AuthEnvironment,
     val simuleringService: SimuleringService,
     val auditSupport: AuditSupport,

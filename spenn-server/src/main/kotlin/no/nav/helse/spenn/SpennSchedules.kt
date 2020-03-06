@@ -15,14 +15,8 @@ import javax.sql.DataSource
 
 private val log = LoggerFactory.getLogger("SpennSchedules")
 
-interface SpennTaskRunner {
-    fun sendToOS()
-    fun sendSimulering()
-    fun sendTilAvstemming()
-}
-
 internal fun setupSchedules(
-    spennTasks: SpennTaskRunner,
+    spennServices: SpennServices,
     dataSourceForLockingTable: DataSource,
     clock: Clock = Clock.systemDefaultZone()
 ): ScheduledExecutorService {
@@ -52,7 +46,7 @@ internal fun setupSchedules(
     log.info("Scheduling sendToOSTask")
     scheduler.scheduleAtFixedRate({
         runWithLock("sendToOS") {
-            spennTasks.sendToOS()
+            spennServices.sendToOS()
         }
     }, 500, 500, TimeUnit.MILLISECONDS)
 
@@ -63,7 +57,7 @@ internal fun setupSchedules(
             log.trace("Skipping sendToSimuleringTask between 21-7")
         } else {
             runWithLock("sendToSimulering") {
-                spennTasks.sendSimulering()
+                spennServices.sendSimulering()
             }
         }
     }, 500, 500, TimeUnit.MILLISECONDS)
@@ -83,7 +77,7 @@ internal fun setupSchedules(
 
     scheduler.scheduleAtFixedRate({
         runWithLock("sendTilAvstemming") {
-            spennTasks.sendTilAvstemming()
+            spennServices.sendTilAvstemming()
         }
     }, initialDelay, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS)
 

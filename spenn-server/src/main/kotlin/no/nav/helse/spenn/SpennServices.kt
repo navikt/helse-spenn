@@ -23,23 +23,22 @@ class SpennServices(
     simuleringService: SimuleringService,
     oppdragMQSender: OppdragMQSender,
     avstemmingMQSender: AvstemmingMQSender
-) : SpennTaskRunner {
+)  {
+    fun sendToOS() = sendToOSTask.sendToOS()
+    fun sendSimulering() = sendToSimuleringTask.sendSimulering()
+    fun sendTilAvstemming() = sendTilAvstemmingTask.sendTilAvstemming()
 
-    override fun sendToOS() = sendToOSTask.sendToOS()
-    override fun sendSimulering() = sendToSimuleringTask.sendSimulering()
-    override fun sendTilAvstemming() = sendTilAvstemmingTask.sendTilAvstemming()
-
-    val sendToSimuleringTask = SendToSimuleringTask(
+    private val sendToSimuleringTask = SendToSimuleringTask(
         simuleringService,
         oppdragService,
         metrics
     )
 
-    val sendToOSTask = SendToOSTask(
+    private val sendToOSTask = SendToOSTask(
         oppdragService, oppdragMQSender, metrics
     )
 
-    val sendTilAvstemmingTask = SendTilAvstemmingTask(
+    private val sendTilAvstemmingTask = SendTilAvstemmingTask(
         oppdragService, avstemmingMQSender, metrics
     )
 }
