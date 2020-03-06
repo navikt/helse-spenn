@@ -5,7 +5,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.helse.spenn.appsupport.VEDTAK
+import no.nav.helse.spenn.Metrics.tellDuplikatVedtak
 import no.nav.helse.spenn.oppdrag.Utbetalingsbehov
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.oppdrag.dao.SanityCheckException
@@ -47,11 +47,11 @@ class UtbetalingLøser(
             oppdragService.lagreNyttOppdrag(utbetaling)
         } catch (e: SQLIntegrityConstraintViolationException) {
             log.error("skipping duplicate for key ${utbetaling.utbetalingsreferanse}")
-            metrics.counter(VEDTAK, "status", "DUPLIKAT").increment()
+            tellDuplikatVedtak()
         } catch (e: PSQLException) { // TODO : Burde oppdragservice fange disse to og gi spenn duplikat exc?
             if (e.sqlState == "23505") {
                 log.error("skipping duplicate for key ${utbetaling.utbetalingsreferanse}")
-                metrics.counter(VEDTAK, "status", "DUPLIKAT").increment()
+                tellDuplikatVedtak()
             } else {
                 throw e
             }

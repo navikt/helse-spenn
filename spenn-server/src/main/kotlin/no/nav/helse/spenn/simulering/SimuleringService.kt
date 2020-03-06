@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.spenn.metrics
+import no.nav.helse.spenn.Metrics.timeSimulering
 import no.nav.helse.spenn.oppdrag.SatsTypeKode
 import no.nav.helse.spenn.oppdrag.UtbetalingsType
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
@@ -27,7 +27,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
 
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         return try {
-            val response = metrics.timer("simulering").recordCallable {
+            val response = timeSimulering {
                 simulerFpService.simulerBeregning(simulerRequest)
             }
             mapResponseToResultat(response.response)

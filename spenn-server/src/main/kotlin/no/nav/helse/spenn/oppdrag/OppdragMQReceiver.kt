@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.spenn.appsupport.OPPDRAG
+import no.nav.helse.spenn.Metrics.tellOppdrag
 import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.defaultObjectMapper
-import no.nav.helse.spenn.metrics
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
@@ -78,7 +77,7 @@ class OppdragMQReceiver(
 
         transaksjon.lagreOSResponse(status, xml, feilmld)
 
-        metrics.counter(OPPDRAG, "status", status.name).increment()
+        tellOppdrag(status)
         val opprinneligBehovAsJsonNode = defaultObjectMapper.readTree(transaksjon.opprinneligBehov())
 
         rapidsConnection.publish(
@@ -90,7 +89,6 @@ class OppdragMQReceiver(
                 )
             ).toString()
         )
-
     }
 
     private fun JsonNode.setLøsning(nøkkel: String, data: Any) =

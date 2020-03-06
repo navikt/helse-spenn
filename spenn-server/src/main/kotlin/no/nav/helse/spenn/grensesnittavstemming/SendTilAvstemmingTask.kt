@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.grensesnittavstemming
 
-import no.nav.helse.spenn.appsupport.AVSTEMMING
-import no.nav.helse.spenn.metrics
+import no.nav.helse.spenn.Metrics.tellAvstemming
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.oppdrag.dao.lagAvstemmingsmeldinger
 import org.slf4j.LoggerFactory
@@ -40,10 +39,7 @@ class SendTilAvstemmingTask(
         }
         try {
             meldinger[1].grunnlag.apply {
-                metrics.counter(AVSTEMMING, "type", "godkjent").increment(this.godkjentAntall.toDouble())
-                metrics.counter(AVSTEMMING, "type", "avvist").increment(this.avvistAntall.toDouble())
-                metrics.counter(AVSTEMMING, "type", "mangler").increment(this.manglerAntall.toDouble())
-                metrics.counter(AVSTEMMING, "type", "varsel").increment(this.varselAntall.toDouble())
+                tellAvstemming(this)
             }
         } catch (e: Exception) {
             log.error("Error registering metrics", e)

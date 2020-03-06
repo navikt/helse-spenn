@@ -9,8 +9,6 @@ import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.wmq.WMQConstants
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.util.KtorExperimentalAPI
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.grensesnittavstemming.AvstemmingMQSender
@@ -30,7 +28,6 @@ import org.apache.cxf.bus.extension.ExtensionManagerBus
 import javax.jms.Connection
 
 
-val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 val defaultObjectMapper: ObjectMapper = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
