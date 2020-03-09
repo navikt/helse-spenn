@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.overforing
 
-import no.nav.helse.spenn.Metrics
+import no.nav.helse.spenn.Metrics.tellOppdragSendt
+import no.nav.helse.spenn.Metrics.tellOppdragStoppet
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.oppdrag.dao.SanityCheckException
 import org.slf4j.LoggerFactory
@@ -25,9 +26,9 @@ class SendToOSTask(
             try {
                 transaksjon.forberedSendingTilOS()
                 oppdragMQSender.sendOppdrag(transaksjon.oppdragRequest)
-                Metrics.tellOppdragSendt()
+                tellOppdragSendt()
             } catch (sanityError: SanityCheckException) {
-                Metrics.tellOppdragStoppet()
+                tellOppdragStoppet()
                 log.error("$transaksjon bestod ikke sanityCheck! Feil=${sanityError.message}. Det er derfor IKKE sendt videre til oppdragssystemet!")
                 transaksjon.stopp(sanityError.message)
             }
