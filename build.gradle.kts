@@ -68,7 +68,7 @@ subprojects {
         }
 
         maven {
-            url = uri("https://maven.pkg.github.com/navikt/helse-spleis")
+            url = uri("https://maven.pkg.github.com/navikt/rapids-and-rivers")
             credentials {
                 username = githubUser
                 password = githubPassword

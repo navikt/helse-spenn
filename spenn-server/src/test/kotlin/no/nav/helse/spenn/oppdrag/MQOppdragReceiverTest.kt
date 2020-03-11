@@ -64,15 +64,17 @@ internal class MQOppdragReceiverTest {
         mqReceiver.receiveOppdragResponse(receiveError)
 
         verify {
-            mockRapidConnection.publish(
-                "12345678901", etEnkeltBehov.setLøsning(
-                    "Utbetaling",
-                    mapOf(
-                        "status" to TransaksjonStatus.FEIL,
-                        "melding" to "Det er noe galt"
-                    )
-                ).toString()
-            )
+            mockRapidConnection.publish(eq("12345678901"), match {
+                defaultObjectMapper.readTree(it).let { actual ->
+                    etEnkeltBehov.setLøsning(
+                        "Utbetaling",
+                        mapOf(
+                            "status" to TransaksjonStatus.FEIL,
+                            "melding" to "Det er noe galt"
+                        )
+                    ).fields().asSequence().all { (key, value) -> actual[key] == value }
+                }
+            })
         }
 
         val feilTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()
@@ -81,15 +83,17 @@ internal class MQOppdragReceiverTest {
 
         mqReceiver.receiveOppdragResponse(receiveOK)
         verify {
-            mockRapidConnection.publish(
-                "12345678901", etEnkeltBehov.setLøsning(
-                    "Utbetaling",
-                    mapOf(
-                        "status" to TransaksjonStatus.FERDIG,
-                        "melding" to ""
-                    )
-                ).toString()
-            )
+            mockRapidConnection.publish(eq("12345678901"), match {
+                defaultObjectMapper.readTree(it).let { actual ->
+                    etEnkeltBehov.setLøsning(
+                        "Utbetaling",
+                        mapOf(
+                            "status" to TransaksjonStatus.FERDIG,
+                            "melding" to ""
+                        )
+                    ).fields().asSequence().all { (key, value) -> actual[key] == value }
+                }
+            })
         }
 
         val okTransaksjon = hentTransaksjonerMedUtbetalingsreferanse("3001").first()

@@ -10,6 +10,7 @@ import com.ibm.msg.client.wmq.WMQConstants
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.grensesnittavstemming.AvstemmingMQSender
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
@@ -64,16 +65,17 @@ fun setUpAndLaunchApplication(env: Environment, serviceUser: ServiceUser) {
 
     val oppdragService = OppdragService(dataSource)
 
-    val rapidsConnection = RapidApplication.Builder(env.raw).withKtorModule {
-        spennApiModule(
-            SpennApiEnvironment(
-                authConfig = env.auth,
-                simuleringService = simuleringService,
-                auditSupport = AuditSupport(),
-                stateService = oppdragService
+    val rapidsConnection = RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(env.raw))
+        .withKtorModule {
+            spennApiModule(
+                SpennApiEnvironment(
+                    authConfig = env.auth,
+                    simuleringService = simuleringService,
+                    auditSupport = AuditSupport(),
+                    stateService = oppdragService
+                )
             )
-        )
-    }.build()
+        }.build()
 
     launchApplication(simuleringService, mqConnection, dataSource, oppdragService, rapidsConnection, env.mqQueues)
 }
