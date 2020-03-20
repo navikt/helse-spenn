@@ -20,6 +20,7 @@ data class Utbetalingsbehov(
         val sats: BigDecimal,
         val datoFom: LocalDate,
         val datoTom: LocalDate,
+        val grad: BigDecimal,
         /**
          * Kan registreres med fødselsnummer eller organisasjonsnummer til den enheten som skal motta ubetalingen. Normalt
          * vil dette være den samme som oppdraget gjelder, men kan f.eks være en arbeidsgiver som skal få refundert pengene.

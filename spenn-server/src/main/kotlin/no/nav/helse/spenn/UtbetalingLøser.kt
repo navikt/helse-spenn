@@ -16,8 +16,8 @@ import java.sql.SQLIntegrityConstraintViolationException
 import java.time.LocalDate
 
 class UtbetalingLøser(
-    rapidsConnection: RapidsConnection,
-    private val oppdragService: OppdragService
+        rapidsConnection: RapidsConnection,
+        private val oppdragService: OppdragService
 ) : River.PacketListener {
 
     private val log = LoggerFactory.getLogger("UtbetalingLøser")
@@ -62,37 +62,38 @@ class UtbetalingLøser(
 
     companion object {
         internal fun lagOppdragFraBehov(jsonMessage: JsonMessage) = Utbetalingsbehov(
-            behov = jsonMessage.toJson(),
-            utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
-            oppdragGjelder = jsonMessage["fødselsnummer"].asText(),
-            saksbehandler = jsonMessage["saksbehandler"].asText(),
-            utbetaling = Utbetalingsbehov.Utbetaling(
-                maksdato = jsonMessage["maksdato"].asText().let { LocalDate.parse(it) },
-                organisasjonsnummer = jsonMessage["organisasjonsnummer"].asText(),
-                utbetalingsLinjer = jsonMessage["utbetalingslinjer"].map { linje ->
-                    Utbetalingsbehov.Linje(
-                        utbetalesTil = jsonMessage["organisasjonsnummer"].asText(),
-                        sats = BigDecimal(linje["dagsats"].asText()),
-                        datoFom = linje["fom"].asText().let { LocalDate.parse(it) },
-                        datoTom = linje["tom"].asText().let { LocalDate.parse(it) }
-                    )
-                }
-            )
+                behov = jsonMessage.toJson(),
+                utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
+                oppdragGjelder = jsonMessage["fødselsnummer"].asText(),
+                saksbehandler = jsonMessage["saksbehandler"].asText(),
+                utbetaling = Utbetalingsbehov.Utbetaling(
+                        maksdato = jsonMessage["maksdato"].asText().let { LocalDate.parse(it) },
+                        organisasjonsnummer = jsonMessage["organisasjonsnummer"].asText(),
+                        utbetalingsLinjer = jsonMessage["utbetalingslinjer"].map { linje ->
+                            Utbetalingsbehov.Linje(
+                                    utbetalesTil = jsonMessage["organisasjonsnummer"].asText(),
+                                    sats = BigDecimal(linje["dagsats"].asText()),
+                                    grad = linje["grad"]?.let { BigDecimal(it.asText())} ?: 100.toBigDecimal(),
+                                    datoFom = linje["fom"].asText().let { LocalDate.parse(it) },
+                                    datoTom = linje["tom"].asText().let { LocalDate.parse(it) }
+                            )
+                        }
+                )
         )
 
         internal fun lagAnnulleringsoppdragFraBehov(jsonMessage: JsonMessage) = Utbetalingsbehov(
-            behov = jsonMessage.toJson(),
-            utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
-            oppdragGjelder = jsonMessage["fødselsnummer"].asText(),
-            saksbehandler = jsonMessage["saksbehandler"].asText(),
-            utbetaling = null
+                behov = jsonMessage.toJson(),
+                utbetalingsreferanse = jsonMessage["utbetalingsreferanse"].asText(),
+                oppdragGjelder = jsonMessage["fødselsnummer"].asText(),
+                saksbehandler = jsonMessage["saksbehandler"].asText(),
+                utbetaling = null
         )
     }
 }
 
 internal fun JsonNode.toAnulleringsbehov() = JsonMessage(
-    this.toString(),
-    MessageProblems("")
+        this.toString(),
+        MessageProblems("")
 ).also {
     it.requireKey("fødselsnummer")
     it.requireKey("saksbehandler")
@@ -101,8 +102,8 @@ internal fun JsonNode.toAnulleringsbehov() = JsonMessage(
 }
 
 internal fun JsonNode.toOppdragsbehov() = JsonMessage(
-    this.toString(),
-    MessageProblems("")
+        this.toString(),
+        MessageProblems("")
 ).also {
     it.requireKey("fødselsnummer")
     it.requireKey("utbetalingsreferanse")

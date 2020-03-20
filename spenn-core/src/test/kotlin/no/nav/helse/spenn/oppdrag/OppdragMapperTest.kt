@@ -33,7 +33,7 @@ class OppdragMapperTest {
             sats = BigDecimal.valueOf(1230),
             satsTypeKode = SatsTypeKode.MÅNEDLIG,
             utbetalesTil = "995816598",
-            grad = BigInteger.valueOf(100)
+            grad = BigInteger.valueOf(60)
         )
         val utbetalingTemplate = etUtbetalingsOppdrag()
         val utbetaling = utbetalingTemplate.copy(
