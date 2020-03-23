@@ -58,7 +58,7 @@ spec:
     - name: SECURITYTOKENSERVICE_URL
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: SIMULERING_SERVICE_URL
-      value: https://cics.adeo.no/oppdrag/simulerFpServiceWSBinding
+      value: https://wasapp.adeo.no/cics/services/simulerFpServiceWSBinding
     - name: DATASOURCE_URL
       value: jdbc:postgresql://fsspgdb.adeo.no:5432/helse-spenn-oppdrag
     - name: VAULT_POSTGRES_MOUNTPATH
