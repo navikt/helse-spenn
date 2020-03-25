@@ -2,7 +2,7 @@ val mainClass = "no.nav.helse.spenn.ApplicationKt"
 
 dependencies {
     implementation(project(":spenn-core"))
-    implementation("no.nav.helse:rapids-and-rivers:1.ec0400d")
+    implementation("com.github.navikt:rapids-and-rivers:1.1822995")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.3.61'")
     implementation("org.jetbrains.kotlin:kotlin-test-junit:1.3.61")
     implementation("org.eclipse.jetty:jetty-server:9.4.19.v20190610")
