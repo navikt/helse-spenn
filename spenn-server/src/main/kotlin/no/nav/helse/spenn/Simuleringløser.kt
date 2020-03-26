@@ -31,6 +31,7 @@ internal class Simuleringløser(
 
     private companion object {
         private val log = LoggerFactory.getLogger(Simuleringløser::class.java)
+        private val sikkerLogg = LoggerFactory.getLogger("sikkerLogg")
 
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         private val simFactory = SimuleringObjectFactory()
@@ -74,10 +75,16 @@ internal class Simuleringløser(
 
         val request = simuleringRequest(oppdrag, utbetalingslinjer.førsteDag(), utbetalingslinjer.sisteDag())
         simuleringService.simulerOppdrag(request).also { result ->
-            packet["status"] = result.status
-            packet["feilmelding"] = result.feilMelding
-            result.simulering?.also { packet["simulering"] = it }
-            context.send(packet.toJson())
+            packet["@løsning"] = mapOf(
+                "Simulering" to mapOf(
+                    "status" to result.status,
+                    "feilmelding" to result.feilMelding,
+                    "simulering" to result.simulering
+                )
+            )
+            context.send(packet.toJson().also {
+                sikkerLogg.info("svarer behov=${packet["@id"].asText()} med $it")
+            })
         }
     }
 
