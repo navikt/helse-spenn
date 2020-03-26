@@ -80,7 +80,6 @@ fun setUpAndLaunchApplication(env: Environment, serviceUser: ServiceUser) {
     launchApplication(simuleringService, mqConnection, dataSource, oppdragService, rapidsConnection, env.mqQueues)
 }
 
-@KtorExperimentalAPI
 internal fun launchApplication(
     simuleringService: SimuleringService,
     mqConnection: Connection,
@@ -108,6 +107,7 @@ internal fun launchApplication(
         JAXBAvstemmingsdata()
     )
 
+    Simuleringløser(rapidsConnection, simuleringService)
     UtbetalingLøser(rapidsConnection, oppdragService)
 
     val scheduler = setupSchedules(
