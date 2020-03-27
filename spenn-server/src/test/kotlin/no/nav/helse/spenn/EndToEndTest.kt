@@ -22,7 +22,6 @@ import kotlin.test.assertEquals
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningResponse as SimulerBeregningResponseWrapper
 
 @KtorExperimentalAPI
-@Disabled
 class EndToEndTest {
 
     private val simulerFpService = mockk<SimulerFpService>()

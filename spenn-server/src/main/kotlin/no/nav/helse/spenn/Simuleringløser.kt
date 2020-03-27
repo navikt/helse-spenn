@@ -1,10 +1,7 @@
 package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.oppdrag.*
 import no.nav.helse.spenn.simulering.SimuleringService
