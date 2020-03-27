@@ -12,6 +12,7 @@ import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.entiteter.beregningskjema.Beregning
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import no.trygdeetaten.skjema.oppdrag.Mmel
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.*
@@ -21,6 +22,7 @@ import kotlin.test.assertEquals
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningResponse as SimulerBeregningResponseWrapper
 
 @KtorExperimentalAPI
+@Disabled
 class EndToEndTest {
 
     private val simulerFpService = mockk<SimulerFpService>()
