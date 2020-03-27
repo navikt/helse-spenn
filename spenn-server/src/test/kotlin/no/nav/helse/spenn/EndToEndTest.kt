@@ -99,8 +99,8 @@ class EndToEndTest {
 
         rapidsConnection.sendToListeners(utbetalingsbehov())
 
-        verify(timeout = 20000, exactly = 1) { oppdragProducer.send(any()) }
-        verify(timeout = 20000, exactly = 1) { simulerFpService.simulerBeregning(any()) }
+        verify(timeout = 30000, exactly = 1) { oppdragProducer.send(any()) }
+        verify(timeout = 30000, exactly = 1) { simulerFpService.simulerBeregning(any()) }
 
         val oppdrag = JAXBOppdrag.toOppdrag(osMessageSlot.captured)
         oppdrag.mmel = Mmel().apply { alvorlighetsgrad = KvitteringAlvorlighetsgrad.OK.kode }
