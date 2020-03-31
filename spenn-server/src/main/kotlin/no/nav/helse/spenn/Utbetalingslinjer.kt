@@ -2,11 +2,10 @@ package no.nav.helse.spenn
 
 import java.time.LocalDate
 
-internal class Oppdragslinjer(internal val utbetalingsreferanse: String,
-                              private val organisasjonsnummer: String,
-                              internal val fødselsnummer: String,
-                              internal val forlengelse: Boolean,
-                              private val maksdato: LocalDate
+internal class Utbetalingslinjer(private val utbetalingsreferanse: String,
+                                 private val organisasjonsnummer: String,
+                                 private val fødselsnummer: String,
+                                 private val forlengelse: Boolean
 ) {
 
     private val nesteId get() = linjer.size + 1
@@ -18,10 +17,10 @@ internal class Oppdragslinjer(internal val utbetalingsreferanse: String,
 
     fun sisteDag() = checkNotNull(Utbetalingslinje.sisteDato(linjer)) { "Ingen oppdragslinjer" }
 
-    fun accept(visitor: OppdragslinjerVisitor) {
-        visitor.preVisitOppdragslinjer(this)
+    fun accept(visitor: UtbetalingslinjerVisitor) {
+        visitor.preVisitUtbetalingslinjer(this, utbetalingsreferanse, fødselsnummer, forlengelse)
         linjer.forEach { it.accept(visitor) }
-        visitor.postVisitOppdragslinjer(this)
+        visitor.postVisitUtbetalingslinjer(this, utbetalingsreferanse, fødselsnummer, forlengelse)
     }
 
     fun refusjonTilArbeidsgiver(fom: LocalDate, tom: LocalDate, dagsats: Int, grad: Int) {
@@ -30,7 +29,6 @@ internal class Oppdragslinjer(internal val utbetalingsreferanse: String,
                 id = nesteId,
                 forlengelse = forlengelse,
                 organisasjonsnummer = organisasjonsnummer,
-                maksdato = maksdato,
                 fom = fom,
                 tom = tom,
                 dagsats = dagsats,
@@ -54,15 +52,15 @@ internal class Oppdragslinjer(internal val utbetalingsreferanse: String,
     }
 
     internal sealed class Utbetalingslinje(
-        internal val id: Int,
-        internal val forlengelse: Boolean,
-        internal val fom: LocalDate,
-        internal val tom: LocalDate,
-        internal val dagsats: Int,
-        internal val grad: Int
+        protected val id: Int,
+        protected val forlengelse: Boolean,
+        protected val fom: LocalDate,
+        protected val tom: LocalDate,
+        protected val dagsats: Int,
+        protected val grad: Int
     ) {
 
-        abstract fun accept(visitor: OppdragslinjerVisitor)
+        abstract fun accept(visitor: UtbetalingslinjerVisitor)
 
         companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minBy { it.fom }?.fom
@@ -72,8 +70,7 @@ internal class Oppdragslinjer(internal val utbetalingsreferanse: String,
         class RefusjonTilArbeidsgiver(
             id: Int,
             forlengelse: Boolean,
-            internal val organisasjonsnummer: String,
-            internal val maksdato: LocalDate,
+            private val organisasjonsnummer: String,
             fom: LocalDate,
             tom: LocalDate,
             dagsats: Int,
@@ -83,14 +80,14 @@ internal class Oppdragslinjer(internal val utbetalingsreferanse: String,
                 require(organisasjonsnummer.length == 9) { "Forventet organisasjonsnummer med lengde 9" }
             }
 
-            override fun accept(visitor: OppdragslinjerVisitor) {
-                visitor.visitRefusjonTilArbeidsgiver(this)
+            override fun accept(visitor: UtbetalingslinjerVisitor) {
+                visitor.visitRefusjonTilArbeidsgiver(this, id, organisasjonsnummer, forlengelse, fom, tom, dagsats, grad)
             }
         }
 
         class UtbetalingTilBruker(
             id: Int,
-            internal val fødselsnummer: String,
+            private val fødselsnummer: String,
             forlengelse: Boolean,
             fom: LocalDate,
             tom: LocalDate,
@@ -101,8 +98,8 @@ internal class Oppdragslinjer(internal val utbetalingsreferanse: String,
                 require(fødselsnummer.length == 11) { "Forventet fødselsnummer med lengde 11" }
             }
 
-            override fun accept(visitor: OppdragslinjerVisitor) {
-                visitor.visitUtbetalingTilBruker(this)
+            override fun accept(visitor: UtbetalingslinjerVisitor) {
+                visitor.visitUtbetalingTilBruker(this, id, fødselsnummer, forlengelse, fom, tom, dagsats, grad)
             }
         }
     }
