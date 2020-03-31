@@ -29,7 +29,14 @@ internal class Oppdragslinjer(private val utbetalingsreferanse: String,
     fun isEmpty() = linjer.isEmpty()
 
     fun førsteDag() = checkNotNull(Utbetalingslinje.førsteDato(linjer)) { "Ingen oppdragslinjer" }
+
     fun sisteDag() = checkNotNull(Utbetalingslinje.sisteDato(linjer)) { "Ingen oppdragslinjer" }
+
+    fun accept(visitor: OppdragslinjerVisitor) {
+        visitor.preVisitOppdragslinjer(this)
+        linjer.forEach { it.accept(visitor) }
+        visitor.postVisitOppdragslinjer(this)
+    }
 
     fun refusjonTilArbeidsgiver(fom: LocalDate, tom: LocalDate, dagsats: Int, grad: Int) {
         linjer.add(
@@ -78,14 +85,16 @@ internal class Oppdragslinjer(private val utbetalingsreferanse: String,
 
     private fun oppdragslinjer(saksbehandler: String): List<Oppdragslinje> = linjer.map { it.somOppdragslinje(saksbehandler) }
 
-    private sealed class Utbetalingslinje(
-        private val id: Int,
+    internal sealed class Utbetalingslinje(
+        internal val id: Int,
         private val forlengelse: Boolean,
         private val fom: LocalDate,
         private val tom: LocalDate,
         private val dagsats: Int,
         private val grad: Int
     ) {
+
+        abstract fun accept(visitor: OppdragslinjerVisitor)
 
         protected abstract fun mottaker(oppdragslinje: Oppdragslinje)
 
@@ -134,6 +143,10 @@ internal class Oppdragslinjer(private val utbetalingsreferanse: String,
                 require(organisasjonsnummer.length == 9) { "Forventet organisasjonsnummer med lengde 9" }
             }
 
+            override fun accept(visitor: OppdragslinjerVisitor) {
+                visitor.visitRefusjonTilArbeidsgiver(this)
+            }
+
             override fun mottaker(oppdragslinje: Oppdragslinje) {
                 oppdragslinje.refusjonsInfo = RefusjonsInfo()
                     .apply {
@@ -155,6 +168,10 @@ internal class Oppdragslinjer(private val utbetalingsreferanse: String,
         ) : Utbetalingslinje(id, forlengelse, fom, tom, dagsats, grad) {
             init {
                 require(fødselsnummer.length == 11) { "Forventet fødselsnummer med lengde 11" }
+            }
+
+            override fun accept(visitor: OppdragslinjerVisitor) {
+                visitor.visitUtbetalingTilBruker(this)
             }
 
             override fun mottaker(oppdragslinje: Oppdragslinje) {

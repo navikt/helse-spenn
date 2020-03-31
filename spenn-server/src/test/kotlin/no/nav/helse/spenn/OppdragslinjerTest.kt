@@ -1,6 +1,7 @@
 package no.nav.helse.spenn
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -17,6 +18,7 @@ internal class OppdragslinjerTest {
     }
 
     private lateinit var oppdragslinjer: Oppdragslinjer
+    private val inspektør get() = OppdragslinjerInspektør(oppdragslinjer)
 
     @BeforeEach
     fun setup() {
@@ -39,4 +41,37 @@ internal class OppdragslinjerTest {
         assertEquals(1.januar, oppdragslinjer.førsteDag())
         assertEquals(31.januar, oppdragslinjer.sisteDag())
     }
+
+    @Test
+    fun `oppdragslinje får sekvensiell id`() {
+        oppdragslinjer.apply {
+            refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
+            utbetalingTilBruker(15.januar, 31.januar, DAGSATS, GRAD)
+        }
+        assertEquals(1, inspektør.oppdragslinjeId(0))
+        assertEquals(2, inspektør.oppdragslinjeId(1))
+    }
+
+    private class OppdragslinjerInspektør(oppdragslinjer: Oppdragslinjer) : OppdragslinjerVisitor {
+
+        private val oppdragslinjeIdMap = mutableMapOf<Int, Int>()
+        private var oppdragslinjeteller = 0
+
+        init {
+            oppdragslinjer.accept(this)
+        }
+
+        override fun visitRefusjonTilArbeidsgiver(refusjonTilArbeidsgiver: Oppdragslinjer.Utbetalingslinje.RefusjonTilArbeidsgiver) {
+            oppdragslinjeIdMap[oppdragslinjeteller] = refusjonTilArbeidsgiver.id
+            oppdragslinjeteller += 1
+        }
+
+        override fun visitUtbetalingTilBruker(utbetalingTilBruker: Oppdragslinjer.Utbetalingslinje.UtbetalingTilBruker) {
+            oppdragslinjeIdMap[oppdragslinjeteller] = utbetalingTilBruker.id
+            oppdragslinjeteller += 1
+        }
+
+        fun oppdragslinjeId(index: Int) = oppdragslinjeIdMap.getValue(index)
+    }
+
 }
