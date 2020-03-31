@@ -1,8 +1,11 @@
 package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.*
-import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.spenn.oppdrag.OppdragSkjemaConstants
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdrag
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
@@ -61,7 +64,7 @@ internal class Simuleringløser(
 
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
-        val oppdrag = utbetalingslinjer.oppdrag(OppdragSkjemaConstants.APP)
+        val oppdrag = OppdragSimuleringRequestBuilder(OppdragSkjemaConstants.APP, utbetalingslinjer).build()
 
         val request = simuleringRequest(oppdrag, utbetalingslinjer.førsteDag(), utbetalingslinjer.sisteDag())
         simuleringService.simulerOppdrag(request).also { result ->
@@ -89,5 +92,4 @@ internal class Simuleringløser(
             }
         }
     }
-
 }
