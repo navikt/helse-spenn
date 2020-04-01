@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-internal class OppdragSimuleringRequestBuilderTest {
+internal class SimuleringRequestBuilderTest {
 
     private companion object {
         private const val PERSON = "12345678911"
@@ -23,7 +23,7 @@ internal class OppdragSimuleringRequestBuilderTest {
 
     @Test
     fun `bygger simulering request`() {
-        val simuleringRequest = simuleringRequest(false){
+        val simuleringRequest = simuleringRequest(false) {
             refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
             utbetalingTilBruker(15.januar, 31.januar, DAGSATS, GRAD)
         }
@@ -48,7 +48,7 @@ internal class OppdragSimuleringRequestBuilderTest {
     }
 
     private fun simuleringRequest(forlengelse: Boolean, block: Utbetalingslinjer.() -> Unit): SimulerBeregningRequest {
-        val builder = OppdragSimuleringRequestBuilder(
+        val builder = SimuleringRequestBuilder(
             SAKSBEHANDLER,
             MAKSDATO,
             Utbetalingslinjer(UTBETALINGSREF, ORGNR, PERSON, forlengelse).apply(block))

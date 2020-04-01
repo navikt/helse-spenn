@@ -16,9 +16,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest as SimulerBeregningGrensesnittRequest
 
-internal class OppdragSimuleringRequestBuilder(private val saksbehandler: String,
-                                               private val maksdato: LocalDate,
-                                               private val utbetalingslinjer: Utbetalingslinjer) : UtbetalingslinjerVisitor {
+internal class SimuleringRequestBuilder(
+    private val saksbehandler: String,
+    private val maksdato: LocalDate,
+    private val utbetalingslinjer: Utbetalingslinjer
+) : UtbetalingslinjerVisitor {
 
     private companion object {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -38,6 +40,18 @@ internal class OppdragSimuleringRequestBuilder(private val saksbehandler: String
 
     init {
         utbetalingslinjer.accept(this)
+    }
+
+    fun build(): SimulerBeregningGrensesnittRequest {
+        return SimulerBeregningGrensesnittRequest().apply {
+            request = SimulerBeregningRequest().apply {
+                oppdrag = this@SimuleringRequestBuilder.oppdrag
+                simuleringsPeriode = SimulerBeregningRequest.SimuleringsPeriode().apply {
+                    datoSimulerFom = utbetalingslinjer.førsteDag().format(tidsstempel)
+                    datoSimulerTom = utbetalingslinjer.sisteDag().format(tidsstempel)
+                }
+            }
+        }
     }
 
     override fun preVisitUtbetalingslinjer(
@@ -63,7 +77,7 @@ internal class OppdragSimuleringRequestBuilder(private val saksbehandler: String
     ) {
         oppdrag.oppdragslinje.add(somOppdragslinje(id, forlengelse, fom, tom, dagsats, grad).apply {
             refusjonsInfo = RefusjonsInfo().apply {
-                this.refunderesId = "00${organisasjonsnummer}"
+                this.refunderesId = organisasjonsnummer.padStart(11, '0')
                 this.maksDato = maksdato.format(tidsstempel)
             }
             refusjonsInfo.datoFom = this.datoVedtakFom
@@ -85,41 +99,30 @@ internal class OppdragSimuleringRequestBuilder(private val saksbehandler: String
         })
     }
 
-    fun build(): SimulerBeregningGrensesnittRequest {
-        return SimulerBeregningGrensesnittRequest().apply {
-            request = SimulerBeregningRequest().apply {
-                oppdrag = this@OppdragSimuleringRequestBuilder.oppdrag
-                simuleringsPeriode = SimulerBeregningRequest.SimuleringsPeriode().apply {
-                    datoSimulerFom = utbetalingslinjer.førsteDag().format(tidsstempel)
-                    datoSimulerTom = utbetalingslinjer.sisteDag().format(tidsstempel)
-                }
-            }
-        }
+    private fun somOppdragslinje(
+        id: Int,
+        forlengelse: Boolean,
+        fom: LocalDate,
+        tom: LocalDate,
+        dagsats: Int,
+        grad: Int
+    ): Oppdragslinje = Oppdragslinje().apply {
+        delytelseId = "$id"
+        kodeEndringLinje = if (forlengelse) EndringsKode.ENDRING.kode else EndringsKode.NY.kode
+        kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
+        datoVedtakFom = fom.format(tidsstempel)
+        datoVedtakTom = tom.format(tidsstempel)
+        sats = dagsats.toBigDecimal()
+        fradragTillegg = FradragTillegg.T
+        typeSats = SatsTypeKode.DAGLIG.kode
+        saksbehId = saksbehandler
+        brukKjoreplan = "N"
+        this.grad.add(Grad().apply {
+            typeGrad = GradTypeKode.UFØREGRAD.kode
+            this.grad = grad.toBigInteger()
+        })
+        attestant.add(Attestant().apply {
+            attestantId = saksbehandler
+        })
     }
-
-    private fun somOppdragslinje(id: Int,
-                                 forlengelse: Boolean,
-                                 fom: LocalDate,
-                                 tom: LocalDate,
-                                 dagsats: Int,
-                                 grad: Int): Oppdragslinje =
-        Oppdragslinje().apply {
-            delytelseId = "$id"
-            kodeEndringLinje = if (forlengelse) EndringsKode.ENDRING.kode else EndringsKode.NY.kode
-            kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
-            datoVedtakFom = fom.format(tidsstempel)
-            datoVedtakTom = tom.format(tidsstempel)
-            sats = dagsats.toBigDecimal()
-            fradragTillegg = FradragTillegg.T
-            typeSats = SatsTypeKode.DAGLIG.kode
-            saksbehId = saksbehandler
-            brukKjoreplan = "N"
-            this.grad.add(Grad().apply {
-                typeGrad = GradTypeKode.UFØREGRAD.kode
-                this.grad = grad.toBigInteger()
-            })
-            attestant.add(Attestant().apply {
-                attestantId = saksbehandler
-            })
-        }
 }

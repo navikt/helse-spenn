@@ -52,7 +52,7 @@ internal class Simuleringløser(
 
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
-        val request = OppdragSimuleringRequestBuilder(
+        val request = SimuleringRequestBuilder(
             saksbehandler = OppdragSkjemaConstants.APP,
             maksdato = packet["maksdato"].asLocalDate(),
             utbetalingslinjer = utbetalingslinjer
