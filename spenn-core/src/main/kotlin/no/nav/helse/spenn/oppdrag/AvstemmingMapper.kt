@@ -4,27 +4,14 @@ import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Aksjonsdata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AvstemmingType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.DetaljType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Detaljdata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Fortegn
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Grunnlagsdata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.KildeType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.ObjectFactory
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Periodedata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Totaldata
+import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Base64
-import java.util.Comparator
-import java.util.UUID
+import java.util.*
 
 
 enum class ØkonomiKodekomponent(val kodekomponent : String) {
@@ -115,7 +102,7 @@ class AvstemmingMapper internal constructor(
 
     internal fun getKvitteringsMelding(oppdrag: TransaksjonDTO) : Oppdrag? =
         oppdrag.oppdragResponse?.let {
-            JAXBOppdrag.toOppdrag(it)
+            OppdragXml.unmarshal(it)
         }
 
     private fun avstemmingsDetaljtypeForOppdrag(oppdrag: TransaksjonDTO) : DetaljType? =

@@ -8,7 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.spenn.oppdrag.AvstemmingMapper
 import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
-import no.nav.helse.spenn.oppdrag.JAXBOppdrag
+import no.nav.helse.spenn.oppdrag.OppdragXml
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.testsupport.TestDb
@@ -158,7 +158,7 @@ internal class AvstemmingTaskTest {
         kvittering.mmel.beskrMelding = "Beskrivelse"
         kvittering.oppdrag110 = Oppdrag110()
         kvittering.oppdrag110.fagsystemId = fagsystemId
-        return JAXBOppdrag.fromOppdragToXml(kvittering)
+        return OppdragXml.marshal(kvittering)
     }
 
 

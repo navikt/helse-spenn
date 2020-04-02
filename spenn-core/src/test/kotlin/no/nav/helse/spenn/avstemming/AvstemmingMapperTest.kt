@@ -2,26 +2,11 @@ package no.nav.helse.spenn.avstemming
 
 import no.nav.helse.spenn.core.FagOmraadekode
 import no.nav.helse.spenn.core.avstemmingsnokkelFormatter
-import no.nav.helse.spenn.oppdrag.AvstemmingMapper
-import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
-import no.nav.helse.spenn.oppdrag.JAXBOppdrag
-import no.nav.helse.spenn.oppdrag.SatsTypeKode
-import no.nav.helse.spenn.oppdrag.TransaksjonStatus
-import no.nav.helse.spenn.oppdrag.TransaksjonStatus.FEIL
-import no.nav.helse.spenn.oppdrag.TransaksjonStatus.FERDIG
-import no.nav.helse.spenn.oppdrag.TransaksjonStatus.SENDT_OS
-import no.nav.helse.spenn.oppdrag.Utbetaling
-import no.nav.helse.spenn.oppdrag.UtbetalingsLinje
-import no.nav.helse.spenn.oppdrag.UtbetalingsOppdrag
+import no.nav.helse.spenn.oppdrag.*
+import no.nav.helse.spenn.oppdrag.TransaksjonStatus.*
 import no.nav.helse.spenn.oppdrag.dao.TransaksjonDTO
 import no.nav.helse.spenn.testsupport.etEnkeltBehov
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Aksjonsdata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AvstemmingType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.DetaljType
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Detaljdata
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Fortegn
-import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.KildeType
+import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Mmel
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.Oppdrag110
@@ -194,7 +179,7 @@ class AvstemmingMapperTest {
             kvittering.mmel.beskrMelding = "Beskrivelse"
             kvittering.oppdrag110 = Oppdrag110()
             kvittering.oppdrag110.fagsystemId = fagsystemId
-            return JAXBOppdrag.fromOppdragToXml(kvittering)
+            return OppdragXml.marshal(kvittering)
         }
     }
 
@@ -272,7 +257,7 @@ class AvstemmingMapperTest {
 
     internal fun getKvitteringsMelding(oppdrag: TransaksjonDTO): Oppdrag? =
         oppdrag.oppdragResponse?.let {
-            JAXBOppdrag.toOppdrag(it)
+            OppdragXml.unmarshal(it)
         }
 
 

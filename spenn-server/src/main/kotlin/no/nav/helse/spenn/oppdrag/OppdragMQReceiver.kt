@@ -60,7 +60,7 @@ class OppdragMQReceiver(
         log.trace(response)
         //rar xml som blir returnert
         val replaced = response.replace("oppdrag xmlns", "ns2:oppdrag xmlns:ns2")
-        handleResponse(JAXBOppdrag.toOppdrag(replaced), replaced)
+        handleResponse(OppdragXml.unmarshal(replaced), replaced)
     }
 
     private fun handleResponse(oppdrag: Oppdrag, xml: String) {

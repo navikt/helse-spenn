@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.overforing
 
 import com.ibm.mq.jms.MQQueue
-import no.nav.helse.spenn.oppdrag.JAXBOppdrag
+import no.nav.helse.spenn.oppdrag.OppdragXml
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import javax.jms.Connection
@@ -18,7 +18,7 @@ class OppdragMQSender(
 
     fun sendOppdrag(oppdrag: Oppdrag) {
         log.info("sender til Oppdragsystemet for fagsystemId ${oppdrag.oppdrag110.fagsystemId}")
-        val oppdragXml = JAXBOppdrag.fromOppdragToXml(oppdrag)
+        val oppdragXml = OppdragXml.marshal(oppdrag)
         log.trace("sending $oppdragXml")
         log.trace("QUEUE: $sendqueue REPLYTO: $replyTo")
         val message = jmsSession.createTextMessage(oppdragXml)

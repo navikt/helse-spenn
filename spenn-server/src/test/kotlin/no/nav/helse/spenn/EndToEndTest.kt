@@ -4,7 +4,7 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.*
 import no.nav.helse.rapids_rivers.inMemoryRapid
 import no.nav.helse.spenn.core.KvitteringAlvorlighetsgrad
-import no.nav.helse.spenn.oppdrag.JAXBOppdrag
+import no.nav.helse.spenn.oppdrag.OppdragXml
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.testsupport.TestDb
@@ -12,7 +12,6 @@ import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.entiteter.beregningskjema.Beregning
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import no.trygdeetaten.skjema.oppdrag.Mmel
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.*
@@ -103,10 +102,10 @@ class EndToEndTest {
         verify(timeout = 30000, exactly = 1) { oppdragProducer.send(any()) }
         verify(timeout = 30000, exactly = 1) { simulerFpService.simulerBeregning(any()) }
 
-        val oppdrag = JAXBOppdrag.toOppdrag(osMessageSlot.captured)
+        val oppdrag = OppdragXml.unmarshal(osMessageSlot.captured)
         oppdrag.mmel = Mmel().apply { alvorlighetsgrad = KvitteringAlvorlighetsgrad.OK.kode }
 
-        val msg = JAXBOppdrag.fromOppdragToXml(oppdrag).replace("ns2:oppdrag xmlns:ns2", "oppdrag xmlns")
+        val msg = OppdragXml.marshal(oppdrag).replace("ns2:oppdrag xmlns:ns2", "oppdrag xmlns")
         oppdragConsumer.captured.onMessage(mockk<TextMessage>().apply {
             every { getBody(String::class.java) } returns msg
         })
