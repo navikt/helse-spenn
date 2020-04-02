@@ -14,11 +14,12 @@ import java.time.ZoneId
 import javax.jms.Connection
 import kotlin.math.roundToInt
 
-class Utbetalinger(
+internal class Utbetalinger(
     rapidsConnection: RapidsConnection,
     jmsConnection: Connection,
     sendQueue: String,
-    private val replyTo: String
+    private val replyTo: String,
+    private val oppdragDao: OppdragDao
 ) : River.PacketListener {
 
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -39,10 +40,12 @@ class Utbetalinger(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         log.info("løser utbetalingsbehov id=${packet["@id"].asText()}")
+        val fødselsnummer = packet["fødselsnummer"].asText()
+        val utbetalingsreferanse = packet["utbetalingsreferanse"].asText()
         val utbetalingslinjer = Utbetalingslinjer(
-            utbetalingsreferanse = packet["utbetalingsreferanse"].asText(),
+            utbetalingsreferanse = utbetalingsreferanse,
             organisasjonsnummer = packet["organisasjonsnummer"].asText(),
-            fødselsnummer = packet["fødselsnummer"].asText(),
+            fødselsnummer = fødselsnummer,
             forlengelse = packet["forlengelse"].asBoolean()
         ).apply {
             packet["utbetalingslinjer"].forEach {
@@ -58,6 +61,9 @@ class Utbetalinger(
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
         val nå = Instant.now()
+        val tidspunkt = nå
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
         val oppdrag = OppdragBuilder(
             saksbehandler = packet["saksbehandler"].asText(),
@@ -67,15 +73,24 @@ class Utbetalinger(
             tidspunkt = nå
         ).build()
 
-        sendOppdrag(oppdrag)
-
-        packet["@løsning"] = mapOf(
-            "Utbetaling" to mapOf(
-                "status" to Oppdragstatus.OVERFØRT,
-                "overføringstidspunkt" to nå.atZone(ZoneId.systemDefault()),
-                "avstemmingsnøkkel" to avstemmingsnøkkel
+        if (!oppdragDao.nyttOppdrag(avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, Oppdragstatus.OVERFØRT)) {
+            packet["@løsning"] = mapOf(
+                "Utbetaling" to mapOf(
+                    "status" to Oppdragstatus.FEIL,
+                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag (teknisk feil)"
+                )
             )
-        )
+        } else {
+            sendOppdrag(oppdrag)
+            packet["@løsning"] = mapOf(
+                "Utbetaling" to mapOf(
+                    "status" to Oppdragstatus.OVERFØRT,
+                    "overføringstidspunkt" to tidspunkt,
+                    "avstemmingsnøkkel" to avstemmingsnøkkel
+                )
+            )
+        }
+
         context.send(packet.toJson())
     }
 
