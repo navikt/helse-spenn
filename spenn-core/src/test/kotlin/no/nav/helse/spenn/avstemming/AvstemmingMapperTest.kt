@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 
 class AvstemmingMapperTest {
 
-    private val jaxbAvstemming = JAXBAvstemmingsdata()
+    private val jaxbAvstemming = AvstemmingdataXml()
 
     private var oppdragIdSequence = 1L
     private var utbetalingsLinjeIdSequence = 1L
@@ -56,9 +56,9 @@ class AvstemmingMapperTest {
             oppdragsliste,
             FagOmraadekode.SYKEPENGER_REFUSJON
         )
-        val xmlMeldinger = mapper.lagAvstemmingsMeldinger().map { jaxbAvstemming.fromAvstemmingsdataToXml(it) }
+        val xmlMeldinger = mapper.lagAvstemmingsMeldinger().map { jaxbAvstemming.marshal(it) }
         println(xmlMeldinger)
-        val meldinger = xmlMeldinger.map { JAXBAvstemmingsdata().toAvstemmingsdata(it) }
+        val meldinger = xmlMeldinger.map { AvstemmingdataXml().unmarshal(it) }
         assertEquals(3, meldinger.size)
         meldinger[1].total.let {
             assertEquals(BigDecimal.ZERO, it.totalBelop)
@@ -87,9 +87,9 @@ class AvstemmingMapperTest {
             oppdragsliste,
             FagOmraadekode.SYKEPENGER_REFUSJON
         )
-        val xmlMeldinger = mapper.lagAvstemmingsMeldinger().map { jaxbAvstemming.fromAvstemmingsdataToXml(it) }
+        val xmlMeldinger = mapper.lagAvstemmingsMeldinger().map { jaxbAvstemming.marshal(it) }
         //println(xmlMeldinger)
-        val meldinger = xmlMeldinger.map { JAXBAvstemmingsdata().toAvstemmingsdata(it) }
+        val meldinger = xmlMeldinger.map { AvstemmingdataXml().unmarshal(it) }
         assertEquals(3, meldinger.size)
         sjekkAksjon(meldinger.first().aksjon, AksjonType.START)
         sjekkAksjon(meldinger.last().aksjon, AksjonType.AVSL)

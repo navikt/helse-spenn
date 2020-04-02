@@ -7,7 +7,7 @@ import ch.qos.logback.core.read.ListAppender
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.spenn.oppdrag.AvstemmingMapper
-import no.nav.helse.spenn.oppdrag.JAXBAvstemmingsdata
+import no.nav.helse.spenn.oppdrag.AvstemmingdataXml
 import no.nav.helse.spenn.oppdrag.OppdragXml
 import no.nav.helse.spenn.oppdrag.TransaksjonStatus
 import no.nav.helse.spenn.oppdrag.dao.OppdragService
@@ -49,7 +49,7 @@ internal class AvstemmingTaskTest {
     fun ingenOppdragSkalBliIngenAvstemming() {
         class MockSender : AvstemmingMQSender(
             mockConnection, "tullequeue",
-            JAXBAvstemmingsdata()
+            AvstemmingdataXml()
         ) {
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 assertFalse(true, "Skal ikke bli sendt noen avstemmingsmeldinger")
@@ -100,7 +100,7 @@ internal class AvstemmingTaskTest {
 
         val sendteMeldinger = mutableListOf<Avstemmingsdata>()
 
-        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", JAXBAvstemmingsdata()) {
+        class MockSender : AvstemmingMQSender(mockConnection, "tullequeue", AvstemmingdataXml()) {
             override fun sendAvstemmingsmelding(avstemmingsMelding: Avstemmingsdata) {
                 sendteMeldinger.add(avstemmingsMelding)
             }
