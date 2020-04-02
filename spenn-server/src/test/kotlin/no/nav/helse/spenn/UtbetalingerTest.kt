@@ -1,8 +1,10 @@
 package no.nav.helse.spenn
 
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.ZonedDateTime
 
 internal class UtbetalingerTest {
     private companion object {
@@ -31,8 +33,7 @@ internal class UtbetalingerTest {
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(1, connection.inspektør.antall())
         assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
-        assertEquals(BEHOV, rapid.inspektør.id(0))
-        assertEquals(Utbetalingstatus.OVERFØRT.name, rapid.inspektør.løsning(0, "Utbetaling").path("status").asText())
+        assertOverført(0)
     }
 
     @Test
@@ -40,6 +41,15 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
+    }
+
+    private fun assertOverført(indeks: Int) {
+        assertEquals(BEHOV, rapid.inspektør.id(indeks))
+        rapid.inspektør.løsning(indeks, "Utbetaling") {
+            assertEquals(Utbetalingstatus.OVERFØRT.name, it.path("status").asText())
+            assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }
+            assertDoesNotThrow { ZonedDateTime.parse(it.path("overføringstidspunkt").asText()) }
+        }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(

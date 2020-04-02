@@ -19,6 +19,7 @@ internal class OppdragBuilderTest {
         private const val SAKSBEHANDLER = "Spenn"
         private val NÅ = Instant.now()
         private val MAKSDATO = LocalDate.now()
+        private val AVSTEMMINGSNØKKEL = Avstemmingsnøkkel.opprett(NÅ)
 
         private fun XMLGregorianCalendar.toLocalDate() = toGregorianCalendar()
             .toZonedDateTime()
@@ -51,6 +52,7 @@ internal class OppdragBuilderTest {
         val builder = OppdragBuilder(
             SAKSBEHANDLER,
             MAKSDATO,
+            AVSTEMMINGSNØKKEL,
             Utbetalingslinjer(UTBETALINGSREF, ORGNR, PERSON, forlengelse).apply(block),
             NÅ
         )
@@ -61,7 +63,7 @@ internal class OppdragBuilderTest {
         assertEquals(PERSON, oppdrag.oppdrag110.oppdragGjelderId)
         assertEquals(SAKSBEHANDLER, oppdrag.oppdrag110.saksbehId)
         assertEquals(UTBETALINGSREF, oppdrag.oppdrag110.fagsystemId)
-        assertEquals(Avstemmingsnøkkel.opprett(NÅ).toString(), oppdrag.oppdrag110.avstemming115.nokkelAvstemming)
+        assertEquals(AVSTEMMINGSNØKKEL.toString(), oppdrag.oppdrag110.avstemming115.nokkelAvstemming)
         assertEquals(endringsKode.kode, oppdrag.oppdrag110.kodeEndring)
     }
 

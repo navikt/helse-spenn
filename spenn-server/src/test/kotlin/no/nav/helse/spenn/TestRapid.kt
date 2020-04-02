@@ -59,7 +59,7 @@ internal class TestRapid : RapidsConnection() {
 
         fun melding(indeks: Int) = jsonmeldinger.getOrPut(indeks) { objectMapper.readTree(messages[indeks].second) }
         fun id(indeks: Int) = felt(0, "@id").asText()
-        fun løsning(indeks: Int, behov: String) = felt(0, "@løsning").path(behov).takeUnless(JsonNode::isMissingOrNull) ?: fail {
+        fun løsning(indeks: Int, behov: String, block: (JsonNode) -> Unit = {}) = felt(0, "@løsning").path(behov).takeUnless(JsonNode::isMissingOrNull)?.also(block) ?: fail {
             "Behov har ikke løsning for $behov"
         }
         fun felt(indeks: Int, felt: String) = melding(0).path(felt).takeUnless(JsonNode::isMissingOrNull) ?: fail {

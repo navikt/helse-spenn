@@ -12,6 +12,7 @@ import javax.xml.datatype.DatatypeFactory
 
 internal class OppdragBuilder(private val saksbehandler: String,
                               private val maksdato: LocalDate,
+                              private val avstemmingsnøkkel: Long,
                               utbetalingslinjer: Utbetalingslinjer,
                               tidspunkt: Instant = Instant.now()) : UtbetalingslinjerVisitor {
 
@@ -32,6 +33,8 @@ internal class OppdragBuilder(private val saksbehandler: String,
             datoOppdragGjelderFom = LocalDate.EPOCH.asXmlGregorianCalendar()
             saksbehId = saksbehandler
             avstemming115 = Avstemming115().apply {
+                nokkelAvstemming = "$avstemmingsnøkkel"
+                tidspktMelding = tidsstempel.format(tidspunkt)
                 kodeKomponent = KomponentKode.SYKEPENGER.kode
             }
             oppdragsEnhet120.add(OppdragsEnhet120().apply {
@@ -43,9 +46,6 @@ internal class OppdragBuilder(private val saksbehandler: String,
     }
 
     init {
-        oppdrag.oppdrag110.avstemming115.nokkelAvstemming = "${Avstemmingsnøkkel.opprett(tidspunkt)}"
-        oppdrag.oppdrag110.avstemming115.tidspktMelding = tidsstempel.format(tidspunkt)
-
         utbetalingslinjer.accept(this)
     }
 

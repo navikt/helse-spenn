@@ -9,6 +9,8 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.spenn.oppdrag.OppdragXml
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
+import java.time.Instant
+import java.time.ZoneId
 import javax.jms.Connection
 import kotlin.math.roundToInt
 
@@ -55,17 +57,23 @@ class Utbetalinger(
 
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
+        val nå = Instant.now()
+        val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
         val oppdrag = OppdragBuilder(
             saksbehandler = packet["saksbehandler"].asText(),
             maksdato = packet["maksdato"].asLocalDate(),
-            utbetalingslinjer = utbetalingslinjer
+            avstemmingsnøkkel = avstemmingsnøkkel,
+            utbetalingslinjer = utbetalingslinjer,
+            tidspunkt = nå
         ).build()
 
         sendOppdrag(oppdrag)
 
         packet["@løsning"] = mapOf(
             "Utbetaling" to mapOf(
-                "status" to Utbetalingstatus.OVERFØRT
+                "status" to Utbetalingstatus.OVERFØRT,
+                "overføringstidspunkt" to nå.atZone(ZoneId.systemDefault()),
+                "avstemmingsnøkkel" to avstemmingsnøkkel
             )
         )
         context.send(packet.toJson())
