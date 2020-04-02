@@ -6,19 +6,19 @@ import no.nav.helse.spenn.simulering.Simulering
 import no.nav.helse.spenn.simulering.SimuleringResult
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.SimuleringStatus
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.*
 import kotlin.test.assertTrue
 
-internal class SimuleringløserTest {
+internal class SimuleringerTest {
 
     private companion object {
-        private val PERSON = UUID.randomUUID().toString()
-        private val ORGNR = "123456789"
-        private val BEHOV = UUID.randomUUID().toString()
+        private const val PERSON = "12345678911"
+        private const val ORGNR = "123456789"
+        private const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
     }
 
     private lateinit var resultat: SimuleringResult
@@ -26,13 +26,13 @@ internal class SimuleringløserTest {
     init {
         every {
             simuleringService.simulerOppdrag(any())
-        } answers  {
+        } answers {
             resultat
         }
     }
 
     private val rapid = TestRapid().apply {
-        Simuleringløser(this, simuleringService)
+        Simuleringer(this, simuleringService)
     }
 
     @BeforeEach
@@ -44,24 +44,26 @@ internal class SimuleringløserTest {
     fun `løser simuleringsbehov`() {
         resultat(SimuleringStatus.OK)
         rapid.sendTestMessage(simuleringbehov())
-
         assertEquals(1, rapid.inspektør.antall())
-        val melding = rapid.inspektør.melding(0)
-        assertEquals(BEHOV, melding["@id"].asText())
-        assertEquals("OK", melding.path("@løsning").path("Simulering").path("status").asText())
-        assertFalse(melding.path("@løsning").path("Simulering").path("simulering").isNull)
+        assertEquals(BEHOV, rapid.inspektør.id(0))
+        assertEquals("OK", rapid.inspektør.løsning(0, "Simulering").path("status").asText())
+        assertFalse(rapid.inspektør.løsning(0, "Simulering").path("simulering").isNull)
+    }
+
+    @Test
+    fun `ignorerer simuleringsbehov med tomme utbetalingslinjer`() {
+        rapid.sendTestMessage(simuleringbehov(emptyList()))
+        assertEquals(0, rapid.inspektør.antall())
     }
 
     @Test
     fun `løser simuleringsbehov med simuleringfeil`() {
         resultat(SimuleringStatus.FEIL)
         rapid.sendTestMessage(simuleringbehov())
-
         assertEquals(1, rapid.inspektør.antall())
-        val melding = rapid.inspektør.melding(0)
-        assertEquals(BEHOV, melding["@id"].asText())
-        assertEquals("FEIL", melding.path("@løsning").path("Simulering").path("status").asText())
-        assertTrue(melding.path("@løsning").path("Simulering").path("simulering").isNull)
+        assertEquals(BEHOV, rapid.inspektør.id(0))
+        assertEquals("FEIL", rapid.inspektør.løsning(0, "Simulering").path("status").asText())
+        assertTrue(rapid.inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
 
     private fun resultat(status: SimuleringStatus) = SimuleringResult(
@@ -78,7 +80,14 @@ internal class SimuleringløserTest {
         resultat = it
     }
 
-    private fun simuleringbehov(): String {
+    private fun simuleringbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(
+        mapOf(
+            "dagsats" to "1000.0",
+            "fom" to "2020-04-20",
+            "tom" to "2020-05-20",
+            "grad" to 100
+        )
+    )): String {
         return defaultObjectMapper.writeValueAsString(
             mapOf(
                 "@event_name" to "behov",
@@ -89,14 +98,7 @@ internal class SimuleringløserTest {
                 "maksdato" to "2020-04-20",
                 "utbetalingsreferanse" to "ref",
                 "forlengelse" to false,
-                "utbetalingslinjer" to listOf(
-                    mapOf(
-                        "dagsats" to "1000.0",
-                        "fom" to "2020-04-20",
-                        "tom" to "2020-05-20",
-                        "grad" to 100
-                    )
-                )
+                "utbetalingslinjer" to utbetalingslinjer
             )
         )
     }

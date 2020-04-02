@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.isMissingOrNull
+import org.junit.jupiter.api.fail
 
 internal class TestRapid : RapidsConnection() {
     private companion object {
@@ -56,6 +58,13 @@ internal class TestRapid : RapidsConnection() {
         }
 
         fun melding(indeks: Int) = jsonmeldinger.getOrPut(indeks) { objectMapper.readTree(messages[indeks].second) }
+        fun id(indeks: Int) = felt(0, "@id").asText()
+        fun løsning(indeks: Int, behov: String) = felt(0, "@løsning").path(behov).takeUnless(JsonNode::isMissingOrNull) ?: fail {
+            "Behov har ikke løsning for $behov"
+        }
+        fun felt(indeks: Int, felt: String) = melding(0).path(felt).takeUnless(JsonNode::isMissingOrNull) ?: fail {
+            "Melding mangler felt $felt"
+        }
         fun antall() = messages.size
     }
 }

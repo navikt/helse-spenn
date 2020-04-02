@@ -10,7 +10,6 @@ import com.ibm.msg.client.wmq.WMQConstants
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig.Companion
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.grensesnittavstemming.AvstemmingMQSender
 import no.nav.helse.spenn.grensesnittavstemming.SendTilAvstemmingTask
@@ -107,7 +106,7 @@ internal fun launchApplication(
         JAXBAvstemmingsdata()
     )
 
-    Simuleringløser(rapidsConnection, simuleringService)
+    Simuleringer(rapidsConnection, simuleringService)
     UtbetalingLøser(rapidsConnection, oppdragService)
 
     val scheduler = setupSchedules(
