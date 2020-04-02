@@ -24,6 +24,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:1.12.3")
     testImplementation("org.testcontainers:kafka:1.12.3")
     testImplementation("org.testcontainers:mockserver:1.12.3")
+    testImplementation("com.opentable.components:otj-pg-embedded:0.13.1")
     testImplementation("no.nav.security:token-validation-test-support:1.1.1")
 }
 
