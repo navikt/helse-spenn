@@ -22,6 +22,7 @@ internal class OppdragDaoTest {
     private companion object {
         private const val PERSON = "12020052345"
         private const val UTBETALINGSREF = "838069327ea2"
+        private const val BELØP = Integer.MAX_VALUE
         private val AVSTEMMINGSNØKKEL = System.currentTimeMillis()
     }
 
@@ -34,7 +35,7 @@ internal class OppdragDaoTest {
     @Test
     fun `opprette oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT))
+        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP))
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
             assertEquals(PERSON, it.fnr)
@@ -42,6 +43,7 @@ internal class OppdragDaoTest {
             assertNull(it.endret)
             assertEquals(UTBETALINGSREF, it.utbetalingsreferanse)
             assertEquals(Oppdragstatus.OVERFØRT.name, it.status)
+            assertEquals(BELØP, it.totalbeløp)
             assertNull(it.beskrivelse)
             assertNull(it.feilkode_oppdrag)
             assertNull(it.oppdrag_response)
@@ -51,8 +53,8 @@ internal class OppdragDaoTest {
     @Test
     fun `duplikat oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT))
-        assertThrows<PSQLException> { oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT) }
+        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP))
+        assertThrows<PSQLException> { oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, "en annen person", tidspunkt.minusHours(1), "en annen utbetalingsreferanse", Oppdragstatus.AKSEPTERT, BELØP) }
     }
 
     @Test
@@ -61,7 +63,7 @@ internal class OppdragDaoTest {
         val beskrivelse = "en beskrivelse"
         val feilkode = "08"
         val melding = "original xml-melding"
-        oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT)
+        oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
         assertTrue(oppdragDao.oppdaterOppdrag(AVSTEMMINGSNØKKEL, UTBETALINGSREF, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding))
 
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
@@ -71,6 +73,7 @@ internal class OppdragDaoTest {
             assertTrue(it.endret != null && it.endret > tidspunkt)
             assertEquals(UTBETALINGSREF, it.utbetalingsreferanse)
             assertEquals(Oppdragstatus.AKSEPTERT.name, it.status)
+            assertEquals(BELØP, it.totalbeløp)
             assertEquals(beskrivelse, it.beskrivelse)
             assertEquals(feilkode, it.feilkode_oppdrag)
             assertEquals(melding, it.oppdrag_response)
@@ -81,7 +84,7 @@ internal class OppdragDaoTest {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT avstemmingsnokkel, fnr, opprettet, endret, utbetalingsreferanse, status, beskrivelse, feilkode_oppdrag, oppdrag_response " +
+                    "SELECT avstemmingsnokkel, fnr, opprettet, endret, utbetalingsreferanse, status, totalbelop, beskrivelse, feilkode_oppdrag, oppdrag_response " +
                             "FROM oppdrag " +
                             "WHERE avstemmingsnokkel = ?" +
                             "LIMIT 1",
@@ -94,6 +97,7 @@ internal class OppdragDaoTest {
                         endret = it.localDateTimeOrNull("endret"),
                         utbetalingsreferanse = it.string("utbetalingsreferanse"),
                         status = it.string("status"),
+                        totalbeløp = it.int("totalbelop"),
                         beskrivelse = it.stringOrNull("beskrivelse"),
                         feilkode_oppdrag = it.stringOrNull("feilkode_oppdrag"),
                         oppdrag_response = it.stringOrNull("oppdrag_response")
@@ -145,6 +149,7 @@ internal class OppdragDaoTest {
         val endret: LocalDateTime?,
         val utbetalingsreferanse: String,
         val status: String,
+        val totalbeløp: Int,
         val beskrivelse: String?,
         val feilkode_oppdrag: String?,
         val oppdrag_response: String?

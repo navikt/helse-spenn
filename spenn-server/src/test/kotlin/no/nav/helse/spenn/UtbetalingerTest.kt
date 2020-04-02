@@ -14,6 +14,7 @@ internal class UtbetalingerTest {
     private companion object {
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
+        private const val BELØP = 1000
         private const val UTBETALINGSREF = "838069327ea2"
         private const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
         private const val SAKSBEHANDLER = "Navn Navnesen"
@@ -36,7 +37,7 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser utbetalingsbehov`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any()) } returns true
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) } returns true
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(1, connection.inspektør.antall())
@@ -49,12 +50,12 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
-        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `utbetalingsbehov med feil`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any()) } returns false
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) } returns false
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
@@ -62,7 +63,7 @@ internal class UtbetalingerTest {
         rapid.inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
-        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any()) }
+        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) }
     }
 
     private fun assertOverført(indeks: Int) {
@@ -75,12 +76,12 @@ internal class UtbetalingerTest {
         val avstemmingsnøkkel = rapid.inspektør.løsning(indeks, "Utbetaling")
             .path("avstemmingsnøkkel")
             .asLong()
-        verify(exactly = 1) { dao.nyttOppdrag(avstemmingsnøkkel, PERSON, any(), UTBETALINGSREF, Oppdragstatus.OVERFØRT) }
+        verify(exactly = 1) { dao.nyttOppdrag(avstemmingsnøkkel, PERSON, any(), UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP) }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(
         mapOf(
-            "dagsats" to "1000.0",
+            "dagsats" to "$BELØP",
             "fom" to "2020-04-20",
             "tom" to "2020-05-20",
             "grad" to 100

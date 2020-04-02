@@ -17,6 +17,8 @@ internal class Utbetalingslinjer(private val utbetalingsreferanse: String,
 
     fun sisteDag() = checkNotNull(Utbetalingslinje.sisteDato(linjer)) { "Ingen oppdragslinjer" }
 
+    fun totalbeløp() = Utbetalingslinje.totalbeløp(linjer)
+
     fun accept(visitor: UtbetalingslinjerVisitor) {
         visitor.preVisitUtbetalingslinjer(this, utbetalingsreferanse, fødselsnummer, forlengelse)
         linjer.forEach { it.accept(visitor) }
@@ -65,6 +67,7 @@ internal class Utbetalingslinjer(private val utbetalingsreferanse: String,
         companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minBy { it.fom }?.fom
             fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxBy { it.tom }?.tom
+            fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.dagsats }
         }
 
         class RefusjonTilArbeidsgiver(

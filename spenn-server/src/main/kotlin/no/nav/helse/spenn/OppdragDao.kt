@@ -29,13 +29,14 @@ internal class OppdragDao(private val dataSource: DataSource) {
         fødselsnummer: String,
         tidspunkt: LocalDateTime,
         utbetalingsreferanse: String,
-        status: Oppdragstatus
+        status: Oppdragstatus,
+        totalbeløp: Int
     ) =
         using(sessionOf(dataSource)) { session ->
             session.run(queryOf(
-                "INSERT INTO oppdrag (avstemmingsnokkel, fnr, opprettet, utbetalingsreferanse, status) " +
-                        "VALUES (?, ?, ?, ?, ?)",
-                avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, status.name
+                "INSERT INTO oppdrag (avstemmingsnokkel, fnr, opprettet, utbetalingsreferanse, totalbelop, status) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, totalbeløp, status.name
             ).asUpdate)
         } == 1
 }

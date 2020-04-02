@@ -28,6 +28,7 @@ internal class UtbetalingslinjerTest {
     @Test
     fun `ingen utbetalingslinjer`() {
         assertTrue(utbetalingslinjer.isEmpty())
+        assertEquals(0, utbetalingslinjer.totalbeløp())
         assertThrows<IllegalStateException> { utbetalingslinjer.førsteDag() }
         assertThrows<IllegalStateException> { utbetalingslinjer.sisteDag() }
     }
@@ -40,6 +41,15 @@ internal class UtbetalingslinjerTest {
         }
         assertEquals(1.januar, utbetalingslinjer.førsteDag())
         assertEquals(31.januar, utbetalingslinjer.sisteDag())
+    }
+
+    @Test
+    fun `totalbeløp`() {
+        utbetalingslinjer.apply {
+            refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
+            refusjonTilArbeidsgiver(15.januar, 31.januar, DAGSATS, GRAD)
+        }
+        assertEquals(DAGSATS + DAGSATS, utbetalingslinjer.totalbeløp())
     }
 
     @Test
