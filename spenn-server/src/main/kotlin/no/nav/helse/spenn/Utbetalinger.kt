@@ -71,7 +71,7 @@ class Utbetalinger(
 
         packet["@løsning"] = mapOf(
             "Utbetaling" to mapOf(
-                "status" to Utbetalingstatus.OVERFØRT,
+                "status" to Oppdragstatus.OVERFØRT,
                 "overføringstidspunkt" to nå.atZone(ZoneId.systemDefault()),
                 "avstemmingsnøkkel" to avstemmingsnøkkel
             )

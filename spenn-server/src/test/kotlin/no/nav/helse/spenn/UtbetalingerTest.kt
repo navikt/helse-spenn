@@ -46,7 +46,7 @@ internal class UtbetalingerTest {
     private fun assertOverført(indeks: Int) {
         assertEquals(BEHOV, rapid.inspektør.id(indeks))
         rapid.inspektør.løsning(indeks, "Utbetaling") {
-            assertEquals(Utbetalingstatus.OVERFØRT.name, it.path("status").asText())
+            assertEquals(Oppdragstatus.OVERFØRT.name, it.path("status").asText())
             assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }
             assertDoesNotThrow { ZonedDateTime.parse(it.path("overføringstidspunkt").asText()) }
         }

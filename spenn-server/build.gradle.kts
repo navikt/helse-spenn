@@ -16,6 +16,7 @@ dependencies {
         implementation("net.minidev:json-smart:2.3")
         implementation("com.nimbusds:nimbus-jose-jwt:8.6")
     }
+    implementation("com.github.seratch:kotliquery:1.3.1")
     implementation("org.mock-server:mockserver-client-java:5.5.4")
 
     testImplementation("org.testcontainers:vault:1.12.3")
