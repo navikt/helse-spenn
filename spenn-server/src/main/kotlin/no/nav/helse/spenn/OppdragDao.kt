@@ -18,7 +18,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
     ) =
         using(sessionOf(dataSource)) { session ->
             session.run(queryOf(
-                "UPDATE oppdrag_ny SET status = ?, beskrivelse = ?, feilkode_oppdrag = ?, oppdrag_response = ? " +
+                "UPDATE oppdrag SET status = ?, beskrivelse = ?, feilkode_oppdrag = ?, oppdrag_response = ? " +
                         "WHERE avstemmingsnokkel = ? AND utbetalingsreferanse = ?",
                 status.name, beskrivelse, feilkode, xmlMessage, avstemmingsnøkkel, utbetalingsreferanse
             ).asUpdate)
@@ -33,7 +33,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
     ) =
         using(sessionOf(dataSource)) { session ->
             session.run(queryOf(
-                "INSERT INTO oppdrag_ny (avstemmingsnokkel, fnr, opprettet, utbetalingsreferanse, status) " +
+                "INSERT INTO oppdrag (avstemmingsnokkel, fnr, opprettet, utbetalingsreferanse, status) " +
                         "VALUES (?, ?, ?, ?, ?)",
                 avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, status
             ).asUpdate)
