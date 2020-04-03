@@ -25,10 +25,6 @@ internal class Transaksjoner(
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
-        println(problems.toString())
-    }
-
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
         val status = Oppdragstatus.valueOf(packet["status"].asText())
