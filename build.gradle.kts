@@ -37,6 +37,7 @@ dependencies {
     implementation("javax.jws:javax.jws-api:1.1")
     implementation("com.sun.xml.messaging.saaj:saaj-impl:1.5.1")
     implementation("javax.xml.stream:stax-api:1.0-2")
+    implementation("org.codehaus.woodstox:stax2-api:3.1.4")
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("javax.xml.bind:jaxb-api:2.3.1")
     implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
