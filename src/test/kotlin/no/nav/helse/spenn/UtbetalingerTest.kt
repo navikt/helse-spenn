@@ -38,7 +38,7 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser utbetalingsbehov`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) } returns true
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) } returns true
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(1, connection.inspektør.antall())
@@ -51,12 +51,12 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
-        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `utbetalingsbehov med feil`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) } returns false
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) } returns false
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
@@ -64,7 +64,7 @@ internal class UtbetalingerTest {
         rapid.inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
-        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) }
     }
 
     private fun assertOverført(indeks: Int) {
@@ -77,7 +77,7 @@ internal class UtbetalingerTest {
         val avstemmingsnøkkel = rapid.inspektør.løsning(indeks, "Utbetaling")
             .path("avstemmingsnøkkel")
             .asLong()
-        verify(exactly = 1) { dao.nyttOppdrag(avstemmingsnøkkel, PERSON, any(), UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP) }
+        verify(exactly = 1) { dao.nyttOppdrag(avstemmingsnøkkel, PERSON, any(), UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, any()) }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(

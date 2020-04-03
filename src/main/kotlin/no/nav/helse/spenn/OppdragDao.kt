@@ -4,6 +4,8 @@ import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
 import javax.sql.DataSource
 
@@ -26,6 +28,13 @@ internal class OppdragDao(private val dataSource: DataSource) {
                 ).asUpdate
             )
         } == 1
+
+    fun hentBehovForOppdrag(avstemmingsnøkkel: Long) =
+        using(sessionOf(dataSource)) { session ->
+            session.run(queryOf("SELECT behov FROM oppdrag WHERE avstemmingsnokkel = ?", avstemmingsnøkkel).map {
+                JsonMessage(it.string("behov"), MessageProblems("{}"))
+            }.asSingle)
+        }
 
     fun hentOppdragForAvstemming(avstemmingsperiode: ClosedRange<Long>) =
         using(sessionOf(dataSource)) { session ->
@@ -76,14 +85,15 @@ internal class OppdragDao(private val dataSource: DataSource) {
         tidspunkt: LocalDateTime,
         utbetalingsreferanse: String,
         status: Oppdragstatus,
-        totalbeløp: Int
+        totalbeløp: Int,
+        originalJson: String
     ) =
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "INSERT INTO oppdrag (avstemmingsnokkel, fnr, opprettet, utbetalingsreferanse, totalbelop, status) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)",
-                    avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, totalbeløp, status.name
+                    "INSERT INTO oppdrag (avstemmingsnokkel, fnr, opprettet, utbetalingsreferanse, totalbelop, status, behov) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?::json)",
+                    avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, totalbeløp, status.name, originalJson
                 ).asUpdate
             )
         } == 1

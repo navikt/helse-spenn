@@ -40,6 +40,7 @@ private fun rapidApp(env: Map<String, String>) {
         Simuleringer(this, simuleringService)
         Utbetalinger(this, jmsConnection, env.getValue("OPPDRAG_QUEUE_SEND"), env.getValue("OPPDRAG_QUEUE_MOTTAK"), oppdragDao)
         Kvitteringer(this, jmsConnection, env.getValue("OPPDRAG_QUEUE_MOTTAK"), oppdragDao)
+        Transaksjoner(this, oppdragDao)
     }.apply {
         register(object : RapidsConnection.StatusListener {
             override fun onStartup(rapidsConnection: RapidsConnection) {

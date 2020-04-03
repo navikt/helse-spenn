@@ -24,6 +24,7 @@ internal class OppdragDaoTest {
         private const val PERSON = "12020052345"
         private const val UTBETALINGSREF = "838069327ea2"
         private const val BELØP = Integer.MAX_VALUE
+        private const val BEHOV = "{}"
         private val AVSTEMMINGSNØKKEL = System.currentTimeMillis()
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss")
     }
@@ -37,7 +38,7 @@ internal class OppdragDaoTest {
     @Test
     fun `opprette oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP))
+        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, BEHOV))
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
             assertEquals(PERSON, it.fnr)
@@ -55,8 +56,8 @@ internal class OppdragDaoTest {
     @Test
     fun `duplikat oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP))
-        assertThrows<PSQLException> { oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, "en annen person", tidspunkt.minusHours(1), "en annen utbetalingsreferanse", Oppdragstatus.AKSEPTERT, BELØP) }
+        assertTrue(oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, BEHOV))
+        assertThrows<PSQLException> { oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, "en annen person", tidspunkt.minusHours(1), "en annen utbetalingsreferanse", Oppdragstatus.AKSEPTERT, BELØP, BEHOV) }
     }
 
     @Test
@@ -65,7 +66,7 @@ internal class OppdragDaoTest {
         val beskrivelse = "en beskrivelse"
         val feilkode = "08"
         val melding = "original xml-melding"
-        oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
+        oppdragDao.nyttOppdrag(AVSTEMMINGSNØKKEL, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, BEHOV)
         assertTrue(oppdragDao.oppdaterOppdrag(AVSTEMMINGSNØKKEL, UTBETALINGSREF, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding))
 
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
@@ -86,13 +87,13 @@ internal class OppdragDaoTest {
     fun `oppdrag til avstemming`() {
         val tidspunkt = LocalDateTime.now()
         val første = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(første - 1, PERSON, tidspunkt.minusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
-        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
-        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
-        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP)
+        oppdragDao.nyttOppdrag(første - 1, PERSON, tidspunkt.minusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, BEHOV)
         val siste = første + 3
-        oppdragDao.nyttOppdrag(siste, PERSON, tidspunkt.plusDays(3), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
-        oppdragDao.nyttOppdrag(siste + 1, PERSON, tidspunkt.plusDays(4), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
+        oppdragDao.nyttOppdrag(siste, PERSON, tidspunkt.plusDays(3), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(siste + 1, PERSON, tidspunkt.plusDays(4), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP, BEHOV)
         val oppdrag = oppdragDao.hentOppdragForAvstemming(første..siste)
         assertEquals(4, oppdrag.size)
         OppdragDto.avstemmingsperiode(oppdrag).also {
@@ -109,13 +110,13 @@ internal class OppdragDaoTest {
     fun `oppdrag til avstemming opp til og med`() {
         val tidspunkt = LocalDateTime.now()
         val første = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(første - 1, PERSON, tidspunkt.minusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
-        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
-        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
-        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP)
+        oppdragDao.nyttOppdrag(første - 1, PERSON, tidspunkt.minusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, BEHOV)
         val siste = første + 3
-        oppdragDao.nyttOppdrag(siste, PERSON, tidspunkt.plusDays(3), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
-        oppdragDao.nyttOppdrag(siste + 1, PERSON, tidspunkt.plusDays(4), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
+        oppdragDao.nyttOppdrag(siste, PERSON, tidspunkt.plusDays(3), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(siste + 1, PERSON, tidspunkt.plusDays(4), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP, BEHOV)
         val oppdrag = oppdragDao.hentOppdragForAvstemming(siste)
         assertEquals(5, oppdrag.size)
         OppdragDto.avstemmingsperiode(oppdrag).also {
@@ -128,9 +129,9 @@ internal class OppdragDaoTest {
     fun `oppdater oppdrag til avstemming`() {
         val tidspunkt = LocalDateTime.now()
         val første = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
-        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
-        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP)
+        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP, BEHOV)
+        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, BEHOV)
 
         assertEquals(0, oppdragDao.oppdaterAvstemteOppdrag(første - 1))
         assertEquals(2, oppdragDao.oppdaterAvstemteOppdrag(første + 1))

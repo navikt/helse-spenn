@@ -72,7 +72,7 @@ internal class Utbetalinger(
             tidspunkt = nå
         ).build()
 
-        if (!oppdragDao.nyttOppdrag(avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, Oppdragstatus.OVERFØRT, utbetalingslinjer.totalbeløp())) {
+        if (!oppdragDao.nyttOppdrag(avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, Oppdragstatus.OVERFØRT, utbetalingslinjer.totalbeløp(), packet.toJson())) {
             packet["@løsning"] = mapOf(
                 "Utbetaling" to mapOf(
                     "status" to Oppdragstatus.FEIL,
