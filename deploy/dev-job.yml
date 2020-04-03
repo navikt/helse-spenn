@@ -1,0 +1,93 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{app}}
+  namespace: tbd
+spec:
+  schedule: "0 7 * * *"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 43200
+      backoffLimit: 1
+      template:
+        spec:
+          containers:
+            - name: {{app}}
+              image: {{image}}:{{tag}}
+              resources:
+                requests:
+                  memory: 256Mi
+                  cpu: 100m
+                limits:
+                  memory: 4096Mi
+                  cpu: 2000m
+              volumeMounts:
+                - mountPath: /var/run/secrets/nais.io/vault
+                  name: vault-secrets
+                  subPath: subpath/var/run/secrets/nais.io/vault
+              env:
+                - name: VAULT_TOKEN_PATH
+                  value: /var/run/secrets/nais.io/vault/vault_token
+                - name: CRON_JOB_MODE
+                  value: "true"
+                - name: DATABASE_HOST
+                  value: b27dbvl007.preprod.local
+                - name: DATABASE_PORT
+                  value: "5432"
+                - name: DATABASE_NAME
+                  value: helse-spenn-oppdrag
+                - name: VAULT_MOUNTPATH
+                  value: postgresql/preprod-fss/
+                - name: MQ_HOSTNAME
+                  value: b27apvl176.preprod.local
+                - name: MQ_CHANNEL
+                  value: Q1_FPSAK
+                - name: MQ_PORT
+                  value: "1413"
+                - name: MQ_QUEUE_MANAGER
+                  value: MQ1LSC02
+                - name: AVSTEMMING_QUEUE_SEND
+                  # Setter target client = 1 for bakoverkompabilitet med stormaskin
+                  value: queue:///QA.Q1_234.OB29_AVSTEMMING_XML?targetClient=1
+          imagePullSecrets:
+            - name: gpr-credentials
+          initContainers:
+            - name: vks-init
+              image: navikt/vault-sidekick:v0.3.10-d122b16
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "128Mi"
+                  cpu: "1000m"
+              volumeMounts:
+                - mountPath: /var/run/secrets/nais.io/vault
+                  name: vault-secrets
+                  subPath: subpath/var/run/secrets/nais.io/vault
+              args:
+                - -v=10
+                - -logtostderr
+                - -vault=https://vault.adeo.no
+                - -one-shot
+                - -save-token=/var/run/secrets/nais.io/vault/vault_token
+                - -cn=secret:kv/preprod/fss/{{app}}/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
+              env:
+                - name: VAULT_AUTH_METHOD
+                  value: kubernetes
+                - name: VAULT_SIDEKICK_ROLE
+                  value: {{app}}
+                - name: VAULT_K8S_LOGIN_PATH
+                  value: auth/kubernetes/preprod/fss/login
+          serviceAccount: podcreator
+          serviceAccountName: podcreator
+          volumes:
+            - name: vault-secrets
+              emptyDir:
+                medium: Memory
+            - name: ca-bundle
+              configMap:
+                defaultMode: 420
+                name: ca-bundle-jks
+          restartPolicy: Never
+

@@ -11,10 +11,10 @@ spec:
   strategy:
     type: Recreate
   liveness:
-    initialDelay: 10
+    initialDelay: 5
     path: /isalive
   readiness:
-    initialDelay: 10
+    initialDelay: 5
     path: /isready
   prometheus:
     enabled: true
@@ -26,7 +26,7 @@ spec:
   resources:
     limits:
       cpu: 2000m
-      memory: 1024Mi
+      memory: 512Mi
     requests:
       cpu: 1000m
       memory: 256Mi
@@ -34,9 +34,9 @@ spec:
     enabled: true
     paths:
       - mountPath: /var/run/secrets/nais.io/vault
-        kvPath: /kv/prod/fss/spenn/default
+        kvPath: /kv/preprod/fss/spenn/default
       - mountPath: /var/run/secrets/nais.io/service_user
-        kvPath: /serviceuser/data/prod/srvspenn
+        kvPath: /serviceuser/data/dev/srvspenn
   webproxy: true
   secureLogs:
     enabled: true
@@ -46,24 +46,24 @@ spec:
     - name: KAFKA_RAPID_TOPIC
       value: helse-rapid-v1
     - name: KAFKA_BOOTSTRAP_SERVERS
-      value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
+      value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
     - name: SECURITYTOKENSERVICE_URL
-      value: https://sts.adeo.no/SecurityTokenServiceProvider/
+      value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
     - name: SIMULERING_SERVICE_URL
-      value: https://wasapp.adeo.no/cics/services/simulerFpServiceWSBinding
+      value: https://cics-q1.adeo.no/oppdrag/simulerFpServiceWSBinding
     - name: DATABASE_JDBC_URL
-      value: jdbc:postgresql://fsspgdb.adeo.no:5432/helse-spenn-oppdrag
+      value: jdbc:postgresql://b27dbvl007.preprod.local:5432/helse-spenn-oppdrag
     - name: VAULT_MOUNTPATH
-      value: postgresql/prod-fss/
+      value: postgresql/preprod-fss/
     - name: MQ_HOSTNAME
-      value: a01apvl063.adeo.no
+      value: b27apvl176.preprod.local
     - name: MQ_CHANNEL
-      value: P_SPENN
+      value: Q1_FPSAK
     - name: MQ_PORT
-      value: "1414"
+      value: "1413"
     - name: MQ_QUEUE_MANAGER
-      value: MPLSC02
+      value: MQ1LSC02
     - name: OPPDRAG_QUEUE_SEND
-      value: QA.P231.OB04_OPPDRAG_XML
+      value: QA.Q1_231.OB04_OPPDRAG_XML
     - name: OPPDRAG_QUEUE_MOTTAK
-      value: QA.P_SPENN.OPPDRAG_SP_XML_KVITT
+      value: QA.Q1_SPENN.OPPDRAG_SP_XML_KVITT
