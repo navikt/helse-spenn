@@ -49,6 +49,16 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         }
 
+    fun oppdaterAvstemteOppdrag(avstemmingsnøkkelTom: Long) =
+        using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    "UPDATE oppdrag SET avstemt = TRUE WHERE avstemt = FALSE AND avstemmingsnokkel <= ?",
+                    avstemmingsnøkkelTom
+                ).asUpdate
+            )
+        }
+
     private fun Row.toOppdragDto() =
         OppdragDto(
             avstemmingsnøkkel = long("avstemmingsnokkel"),

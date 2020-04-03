@@ -124,6 +124,19 @@ internal class OppdragDaoTest {
         }
     }
 
+    @Test
+    fun `oppdater oppdrag til avstemming`() {
+        val tidspunkt = LocalDateTime.now()
+        val første = System.currentTimeMillis()
+        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
+        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
+        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP)
+
+        assertEquals(0, oppdragDao.oppdaterAvstemteOppdrag(første - 1))
+        assertEquals(2, oppdragDao.oppdaterAvstemteOppdrag(første + 1))
+        assertEquals(1, oppdragDao.oppdaterAvstemteOppdrag(første + 3))
+    }
+
     private fun finnOppdrag(avstemmingsnøkkel: Long) =
         using(sessionOf(dataSource)) { session ->
             session.run(
