@@ -31,10 +31,8 @@ object OppdragXml {
 
     fun unmarshal(oppdragXML: String): Oppdrag {
         return StringReader(oppdragXML
-            .replace("ns2:oppdrag", "oppdrag")
-            .replace("xmlns:ns2", "xmlns")
-            .replace("oppdrag", "ns2:oppdrag")
-            .replace("xmlns", "xmlns:ns2")
+            .replace("<oppdrag xmlns=", "<ns2:oppdrag xmlns:ns2=")
+            .replace("</Oppdrag>", "</ns2:oppdrag>")
         ).use {
             xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
             xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)

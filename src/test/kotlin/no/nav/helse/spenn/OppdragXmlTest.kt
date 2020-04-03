@@ -10,7 +10,6 @@ internal class OppdragXmlTest {
         private const val UTBETALINGSREF = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
         private const val AVSTEMMINGSNØKKEL = 1L
         private const val SAKSBEHANDLER = "Navn Navnesen"
-        private const val MOTTAK_QUEUE = "statusQueue"
 
         private const val AKSEPTERT_UTEN_FEIL = "00"
         private const val AKSEPTERT_MED_FEIL = "04"
@@ -29,12 +28,13 @@ internal class OppdragXmlTest {
     }
 
     private fun kvittering(alvorlighetsgrad: String) =
-        kvittering("<ns2:oppdrag xmlns:ns2=\"http://www.trygdeetaten.no/skjema/oppdrag\">", alvorlighetsgrad)
+        kvittering("<ns2:oppdrag xmlns:ns2=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</ns2:oppdrag>", alvorlighetsgrad)
 
     private fun rarKvittering(alvorlighetsgrad: String) =
-        kvittering("<oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\">", alvorlighetsgrad)
+        kvittering("<oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</Oppdrag>", alvorlighetsgrad)
 
-    private fun kvittering(head: String, alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>$head
+    private fun kvittering(head: String, foot: String, alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
+$head
     <mmel>
         <systemId>231-OPPD</systemId>
         <alvorlighetsgrad>$alvorlighetsgrad</alvorlighetsgrad>
@@ -131,5 +131,5 @@ internal class OppdragXmlTest {
             </attestant-180>
         </oppdrags-linje-150>
     </oppdrag-110>
-</ns2:oppdrag>"""
+$foot"""
 }
