@@ -39,6 +39,7 @@ internal class Kvitteringer(
     }
 
     private fun onMessage(xmlMessage: String) {
+        sikkerLogg.info("mottok xml $xmlMessage")
         val oppdrag = OppdragXml.unmarshal(xmlMessage)
         val avstemmingsnøkkel = requireNotNull(oppdrag.oppdrag110.avstemming115.nokkelAvstemming).toLong()
         val utbetalingsreferanse = requireNotNull(oppdrag.oppdrag110.fagsystemId)
