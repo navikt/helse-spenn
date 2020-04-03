@@ -51,8 +51,12 @@ spec:
       value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
     - name: SIMULERING_SERVICE_URL
       value: https://cics-q1.adeo.no/oppdrag/simulerFpServiceWSBinding
-    - name: DATABASE_JDBC_URL
-      value: jdbc:postgresql://b27dbvl007.preprod.local:5432/helse-spenn-oppdrag
+    - name: DATABASE_HOST
+      value: b27dbvl007.preprod.local
+    - name: DATABASE_PORT
+      value: "5432"
+    - name: DATABASE_NAME
+      value: helse-spenn-oppdrag
     - name: VAULT_MOUNTPATH
       value: postgresql/preprod-fss/
     - name: MQ_HOSTNAME
