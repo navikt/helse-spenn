@@ -56,6 +56,9 @@ internal class Kvitteringer(
             "Klarte ikke å oppdatere oppdrag i databasen!"
         }
 
+        sikkerLogg.info("fødselsnummer=$fødselsnummer avstemmingsnøkkel=$avstemmingsnøkkel utbetalingsreferanse=$utbetalingsreferanse " +
+                "feilkode=$feilkode status=$status beskrivelse=$beskrivelse")
+
         rapidsConnection.publish(fødselsnummer, JsonMessage("{}", MessageProblems("{}")).apply {
             this["@event_name"] = "transaksjon_status"
             this["@id"] = UUID.randomUUID()

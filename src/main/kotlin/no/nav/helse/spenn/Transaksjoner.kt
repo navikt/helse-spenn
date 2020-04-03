@@ -13,6 +13,7 @@ internal class Transaksjoner(
 
     private companion object {
         private val log = LoggerFactory.getLogger(Transaksjoner::class.java)
+        private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
     }
 
     init {
@@ -26,12 +27,17 @@ internal class Transaksjoner(
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+        val fødselsnummer = packet["fødselsnummer"].asText()
+        val utbetalingsreferanse = packet["utbetalingsreferanse"].asText()
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
         val status = Oppdragstatus.valueOf(packet["status"].asText())
         val tidspunkt = packet["@opprettet"].asLocalDateTime()
         log.info("oppdrag med avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
 
         oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.also {
+            sikkerLogg.info("oppdrag med avstemmingsnøkkel=$avstemmingsnøkkel utbetalingsreferanse=$utbetalingsreferanse " +
+                    "fødselsnummer=$fødselsnummer status=$status tidspunkt=$tidspunkt for behov=${it.toJson()}")
+
             it["@løsning"] = mapOf(
                 "Utbetaling" to mapOf(
                     "status" to status,
