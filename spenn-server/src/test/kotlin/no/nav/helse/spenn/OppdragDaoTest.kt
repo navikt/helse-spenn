@@ -105,6 +105,25 @@ internal class OppdragDaoTest {
         }
     }
 
+    @Test
+    fun `oppdrag til avstemming opp til og med`() {
+        val tidspunkt = LocalDateTime.now()
+        val første = System.currentTimeMillis()
+        oppdragDao.nyttOppdrag(første - 1, PERSON, tidspunkt.minusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
+        oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
+        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
+        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP)
+        val siste = første + 3
+        oppdragDao.nyttOppdrag(siste, PERSON, tidspunkt.plusDays(3), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
+        oppdragDao.nyttOppdrag(siste + 1, PERSON, tidspunkt.plusDays(4), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
+        val oppdrag = oppdragDao.hentOppdragForAvstemming(siste)
+        assertEquals(5, oppdrag.size)
+        OppdragDto.avstemmingsperiode(oppdrag).also {
+            assertEquals(første - 1, it.start)
+            assertEquals(siste, it.endInclusive)
+        }
+    }
+
     private fun finnOppdrag(avstemmingsnøkkel: Long) =
         using(sessionOf(dataSource)) { session ->
             session.run(

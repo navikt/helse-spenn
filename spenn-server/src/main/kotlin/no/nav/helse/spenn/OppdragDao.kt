@@ -1,5 +1,6 @@
 package no.nav.helse.spenn
 
+import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -31,21 +32,33 @@ internal class OppdragDao(private val dataSource: DataSource) {
             session.run(
                 queryOf(
                     "SELECT avstemmingsnokkel, fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
-                            "WHERE ? <= avstemmingsnokkel AND avstemmingsnokkel <= ?",
+                            "WHERE avstemt = FALSE AND (? <= avstemmingsnokkel AND avstemmingsnokkel <= ?)",
                     avstemmingsperiode.start, avstemmingsperiode.endInclusive
-                ).map {
-                    OppdragDto(
-                        avstemmingsnøkkel = it.long("avstemmingsnokkel"),
-                        fødselsnummer = it.string("fnr"),
-                        utbetalingsreferanse = it.string("utbetalingsreferanse"),
-                        opprettet = it.localDateTime("opprettet"),
-                        status = Oppdragstatus.valueOf(it.string("status")),
-                        totalbeløp = it.int("totalbelop"),
-                        oppdragXml = it.stringOrNull("oppdrag_response")
-                    )
-                }.asList
+                ).map { it.toOppdragDto() }.asList
             )
         }
+
+    fun hentOppdragForAvstemming(avstemmingsnøkkelTom: Long) =
+        using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    "SELECT avstemmingsnokkel, fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
+                            "WHERE avstemt = FALSE AND avstemmingsnokkel <= ?",
+                    avstemmingsnøkkelTom
+                ).map { it.toOppdragDto() }.asList
+            )
+        }
+
+    private fun Row.toOppdragDto() =
+        OppdragDto(
+            avstemmingsnøkkel = long("avstemmingsnokkel"),
+            fødselsnummer = string("fnr"),
+            utbetalingsreferanse = string("utbetalingsreferanse"),
+            opprettet = localDateTime("opprettet"),
+            status = Oppdragstatus.valueOf(string("status")),
+            totalbeløp = int("totalbelop"),
+            oppdragXml = stringOrNull("oppdrag_response")
+        )
 
     fun nyttOppdrag(
         avstemmingsnøkkel: Long,
