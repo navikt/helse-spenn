@@ -16,3 +16,11 @@ CREATE TABLE oppdrag
 CREATE INDEX oppdrag_utbetalingsref_idx ON oppdrag (utbetalingsreferanse);
 CREATE INDEX oppdrag_status_idx ON oppdrag (status);
 
+CREATE TABLE avstemming
+(
+    id                      UUID      NOT NULL,
+    opprettet               TIMESTAMP NOT NULL DEFAULT now(),
+    avstemmingsnokkel_tom   BIGINT    NOT NULL,
+    antall_avstemte_oppdrag INT       NOT NULL,
+    CONSTRAINT pk_avstemming PRIMARY KEY (id)
+);

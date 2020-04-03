@@ -9,7 +9,8 @@ import javax.jms.Connection
 internal class Avstemming(
     connection: Connection,
     sendQueue: String,
-    private val oppdragDao: OppdragDao
+    private val oppdragDao: OppdragDao,
+    private val avstemmingDao: AvstemmingDao
 ) {
 
     private val avstemmingdataXml = AvstemmingdataXml()
@@ -20,6 +21,7 @@ internal class Avstemming(
         val avstemmingsperiode = Avstemmingsnøkkel.periode(dagen)
         val oppdrag = oppdragDao.hentOppdragForAvstemming(avstemmingsperiode.endInclusive)
         val meldinger = AvstemmingBuilder(id, oppdrag).build()
+        avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size)
         meldinger.forEach { sendAvstemmingsmelding(it) }
         oppdragDao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive)
     }

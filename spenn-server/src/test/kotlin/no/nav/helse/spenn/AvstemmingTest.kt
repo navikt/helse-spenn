@@ -29,6 +29,7 @@ internal class AvstemmingTest {
     }
 
     private val dao = mockk<OppdragDao>(relaxed = true)
+    private val avstemmingDao = mockk<AvstemmingDao>(relaxed = true)
     private val connection = TestConnection()
 
     private lateinit var avstemming: Avstemming
@@ -46,11 +47,13 @@ internal class AvstemmingTest {
 
     @Test
     fun avstem() {
+        val id = UUID.randomUUID()
         val dagen = LocalDate.now()
         val avstemmingsperiode = Avstemmingsnøkkel.periode(dagen)
         every { dao.hentOppdragForAvstemming(avstemmingsperiode.endInclusive) } returns oppdrag
-        avstemming.avstem(UUID.randomUUID(), dagen)
+        avstemming.avstem(id, dagen)
         assertEquals(3, connection.inspektør.antall())
+        verify(exactly = 1) { avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size) }
         verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive) }
     }
 
@@ -59,7 +62,7 @@ internal class AvstemmingTest {
         clearAllMocks()
         connection.reset()
 
-        avstemming = Avstemming(connection, SEND_QUEUE, dao)
+        avstemming = Avstemming(connection, SEND_QUEUE, dao, avstemmingDao)
     }
 
     private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
