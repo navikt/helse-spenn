@@ -57,6 +57,18 @@ internal class AvstemmingTest {
         verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive) }
     }
 
+    @Test
+    fun `ingenting å avstemme`() {
+        val id = UUID.randomUUID()
+        val dagen = LocalDate.now()
+        val avstemmingsperiode = Avstemmingsnøkkel.periode(dagen)
+        every { dao.hentOppdragForAvstemming(avstemmingsperiode.endInclusive) } returns emptyList()
+        avstemming.avstem(id, dagen)
+        assertEquals(0, connection.inspektør.antall())
+        verify(exactly = 0) { avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size) }
+        verify(exactly = 0) { dao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive) }
+    }
+
     @BeforeEach
     fun clear() {
         clearAllMocks()
