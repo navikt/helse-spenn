@@ -7,6 +7,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 internal class OppdragDto(
+    private val avstemmingsnøkkel: Long,
     private val fødselsnummer: String,
     private val utbetalingsreferanse: String,
     private val opprettet: LocalDateTime,
@@ -15,8 +16,23 @@ internal class OppdragDto(
     oppdragXml: String?
 ) {
     internal companion object {
-        private val tidsstempel =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
+        private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
+
+        fun periode(liste: List<OppdragDto>): ClosedRange<LocalDateTime> {
+            check(liste.isNotEmpty())
+            return object : ClosedRange<LocalDateTime> {
+                override val start = liste.minBy { it.opprettet }!!.opprettet
+                override val endInclusive = liste.maxBy { it.opprettet }!!.opprettet
+            }
+        }
+
+        fun avstemmingsperiode(liste: List<OppdragDto>): ClosedRange<Long> {
+            check(liste.isNotEmpty())
+            return LongRange(
+                liste.minBy { it.avstemmingsnøkkel }!!.avstemmingsnøkkel,
+                liste.maxBy { it.avstemmingsnøkkel }!!.avstemmingsnøkkel
+            )
+        }
 
         fun detaljer(liste: List<OppdragDto>) = liste.mapNotNull { it.somDetalj() }
 

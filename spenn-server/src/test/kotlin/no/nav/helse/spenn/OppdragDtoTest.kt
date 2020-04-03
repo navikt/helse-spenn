@@ -5,6 +5,7 @@ import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Fortegn
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDateTime
 
 internal class OppdragDtoTest {
@@ -25,15 +26,33 @@ internal class OppdragDtoTest {
     }
 
     private val oppdrag = listOf(
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.OVERFØRT, BELØP, null),
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, kvittering(AKSEPTERT_MED_FEIL)),
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
-        OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.FEIL, BELØP, kvittering(AKSEPTERT_UTEN_FEIL))
+        OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.OVERFØRT, BELØP, null),
+        OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(1), Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(2), Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, kvittering(AKSEPTERT_MED_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(3), Oppdragstatus.AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(4), Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(5), Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(6), Oppdragstatus.FEIL, BELØP, kvittering(AKSEPTERT_UTEN_FEIL))
     )
+
+    @Test
+    fun periode() {
+        OppdragDto.periode(oppdrag).also {
+            assertEquals(OPPRETTET, it.start)
+            assertEquals(OPPRETTET.plusDays(6), it.endInclusive)
+        }
+        assertThrows<IllegalStateException> { OppdragDto.periode(emptyList()) }
+    }
+
+    @Test
+    fun avstemmingsperiode() {
+        OppdragDto.avstemmingsperiode(oppdrag).also {
+            assertEquals(AVSTEMMINGSNØKKEL, it.start)
+            assertEquals(AVSTEMMINGSNØKKEL + 7, it.endInclusive)
+        }
+        assertThrows<IllegalStateException> { OppdragDto.avstemmingsperiode(emptyList()) }
+    }
 
     @Test
     fun totaldata() {
@@ -47,7 +66,7 @@ internal class OppdragDtoTest {
     @Test
     fun `totaldata negativt beløp`() {
         OppdragDto.totaldata(listOf(
-            OppdragDto(PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.OVERFØRT, -1 * BELØP, null)
+            OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.OVERFØRT, -1 * BELØP, null)
         )).also {
             assertEquals(1, it.totalAntall)
             assertEquals((-BELØP).toBigDecimal(), it.totalBelop)

@@ -15,6 +15,7 @@ import java.nio.file.Path
 import java.sql.Connection
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -24,6 +25,7 @@ internal class OppdragDaoTest {
         private const val UTBETALINGSREF = "838069327ea2"
         private const val BELØP = Integer.MAX_VALUE
         private val AVSTEMMINGSNØKKEL = System.currentTimeMillis()
+        private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss")
     }
 
     private lateinit var embeddedPostgres: EmbeddedPostgres
@@ -84,15 +86,23 @@ internal class OppdragDaoTest {
     fun `oppdrag til avstemming`() {
         val tidspunkt = LocalDateTime.now()
         val første = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(første - 1, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
+        oppdragDao.nyttOppdrag(første - 1, PERSON, tidspunkt.minusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
         oppdragDao.nyttOppdrag(første, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP)
-        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
-        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP)
-        val siste = første + 4
-        oppdragDao.nyttOppdrag(første + 4, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
-        oppdragDao.nyttOppdrag(siste + 1, PERSON, tidspunkt, UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
+        oppdragDao.nyttOppdrag(første + 1, PERSON, tidspunkt.plusDays(1), UTBETALINGSREF, Oppdragstatus.AKSEPTERT, BELØP)
+        oppdragDao.nyttOppdrag(første + 2, PERSON, tidspunkt.plusDays(2), UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP)
+        val siste = første + 3
+        oppdragDao.nyttOppdrag(siste, PERSON, tidspunkt.plusDays(3), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
+        oppdragDao.nyttOppdrag(siste + 1, PERSON, tidspunkt.plusDays(4), UTBETALINGSREF, Oppdragstatus.AVVIST, BELØP)
         val oppdrag = oppdragDao.hentOppdragForAvstemming(første..siste)
         assertEquals(4, oppdrag.size)
+        OppdragDto.avstemmingsperiode(oppdrag).also {
+            assertEquals(første, it.start)
+            assertEquals(siste, it.endInclusive)
+        }
+        OppdragDto.periode(oppdrag).also {
+            assertEquals(tidspunkt.format(tidsstempel), it.start.format(tidsstempel))
+            assertEquals(tidspunkt.plusDays(3).format(tidsstempel), it.endInclusive.format(tidsstempel))
+        }
     }
 
     private fun finnOppdrag(avstemmingsnøkkel: Long) =
@@ -105,7 +115,7 @@ internal class OppdragDaoTest {
                             "LIMIT 1",
                     avstemmingsnøkkel
                 ).map {
-                    OppdragDto(
+                    TestOppdragDto(
                         avstemmingsnøkkel = it.long("avstemmingsnokkel"),
                         fnr = it.string("fnr"),
                         opprettet = it.localDateTime("opprettet"),
@@ -157,7 +167,7 @@ internal class OppdragDaoTest {
         flyway.migrate()
     }
 
-    private class OppdragDto(
+    private class TestOppdragDto(
         val avstemmingsnøkkel: Long,
         val fnr: String,
         val opprettet: LocalDateTime,

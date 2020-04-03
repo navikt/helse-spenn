@@ -30,11 +30,12 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
+                    "SELECT avstemmingsnokkel, fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
                             "WHERE ? <= avstemmingsnokkel AND avstemmingsnokkel <= ?",
                     avstemmingsperiode.start, avstemmingsperiode.endInclusive
                 ).map {
                     OppdragDto(
+                        avstemmingsnøkkel = it.long("avstemmingsnokkel"),
                         fødselsnummer = it.string("fnr"),
                         utbetalingsreferanse = it.string("utbetalingsreferanse"),
                         opprettet = it.localDateTime("opprettet"),
