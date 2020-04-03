@@ -25,6 +25,7 @@ internal class TransaksjonerTest {
         private const val BEHOV_ID = "12c1f3de-c880-41bb-b82a-f339d9f796fc"
         private const val TRANSAKSJON_ID = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
         private const val AVSTEMMINGSNØKKEL = 1L
+        private const val BESKRIVELSE = "Foo"
         private val OPPRETTET = LocalDateTime.now()
         private val STATUS = Oppdragstatus.AKSEPTERT
 
@@ -64,6 +65,7 @@ internal class TransaksjonerTest {
             assertEquals(STATUS.name, it.path("status").asText())
             assertEquals(OPPRETTET, it.path("overføringstidspunkt").asLocalDateTime())
             assertEquals(AVSTEMMINGSNØKKEL, it.path("avstemmingsnøkkel").asLong())
+            assertEquals(BESKRIVELSE, it.path("beskrivelse").asText())
         }
     }
 
@@ -102,7 +104,7 @@ internal class TransaksjonerTest {
                 "utbetalingsreferanse" to UTBETALINGSREF,
                 "status" to STATUS,
                 "feilkode_oppdrag" to "00",
-                "beskrivelse" to "",
+                "beskrivelse" to BESKRIVELSE,
                 "originalXml" to "xml"
             )
         )

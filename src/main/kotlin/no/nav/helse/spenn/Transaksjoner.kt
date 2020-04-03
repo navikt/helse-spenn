@@ -36,7 +36,8 @@ internal class Transaksjoner(
                 "Utbetaling" to mapOf(
                     "status" to status,
                     "overføringstidspunkt" to tidspunkt,
-                    "avstemmingsnøkkel" to avstemmingsnøkkel
+                    "avstemmingsnøkkel" to avstemmingsnøkkel,
+                    "beskrivelse" to packet["beskrivelse"].asText()
                 )
             )
             context.send(it.toJson())
