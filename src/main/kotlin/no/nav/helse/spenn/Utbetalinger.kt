@@ -2,10 +2,7 @@ package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ibm.mq.jms.MQQueue
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -33,7 +30,8 @@ internal class Utbetalinger(
             validate { it.forbid("@løsning") }
             validate { it.require("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse",
-                "utbetalingslinjer", "organisasjonsnummer", "forlengelse", "saksbehandler") }
+                "utbetalingslinjer", "organisasjonsnummer", "saksbehandler") }
+            validate { it.interestedIn("forlengelse") }
         }.register(this)
     }
 
@@ -45,7 +43,7 @@ internal class Utbetalinger(
             utbetalingsreferanse = utbetalingsreferanse,
             organisasjonsnummer = packet["organisasjonsnummer"].asText(),
             fødselsnummer = fødselsnummer,
-            forlengelse = packet["forlengelse"].asBoolean()
+            forlengelse = packet["forlengelse"].asBoolean(false)
         ).apply {
             packet["utbetalingslinjer"].forEach {
                 refusjonTilArbeidsgiver(

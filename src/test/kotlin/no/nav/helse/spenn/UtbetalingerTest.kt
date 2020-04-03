@@ -98,7 +98,6 @@ internal class UtbetalingerTest {
                 "saksbehandler" to SAKSBEHANDLER,
                 "maksdato" to "2020-04-20",
                 "utbetalingsreferanse" to UTBETALINGSREF,
-                "forlengelse" to false,
                 "utbetalingslinjer" to utbetalingslinjer
             )
         )
