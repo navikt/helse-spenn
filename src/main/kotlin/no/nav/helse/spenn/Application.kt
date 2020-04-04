@@ -77,7 +77,7 @@ private fun avstemmingJob(env: Map<String, String>) {
     val log = LoggerFactory.getLogger("no.nav.helse.Spenn")
     Thread.setDefaultUncaughtExceptionHandler { _, throwable -> log.error(throwable.message, throwable) }
     val dataSourceBuilder = DataSourceBuilder(env)
-    val dataSource = dataSourceBuilder.getDataSource(DataSourceBuilder.Role.ReadOnly)
+    val dataSource = dataSourceBuilder.getDataSource()
 
     mqConnection(env).use {
         it.start()
