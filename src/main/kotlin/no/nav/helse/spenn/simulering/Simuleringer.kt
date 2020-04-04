@@ -23,11 +23,13 @@ internal class Simuleringer(
     init {
         River(rapidsConnection).apply {
             validate { it.requireValue("@event_name", "behov") }
-            validate { it.requireAll("@behov", listOf("Simulering")) }
+            validate { it.requireContains("@behov", "Simulering") }
             validate { it.forbid("@løsning") }
             validate { it.require("maksdato", JsonNode::asLocalDate) }
-            validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse",
-                "utbetalingslinjer", "organisasjonsnummer", "forlengelse") }
+            validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse", "organisasjonsnummer", "forlengelse") }
+            validate { it.requireArray("utbetalingslinjer") {
+                requireKey("fom", "tom", "dagsats", "grad")
+            } }
         }.register(this)
     }
 

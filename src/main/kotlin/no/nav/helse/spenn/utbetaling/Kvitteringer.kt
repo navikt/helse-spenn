@@ -1,7 +1,6 @@
 package no.nav.helse.spenn.utbetaling
 
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -60,17 +59,17 @@ internal class Kvitteringer(
         sikkerLogg.info("fødselsnummer=$fødselsnummer avstemmingsnøkkel=$avstemmingsnøkkel utbetalingsreferanse=$utbetalingsreferanse " +
                 "feilkode=$feilkode status=$status beskrivelse=$beskrivelse")
 
-        rapidsConnection.publish(fødselsnummer, JsonMessage("{}", MessageProblems("{}")).apply {
-            this["@event_name"] = "transaksjon_status"
-            this["@id"] = UUID.randomUUID()
-            this["@opprettet"] = LocalDateTime.now()
-            this["fødselsnummer"] = fødselsnummer
-            this["avstemmingsnøkkel"] = avstemmingsnøkkel
-            this["utbetalingsreferanse"] = utbetalingsreferanse
-            this["status"] = status
-            this["feilkode_oppdrag"] = feilkode
-            this["beskrivelse"] = beskrivelse
-            this["originalXml"] = xmlMessage
-        }.toJson().also { sikkerLogg.info("sender transaksjon status=$it") })
+        rapidsConnection.publish(fødselsnummer, JsonMessage.newMessage(mapOf(
+            "@event_name" to "transaksjon_status",
+            "@id" to UUID.randomUUID(),
+            "@opprettet" to LocalDateTime.now(),
+            "fødselsnummer" to fødselsnummer,
+            "avstemmingsnøkkel" to avstemmingsnøkkel,
+            "utbetalingsreferanse" to utbetalingsreferanse,
+            "status" to status,
+            "feilkode_oppdrag" to feilkode,
+            "beskrivelse" to beskrivelse,
+            "originalXml" to xmlMessage
+        )).toJson().also { sikkerLogg.info("sender transaksjon status=$it") })
     }
 }

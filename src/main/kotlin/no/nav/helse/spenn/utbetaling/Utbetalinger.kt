@@ -34,11 +34,13 @@ internal class Utbetalinger(
     init {
         River(rapidsConnection).apply {
             validate { it.requireValue("@event_name", "behov") }
-            validate { it.requireAll("@behov", listOf("Utbetaling")) }
+            validate { it.requireContains("@behov", "Utbetaling") }
             validate { it.forbid("@løsning") }
             validate { it.require("maksdato", JsonNode::asLocalDate) }
-            validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse",
-                "utbetalingslinjer", "organisasjonsnummer", "saksbehandler") }
+            validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse", "organisasjonsnummer", "saksbehandler") }
+            validate { it.requireArray("utbetalingslinjer") {
+                requireKey("fom", "tom", "dagsats", "grad")
+            } }
             validate { it.interestedIn("forlengelse") }
         }.register(this)
     }
