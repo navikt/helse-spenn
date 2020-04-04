@@ -92,6 +92,7 @@ private fun avstemmingJob(env: Map<String, String>) {
             OppdragDao(dataSource),
             AvstemmingDao(dataSource)
         ).avstem(id, dagen)
+        log.info("avstemming utført id=$id dagen=$dagen")
     }
 }
 

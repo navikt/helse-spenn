@@ -26,6 +26,7 @@ internal class Avstemming(
         if (oppdrag.isEmpty()) return log.info("ingenting å avstemme")
         val meldinger = AvstemmingBuilder(id, oppdrag).build()
         avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size)
+        log.info("sender ${meldinger.size} meldinger")
         meldinger.forEach { sendAvstemmingsmelding(it) }
         oppdragDao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive)
     }
