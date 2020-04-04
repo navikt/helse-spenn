@@ -2,6 +2,7 @@ package no.nav.helse.spenn.avstemming
 
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.utbetaling.OppdragDao
+import no.nav.helse.spenn.utbetaling.OppdragDto
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -21,12 +22,13 @@ internal class Avstemming(
     private val producer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
 
     fun avstem(id: UUID, dagen: LocalDate) {
-        val avstemmingsperiode = Avstemmingsnøkkel.periode(dagen)
-        val oppdrag = oppdragDao.hentOppdragForAvstemming(avstemmingsperiode.endInclusive)
+        val avstemmingsperiodeForDag = Avstemmingsnøkkel.periode(dagen)
+        val oppdrag = oppdragDao.hentOppdragForAvstemming(avstemmingsperiodeForDag.endInclusive)
         if (oppdrag.isEmpty()) return log.info("ingenting å avstemme")
+        val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag)
         val meldinger = AvstemmingBuilder(id, oppdrag).build()
         avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size)
-        log.info("sender ${meldinger.size} meldinger")
+        log.info("avstemmer nøkkelFom=${avstemmingsperiode.start} nøkkelTom=${avstemmingsperiode.endInclusive}: sender ${meldinger.size} meldinger")
         meldinger.forEach { sendAvstemmingsmelding(it) }
         oppdragDao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive)
     }

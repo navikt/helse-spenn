@@ -118,8 +118,9 @@ internal class AvstemmingTest {
     fun avstem() {
         val id = UUID.randomUUID()
         val dagen = LocalDate.now()
-        val avstemmingsperiode = Avstemmingsnøkkel.periode(dagen)
-        every { dao.hentOppdragForAvstemming(avstemmingsperiode.endInclusive) } returns oppdrag
+        val avstemmingsperiodeForDagen = Avstemmingsnøkkel.periode(dagen)
+        val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag)
+        every { dao.hentOppdragForAvstemming(avstemmingsperiodeForDagen.endInclusive) } returns oppdrag
         avstemming.avstem(id, dagen)
         assertEquals(3, connection.inspektør.antall())
         verify(exactly = 1) { avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size) }
