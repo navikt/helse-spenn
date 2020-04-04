@@ -1,5 +1,6 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
+import no.nav.helse.spenn.*
 import no.trygdeetaten.skjema.oppdrag.*
 import java.time.Instant
 import java.time.LocalDate
@@ -12,7 +13,8 @@ internal class OppdragBuilder(private val saksbehandler: String,
                               private val maksdato: LocalDate,
                               private val avstemmingsnøkkel: Long,
                               utbetalingslinjer: Utbetalingslinjer,
-                              tidspunkt: Instant = Instant.now()) : UtbetalingslinjerVisitor {
+                              tidspunkt: Instant = Instant.now()) :
+    UtbetalingslinjerVisitor {
 
     private companion object {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")

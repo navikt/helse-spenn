@@ -1,5 +1,9 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
+import no.nav.helse.spenn.Avstemmingsnøkkel
+import no.nav.helse.spenn.EndringsKode
+import no.nav.helse.spenn.Utbetalingslinjer
+import no.nav.helse.spenn.januar
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -18,7 +22,8 @@ internal class OppdragBuilderTest {
         private const val SAKSBEHANDLER = "Spenn"
         private val NÅ = Instant.now()
         private val MAKSDATO = LocalDate.now()
-        private val AVSTEMMINGSNØKKEL = Avstemmingsnøkkel.opprett(NÅ)
+        private val AVSTEMMINGSNØKKEL =
+            Avstemmingsnøkkel.opprett(NÅ)
 
         private fun XMLGregorianCalendar.toLocalDate() = toGregorianCalendar()
             .toZonedDateTime()
@@ -28,8 +33,14 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag`() {
         val oppdrag = oppdrag(false) {
-            refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
-            utbetalingTilBruker(15.januar, 31.januar, DAGSATS, GRAD)
+            refusjonTilArbeidsgiver(1.januar, 14.januar,
+                DAGSATS,
+                GRAD
+            )
+            utbetalingTilBruker(15.januar, 31.januar,
+                DAGSATS,
+                GRAD
+            )
         }
         assertOppdrag(oppdrag, EndringsKode.NY)
         assertArbeidsgiverlinje(oppdrag, 0, "1", EndringsKode.NY, 1.januar, 14.januar)
@@ -39,11 +50,18 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag med forlengelse`() {
         val oppdrag = oppdrag(true) {
-            refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
-            utbetalingTilBruker(15.januar, 31.januar, DAGSATS, GRAD)
+            refusjonTilArbeidsgiver(1.januar, 14.januar,
+                DAGSATS,
+                GRAD
+            )
+            utbetalingTilBruker(15.januar, 31.januar,
+                DAGSATS,
+                GRAD
+            )
         }
         assertOppdrag(oppdrag, EndringsKode.UENDRET)
-        assertArbeidsgiverlinje(oppdrag, 0, "1", EndringsKode.ENDRING, 1.januar, 14.januar)
+        assertArbeidsgiverlinje(oppdrag, 0, "1",
+            EndringsKode.ENDRING, 1.januar, 14.januar)
         assertBrukerlinje(oppdrag, 1, "2", EndringsKode.ENDRING, 15.januar, 31.januar)
     }
 
@@ -52,7 +70,12 @@ internal class OppdragBuilderTest {
             SAKSBEHANDLER,
             MAKSDATO,
             AVSTEMMINGSNØKKEL,
-            Utbetalingslinjer(UTBETALINGSREF, ORGNR, PERSON, forlengelse).apply(block),
+            Utbetalingslinjer(
+                UTBETALINGSREF,
+                ORGNR,
+                PERSON,
+                forlengelse
+            ).apply(block),
             NÅ
         )
         return builder.build()

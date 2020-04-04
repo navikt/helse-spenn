@@ -1,5 +1,6 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.simulering
 
+import no.nav.helse.spenn.*
 import no.nav.helse.spenn.Utbetalingslinjer.Utbetalingslinje
 import no.nav.helse.spenn.Utbetalingslinjer.Utbetalingslinje.RefusjonTilArbeidsgiver
 import no.nav.system.os.entiteter.oppdragskjema.Attestant

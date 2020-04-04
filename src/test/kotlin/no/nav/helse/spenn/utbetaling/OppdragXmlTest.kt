@@ -1,6 +1,6 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 internal class OppdragXmlTest {
@@ -43,14 +43,14 @@ $head
         <kodeAksjon>1</kodeAksjon>
         <kodeEndring>NY</kodeEndring>
         <kodeFagomraade>SPREF</kodeFagomraade>
-        <fagsystemId>${UTBETALINGSREF}</fagsystemId>
+        <fagsystemId>$UTBETALINGSREF</fagsystemId>
         <utbetFrekvens>MND</utbetFrekvens>
-        <oppdragGjelderId>${PERSON}</oppdragGjelderId>
+        <oppdragGjelderId>$PERSON</oppdragGjelderId>
         <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>
-        <saksbehId>${SAKSBEHANDLER}</saksbehId>
+        <saksbehId>$SAKSBEHANDLER</saksbehId>
         <avstemming-115>
             <kodeKomponent>SP</kodeKomponent>
-            <nokkelAvstemming>${AVSTEMMINGSNØKKEL}</nokkelAvstemming>
+            <nokkelAvstemming>$AVSTEMMINGSNØKKEL</nokkelAvstemming>
             <tidspktMelding>2019-09-20-13.31.28.572227</tidspktMelding>
         </avstemming-115>
         <oppdrags-enhet-120>
@@ -68,10 +68,10 @@ $head
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-01-01+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -79,7 +79,7 @@ $head
                 <grad>50</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
         <oppdrags-linje-150>
@@ -92,10 +92,10 @@ $head
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-02-13+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -103,7 +103,7 @@ $head
                 <grad>70</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
         <oppdrags-linje-150>
@@ -116,10 +116,10 @@ $head
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-03-18+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -127,7 +127,7 @@ $head
                 <grad>100</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
     </oppdrag-110>

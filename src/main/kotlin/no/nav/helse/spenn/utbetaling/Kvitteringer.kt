@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems

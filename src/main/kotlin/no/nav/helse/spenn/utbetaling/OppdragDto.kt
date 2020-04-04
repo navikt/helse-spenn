@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import java.math.BigDecimal
@@ -60,7 +60,10 @@ internal class OppdragDto(
                 avvistBelop = beløp
                 avvistFortegn = fortegn
             }
-            beløpEtterStatus.summer(Oppdragstatus.OVERFØRT, Oppdragstatus.FEIL) { antall, beløp, fortegn ->
+            beløpEtterStatus.summer(
+                Oppdragstatus.OVERFØRT,
+                Oppdragstatus.FEIL
+            ) { antall, beløp, fortegn ->
                 manglerAntall = antall
                 manglerBelop = beløp
                 manglerFortegn = fortegn
@@ -68,7 +71,8 @@ internal class OppdragDto(
         }
 
         private fun List<OppdragDto>.summer(block: (Int, BigDecimal, Fortegn) -> Unit) {
-            totalbeløp(this).also { block(size, it.toBigDecimal(), if (it >= 0) Fortegn.T else Fortegn.F) }
+            totalbeløp(this)
+                .also { block(size, it.toBigDecimal(), if (it >= 0) Fortegn.T else Fortegn.F) }
         }
 
         private fun Map<Oppdragstatus, List<OppdragDto>>.summer(vararg status: Oppdragstatus, block: (Int, BigDecimal, Fortegn) -> Unit) {

@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -10,7 +10,9 @@ import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.asLocalDateTime
-import org.junit.jupiter.api.Assertions.*
+import no.nav.helse.spenn.TestConnection
+import no.nav.helse.spenn.TestRapid
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime

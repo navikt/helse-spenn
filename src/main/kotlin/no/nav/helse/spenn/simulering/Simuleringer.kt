@@ -1,11 +1,12 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
-import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.spenn.OppdragSkjemaConstants
+import no.nav.helse.spenn.Utbetalingslinjer
 import org.slf4j.LoggerFactory
 import kotlin.math.roundToInt
 

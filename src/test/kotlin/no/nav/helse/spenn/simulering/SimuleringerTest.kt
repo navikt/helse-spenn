@@ -1,12 +1,9 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.spenn.simulering.Simulering
-import no.nav.helse.spenn.simulering.SimuleringResult
-import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.simulering.SimuleringStatus
+import no.nav.helse.spenn.TestRapid
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

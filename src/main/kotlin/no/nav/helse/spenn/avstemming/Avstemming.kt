@@ -1,5 +1,7 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.avstemming
 
+import no.nav.helse.spenn.Avstemmingsnøkkel
+import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import org.slf4j.LoggerFactory
 import java.time.LocalDate

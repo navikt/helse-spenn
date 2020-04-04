@@ -1,10 +1,12 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.helse.spenn.TestConnection
+import no.nav.helse.spenn.TestRapid
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -26,7 +28,9 @@ internal class UtbetalingerTest {
     private val dao = mockk<OppdragDao>()
     private val connection = TestConnection()
     private val rapid = TestRapid().apply {
-        Utbetalinger(this, connection, SEND_QUEUE, REPLY_TO_QUEUE, dao)
+        Utbetalinger(this, connection,
+            SEND_QUEUE,
+            REPLY_TO_QUEUE, dao)
     }
 
     @BeforeEach
@@ -77,7 +81,10 @@ internal class UtbetalingerTest {
         val avstemmingsnøkkel = rapid.inspektør.løsning(indeks, "Utbetaling")
             .path("avstemmingsnøkkel")
             .asLong()
-        verify(exactly = 1) { dao.nyttOppdrag(avstemmingsnøkkel, PERSON, any(), UTBETALINGSREF, Oppdragstatus.OVERFØRT, BELØP, any()) }
+        verify(exactly = 1) { dao.nyttOppdrag(avstemmingsnøkkel,
+            PERSON, any(),
+            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            BELØP, any()) }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(

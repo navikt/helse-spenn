@@ -1,9 +1,11 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.helse.spenn.TestConnection
+import no.nav.helse.spenn.TestRapid
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -29,7 +31,8 @@ internal class KvitteringerTest {
     private val dao = mockk<OppdragDao>()
     private val connection = TestConnection()
     private val rapid = TestRapid().apply {
-        Kvitteringer(this, connection, MOTTAK_QUEUE, dao)
+        Kvitteringer(this, connection,
+            MOTTAK_QUEUE, dao)
     }
 
     @BeforeEach
@@ -41,27 +44,42 @@ internal class KvitteringerTest {
 
     @Test
     fun `akseptert uten feil`() {
-        håndter(Oppdragstatus.AKSEPTERT, AKSEPTERT_UTEN_FEIL)
+        håndter(
+            Oppdragstatus.AKSEPTERT,
+            AKSEPTERT_UTEN_FEIL
+        )
     }
 
     @Test
     fun `akseptert med feil`() {
-        håndter(Oppdragstatus.AKSEPTERT_MED_FEIL, AKSEPTERT_MED_FEIL)
+        håndter(
+            Oppdragstatus.AKSEPTERT_MED_FEIL,
+            AKSEPTERT_MED_FEIL
+        )
     }
 
     @Test
     fun `avvist med funksjonelle feil`() {
-        håndter(Oppdragstatus.AVVIST, AVVIST_FUNKSJONELLE_FEIL)
+        håndter(
+            Oppdragstatus.AVVIST,
+            AVVIST_FUNKSJONELLE_FEIL
+        )
     }
 
     @Test
     fun `avvist med teknisk feil`() {
-        håndter(Oppdragstatus.AVVIST, AVVIST_TEKNISK_FEIL)
+        håndter(
+            Oppdragstatus.AVVIST,
+            AVVIST_TEKNISK_FEIL
+        )
     }
 
     @Test
     fun `feil i forståelse av melding`() {
-        håndter(Oppdragstatus.FEIL, UGYLDIG_FEILKODE)
+        håndter(
+            Oppdragstatus.FEIL,
+            UGYLDIG_FEILKODE
+        )
     }
 
     private fun håndter(status: Oppdragstatus, alvorlighetsgrad: String) {
@@ -86,7 +104,9 @@ internal class KvitteringerTest {
         assertEquals(melding, rapid.inspektør.felt(0, "originalXml").asText())
         assertDoesNotThrow { UUID.fromString(rapid.inspektør.felt(0, "@id").asText()) }
         assertDoesNotThrow { LocalDateTime.parse(rapid.inspektør.felt(0, "@opprettet").asText()) }
-        verify(exactly = 1) { dao.oppdaterOppdrag(AVSTEMMINGSNØKKEL, UTBETALINGSREF, status, any(), alvorlighetsgrad, melding) }
+        verify(exactly = 1) { dao.oppdaterOppdrag(
+            AVSTEMMINGSNØKKEL,
+            UTBETALINGSREF, status, any(), alvorlighetsgrad, melding) }
     }
 
     private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>

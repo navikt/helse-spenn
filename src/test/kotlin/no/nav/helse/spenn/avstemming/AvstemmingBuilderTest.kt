@@ -1,5 +1,7 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.avstemming
 
+import no.nav.helse.spenn.utbetaling.OppdragDto
+import no.nav.helse.spenn.utbetaling.Oppdragstatus
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.AksjonType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import org.junit.jupiter.api.Assertions.*
@@ -28,14 +30,78 @@ internal class AvstemmingBuilderTest {
 
     private val id = UUID.randomUUID()
     private val oppdrag = listOf(
-        OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.OVERFØRT, BELØP, null),
-        OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(1), Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(2), Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, kvittering(AKSEPTERT_MED_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(3), Oppdragstatus.AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(4), Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(5), Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(6), Oppdragstatus.FEIL, BELØP, kvittering(AKSEPTERT_UTEN_FEIL))
+        OppdragDto(
+            AVSTEMMINGSNØKKEL,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET,
+            Oppdragstatus.OVERFØRT,
+            BELØP,
+            null
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 1,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET,
+            Oppdragstatus.AKSEPTERT,
+            BELØP,
+            kvittering(AKSEPTERT_UTEN_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 2,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(1),
+            Oppdragstatus.AKSEPTERT,
+            BELØP,
+            kvittering(AKSEPTERT_UTEN_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 3,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(2),
+            Oppdragstatus.AKSEPTERT_MED_FEIL,
+            BELØP,
+            kvittering(AKSEPTERT_MED_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 4,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(3),
+            Oppdragstatus.AVVIST,
+            BELØP,
+            kvittering(AVVIST_FUNKSJONELLE_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 5,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(4),
+            Oppdragstatus.AVVIST,
+            -BELØP,
+            kvittering(AVVIST_FUNKSJONELLE_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 6,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(5),
+            Oppdragstatus.AVVIST,
+            -BELØP,
+            kvittering(AVVIST_TEKNISK_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 7,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(6),
+            Oppdragstatus.FEIL,
+            BELØP,
+            kvittering(AKSEPTERT_UTEN_FEIL)
+        )
     )
     private val detaljer = OppdragDto.detaljer(oppdrag)
 
@@ -43,7 +109,11 @@ internal class AvstemmingBuilderTest {
 
     @BeforeEach
     fun setup() {
-        builder = AvstemmingBuilder(id, oppdrag, DETALJER_PER_AVSTEMMINGMELDING)
+        builder = AvstemmingBuilder(
+            id,
+            oppdrag,
+            DETALJER_PER_AVSTEMMINGMELDING
+        )
     }
 
     @Test
@@ -111,14 +181,14 @@ internal class AvstemmingBuilderTest {
         <kodeAksjon>1</kodeAksjon>
         <kodeEndring>NY</kodeEndring>
         <kodeFagomraade>SPREF</kodeFagomraade>
-        <fagsystemId>${UTBETALINGSREF}</fagsystemId>
+        <fagsystemId>$UTBETALINGSREF</fagsystemId>
         <utbetFrekvens>MND</utbetFrekvens>
-        <oppdragGjelderId>${PERSON}</oppdragGjelderId>
+        <oppdragGjelderId>$PERSON</oppdragGjelderId>
         <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>
-        <saksbehId>${SAKSBEHANDLER}</saksbehId>
+        <saksbehId>$SAKSBEHANDLER</saksbehId>
         <avstemming-115>
             <kodeKomponent>SP</kodeKomponent>
-            <nokkelAvstemming>${AVSTEMMINGSNØKKEL}</nokkelAvstemming>
+            <nokkelAvstemming>$AVSTEMMINGSNØKKEL</nokkelAvstemming>
             <tidspktMelding>2019-09-20-13.31.28.572227</tidspktMelding>
         </avstemming-115>
         <oppdrags-enhet-120>
@@ -136,10 +206,10 @@ internal class AvstemmingBuilderTest {
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-01-01+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -147,7 +217,7 @@ internal class AvstemmingBuilderTest {
                 <grad>50</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
         <oppdrags-linje-150>
@@ -160,10 +230,10 @@ internal class AvstemmingBuilderTest {
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-02-13+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -171,7 +241,7 @@ internal class AvstemmingBuilderTest {
                 <grad>70</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
         <oppdrags-linje-150>
@@ -184,10 +254,10 @@ internal class AvstemmingBuilderTest {
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-03-18+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -195,7 +265,7 @@ internal class AvstemmingBuilderTest {
                 <grad>100</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
     </oppdrag-110>

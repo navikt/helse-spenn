@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.DetaljType
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Fortegn
@@ -26,14 +26,78 @@ internal class OppdragDtoTest {
     }
 
     private val oppdrag = listOf(
-        OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.OVERFØRT, BELØP, null),
-        OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(1), Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(2), Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, kvittering(AKSEPTERT_MED_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(3), Oppdragstatus.AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(4), Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(5), Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, OPPRETTET.plusDays(6), Oppdragstatus.FEIL, BELØP, kvittering(AKSEPTERT_UTEN_FEIL))
+        OppdragDto(
+            AVSTEMMINGSNØKKEL,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET,
+            Oppdragstatus.OVERFØRT,
+            BELØP,
+            null
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 1,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET,
+            Oppdragstatus.AKSEPTERT,
+            BELØP,
+            kvittering(AKSEPTERT_UTEN_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 2,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(1),
+            Oppdragstatus.AKSEPTERT,
+            BELØP,
+            kvittering(AKSEPTERT_UTEN_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 3,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(2),
+            Oppdragstatus.AKSEPTERT_MED_FEIL,
+            BELØP,
+            kvittering(AKSEPTERT_MED_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 4,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(3),
+            Oppdragstatus.AVVIST,
+            BELØP,
+            kvittering(AVVIST_FUNKSJONELLE_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 5,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(4),
+            Oppdragstatus.AVVIST,
+            -BELØP,
+            kvittering(AVVIST_FUNKSJONELLE_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 6,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(5),
+            Oppdragstatus.AVVIST,
+            -BELØP,
+            kvittering(AVVIST_TEKNISK_FEIL)
+        ),
+        OppdragDto(
+            AVSTEMMINGSNØKKEL + 7,
+            PERSON,
+            UTBETALINGSREF,
+            OPPRETTET.plusDays(6),
+            Oppdragstatus.FEIL,
+            BELØP,
+            kvittering(AKSEPTERT_UTEN_FEIL)
+        )
     )
 
     @Test
@@ -58,7 +122,7 @@ internal class OppdragDtoTest {
     fun totaldata() {
         OppdragDto.totaldata(oppdrag).also {
             assertEquals(oppdrag.size, it.totalAntall)
-            assertEquals((4*BELØP).toBigDecimal(), it.totalBelop)
+            assertEquals((4* BELØP).toBigDecimal(), it.totalBelop)
             assertEquals(Fortegn.T, it.fortegn)
         }
     }
@@ -66,7 +130,15 @@ internal class OppdragDtoTest {
     @Test
     fun `totaldata negativt beløp`() {
         OppdragDto.totaldata(listOf(
-            OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, Oppdragstatus.OVERFØRT, -1 * BELØP, null)
+            OppdragDto(
+                AVSTEMMINGSNØKKEL,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET,
+                Oppdragstatus.OVERFØRT,
+                -1 * BELØP,
+                null
+            )
         )).also {
             assertEquals(1, it.totalAntall)
             assertEquals((-BELØP).toBigDecimal(), it.totalBelop)
@@ -87,7 +159,7 @@ internal class OppdragDtoTest {
             it.avvistBelop = (-BELØP).toBigDecimal()
             it.avvistFortegn = Fortegn.F
             it.manglerAntall = 2
-            it.manglerBelop = (2*BELØP).toBigDecimal()
+            it.manglerBelop = (2* BELØP).toBigDecimal()
             it.manglerFortegn = Fortegn.T
         }
     }
@@ -119,14 +191,14 @@ internal class OppdragDtoTest {
         <kodeAksjon>1</kodeAksjon>
         <kodeEndring>NY</kodeEndring>
         <kodeFagomraade>SPREF</kodeFagomraade>
-        <fagsystemId>${UTBETALINGSREF}</fagsystemId>
+        <fagsystemId>$UTBETALINGSREF</fagsystemId>
         <utbetFrekvens>MND</utbetFrekvens>
-        <oppdragGjelderId>${PERSON}</oppdragGjelderId>
+        <oppdragGjelderId>$PERSON</oppdragGjelderId>
         <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>
-        <saksbehId>${SAKSBEHANDLER}</saksbehId>
+        <saksbehId>$SAKSBEHANDLER</saksbehId>
         <avstemming-115>
             <kodeKomponent>SP</kodeKomponent>
-            <nokkelAvstemming>${AVSTEMMINGSNØKKEL}</nokkelAvstemming>
+            <nokkelAvstemming>$AVSTEMMINGSNØKKEL</nokkelAvstemming>
             <tidspktMelding>2019-09-20-13.31.28.572227</tidspktMelding>
         </avstemming-115>
         <oppdrags-enhet-120>
@@ -144,10 +216,10 @@ internal class OppdragDtoTest {
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-01-01+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -155,7 +227,7 @@ internal class OppdragDtoTest {
                 <grad>50</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
         <oppdrags-linje-150>
@@ -168,10 +240,10 @@ internal class OppdragDtoTest {
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-02-13+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -179,7 +251,7 @@ internal class OppdragDtoTest {
                 <grad>70</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
         <oppdrags-linje-150>
@@ -192,10 +264,10 @@ internal class OppdragDtoTest {
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
-            <saksbehId>${SAKSBEHANDLER}</saksbehId>
+            <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
-                <refunderesId>${ORGNR}</refunderesId>
+                <refunderesId>$ORGNR</refunderesId>
                 <datoFom>2019-03-18+01:00</datoFom>
             </refusjonsinfo-156>
             <grad-170>
@@ -203,7 +275,7 @@ internal class OppdragDtoTest {
                 <grad>100</grad>
             </grad-170>
             <attestant-180>
-                <attestantId>${SAKSBEHANDLER}</attestantId>
+                <attestantId>$SAKSBEHANDLER</attestantId>
             </attestant-180>
         </oppdrags-linje-150>
     </oppdrag-110>

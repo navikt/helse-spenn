@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.avstemming
 
 import kotliquery.queryOf
 import kotliquery.sessionOf

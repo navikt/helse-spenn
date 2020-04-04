@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.JsonMessage
@@ -47,7 +47,7 @@ internal class Transaksjoner(
                     "beskrivelse" to packet["beskrivelse"].asText()
                 )
             )
-            context.send(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
+            context.send(it.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
         }
     }
 }

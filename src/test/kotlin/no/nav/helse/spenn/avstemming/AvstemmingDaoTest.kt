@@ -1,4 +1,4 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.avstemming
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import com.zaxxer.hikari.HikariConfig
@@ -33,7 +33,11 @@ internal class AvstemmingDaoTest {
 
     @Test
     fun `ny avstemming`() {
-        avstemmingDao.nyAvstemming(ID, AVSTEMMINGSNØKKEL_TOM, ANTALL_AVSTEMTE_OPPDRAG)
+        avstemmingDao.nyAvstemming(
+            ID,
+            AVSTEMMINGSNØKKEL_TOM,
+            ANTALL_AVSTEMTE_OPPDRAG
+        )
         finnAvstemming().also {
             assertEquals(ID, it.id)
             assertEquals(AVSTEMMINGSNØKKEL_TOM, it.avstemmingsnøkkelTom)

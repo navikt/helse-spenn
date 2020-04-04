@@ -1,5 +1,6 @@
-package no.nav.helse.spenn
+package no.nav.helse.spenn.avstemming
 
+import no.nav.helse.spenn.utbetaling.OppdragDto
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import java.nio.ByteBuffer
 import java.time.format.DateTimeFormatter
@@ -8,7 +9,8 @@ import kotlin.math.max
 
 internal class AvstemmingBuilder(id: UUID,
                                  private val oppdrag: List<OppdragDto>,
-                                 private val detaljerPerMelding: Int = DETALJER_PER_AVSTEMMINGMELDING) {
+                                 private val detaljerPerMelding: Int = DETALJER_PER_AVSTEMMINGMELDING
+) {
 
     private companion object {
         private const val DETALJER_PER_AVSTEMMINGMELDING = 70
@@ -17,7 +19,8 @@ internal class AvstemmingBuilder(id: UUID,
 
     private val id = encodeUUIDBase64(id)
     private val perioder = OppdragDto.periode(oppdrag)
-    private val avstemmingsnøkler = OppdragDto.avstemmingsperiode(oppdrag)
+    private val avstemmingsnøkler =
+        OppdragDto.avstemmingsperiode(oppdrag)
     private val detaljer = OppdragDto.detaljer(oppdrag)
     private val meldinger = mutableListOf(
         avstemmingsdata(AksjonType.START)
