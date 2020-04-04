@@ -1,46 +1,23 @@
-[![Known Vulnerabilities](https://snyk.io/test/github/navikt/helse-spenn/badge.svg)](https://snyk.io/test/github/navikt/helse-spenn)
-
 Spenn 
 =====
 
-## Oppgaver
-1. Hente inn vedtak fra kafka topic
-2. Lage og mappe et utbetalingsoppdrag fra vedtaket
-3. Kjøre simulering for utbetalingsoppdraget
-4. Sende oppdraget videre til Oppdragsystemet (OS), og vente på kvittering
-5. Starte avstemmingsfunksjonen for å verifisere at alle oppdragene stemmer med OS.
-6. Generere en utbetalt melding og legge den i kafka-kø
-7. Lagre oppdragtilstandene i database
-8. Tilby REST-endepunkter for uthenting av oppdragene og for å kunne kjøre simulering 
-9. Kan sende oppdraget på nytt hvis ønskelig
+Lese utbetalingsbehov og simuleringsbehov og håndterer kommunikasjon videre mot Oppdrag/UR.
 
-![Spenn overview](docs/spenn-overview.jpg "Overview")
+### Avstemming
 
-## Kjøre på dev eller localhost
+Avstemming kjører som en Cronjob i Kubernetes:
 
 ```
-mvn clean install
-docker-compose up --build 
+% k get cronjobs -n tbd                
+NAME    SCHEDULE    SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+soenn   0 7 * * *   False     0        <none>          22m
 ```
 
-Ved endringer av database-schema kan jooq-ting regenereres sånn:
+For å teste en cronjob (for å slippe å vente til schedule slår inn), så kan man lage en `Job` basert på cronjob:
 
+``` 
+% k create job -n tbd --from=cronjob/spenn spenn
+% k get pods -n tbd
+NAME          READY   STATUS     RESTARTS   AGE
+spenn-8jrkm   0/1     Init:0/1   0          6s
 ```
-mvn -Pjooq clean install
-```
-
-... og deretter må man gjøre endringer i `OppdragStateJooqRepository`
-
-## Se på database i preprod:
-
-Se https://stackoverflow.com/c/nav-it/questions/33/108#108
-
-```brew install vault``` gir deg vault cli.
-
-```vault login -method=ldap``` logger deg inn i vault.
-
-```vault read postgresql/preprod-fss/creds/helse-spenn-oppdrag-admin``` gir brukernavn og passord for preprod.
-
-Se på 
-```vault read kv/preprod/fss/spenn/default | grep DATASOURCE_URL```
-for connection-url.
