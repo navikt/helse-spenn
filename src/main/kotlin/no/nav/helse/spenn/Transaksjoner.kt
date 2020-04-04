@@ -1,10 +1,11 @@
 package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.*
-import no.nav.helse.spenn.simulering.SimuleringService
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDateTime
 import org.slf4j.LoggerFactory
-import kotlin.math.roundToInt
 
 internal class Transaksjoner(
     rapidsConnection: RapidsConnection,
@@ -46,7 +47,7 @@ internal class Transaksjoner(
                     "beskrivelse" to packet["beskrivelse"].asText()
                 )
             )
-            context.send(it.toJson())
+            context.send(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
         }
     }
 }

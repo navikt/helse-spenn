@@ -2,7 +2,10 @@ package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ibm.mq.jms.MQQueue
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDate
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -18,7 +21,10 @@ internal class Utbetalinger(
     private val oppdragDao: OppdragDao
 ) : River.PacketListener {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private companion object {
+        private val log = LoggerFactory.getLogger(Utbetalinger::class.java)
+        private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
+    }
 
     private val jmsSession = jmsConnection.createSession()
     private val producer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
@@ -88,7 +94,7 @@ internal class Utbetalinger(
             )
         }
 
-        context.send(packet.toJson())
+        context.send(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
     }
 
     private fun sendOppdrag(oppdrag: Oppdrag) {

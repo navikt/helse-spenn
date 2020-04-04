@@ -27,6 +27,7 @@ internal class Kvitteringer(
             try {
                 val body = message.getBody(String::class.java)
                 try {
+                    sikkerLogg.info("mottok kvittering fra oppdrag body:\n$body")
                     onMessage(body)
                 } catch (err: Exception) {
                     log.error("Feil med mottak av MQ-melding: ${err.message}", err)
@@ -39,7 +40,6 @@ internal class Kvitteringer(
     }
 
     private fun onMessage(xmlMessage: String) {
-        sikkerLogg.info("mottok xml $xmlMessage")
         val oppdrag = OppdragXml.unmarshal(xmlMessage)
         val avstemmingsnøkkel = requireNotNull(oppdrag.oppdrag110.avstemming115.nokkelAvstemming).toLong()
         val utbetalingsreferanse = requireNotNull(oppdrag.oppdrag110.fagsystemId)
@@ -71,6 +71,6 @@ internal class Kvitteringer(
             this["feilkode_oppdrag"] = feilkode
             this["beskrivelse"] = beskrivelse
             this["originalXml"] = xmlMessage
-        }.toJson())
+        }.toJson().also { sikkerLogg.info("sender transaksjon status=$it") })
     }
 }
