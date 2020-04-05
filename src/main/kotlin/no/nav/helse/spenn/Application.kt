@@ -14,6 +14,8 @@ import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.Transaksjoner
 import no.nav.helse.spenn.utbetaling.Utbetalinger
 import org.apache.cxf.bus.extension.ExtensionManagerBus
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.LocalDate
@@ -78,21 +80,35 @@ private fun avstemmingJob(env: Map<String, String>) {
     Thread.setDefaultUncaughtExceptionHandler { _, throwable -> log.error(throwable.message, throwable) }
     val dataSourceBuilder = DataSourceBuilder(env)
     val dataSource = dataSourceBuilder.getDataSource()
+    val kafkaConfig = no.nav.helse.spenn.avstemming.KafkaConfig(
+        bootstrapServers = env.getValue("KAFKA_BOOTSTRAP_SERVERS"),
+        username = "/var/run/secrets/nais.io/service_user/username".readFile(),
+        password = "/var/run/secrets/nais.io/service_user/password".readFile(),
+        truststore = env["NAV_TRUSTSTORE_PATH"],
+        truststorePassword = env["NAV_TRUSTSTORE_PASSWORD"]
+    )
+    val strings = StringSerializer()
 
-    mqConnection(env).use {
-        it.start()
+    KafkaProducer(kafkaConfig.producerConfig(), strings, strings).use { producer ->
+        mqConnection(env).use { jmsConnection ->
+            jmsConnection.start()
 
-        val id = UUID.randomUUID()
-        val dagen = LocalDate.now().minusDays(1)
+            val id = UUID.randomUUID()
+            val dagen = LocalDate.now().minusDays(1)
 
-        log.info("Starter avstemming id=$id dagen=$dagen")
-        Avstemming(
-            it,
-            env.getValue("AVSTEMMING_QUEUE_SEND"),
-            OppdragDao(dataSource),
-            AvstemmingDao(dataSource)
-        ).avstem(id, dagen)
-        log.info("avstemming utført id=$id dagen=$dagen")
+            log.info("Starter avstemming id=$id dagen=$dagen")
+            Avstemming(
+                jmsConnection,
+                env.getValue("AVSTEMMING_QUEUE_SEND"),
+                producer,
+                env.getValue("KAFKA_RAPID_TOPIC"),
+                OppdragDao(dataSource),
+                AvstemmingDao(dataSource)
+            ).avstem(id, dagen)
+
+            log.info("avstemming utført id=$id dagen=$dagen")
+        }
+        producer.flush()
     }
 }
 

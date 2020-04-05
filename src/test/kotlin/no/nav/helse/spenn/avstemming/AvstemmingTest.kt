@@ -6,9 +6,11 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.TestConnection
+import no.nav.helse.spenn.januar
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.OppdragDto
-import no.nav.helse.spenn.utbetaling.Oppdragstatus
+import no.nav.helse.spenn.utbetaling.Oppdragstatus.*
+import org.apache.kafka.clients.producer.Producer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,91 +29,36 @@ internal class AvstemmingTest {
         private const val BELØP = 1000
         private val OPPRETTET = LocalDateTime.now()
 
-        private const val AKSEPTERT_UTEN_FEIL = "00"
-        private const val AKSEPTERT_MED_FEIL = "04"
+        private val mandag = 1.januar.atStartOfDay()
+        private val tirsdag = mandag.plusDays(1)
+        private val onsdag = tirsdag.plusDays(1)
+        private val torsdag = onsdag.plusDays(1)
+        private val fredag = torsdag.plusDays(1)
+        private val lørdag = fredag.plusDays(1)
+        private val søndag = lørdag.plusDays(1)
+
+        private const val OK = "00"
+        private const val OK_MED_VARSEL = "04"
         private const val AVVIST_FUNKSJONELLE_FEIL = "08"
         private const val AVVIST_TEKNISK_FEIL = "12"
     }
 
     private val dao = mockk<OppdragDao>(relaxed = true)
+    private val producer = mockk<Producer<String, String>>(relaxed = true)
     private val avstemmingDao = mockk<AvstemmingDao>(relaxed = true)
     private val connection = TestConnection()
 
     private lateinit var avstemming: Avstemming
 
     private val oppdrag = listOf(
-        OppdragDto(
-            AVSTEMMINGSNØKKEL,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET,
-            Oppdragstatus.OVERFØRT,
-            BELØP,
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 1,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET,
-            Oppdragstatus.AKSEPTERT,
-            BELØP,
-            kvittering(AKSEPTERT_UTEN_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 2,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(1),
-            Oppdragstatus.AKSEPTERT,
-            BELØP,
-            kvittering(AKSEPTERT_UTEN_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 3,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(2),
-            Oppdragstatus.AKSEPTERT_MED_FEIL,
-            BELØP,
-            kvittering(AKSEPTERT_MED_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 4,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(3),
-            Oppdragstatus.AVVIST,
-            BELØP,
-            kvittering(AVVIST_FUNKSJONELLE_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 5,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(4),
-            Oppdragstatus.AVVIST,
-            -BELØP,
-            kvittering(AVVIST_FUNKSJONELLE_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 6,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(5),
-            Oppdragstatus.AVVIST,
-            -BELØP,
-            kvittering(AVVIST_TEKNISK_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 7,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(6),
-            Oppdragstatus.FEIL,
-            BELØP,
-            kvittering(AKSEPTERT_UTEN_FEIL)
-        )
+        OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, OVERFØRT, BELØP, null),
+        OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, tirsdag, AKSEPTERT, BELØP, kvittering(OK)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, onsdag, AKSEPTERT_MED_FEIL, BELØP, kvittering(OK_MED_VARSEL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, torsdag, AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, fredag, AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, lørdag, AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
+        OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, søndag, FEIL, BELØP, kvittering(OK))
     )
 
     @Test
@@ -125,6 +72,7 @@ internal class AvstemmingTest {
         assertEquals(3, connection.inspektør.antall())
         verify(exactly = 1) { avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size) }
         verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive) }
+        verify(exactly = 1) { producer.send(any()) }
     }
 
     @Test
@@ -137,16 +85,14 @@ internal class AvstemmingTest {
         assertEquals(0, connection.inspektør.antall())
         verify(exactly = 0) { avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size) }
         verify(exactly = 0) { dao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive) }
+        verify(exactly = 1) { producer.send(any()) }
     }
 
     @BeforeEach
     fun clear() {
         clearAllMocks()
         connection.reset()
-
-        avstemming =
-            Avstemming(connection,
-                SEND_QUEUE, dao, avstemmingDao)
+        avstemming = Avstemming(connection, SEND_QUEUE, producer, "rapidTopic", dao, avstemmingDao)
     }
 
     private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
