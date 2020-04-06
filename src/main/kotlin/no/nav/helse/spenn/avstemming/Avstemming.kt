@@ -32,7 +32,8 @@ internal class Avstemming(
         val oppdrag = oppdragDao.hentOppdragForAvstemming(avstemmingsperiodeForDag.endInclusive)
         val event = avstemmingevent(id, dagen, oppdrag.size)
         avstemOppdrag(id, oppdrag, event)
-        kafkaProducer.send(ProducerRecord(rapidTopic, event.toJson()))
+        kafkaProducer.send(ProducerRecord(rapidTopic, event.toJson().also { log.info("sender $it") }))
+            .get()
     }
 
     private fun avstemOppdrag(id: UUID, oppdrag: List<OppdragDto>, event: JsonMessage) {
