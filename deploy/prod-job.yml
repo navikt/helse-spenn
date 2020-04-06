@@ -25,11 +25,21 @@ spec:
                 - mountPath: /var/run/secrets/nais.io/vault
                   name: vault-secrets
                   subPath: subpath/var/run/secrets/nais.io/vault
+                - mountPath: /var/run/secrets/nais.io/service_user
+                  name: vault-secrets
+                  subPath: subpath/var/run/secrets/nais.io/service_user
+                - mountPath: /etc/ssl/certs/java/cacerts
+                  name: ca-bundle
+                  subPath: ca-bundle.jks
               env:
                 - name: VAULT_TOKEN_PATH
                   value: /var/run/secrets/nais.io/vault/vault_token
                 - name: CRON_JOB_MODE
                   value: "true"
+                - name: KAFKA_BOOTSTRAP_SERVERS
+                  value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
+                - name: KAFKA_RAPID_TOPIC
+                  value: helse-rapid-v1
                 - name: DATABASE_HOST
                   value: fsspgdb.adeo.no
                 - name: DATABASE_PORT
@@ -49,6 +59,10 @@ spec:
                 - name: AVSTEMMING_QUEUE_SEND
                   # Setter target client = 1 for bakoverkompabilitet med stormaskin
                   value: queue:///QA.P234.OB29_AVSTEMMING_XML?targetClient=1
+                - name: NAV_TRUSTSTORE_PATH
+                  value: /etc/ssl/certs/java/cacerts
+                - name: NAV_TRUSTSTORE_PASSWORD
+                  value: changeme
           imagePullSecrets:
             - name: gpr-credentials
           initContainers:
@@ -72,6 +86,7 @@ spec:
                 - -one-shot
                 - -save-token=/var/run/secrets/nais.io/vault/vault_token
                 - -cn=secret:kv/prod/fss/{{app}}/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
+                - -cn=secret:serviceuser/data/prod/srv{{app}}:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
               env:
                 - name: VAULT_AUTH_METHOD
                   value: kubernetes
