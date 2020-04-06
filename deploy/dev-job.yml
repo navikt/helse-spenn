@@ -86,7 +86,7 @@ spec:
                 - -one-shot
                 - -save-token=/var/run/secrets/nais.io/vault/vault_token
                 - -cn=secret:kv/preprod/fss/{{app}}/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
-                - -cn=secret:serviceuser/data/preprod/srv{{app}}:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
+                - -cn=secret:serviceuser/data/dev/srv{{app}}:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
               env:
                 - name: VAULT_AUTH_METHOD
                   value: kubernetes
