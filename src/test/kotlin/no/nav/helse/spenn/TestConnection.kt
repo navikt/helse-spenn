@@ -20,6 +20,7 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
     }
 
     override fun createSession(): Session = TestSession()
+    override fun createSession(transacted: Boolean, acknowledgeMode: Int) = createSession()
 
     private inner class TestSession private constructor(delegate: Session) : Session by delegate {
         constructor() : this(mockk())

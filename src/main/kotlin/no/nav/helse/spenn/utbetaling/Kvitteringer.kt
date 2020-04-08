@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 import javax.jms.Connection
+import javax.jms.Session
 
 internal class Kvitteringer(
     private val rapidsConnection: RapidsConnection,
@@ -18,7 +19,7 @@ internal class Kvitteringer(
         private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
     }
 
-    private val jmsSession = connection.createSession()
+    private val jmsSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     private val consumer = jmsSession.createConsumer(jmsSession.createQueue(mottakQueue))
 
     init {

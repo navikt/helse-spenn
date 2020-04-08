@@ -48,6 +48,7 @@ dependencies {
 
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.9.3")
+    testImplementation("org.apache.activemq:apache-artemis:2.11.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
