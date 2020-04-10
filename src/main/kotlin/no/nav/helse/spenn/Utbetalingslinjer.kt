@@ -2,108 +2,65 @@ package no.nav.helse.spenn
 
 import java.time.LocalDate
 
-internal class Utbetalingslinjer(private val utbetalingsreferanse: String,
-                                 private val organisasjonsnummer: String,
-                                 private val fødselsnummer: String,
-                                 private val forlengelse: Boolean
-) {
-
-    private val nesteId get() = linjer.size + 1
+internal sealed class Utbetalingslinjer(
+    internal val fagområde: String,
+    internal val utbetalingsreferanse: String,
+    internal val fødselsnummer: String,
+    internal val mottaker: String,
+    internal val endringskode: String,
+    internal val saksbehandler: String,
+    internal val maksdato: LocalDate,
+    internal val sjekksum: Int
+) : Iterable<Utbetalingslinjer.Utbetalingslinje> {
     private val linjer = mutableListOf<Utbetalingslinje>()
 
+    fun linje(utbetalingslinje: Utbetalingslinje) {
+        linjer.add(utbetalingslinje)
+    }
+
     fun isEmpty() = linjer.isEmpty()
-
     fun førsteDag() = checkNotNull(Utbetalingslinje.førsteDato(linjer)) { "Ingen oppdragslinjer" }
-
     fun sisteDag() = checkNotNull(Utbetalingslinje.sisteDato(linjer)) { "Ingen oppdragslinjer" }
-
     fun totalbeløp() = Utbetalingslinje.totalbeløp(linjer)
 
-    fun accept(visitor: UtbetalingslinjerVisitor) {
-        visitor.preVisitUtbetalingslinjer(this, utbetalingsreferanse, fødselsnummer, forlengelse)
-        linjer.forEach { it.accept(visitor) }
-        visitor.postVisitUtbetalingslinjer(this, utbetalingsreferanse, fødselsnummer, forlengelse)
-    }
+    override fun iterator() = linjer.toList().listIterator()
 
-    fun refusjonTilArbeidsgiver(fom: LocalDate, tom: LocalDate, dagsats: Int, grad: Int) {
-        linjer.add(
-            Utbetalingslinje.RefusjonTilArbeidsgiver(
-                id = nesteId,
-                forlengelse = forlengelse,
-                organisasjonsnummer = organisasjonsnummer,
-                fom = fom,
-                tom = tom,
-                dagsats = dagsats,
-                grad = grad
-            )
-        )
-    }
+    override fun equals(other: Any?) = other is Utbetalingslinjer && this.hashCode() == other.hashCode()
+    override fun hashCode() = sjekksum
 
-    fun utbetalingTilBruker(fom: LocalDate, tom: LocalDate, dagsats: Int, grad: Int) {
-        linjer.add(
-            Utbetalingslinje.UtbetalingTilBruker(
-                id = nesteId,
-                forlengelse = forlengelse,
-                fødselsnummer = fødselsnummer,
-                fom = fom,
-                tom = tom,
-                dagsats = dagsats,
-                grad = grad
-            )
-        )
-    }
+    class RefusjonTilArbeidsgiver(
+        fødselsnummer: String,
+        internal val organisasjonsnummer: String,
+        utbetalingsreferanse: String,
+        endringskode: String,
+        saksbehandler: String,
+        maksdato: LocalDate,
+        sjekksum: Int
+    ) : Utbetalingslinjer("SPREF", utbetalingsreferanse, fødselsnummer, organisasjonsnummer, endringskode, saksbehandler, maksdato, sjekksum)
 
-    internal sealed class Utbetalingslinje(
-        protected val id: Int,
-        protected val forlengelse: Boolean,
-        protected val fom: LocalDate,
-        protected val tom: LocalDate,
-        protected val dagsats: Int,
-        protected val grad: Int
+    class UtbetalingTilBruker(
+        fødselsnummer: String,
+        utbetalingsreferanse: String,
+        endringskode: String,
+        saksbehandler: String,
+        maksdato: LocalDate,
+        sjekksum: Int
+    ) : Utbetalingslinjer("SP", utbetalingsreferanse, fødselsnummer, fødselsnummer, endringskode, saksbehandler, maksdato, sjekksum)
+
+    internal class Utbetalingslinje(
+        internal val delytelseId: Int,
+        internal val endringskode: String,
+        internal val klassekode: String,
+        internal val fom: LocalDate,
+        internal val tom: LocalDate,
+        internal val dagsats: Int,
+        internal val grad: Int,
+        internal val refDelytelseId: Int?
     ) {
-
-        abstract fun accept(visitor: UtbetalingslinjerVisitor)
-
-        companion object {
+        internal companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minBy { it.fom }?.fom
             fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxBy { it.tom }?.tom
             fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.dagsats }
-        }
-
-        class RefusjonTilArbeidsgiver(
-            id: Int,
-            forlengelse: Boolean,
-            private val organisasjonsnummer: String,
-            fom: LocalDate,
-            tom: LocalDate,
-            dagsats: Int,
-            grad: Int
-        ) : Utbetalingslinje(id, forlengelse, fom, tom, dagsats, grad) {
-            init {
-                require(organisasjonsnummer.length == 9) { "Forventet organisasjonsnummer med lengde 9" }
-            }
-
-            override fun accept(visitor: UtbetalingslinjerVisitor) {
-                visitor.visitRefusjonTilArbeidsgiver(this, id, organisasjonsnummer, forlengelse, fom, tom, dagsats, grad)
-            }
-        }
-
-        class UtbetalingTilBruker(
-            id: Int,
-            private val fødselsnummer: String,
-            forlengelse: Boolean,
-            fom: LocalDate,
-            tom: LocalDate,
-            dagsats: Int,
-            grad: Int
-        ) : Utbetalingslinje(id, forlengelse, fom, tom, dagsats, grad) {
-            init {
-                require(fødselsnummer.length == 11) { "Forventet fødselsnummer med lengde 11" }
-            }
-
-            override fun accept(visitor: UtbetalingslinjerVisitor) {
-                visitor.visitUtbetalingTilBruker(this, id, fødselsnummer, forlengelse, fom, tom, dagsats, grad)
-            }
         }
     }
 }

@@ -27,33 +27,44 @@ internal class Avstemming(
     private val jmsSession = connection.createSession()
     private val jmsProducer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
 
-    fun avstem(id: UUID, dagen: LocalDate) {
+    fun avstem(dagen: LocalDate) {
+        val id = UUID.randomUUID()
         val avstemmingsperiodeForDag = Avstemmingsnøkkel.periode(dagen)
-        val oppdrag = oppdragDao.hentOppdragForAvstemming(avstemmingsperiodeForDag.endInclusive)
-        val event = avstemmingevent(id, dagen, oppdrag.size)
-        avstemOppdrag(id, oppdrag, event)
-        kafkaProducer.send(ProducerRecord(rapidTopic, event.toJson().also { log.info("sender $it") }))
+        val avstemteFagområder = mutableListOf<Map<String, Any>>()
+        val fagområder = oppdragDao.hentOppdragForAvstemming(avstemmingsperiodeForDag.endInclusive)
+        fagområder.forEach { (fagområde, oppdrag) ->
+            log.info("Starter avstemming id=$id fagområde=$fagområde dagen=$dagen")
+            avstemOppdrag(id, fagområde, oppdrag, avstemteFagområder)
+            log.info("Avstemming id=$id fagområde=$fagområde dagen=$dagen er ferdig")
+        }
+
+        kafkaProducer.send(ProducerRecord(rapidTopic, avstemmingevent(id, dagen, fagområder.map { it.value.size }.sum(), avstemteFagområder)
+            .toJson().also { log.info("sender $it") }))
     }
 
-    private fun avstemOppdrag(id: UUID, oppdrag: List<OppdragDto>, event: JsonMessage) {
+    private fun avstemOppdrag(id: UUID, fagområde: String, oppdrag: List<OppdragDto>, avstemteFagområder: MutableList<Map<String, Any>>) {
         if (oppdrag.isEmpty()) return log.info("ingenting å avstemme")
         val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag)
-        val meldinger = AvstemmingBuilder(id, oppdrag).build()
-        avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size)
+        val meldinger = AvstemmingBuilder(id, fagområde, oppdrag).build()
+        avstemmingDao.nyAvstemming(id, fagområde, avstemmingsperiode.endInclusive, oppdrag.size)
         log.info("avstemmer nøkkelFom=${avstemmingsperiode.start} nøkkelTom=${avstemmingsperiode.endInclusive}: sender ${meldinger.size} meldinger")
         meldinger.forEach { sendAvstemmingsmelding(it) }
-        oppdragDao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive)
-        event["nøkkel_fom"] = avstemmingsperiode.start
-        event["nøkkel_tom"] = avstemmingsperiode.endInclusive
-        event["antall_avstemmingsmeldinger"] = meldinger.size
+        oppdragDao.oppdaterAvstemteOppdrag(fagområde, avstemmingsperiode.endInclusive)
+        avstemteFagområder.add(mapOf(
+            "nøkkel_fom" to avstemmingsperiode.start,
+            "nøkkel_tom" to avstemmingsperiode.endInclusive,
+            "antall_oppdrag" to oppdrag.size,
+            "antall_avstemmingsmeldinger" to meldinger.size
+        ))
     }
 
-    private fun avstemmingevent(id: UUID, dagen: LocalDate, antallOppdrag: Int) = JsonMessage.newMessage(mapOf(
+    private fun avstemmingevent(id: UUID, dagen: LocalDate, antallOppdrag: Int, avstemteFagområder: MutableList<Map<String, Any>>) = JsonMessage.newMessage(mapOf(
         "@event_name" to "avstemming",
         "@id" to id,
         "@opprettet" to LocalDateTime.now(),
         "dagen" to dagen,
-        "antall_oppdrag" to antallOppdrag
+        "antall_oppdrag" to antallOppdrag,
+        "fagområder" to avstemteFagområder
     ))
 
     private fun sendAvstemmingsmelding(melding: Avstemmingsdata) {

@@ -5,10 +5,8 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
-import no.nav.helse.spenn.OppdragSkjemaConstants
-import no.nav.helse.spenn.Utbetalingslinjer
+import no.nav.helse.spenn.UtbetalingslinjerMapper
 import org.slf4j.LoggerFactory
-import kotlin.math.roundToInt
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,
@@ -26,40 +24,26 @@ internal class Simuleringer(
             validate { it.requireContains("@behov", "Simulering") }
             validate { it.forbid("@løsning") }
             validate { it.require("maksdato", JsonNode::asLocalDate) }
-            validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse", "organisasjonsnummer", "forlengelse") }
-            validate { it.requireArray("utbetalingslinjer") {
-                requireKey("fom", "tom", "dagsats", "grad")
-            } }
+            validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
+            validate {
+                it.requireKey("utbetalingsreferanse", "sjekksum")
+                it.requireAny("fagområde", listOf("SPREF", "SP"))
+                it.requireAny("linjertype", listOf("NY", "UEND", "ENDR"))
+                it.requireArray("linjer") {
+                    requireKey("dagsats", "grad", "delytelseId", "klassekode")
+                    require("fom", JsonNode::asLocalDate)
+                    require("tom", JsonNode::asLocalDate)
+                    requireAny("linjetype", listOf("NY", "UEND", "ENDR"))
+                }
+            }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
-        val utbetalingslinjer = Utbetalingslinjer(
-            utbetalingsreferanse = packet["utbetalingsreferanse"].asText(),
-            organisasjonsnummer = packet["organisasjonsnummer"].asText(),
-            fødselsnummer = packet["fødselsnummer"].asText(),
-            forlengelse = packet["forlengelse"].asBoolean()
-        ).apply {
-            packet["utbetalingslinjer"].forEach {
-                refusjonTilArbeidsgiver(
-                    fom = it["fom"].asLocalDate(),
-                    tom = it["tom"].asLocalDate(),
-                    dagsats = it["dagsats"].asInt(),
-                    grad = it["grad"].asDouble().roundToInt()
-                )
-            }
-        }
-
+        val utbetalingslinjer = UtbetalingslinjerMapper.fraBehov(packet)
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
-
-        val request = SimuleringRequestBuilder(
-            saksbehandler = OppdragSkjemaConstants.APP,
-            maksdato = packet["maksdato"].asLocalDate(),
-            utbetalingslinjer = utbetalingslinjer
-        ).build()
-
-        simuleringService.simulerOppdrag(request).also { result ->
+        simuleringService.simulerOppdrag(SimuleringRequestBuilder(utbetalingslinjer).build()).also { result ->
             packet["@løsning"] = mapOf(
                 "Simulering" to mapOf(
                     "status" to result.status,

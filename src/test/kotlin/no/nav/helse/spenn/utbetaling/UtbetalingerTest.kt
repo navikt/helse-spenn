@@ -15,8 +15,10 @@ import java.time.LocalDateTime
 
 internal class UtbetalingerTest {
     private companion object {
+        private const val FAGOMRÅDE_REFUSJON = "SPREF"
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
+        private const val SJEKKSUM = -873852214
         private const val BELØP = 1000
         private const val UTBETALINGSREF = "838069327ea2"
         private const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
@@ -42,7 +44,7 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser utbetalingsbehov`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) } returns true
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns true
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(1, connection.inspektør.antall())
@@ -55,12 +57,12 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
-        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `utbetalingsbehov med feil`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) } returns false
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns false
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
@@ -68,7 +70,7 @@ internal class UtbetalingerTest {
         rapid.inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
-        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     private fun assertOverført(indeks: Int) {
@@ -81,7 +83,9 @@ internal class UtbetalingerTest {
         val avstemmingsnøkkel = rapid.inspektør.løsning(indeks, "Utbetaling")
             .path("avstemmingsnøkkel")
             .asLong()
-        verify(exactly = 1) { dao.nyttOppdrag(avstemmingsnøkkel,
+        verify(exactly = 1) { dao.nyttOppdrag(
+            FAGOMRÅDE_REFUSJON, avstemmingsnøkkel,
+            SJEKKSUM,
             PERSON, any(),
             UTBETALINGSREF, Oppdragstatus.OVERFØRT,
             BELØP, any()) }
@@ -104,8 +108,23 @@ internal class UtbetalingerTest {
                 "fødselsnummer" to PERSON,
                 "saksbehandler" to SAKSBEHANDLER,
                 "maksdato" to "2020-04-20",
+                "mottaker" to ORGNR,
+                "fagområde" to "SPREF",
                 "utbetalingsreferanse" to UTBETALINGSREF,
-                "utbetalingslinjer" to utbetalingslinjer
+                "linjertype" to "NY",
+                "sjekksum" to SJEKKSUM,
+                "linjer" to utbetalingslinjer.map {
+                    mapOf<String, Any?>(
+                        "fom" to it["fom"],
+                        "tom" to it["tom"],
+                        "dagsats" to it["dagsats"],
+                        "grad" to it["grad"],
+                        "delytelseId" to 1,
+                        "refDelytelseId" to null,
+                        "linjetype" to "NY",
+                        "klassekode" to "SPREFAG-IOP"
+                    )
+                }
             )
         )
     }

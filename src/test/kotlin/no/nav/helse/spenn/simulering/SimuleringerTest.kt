@@ -78,7 +78,7 @@ internal class SimuleringerTest {
 
     private fun simuleringbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(
         mapOf(
-            "dagsats" to "1000.0",
+            "dagsats" to 1000,
             "fom" to "2020-04-20",
             "tom" to "2020-05-20",
             "grad" to 100
@@ -92,9 +92,24 @@ internal class SimuleringerTest {
                 "organisasjonsnummer" to ORGNR,
                 "fødselsnummer" to PERSON,
                 "maksdato" to "2020-04-20",
+                "saksbehandler" to "Spleis",
+                "mottaker" to ORGNR,
+                "fagområde" to "SPREF",
                 "utbetalingsreferanse" to "ref",
-                "forlengelse" to false,
-                "utbetalingslinjer" to utbetalingslinjer
+                "linjertype" to "NY",
+                "sjekksum" to -873852214,
+                "linjer" to utbetalingslinjer.map {
+                    mapOf<String, Any?>(
+                        "fom" to it["fom"],
+                        "tom" to it["tom"],
+                        "dagsats" to it["dagsats"],
+                        "grad" to it["grad"],
+                        "delytelseId" to 1,
+                        "refDelytelseId" to null,
+                        "linjetype" to "NY",
+                        "klassekode" to "SPREFAG-IOP"
+                    )
+                }
             )
         )
     }

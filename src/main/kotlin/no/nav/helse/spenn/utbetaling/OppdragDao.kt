@@ -51,19 +51,19 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT avstemmingsnokkel, fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
+                    "SELECT fagomrade, avstemmingsnokkel, fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
                             "WHERE avstemt = FALSE AND avstemmingsnokkel <= ?",
                     avstemmingsnøkkelTom
-                ).map { it.toOppdragDto() }.asList
+                ).map { it.string("fagomrade") to it.toOppdragDto() }.asList
             )
-        }
+        }.groupBy({ it.first }) { it.second }
 
-    fun oppdaterAvstemteOppdrag(avstemmingsnøkkelTom: Long) =
+    fun oppdaterAvstemteOppdrag(fagområde: String, avstemmingsnøkkelTom: Long) =
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "UPDATE oppdrag SET avstemt = TRUE WHERE avstemt = FALSE AND avstemmingsnokkel <= ?",
-                    avstemmingsnøkkelTom
+                    "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = ? AND avstemt = FALSE AND avstemmingsnokkel <= ?",
+                    fagområde, avstemmingsnøkkelTom
                 ).asUpdate
             )
         }
@@ -80,7 +80,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
         )
 
     fun nyttOppdrag(
+        fagområde: String,
         avstemmingsnøkkel: Long,
+        sjekksum: Int,
         fødselsnummer: String,
         tidspunkt: LocalDateTime,
         utbetalingsreferanse: String,
@@ -91,9 +93,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "INSERT INTO oppdrag (avstemmingsnokkel, fnr, opprettet, utbetalingsreferanse, totalbelop, status, behov) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?::json)",
-                    avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse, totalbeløp, status.name, originalJson
+                    "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, opprettet, utbetalingsreferanse, totalbelop, status, behov) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::json)",
+                    avstemmingsnøkkel, sjekksum, fagområde, fødselsnummer, tidspunkt, utbetalingsreferanse, totalbeløp, status.name, originalJson
                 ).asUpdate
             )
         } == 1

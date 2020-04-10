@@ -19,6 +19,7 @@ import javax.sql.DataSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class AvstemmingDaoTest {
     private companion object {
+        private const val FAGOMRÅDE_REFUSJON = "SPREF"
         private val ID = UUID.randomUUID()
         private val OPPRETTET = LocalDateTime.now()
         private val AVSTEMMINGSNØKKEL_TOM = System.currentTimeMillis()
@@ -35,11 +36,13 @@ internal class AvstemmingDaoTest {
     fun `ny avstemming`() {
         avstemmingDao.nyAvstemming(
             ID,
+            FAGOMRÅDE_REFUSJON,
             AVSTEMMINGSNØKKEL_TOM,
             ANTALL_AVSTEMTE_OPPDRAG
         )
         finnAvstemming().also {
             assertEquals(ID, it.id)
+            assertEquals(FAGOMRÅDE_REFUSJON, it.fagområde)
             assertEquals(AVSTEMMINGSNØKKEL_TOM, it.avstemmingsnøkkelTom)
             assertEquals(ANTALL_AVSTEMTE_OPPDRAG, it.antallAvstemteOppdrag)
             assertEquals(OPPRETTET.toLocalDate(), it.opprettet.toLocalDate())
@@ -53,6 +56,7 @@ internal class AvstemmingDaoTest {
                     TestAvstemmingDto(
                         id = UUID.fromString(it.string("id")),
                         opprettet = it.localDateTime("opprettet"),
+                        fagområde = it.string("fagomrade"),
                         avstemmingsnøkkelTom = it.long("avstemmingsnokkel_tom"),
                         antallAvstemteOppdrag = it.int("antall_avstemte_oppdrag")
                     )
@@ -99,6 +103,7 @@ internal class AvstemmingDaoTest {
     private class TestAvstemmingDto(
         val id: UUID,
         val opprettet: LocalDateTime,
+        val fagområde: String,
         val avstemmingsnøkkelTom: Long,
         val antallAvstemteOppdrag: Int
     )

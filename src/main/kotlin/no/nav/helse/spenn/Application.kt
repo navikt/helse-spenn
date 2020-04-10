@@ -19,7 +19,6 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.LocalDate
-import java.util.*
 import javax.jms.Connection
 
 fun main() {
@@ -93,10 +92,7 @@ private fun avstemmingJob(env: Map<String, String>) {
         mqConnection(env).use { jmsConnection ->
             jmsConnection.start()
 
-            val id = UUID.randomUUID()
             val dagen = LocalDate.now().minusDays(1)
-
-            log.info("Starter avstemming id=$id dagen=$dagen")
             Avstemming(
                 jmsConnection,
                 env.getValue("AVSTEMMING_QUEUE_SEND"),
@@ -104,9 +100,9 @@ private fun avstemmingJob(env: Map<String, String>) {
                 env.getValue("KAFKA_RAPID_TOPIC"),
                 OppdragDao(dataSource),
                 AvstemmingDao(dataSource)
-            ).avstem(id, dagen)
+            ).avstem(dagen)
 
-            log.info("avstemming utført id=$id dagen=$dagen")
+            log.info("avstemming utført dagen=$dagen")
         }
         producer.flush()
     }

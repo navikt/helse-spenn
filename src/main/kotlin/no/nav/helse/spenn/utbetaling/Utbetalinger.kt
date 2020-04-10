@@ -7,13 +7,12 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.spenn.Avstemmingsnøkkel
-import no.nav.helse.spenn.Utbetalingslinjer
+import no.nav.helse.spenn.UtbetalingslinjerMapper
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId
 import javax.jms.Connection
-import kotlin.math.roundToInt
 
 internal class Utbetalinger(
     rapidsConnection: RapidsConnection,
@@ -37,11 +36,18 @@ internal class Utbetalinger(
             validate { it.requireContains("@behov", "Utbetaling") }
             validate { it.forbid("@løsning") }
             validate { it.require("maksdato", JsonNode::asLocalDate) }
-            validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse", "organisasjonsnummer", "saksbehandler") }
-            validate { it.requireArray("utbetalingslinjer") {
-                requireKey("fom", "tom", "dagsats", "grad")
-            } }
-            validate { it.interestedIn("forlengelse") }
+            validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
+            validate {
+                it.requireKey("utbetalingsreferanse", "sjekksum")
+                it.requireAny("fagområde", listOf("SPREF", "SP"))
+                it.requireAny("linjertype", listOf("NY", "UEND", "ENDR"))
+                it.requireArray("linjer") {
+                    requireKey("dagsats", "grad", "delytelseId", "klassekode")
+                    require("fom", JsonNode::asLocalDate)
+                    require("tom", JsonNode::asLocalDate)
+                    requireAny("linjetype", listOf("NY", "UEND", "ENDR"))
+                }
+            }
         }.register(this)
     }
 
@@ -49,43 +55,21 @@ internal class Utbetalinger(
         log.info("løser utbetalingsbehov id=${packet["@id"].asText()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
         val utbetalingsreferanse = packet["utbetalingsreferanse"].asText()
-        val utbetalingslinjer = Utbetalingslinjer(
-            utbetalingsreferanse = utbetalingsreferanse,
-            organisasjonsnummer = packet["organisasjonsnummer"].asText(),
-            fødselsnummer = fødselsnummer,
-            forlengelse = packet["forlengelse"].asBoolean(false)
-        ).apply {
-            packet["utbetalingslinjer"].forEach {
-                refusjonTilArbeidsgiver(
-                    fom = it["fom"].asLocalDate(),
-                    tom = it["tom"].asLocalDate(),
-                    dagsats = it["dagsats"].asInt(),
-                    grad = it["grad"].asDouble().roundToInt()
-                )
-            }
-        }
-
+        val utbetalingslinjer = UtbetalingslinjerMapper.fraBehov(packet)
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
-
         val nå = Instant.now()
         val tidspunkt = nå
             .atZone(ZoneId.systemDefault())
             .toLocalDateTime()
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
-        val oppdrag = OppdragBuilder(
-            saksbehandler = packet["saksbehandler"].asText(),
-            maksdato = packet["maksdato"].asLocalDate(),
-            avstemmingsnøkkel = avstemmingsnøkkel,
-            utbetalingslinjer = utbetalingslinjer,
-            tidspunkt = nå
-        ).build()
+        val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
-        if (!oppdragDao.nyttOppdrag(avstemmingsnøkkel, fødselsnummer, tidspunkt, utbetalingsreferanse,
+        if (!oppdragDao.nyttOppdrag(packet["fagområde"].asText(), avstemmingsnøkkel, utbetalingslinjer.sjekksum, fødselsnummer, tidspunkt, utbetalingsreferanse,
                 Oppdragstatus.OVERFØRT, utbetalingslinjer.totalbeløp(), packet.toJson())) {
             packet["@løsning"] = mapOf(
                 "Utbetaling" to mapOf(
                     "status" to Oppdragstatus.FEIL,
-                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag (teknisk feil)"
+                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
                 )
             )
         } else {

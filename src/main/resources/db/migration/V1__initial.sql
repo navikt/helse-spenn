@@ -1,6 +1,8 @@
 CREATE TABLE oppdrag
 (
     avstemmingsnokkel    BIGINT      NOT NULL,
+    sjekksum             INTEGER     NOT NULL UNIQUE,
+    fagomrade            VARCHAR(32) NOT NULL,
     fnr                  VARCHAR(32) NOT NULL,
     opprettet            TIMESTAMP   NOT NULL,
     endret               TIMESTAMP   NULL,
@@ -19,9 +21,10 @@ CREATE INDEX oppdrag_status_idx ON oppdrag (status);
 
 CREATE TABLE avstemming
 (
-    id                      UUID      NOT NULL,
-    opprettet               TIMESTAMP NOT NULL DEFAULT now(),
-    avstemmingsnokkel_tom   BIGINT    NOT NULL,
-    antall_avstemte_oppdrag INT       NOT NULL,
+    id                      UUID        NOT NULL,
+    opprettet               TIMESTAMP   NOT NULL DEFAULT now(),
+    fagomrade               VARCHAR(32) NOT NULL,
+    avstemmingsnokkel_tom   BIGINT      NOT NULL,
+    antall_avstemte_oppdrag INT         NOT NULL,
     CONSTRAINT pk_avstemming PRIMARY KEY (id)
 );

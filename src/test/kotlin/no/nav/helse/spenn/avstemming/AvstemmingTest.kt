@@ -16,10 +16,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 
 internal class AvstemmingTest {
     private companion object {
+        private const val FAGOMRÅDE_REFUSJON = "SPREF"
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
         private const val UTBETALINGSREF = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
@@ -50,41 +50,41 @@ internal class AvstemmingTest {
 
     private lateinit var avstemming: Avstemming
 
-    private val oppdrag = listOf(
-        OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, OVERFØRT, BELØP, null),
-        OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, tirsdag, AKSEPTERT, BELØP, kvittering(OK)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, onsdag, AKSEPTERT_MED_FEIL, BELØP, kvittering(OK_MED_VARSEL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, torsdag, AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, fredag, AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, lørdag, AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
-        OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, søndag, FEIL, BELØP, kvittering(OK))
+    private val oppdrag = mapOf(
+        FAGOMRÅDE_REFUSJON to listOf(
+            OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, OVERFØRT, BELØP, null),
+            OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
+            OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, tirsdag, AKSEPTERT, BELØP, kvittering(OK)),
+            OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, onsdag, AKSEPTERT_MED_FEIL, BELØP, kvittering(OK_MED_VARSEL)),
+            OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, torsdag, AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+            OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, fredag, AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+            OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, lørdag, AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
+            OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, søndag, FEIL, BELØP, kvittering(OK))
+        )
     )
 
     @Test
     fun avstem() {
-        val id = UUID.randomUUID()
         val dagen = LocalDate.now()
         val avstemmingsperiodeForDagen = Avstemmingsnøkkel.periode(dagen)
-        val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag)
+        val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag.getValue(FAGOMRÅDE_REFUSJON))
         every { dao.hentOppdragForAvstemming(avstemmingsperiodeForDagen.endInclusive) } returns oppdrag
-        avstemming.avstem(id, dagen)
+        avstemming.avstem(dagen)
         assertEquals(3, connection.inspektør.antall())
-        verify(exactly = 1) { avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size) }
-        verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive) }
+        verify(exactly = 1) { avstemmingDao.nyAvstemming(any(), FAGOMRÅDE_REFUSJON, avstemmingsperiode.endInclusive, oppdrag.getValue(FAGOMRÅDE_REFUSJON).size) }
+        verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(FAGOMRÅDE_REFUSJON, avstemmingsperiode.endInclusive) }
         verify(exactly = 1) { producer.send(any()) }
     }
 
     @Test
     fun `ingenting å avstemme`() {
-        val id = UUID.randomUUID()
         val dagen = LocalDate.now()
         val avstemmingsperiode = Avstemmingsnøkkel.periode(dagen)
-        every { dao.hentOppdragForAvstemming(avstemmingsperiode.endInclusive) } returns emptyList()
-        avstemming.avstem(id, dagen)
+        every { dao.hentOppdragForAvstemming(avstemmingsperiode.endInclusive) } returns emptyMap()
+        avstemming.avstem(dagen)
         assertEquals(0, connection.inspektør.antall())
-        verify(exactly = 0) { avstemmingDao.nyAvstemming(id, avstemmingsperiode.endInclusive, oppdrag.size) }
-        verify(exactly = 0) { dao.oppdaterAvstemteOppdrag(avstemmingsperiode.endInclusive) }
+        verify(exactly = 0) { avstemmingDao.nyAvstemming(any(), any(), any(), any()) }
+        verify(exactly = 0) { dao.oppdaterAvstemteOppdrag(any(), any()) }
         verify(exactly = 1) { producer.send(any()) }
     }
 

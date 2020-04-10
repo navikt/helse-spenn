@@ -8,6 +8,7 @@ import java.util.*
 import kotlin.math.max
 
 internal class AvstemmingBuilder(id: UUID,
+                                 private val fagområde: String,
                                  private val oppdrag: List<OppdragDto>,
                                  private val detaljerPerMelding: Int = DETALJER_PER_AVSTEMMINGMELDING
 ) {
@@ -58,7 +59,7 @@ internal class AvstemmingBuilder(id: UUID,
                 avstemmingType = AvstemmingType.GRSN
                 avleverendeKomponentKode = "SP"
                 mottakendeKomponentKode = "OS"
-                underkomponentKode = "SPREF"
+                underkomponentKode = fagområde
                 nokkelFom = "${avstemmingsnøkler.start}"
                 nokkelTom = "${avstemmingsnøkler.endInclusive}"
                 avleverendeAvstemmingId = id

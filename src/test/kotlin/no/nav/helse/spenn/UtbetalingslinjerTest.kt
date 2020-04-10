@@ -18,11 +18,10 @@ internal class UtbetalingslinjerTest {
     }
 
     private lateinit var utbetalingslinjer: Utbetalingslinjer
-    private val inspektør get() = UtbetalingslinjerInspektør(utbetalingslinjer)
 
     @BeforeEach
     fun setup() {
-        utbetalingslinjer = Utbetalingslinjer(UTBETALINGSREF, ORGNR, PERSON, false)
+        utbetalingslinjer = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX, 0)
     }
 
     @Test
@@ -36,70 +35,19 @@ internal class UtbetalingslinjerTest {
     @Test
     fun `første og siste dag`() {
         utbetalingslinjer.apply {
-            refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
-            refusjonTilArbeidsgiver(15.januar, 31.januar, DAGSATS, GRAD)
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null))
         }
         assertEquals(1.januar, utbetalingslinjer.førsteDag())
         assertEquals(31.januar, utbetalingslinjer.sisteDag())
     }
 
     @Test
-    fun `totalbeløp`() {
+    fun totalbeløp() {
         utbetalingslinjer.apply {
-            refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
-            refusjonTilArbeidsgiver(15.januar, 31.januar, DAGSATS, GRAD)
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null))
         }
         assertEquals(DAGSATS + DAGSATS, utbetalingslinjer.totalbeløp())
     }
-
-    @Test
-    fun `utbetalingslinjer får sekvensiell id`() {
-        utbetalingslinjer.apply {
-            refusjonTilArbeidsgiver(1.januar, 14.januar, DAGSATS, GRAD)
-            utbetalingTilBruker(15.januar, 31.januar, DAGSATS, GRAD)
-        }
-        assertEquals(1, inspektør.utbetalingslinjeId(0))
-        assertEquals(2, inspektør.utbetalingslinjeId(1))
-    }
-
-    private class UtbetalingslinjerInspektør(utbetalingslinjer: Utbetalingslinjer) : UtbetalingslinjerVisitor {
-
-        private val utbetalingslinjeIder = mutableMapOf<Int, Int>()
-        private var utbetalingslinjerteller = 0
-
-        init {
-            utbetalingslinjer.accept(this)
-        }
-
-        override fun visitRefusjonTilArbeidsgiver(
-            refusjonTilArbeidsgiver: Utbetalingslinjer.Utbetalingslinje.RefusjonTilArbeidsgiver,
-            id: Int,
-            organisasjonsnummer: String,
-            forlengelse: Boolean,
-            fom: LocalDate,
-            tom: LocalDate,
-            dagsats: Int,
-            grad: Int
-        ) {
-            utbetalingslinjeIder[utbetalingslinjerteller] = id
-            utbetalingslinjerteller += 1
-        }
-
-        override fun visitUtbetalingTilBruker(
-            utbetalingTilBruker: Utbetalingslinjer.Utbetalingslinje.UtbetalingTilBruker,
-            id: Int,
-            fødselsnummer: String,
-            forlengelse: Boolean,
-            fom: LocalDate,
-            tom: LocalDate,
-            dagsats: Int,
-            grad: Int
-        ) {
-            utbetalingslinjeIder[utbetalingslinjerteller] = id
-            utbetalingslinjerteller += 1
-        }
-
-        fun utbetalingslinjeId(index: Int) = utbetalingslinjeIder.getValue(index)
-    }
-
 }

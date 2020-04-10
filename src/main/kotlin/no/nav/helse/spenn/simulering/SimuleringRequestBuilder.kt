@@ -1,8 +1,6 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.spenn.*
-import no.nav.helse.spenn.Utbetalingslinjer.Utbetalingslinje
-import no.nav.helse.spenn.Utbetalingslinjer.Utbetalingslinje.RefusjonTilArbeidsgiver
+import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.system.os.entiteter.oppdragskjema.Attestant
 import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
@@ -15,33 +13,32 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest as SimulerBeregningGrensesnittRequest
 
-internal class SimuleringRequestBuilder(
-    private val saksbehandler: String,
-    private val maksdato: LocalDate,
-    private val utbetalingslinjer: Utbetalingslinjer
-) : UtbetalingslinjerVisitor {
-
+internal class SimuleringRequestBuilder(private val utbetalingslinjer: Utbetalingslinjer) {
     private companion object {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     }
 
     private val oppdrag = Oppdrag().apply {
-        kodeFagomraade = "SPREF"
-        utbetFrekvens = UtbetalingsfrekvensKode.MÅNEDLIG.kode
+        kodeFagomraade = utbetalingslinjer.fagområde
+        kodeEndring = utbetalingslinjer.endringskode
+        fagsystemId = utbetalingslinjer.utbetalingsreferanse
+        oppdragGjelderId = utbetalingslinjer.fødselsnummer
+        saksbehId = utbetalingslinjer.saksbehandler
         datoOppdragGjelderFom = LocalDate.EPOCH.format(tidsstempel)
-        saksbehId = saksbehandler
         enhet.add(Enhet().apply {
-            enhet = OppdragSkjemaConstants.SP_ENHET
-            typeEnhet = OppdragSkjemaConstants.BOS
+            enhet = "8020"
+            typeEnhet = "BOS"
             datoEnhetFom = LocalDate.EPOCH.format(tidsstempel)
         })
     }
 
-    init {
-        utbetalingslinjer.accept(this)
+    private val linjeStrategy: (Utbetalingslinjer.Utbetalingslinje) -> Oppdragslinje = when (utbetalingslinjer) {
+        is Utbetalingslinjer.RefusjonTilArbeidsgiver -> ::refusjonTilArbeidsgiver
+        is Utbetalingslinjer.UtbetalingTilBruker -> ::utbetalingTilBruker
     }
 
     fun build(): SimulerBeregningGrensesnittRequest {
+        utbetalingslinjer.forEach { oppdrag.oppdragslinje.add(linjeStrategy(it)) }
         return SimulerBeregningGrensesnittRequest().apply {
             request = SimulerBeregningRequest().apply {
                 oppdrag = this@SimuleringRequestBuilder.oppdrag
@@ -53,75 +50,36 @@ internal class SimuleringRequestBuilder(
         }
     }
 
-    override fun preVisitUtbetalingslinjer(
-        utbetalingslinjer: Utbetalingslinjer,
-        utbetalingsreferanse: String,
-        fødselsnummer: String,
-        forlengelse: Boolean
-    ) {
-        oppdrag.kodeEndring = if (forlengelse) EndringsKode.UENDRET.kode else EndringsKode.NY.kode
-        oppdrag.fagsystemId = utbetalingsreferanse
-        oppdrag.oppdragGjelderId = fødselsnummer
+    private fun refusjonTilArbeidsgiver(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = nyLinje(utbetalingslinje).apply {
+        refusjonsInfo = RefusjonsInfo().apply {
+            refunderesId = utbetalingslinjer.mottaker.padStart(11, '0')
+            datoFom = datoVedtakFom
+            maksDato = utbetalingslinjer.maksdato.format(tidsstempel)
+        }
     }
 
-    override fun visitRefusjonTilArbeidsgiver(
-        refusjonTilArbeidsgiver: RefusjonTilArbeidsgiver,
-        id: Int,
-        organisasjonsnummer: String,
-        forlengelse: Boolean,
-        fom: LocalDate,
-        tom: LocalDate,
-        dagsats: Int,
-        grad: Int
-    ) {
-        oppdrag.oppdragslinje.add(somOppdragslinje(id, forlengelse, fom, tom, dagsats, grad).apply {
-            refusjonsInfo = RefusjonsInfo().apply {
-                this.refunderesId = organisasjonsnummer.padStart(11, '0')
-                this.maksDato = maksdato.format(tidsstempel)
-            }
-            refusjonsInfo.datoFom = this.datoVedtakFom
-        })
+    private fun utbetalingTilBruker(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = nyLinje(utbetalingslinje).apply {
+        utbetalesTilId = utbetalingslinjer.mottaker
     }
 
-    override fun visitUtbetalingTilBruker(
-        utbetalingTilBruker: Utbetalingslinje.UtbetalingTilBruker,
-        id: Int,
-        fødselsnummer: String,
-        forlengelse: Boolean,
-        fom: LocalDate,
-        tom: LocalDate,
-        dagsats: Int,
-        grad: Int
-    ) {
-        oppdrag.oppdragslinje.add(somOppdragslinje(id, forlengelse, fom, tom, dagsats, grad).apply {
-            this.utbetalesTilId = fødselsnummer
-        })
-    }
-
-    private fun somOppdragslinje(
-        id: Int,
-        forlengelse: Boolean,
-        fom: LocalDate,
-        tom: LocalDate,
-        dagsats: Int,
-        grad: Int
-    ): Oppdragslinje = Oppdragslinje().apply {
-        delytelseId = "$id"
-        kodeEndringLinje = if (forlengelse) EndringsKode.ENDRING.kode else EndringsKode.NY.kode
-        kodeKlassifik = KlassifiseringsKode.SPREFAG_IOP.kode
-        datoVedtakFom = fom.format(tidsstempel)
-        datoVedtakTom = tom.format(tidsstempel)
-        sats = dagsats.toBigDecimal()
+    private fun nyLinje(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = Oppdragslinje().apply {
+        delytelseId = "${utbetalingslinje.delytelseId}"
+        refDelytelseId = utbetalingslinje.refDelytelseId?.let { "$it" }
+        kodeEndringLinje = utbetalingslinje.endringskode
+        kodeKlassifik = utbetalingslinje.klassekode
+        datoVedtakFom = utbetalingslinje.fom.format(tidsstempel)
+        datoVedtakTom = utbetalingslinje.tom.format(tidsstempel)
+        sats = utbetalingslinje.dagsats.toBigDecimal()
         fradragTillegg = FradragTillegg.T
-        typeSats = SatsTypeKode.DAGLIG.kode
-        saksbehId = saksbehandler
+        typeSats = "DAG"
+        saksbehId = utbetalingslinjer.saksbehandler
         brukKjoreplan = "N"
-        this.grad.add(Grad().apply {
-            typeGrad = GradTypeKode.UFØREGRAD.kode
-            this.grad = grad.toBigInteger()
+        grad.add(Grad().apply {
+            typeGrad = "UFOR"
+            grad = utbetalingslinje.grad.toBigInteger()
         })
         attestant.add(Attestant().apply {
-            attestantId = saksbehandler
+            attestantId = utbetalingslinjer.saksbehandler
         })
     }
 }

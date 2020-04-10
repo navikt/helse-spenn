@@ -111,6 +111,7 @@ internal class AvstemmingBuilderTest {
     fun setup() {
         builder = AvstemmingBuilder(
             id,
+            "SPREF",
             oppdrag,
             DETALJER_PER_AVSTEMMINGMELDING
         )
