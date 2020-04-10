@@ -21,6 +21,7 @@ internal class SimuleringRequestBuilder(private val utbetalingslinjer: Utbetalin
     private val oppdrag = Oppdrag().apply {
         kodeFagomraade = utbetalingslinjer.fagområde
         kodeEndring = utbetalingslinjer.endringskode
+        utbetFrekvens = "MND"
         fagsystemId = utbetalingslinjer.utbetalingsreferanse
         oppdragGjelderId = utbetalingslinjer.fødselsnummer
         saksbehId = utbetalingslinjer.saksbehandler
