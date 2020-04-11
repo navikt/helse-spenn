@@ -94,7 +94,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             session.run(
                 queryOf(
                     "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, opprettet, utbetalingsreferanse, totalbelop, status, behov) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::json)",
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::json) ON CONFLICT DO NOTHING",
                     avstemmingsnøkkel, sjekksum, fagområde, fødselsnummer, tidspunkt, utbetalingsreferanse, totalbeløp, status.name, originalJson
                 ).asUpdate
             )

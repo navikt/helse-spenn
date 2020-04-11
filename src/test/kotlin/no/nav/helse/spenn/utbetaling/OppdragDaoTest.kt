@@ -10,7 +10,6 @@ import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.io.TempDir
-import org.postgresql.util.PSQLException
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.LocalDateTime
@@ -74,16 +73,16 @@ internal class OppdragDaoTest {
             BELØP,
             BEHOV
         ))
-        assertThrows<PSQLException> { oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
+        assertFalse(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
             AVSTEMMINGSNØKKEL, SJEKKSUM + 1, "en annen person", tidspunkt.minusHours(1), "en annen utbetalingsreferanse", Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
-        ) }
-        assertThrows<PSQLException> { oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
+        ))
+        assertFalse(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
             AVSTEMMINGSNØKKEL + 1, SJEKKSUM, "en annen person", tidspunkt.minusHours(1), "en annen utbetalingsreferanse", Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
-        ) }
+        ))
     }
 
     @Test
