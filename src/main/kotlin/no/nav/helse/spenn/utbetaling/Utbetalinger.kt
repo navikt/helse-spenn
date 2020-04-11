@@ -64,21 +64,31 @@ internal class Utbetalinger(
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
-        if (!oppdragDao.nyttOppdrag(packet["fagområde"].asText(), avstemmingsnøkkel, utbetalingslinjer.sjekksum, fødselsnummer, tidspunkt, utbetalingsreferanse,
-                Oppdragstatus.OVERFØRT, utbetalingslinjer.totalbeløp(), packet.toJson())) {
+        try {
+            if (!oppdragDao.nyttOppdrag(packet["fagområde"].asText(), avstemmingsnøkkel, utbetalingslinjer.sjekksum, fødselsnummer, tidspunkt, utbetalingsreferanse,
+                    Oppdragstatus.OVERFØRT, utbetalingslinjer.totalbeløp(), packet.toJson())) {
+                packet["@løsning"] = mapOf(
+                    "Utbetaling" to mapOf(
+                        "status" to Oppdragstatus.FEIL,
+                        "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
+                    )
+                )
+            } else {
+                sendOppdrag(oppdrag)
+                packet["@løsning"] = mapOf(
+                    "Utbetaling" to mapOf(
+                        "status" to Oppdragstatus.OVERFØRT,
+                        "overføringstidspunkt" to tidspunkt,
+                        "avstemmingsnøkkel" to avstemmingsnøkkel
+                    )
+                )
+            }
+        } catch (err: Exception) {
+            log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)
             packet["@løsning"] = mapOf(
                 "Utbetaling" to mapOf(
                     "status" to Oppdragstatus.FEIL,
-                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
-                )
-            )
-        } else {
-            sendOppdrag(oppdrag)
-            packet["@løsning"] = mapOf(
-                "Utbetaling" to mapOf(
-                    "status" to Oppdragstatus.OVERFØRT,
-                    "overføringstidspunkt" to tidspunkt,
-                    "avstemmingsnøkkel" to avstemmingsnøkkel
+                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag pga. teknisk feil"
                 )
             )
         }

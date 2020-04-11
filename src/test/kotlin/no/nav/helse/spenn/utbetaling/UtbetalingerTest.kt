@@ -73,6 +73,18 @@ internal class UtbetalingerTest {
         verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
+    @Test
+    fun `utbetalingsbehov med exception`() {
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws RuntimeException()
+        rapid.sendTestMessage(utbetalingsbehov())
+        assertEquals(1, rapid.inspektør.antall())
+        assertEquals(0, connection.inspektør.antall())
+        assertEquals(BEHOV, rapid.inspektør.id(0))
+        rapid.inspektør.løsning(0, "Utbetaling") {
+            assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
+        }
+    }
+
     private fun assertOverført(indeks: Int) {
         assertEquals(BEHOV, rapid.inspektør.id(indeks))
         rapid.inspektør.løsning(indeks, "Utbetaling") {
