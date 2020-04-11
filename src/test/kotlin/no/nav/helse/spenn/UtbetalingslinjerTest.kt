@@ -48,6 +48,6 @@ internal class UtbetalingslinjerTest {
             linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null))
             linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null))
         }
-        assertEquals(DAGSATS + DAGSATS, utbetalingslinjer.totalbeløp())
+        assertEquals(DAGSATS * 31, utbetalingslinjer.totalbeløp())
     }
 }

@@ -57,10 +57,13 @@ internal sealed class Utbetalingslinjer(
         internal val grad: Int,
         internal val refDelytelseId: Int?
     ) {
+        private val antallDager get() = fom.datesUntil(tom).count().toInt() + 1
+        private val totalbeløp = dagsats * antallDager
+
         internal companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minBy { it.fom }?.fom
             fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxBy { it.tom }?.tom
-            fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.dagsats }
+            fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.totalbeløp }
         }
     }
 }

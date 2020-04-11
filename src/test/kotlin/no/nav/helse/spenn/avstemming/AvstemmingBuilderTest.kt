@@ -28,80 +28,24 @@ internal class AvstemmingBuilderTest {
         private const val UGYLDIG_FEILKODE = "??"
     }
 
+    private var nesteAvstemmingsnøkkel = AVSTEMMINGSNØKKEL
+    private var nesteOpprettet = OPPRETTET
+    private fun oppdrag(status: Oppdragstatus, beløp: Int, kvittering: String?) =
+        OppdragDto(nesteAvstemmingsnøkkel, PERSON, UTBETALINGSREF, nesteOpprettet, status, beløp, kvittering).also {
+            nesteAvstemmingsnøkkel += 1
+            nesteOpprettet = nesteOpprettet.plusDays(1)
+        }
+
     private val id = UUID.randomUUID()
     private val oppdrag = listOf(
-        OppdragDto(
-            AVSTEMMINGSNØKKEL,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET,
-            Oppdragstatus.OVERFØRT,
-            BELØP,
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 1,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET,
-            Oppdragstatus.AKSEPTERT,
-            BELØP,
-            kvittering(AKSEPTERT_UTEN_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 2,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(1),
-            Oppdragstatus.AKSEPTERT,
-            BELØP,
-            kvittering(AKSEPTERT_UTEN_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 3,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(2),
-            Oppdragstatus.AKSEPTERT_MED_FEIL,
-            BELØP,
-            kvittering(AKSEPTERT_MED_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 4,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(3),
-            Oppdragstatus.AVVIST,
-            BELØP,
-            kvittering(AVVIST_FUNKSJONELLE_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 5,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(4),
-            Oppdragstatus.AVVIST,
-            -BELØP,
-            kvittering(AVVIST_FUNKSJONELLE_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 6,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(5),
-            Oppdragstatus.AVVIST,
-            -BELØP,
-            kvittering(AVVIST_TEKNISK_FEIL)
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 7,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(6),
-            Oppdragstatus.FEIL,
-            BELØP,
-            kvittering(AKSEPTERT_UTEN_FEIL)
-        )
+        oppdrag(Oppdragstatus.OVERFØRT, BELØP, null),
+        oppdrag(Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
+        oppdrag(Oppdragstatus.AKSEPTERT, BELØP, kvittering(AKSEPTERT_UTEN_FEIL)),
+        oppdrag(Oppdragstatus.AKSEPTERT_MED_FEIL, BELØP, kvittering(AKSEPTERT_MED_FEIL)),
+        oppdrag(Oppdragstatus.AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+        oppdrag(Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+        oppdrag(Oppdragstatus.AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
+        oppdrag(Oppdragstatus.FEIL, BELØP, kvittering(AKSEPTERT_UTEN_FEIL))
     )
     private val detaljer = OppdragDto.detaljer(oppdrag)
 
@@ -109,12 +53,7 @@ internal class AvstemmingBuilderTest {
 
     @BeforeEach
     fun setup() {
-        builder = AvstemmingBuilder(
-            id,
-            "SPREF",
-            oppdrag,
-            DETALJER_PER_AVSTEMMINGMELDING
-        )
+        builder = AvstemmingBuilder(id, "SPREF", oppdrag, DETALJER_PER_AVSTEMMINGMELDING)
     }
 
     @Test
@@ -122,18 +61,19 @@ internal class AvstemmingBuilderTest {
         builder.build().also {
             assertEquals(4, it.size)
             assertAvstemmingdata(AksjonType.START, it.first())
-            assertFørsteAvstemmingdataData(it[1])
+            assertFørsteAvstemmingdataData(it[1], 4000)
             assertPåfølgendeAvstemmingdataData(detaljer.size - DETALJER_PER_AVSTEMMINGMELDING, it[2])
             assertAvstemmingdata(AksjonType.AVSL, it.last())
         }
     }
 
-    private fun assertFørsteAvstemmingdataData(avstemmingsdata: Avstemmingsdata) {
+    private fun assertFørsteAvstemmingdataData(avstemmingsdata: Avstemmingsdata, totalbeløp: Int) {
         assertAvstemmingdataData(DETALJER_PER_AVSTEMMINGMELDING, avstemmingsdata)
         OppdragDto.totaldata(oppdrag).also {
             assertEquals(it.totalAntall, avstemmingsdata.total.totalAntall)
             assertEquals(it.totalBelop, avstemmingsdata.total.totalBelop)
             assertEquals(it.fortegn, avstemmingsdata.total.fortegn)
+            assertEquals(totalbeløp.toBigDecimal(), it.totalBelop)
         }
         OppdragDto.grunnlagsdata(oppdrag).also {
             assertEquals(it.godkjentAntall, avstemmingsdata.grunnlag.godkjentAntall)
