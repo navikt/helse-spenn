@@ -100,7 +100,7 @@ internal class UtbetalingerTest {
             SJEKKSUM,
             PERSON, any(),
             UTBETALINGSREF, Oppdragstatus.OVERFØRT,
-            31 * BELØP, any()) }
+            BELØP, any()) }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(
