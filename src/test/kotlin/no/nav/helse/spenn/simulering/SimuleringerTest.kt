@@ -64,7 +64,7 @@ internal class SimuleringerTest {
 
     private fun resultat(status: SimuleringStatus) = SimuleringResult(
         status = status,
-        feilMelding = if (status != SimuleringStatus.OK) "Error message" else "",
+        feilmelding = if (status != SimuleringStatus.OK) "Error message" else "",
         simulering = if (status == SimuleringStatus.OK) Simulering(
             gjelderId = PERSON,
             gjelderNavn = "Navn Navnesen",

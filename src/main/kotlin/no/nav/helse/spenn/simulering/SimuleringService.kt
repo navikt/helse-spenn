@@ -1,7 +1,5 @@
 package no.nav.helse.spenn.simulering
 
-import no.nav.helse.spenn.SatsTypeKode
-import no.nav.helse.spenn.UtbetalingsType
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
@@ -21,28 +19,28 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
 
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         return try {
-            val response = simulerFpService.simulerBeregning(simulerRequest)
-            mapResponseToResultat(response.response)
+            simulerFpService.simulerBeregning(simulerRequest)?.response?.let {
+                mapResponseToResultat(it)
+            } ?: SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = "Fikk ingen respons")
         } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
             sikkerLogg.error("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
-            SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.faultInfo.errorMessage)
+            SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = e.faultInfo.errorMessage)
         } catch (e: Exception) {
             log.error("Got unexpected error while running Simulering", e)
-            SimuleringResult(status = SimuleringStatus.FEIL, feilMelding = e.message ?: "")
+            SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = e.message ?: "")
         }
     }
 
-    private fun mapResponseToResultat(response: SimulerBeregningResponse?) = SimuleringResult(
+    private fun mapResponseToResultat(response: SimulerBeregningResponse) = SimuleringResult(
         status = SimuleringStatus.OK,
-        simulering = response?.let { simulerBeregningResponse ->
-            Simulering(
-                gjelderId = simulerBeregningResponse.simulering.gjelderId,
-                gjelderNavn = simulerBeregningResponse.simulering.gjelderNavn.trim(),
-                datoBeregnet = LocalDate.parse(simulerBeregningResponse.simulering.datoBeregnet),
-                totalBelop = simulerBeregningResponse.simulering.belop,
-                periodeList = simulerBeregningResponse.simulering.beregningsPeriode.map { mapBeregningsPeriode(it) })
-        }
+        simulering = Simulering(
+            gjelderId = response.simulering.gjelderId,
+            gjelderNavn = response.simulering.gjelderNavn.trim(),
+            datoBeregnet = LocalDate.parse(response.simulering.datoBeregnet),
+            totalBelop = response.simulering.belop.intValueExact(),
+            periodeList = response.simulering.beregningsPeriode.map { mapBeregningsPeriode(it) }
+        )
     )
 
     private fun mapBeregningsPeriode(periode: BeregningsPeriode) =
@@ -62,16 +60,16 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         Detaljer(
             faktiskFom = LocalDate.parse(detaljer.faktiskFom),
             faktiskTom = LocalDate.parse(detaljer.faktiskTom),
-            uforegrad = detaljer.uforeGrad,
-            antallSats = detaljer.antallSats,
-            typeSats = SatsTypeKode.fromKode(detaljer.typeSats.trim()),
-            sats = detaljer.sats,
-            belop = detaljer.belop,
+            uforegrad = detaljer.uforeGrad.intValueExact(),
+            antallSats = detaljer.antallSats.intValueExact(),
+            typeSats = detaljer.typeSats.trim(),
+            sats = detaljer.sats.intValueExact(),
+            belop = detaljer.belop.intValueExact(),
             konto = detaljer.kontoStreng.trim(),
             tilbakeforing = detaljer.isTilbakeforing,
             klassekode = detaljer.klassekode.trim(),
             klassekodeBeskrivelse = detaljer.klasseKodeBeskrivelse.trim(),
-            utbetalingsType = UtbetalingsType.fromKode(detaljer.typeKlasse),
+            utbetalingsType = detaljer.typeKlasse,
             refunderesOrgNr = detaljer.refunderesOrgNr.removePrefix("00")
         )
 }

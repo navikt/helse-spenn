@@ -47,7 +47,7 @@ internal class Simuleringer(
             packet["@løsning"] = mapOf(
                 "Simulering" to mapOf(
                     "status" to result.status,
-                    "feilmelding" to result.feilMelding,
+                    "feilmelding" to result.feilmelding,
                     "simulering" to result.simulering
                 )
             )
