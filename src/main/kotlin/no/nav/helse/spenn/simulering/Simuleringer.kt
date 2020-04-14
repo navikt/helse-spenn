@@ -26,14 +26,14 @@ internal class Simuleringer(
             validate { it.require("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
             validate {
-                it.requireKey("utbetalingsreferanse", "sjekksum")
+                it.requireKey("mottaker", "fagsystemId", "sjekksum")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
-                it.requireAny("linjertype", listOf("NY", "UEND", "ENDR"))
+                it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("linjer") {
                     requireKey("dagsats", "grad", "delytelseId", "klassekode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
-                    requireAny("linjetype", listOf("NY", "UEND", "ENDR"))
+                    requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 }
             }
         }.register(this)

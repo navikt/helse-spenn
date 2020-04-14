@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 internal class OppdragDto(
     private val avstemmingsnøkkel: Long,
     private val fødselsnummer: String,
-    private val utbetalingsreferanse: String,
+    private val fagsystemId: String,
     private val opprettet: LocalDateTime,
     private val status: Oppdragstatus,
     private val totalbeløp: Int,
@@ -88,7 +88,7 @@ internal class OppdragDto(
         return Detaljdata().apply {
             detaljType = detaljType() ?: return null
             offnr = fødselsnummer
-            avleverendeTransaksjonNokkel = utbetalingsreferanse
+            avleverendeTransaksjonNokkel = fagsystemId
             tidspunkt = tidsstempel.format(opprettet)
             if (kvittering != null && (detaljType == DetaljType.AVVI || detaljType == DetaljType.VARS)) {
                 meldingKode = kvittering.mmel.kodeMelding

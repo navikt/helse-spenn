@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 internal sealed class Utbetalingslinjer(
     internal val fagområde: String,
-    internal val utbetalingsreferanse: String,
+    internal val fagsystemId: String,
     internal val fødselsnummer: String,
     internal val mottaker: String,
     internal val endringskode: String,
@@ -24,28 +24,28 @@ internal sealed class Utbetalingslinjer(
     fun totalbeløp() = Utbetalingslinje.totalbeløp(linjer)
 
     override fun iterator() = linjer.toList().listIterator()
-
     override fun equals(other: Any?) = other is Utbetalingslinjer && this.hashCode() == other.hashCode()
     override fun hashCode() = sjekksum
 
     class RefusjonTilArbeidsgiver(
         fødselsnummer: String,
-        internal val organisasjonsnummer: String,
-        utbetalingsreferanse: String,
+        mottaker: String,
+        fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
         maksdato: LocalDate,
         sjekksum: Int
-    ) : Utbetalingslinjer("SPREF", utbetalingsreferanse, fødselsnummer, organisasjonsnummer, endringskode, saksbehandler, maksdato, sjekksum)
+    ) : Utbetalingslinjer("SPREF", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato, sjekksum)
 
     class UtbetalingTilBruker(
         fødselsnummer: String,
-        utbetalingsreferanse: String,
+        mottaker: String,
+        fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
         maksdato: LocalDate,
         sjekksum: Int
-    ) : Utbetalingslinjer("SP", utbetalingsreferanse, fødselsnummer, fødselsnummer, endringskode, saksbehandler, maksdato, sjekksum)
+    ) : Utbetalingslinjer("SP", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato, sjekksum)
 
     internal class Utbetalingslinje(
         internal val delytelseId: Int,
@@ -55,7 +55,8 @@ internal sealed class Utbetalingslinjer(
         internal val tom: LocalDate,
         internal val dagsats: Int,
         internal val grad: Int,
-        internal val refDelytelseId: Int?
+        internal val refDelytelseId: Int?,
+        internal val refFagsystemId: String?
     ) {
         internal companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minBy { it.fom }?.fom

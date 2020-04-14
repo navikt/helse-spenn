@@ -38,14 +38,14 @@ internal class Utbetalinger(
             validate { it.require("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
             validate {
-                it.requireKey("utbetalingsreferanse", "sjekksum")
+                it.requireKey("mottaker", "fagsystemId", "sjekksum")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
-                it.requireAny("linjertype", listOf("NY", "UEND", "ENDR"))
+                it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("linjer") {
                     requireKey("dagsats", "grad", "delytelseId", "klassekode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
-                    requireAny("linjetype", listOf("NY", "UEND", "ENDR"))
+                    requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 }
             }
         }.register(this)
@@ -54,7 +54,8 @@ internal class Utbetalinger(
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         log.info("løser utbetalingsbehov id=${packet["@id"].asText()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
-        val utbetalingsreferanse = packet["utbetalingsreferanse"].asText()
+        val mottaker = packet["mottaker"].asText()
+        val fagsystemId = packet["fagsystemId"].asText()
         val utbetalingslinjer = UtbetalingslinjerMapper.fraBehov(packet)
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
         val nå = Instant.now()
@@ -65,7 +66,7 @@ internal class Utbetalinger(
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
         try {
-            if (!oppdragDao.nyttOppdrag(packet["fagområde"].asText(), avstemmingsnøkkel, utbetalingslinjer.sjekksum, fødselsnummer, tidspunkt, utbetalingsreferanse,
+            if (!oppdragDao.nyttOppdrag(packet["fagområde"].asText(), avstemmingsnøkkel, utbetalingslinjer.sjekksum, fødselsnummer, mottaker, tidspunkt, fagsystemId,
                     Oppdragstatus.OVERFØRT, utbetalingslinjer.totalbeløp(), packet.toJson())) {
                 packet["@løsning"] = mapOf(
                     "Utbetaling" to mapOf(

@@ -13,7 +13,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
 
     fun oppdaterOppdrag(
         avstemmingsnøkkel: Long,
-        utbetalingsreferanse: String,
+        fagsystemId: String,
         status: Oppdragstatus,
         beskrivelse: String,
         feilkode: String,
@@ -23,8 +23,8 @@ internal class OppdragDao(private val dataSource: DataSource) {
             session.run(
                 queryOf(
                     "UPDATE oppdrag SET endret = now(), status = ?, beskrivelse = ?, feilkode_oppdrag = ?, oppdrag_response = ? " +
-                            "WHERE avstemmingsnokkel = ? AND utbetalingsreferanse = ?",
-                    status.name, beskrivelse, feilkode, xmlMessage, avstemmingsnøkkel, utbetalingsreferanse
+                            "WHERE avstemmingsnokkel = ? AND fagsystem_id = ?",
+                    status.name, beskrivelse, feilkode, xmlMessage, avstemmingsnøkkel, fagsystemId
                 ).asUpdate
             )
         } == 1
@@ -40,7 +40,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT avstemmingsnokkel, fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
+                    "SELECT avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
                             "WHERE avstemt = FALSE AND (? <= avstemmingsnokkel AND avstemmingsnokkel <= ?)",
                     avstemmingsperiode.start, avstemmingsperiode.endInclusive
                 ).map { it.toOppdragDto() }.asList
@@ -51,7 +51,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT fagomrade, avstemmingsnokkel, fnr, utbetalingsreferanse, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
+                    "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
                             "WHERE avstemt = FALSE AND avstemmingsnokkel <= ?",
                     avstemmingsnøkkelTom
                 ).map { it.string("fagomrade") to it.toOppdragDto() }.asList
@@ -72,7 +72,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         OppdragDto(
             avstemmingsnøkkel = long("avstemmingsnokkel"),
             fødselsnummer = string("fnr"),
-            utbetalingsreferanse = string("utbetalingsreferanse"),
+            fagsystemId = string("fagsystem_id"),
             opprettet = localDateTime("opprettet"),
             status = Oppdragstatus.valueOf(string("status")),
             totalbeløp = int("totalbelop"),
@@ -84,8 +84,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
         avstemmingsnøkkel: Long,
         sjekksum: Int,
         fødselsnummer: String,
+        mottaker: String,
         tidspunkt: LocalDateTime,
-        utbetalingsreferanse: String,
+        fagsystemId: String,
         status: Oppdragstatus,
         totalbeløp: Int,
         originalJson: String
@@ -93,9 +94,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, opprettet, utbetalingsreferanse, totalbelop, status, behov) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::json) ON CONFLICT DO NOTHING",
-                    avstemmingsnøkkel, sjekksum, fagområde, fødselsnummer, tidspunkt, utbetalingsreferanse, totalbeløp, status.name, originalJson
+                    "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json) ON CONFLICT DO NOTHING",
+                    avstemmingsnøkkel, sjekksum, fagområde, fødselsnummer, mottaker, tidspunkt, fagsystemId, totalbeløp, status.name, originalJson
                 ).asUpdate
             )
         } == 1

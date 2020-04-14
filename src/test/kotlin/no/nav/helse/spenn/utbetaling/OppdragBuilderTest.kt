@@ -18,7 +18,7 @@ internal class OppdragBuilderTest {
         private const val ENDRINGSKODE_UENDRET = "UEND"
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
-        private const val UTBETALINGSREF = "a1b0c2"
+        private const val FAGSYSTEMID = "a1b0c2"
         private const val DAGSATS = 1000
         private const val GRAD = 100
         private const val SAKSBEHANDLER = "Spenn"
@@ -35,8 +35,8 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag til arbeidsgiver`() {
         val oppdrag = oppdragRefusjon(ENDRINGSKODE_ENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null))
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
         assertArbeidsgiverlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
@@ -46,8 +46,8 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag til bruker`() {
         val oppdrag = oppdragBruker(ENDRINGSKODE_UENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SP", 1.januar, 14.januar, DAGSATS, GRAD, null))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SP", 15.januar, 31.januar, DAGSATS, GRAD, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SP", 1.januar, 14.januar, DAGSATS, GRAD, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SP", 15.januar, 31.januar, DAGSATS, GRAD, null, null))
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_UENDRET)
         assertBrukerlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
@@ -56,7 +56,7 @@ internal class OppdragBuilderTest {
 
     private fun oppdragRefusjon(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
-            Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, endringskode,
+            Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, FAGSYSTEMID, endringskode,
                 SAKSBEHANDLER, MAKSDATO, 0).apply(block),
             AVSTEMMINGSNØKKEL,
             NÅ
@@ -66,7 +66,7 @@ internal class OppdragBuilderTest {
 
     private fun oppdragBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
-            Utbetalingslinjer.UtbetalingTilBruker(PERSON, UTBETALINGSREF, endringskode,
+            Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, FAGSYSTEMID, endringskode,
                 SAKSBEHANDLER, MAKSDATO, 0).apply(block),
             AVSTEMMINGSNØKKEL,
             NÅ
@@ -77,7 +77,7 @@ internal class OppdragBuilderTest {
     private fun assertOppdrag(oppdrag: Oppdrag, endringskode: String) {
         assertEquals(PERSON, oppdrag.oppdrag110.oppdragGjelderId)
         assertEquals(SAKSBEHANDLER, oppdrag.oppdrag110.saksbehId)
-        assertEquals(UTBETALINGSREF, oppdrag.oppdrag110.fagsystemId)
+        assertEquals(FAGSYSTEMID, oppdrag.oppdrag110.fagsystemId)
         assertEquals(AVSTEMMINGSNØKKEL.toString(), oppdrag.oppdrag110.avstemming115.nokkelAvstemming)
         assertEquals(endringskode, oppdrag.oppdrag110.kodeEndring)
     }

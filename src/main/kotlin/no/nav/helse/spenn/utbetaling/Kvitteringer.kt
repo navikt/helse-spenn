@@ -42,7 +42,7 @@ internal class Kvitteringer(
     private fun onMessage(xmlMessage: String) {
         val oppdrag = OppdragXml.unmarshal(xmlMessage)
         val avstemmingsnøkkel = requireNotNull(oppdrag.oppdrag110.avstemming115.nokkelAvstemming).toLong()
-        val utbetalingsreferanse = requireNotNull(oppdrag.oppdrag110.fagsystemId)
+        val fagsystemId = requireNotNull(oppdrag.oppdrag110.fagsystemId)
         val fødselsnummer = requireNotNull(oppdrag.oppdrag110.oppdragGjelderId)
         val feilkode = requireNotNull(oppdrag.mmel.alvorlighetsgrad)
         val meldingFraOppdrag = oppdrag.mmel.beskrMelding
@@ -53,11 +53,11 @@ internal class Kvitteringer(
             else -> Oppdragstatus.FEIL to "Spenn forstår ikke responsen fra Oppdrag. Fikk ukjent kode: $feilkode"
         }
 
-        check(oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, utbetalingsreferanse, status, beskrivelse, feilkode, xmlMessage)) {
+        check(oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status, beskrivelse, feilkode, xmlMessage)) {
             "Klarte ikke å oppdatere oppdrag i databasen!"
         }
 
-        sikkerLogg.info("fødselsnummer=$fødselsnummer avstemmingsnøkkel=$avstemmingsnøkkel utbetalingsreferanse=$utbetalingsreferanse " +
+        sikkerLogg.info("fødselsnummer=$fødselsnummer avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +
                 "feilkode=$feilkode status=$status beskrivelse=$beskrivelse")
 
         rapidsConnection.publish(fødselsnummer, JsonMessage.newMessage(mapOf(
@@ -66,7 +66,7 @@ internal class Kvitteringer(
             "@opprettet" to LocalDateTime.now(),
             "fødselsnummer" to fødselsnummer,
             "avstemmingsnøkkel" to avstemmingsnøkkel,
-            "utbetalingsreferanse" to utbetalingsreferanse,
+            "fagsystemId" to fagsystemId,
             "status" to status,
             "feilkode_oppdrag" to feilkode,
             "beskrivelse" to beskrivelse,

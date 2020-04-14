@@ -23,11 +23,12 @@ internal class OppdragDaoTest {
         private const val FAGOMRÅDE_REFUSJON = "SPREF"
         private const val FAGOMRÅDE_UTBETALING_BRUKER = "SP"
         private const val PERSON = "12020052345"
-        private const val UTBETALINGSREF = "838069327ea2"
+        private const val ORGNR = "999999999"
+        private const val FAGSYSTEMID = "838069327ea2"
         private const val BELØP = Integer.MAX_VALUE
         private const val BEHOV = "{}"
         private val AVSTEMMINGSNØKKEL = System.currentTimeMillis()
-        private val SJEKKSUM = 1
+        private const val SJEKKSUM = 1
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss")
     }
 
@@ -43,17 +44,20 @@ internal class OppdragDaoTest {
         assertTrue(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
             AVSTEMMINGSNØKKEL,
             SJEKKSUM,
-            PERSON, tidspunkt,
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            PERSON,
+            ORGNR,
+            tidspunkt,
+            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
             BELØP,
             BEHOV
         ))
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
             assertEquals(PERSON, it.fnr)
+            assertEquals(ORGNR, it.mottaker)
             assertEquals(tidspunkt.toEpochSecond(ZoneOffset.UTC), it.opprettet.toEpochSecond(ZoneOffset.UTC))
             assertNull(it.endret)
-            assertEquals(UTBETALINGSREF, it.utbetalingsreferanse)
+            assertEquals(FAGSYSTEMID, it.fagsystemId)
             assertEquals(Oppdragstatus.OVERFØRT.name, it.status)
             assertEquals(BELØP, it.totalbeløp)
             assertNull(it.beskrivelse)
@@ -68,18 +72,20 @@ internal class OppdragDaoTest {
         assertTrue(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
             AVSTEMMINGSNØKKEL,
             SJEKKSUM,
-            PERSON, tidspunkt,
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            PERSON,
+            ORGNR,
+            tidspunkt,
+            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
             BELØP,
             BEHOV
         ))
         assertFalse(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
-            AVSTEMMINGSNØKKEL, SJEKKSUM + 1, "en annen person", tidspunkt.minusHours(1), "en annen utbetalingsreferanse", Oppdragstatus.AKSEPTERT,
+            AVSTEMMINGSNØKKEL, SJEKKSUM + 1, "en annen person", ORGNR, tidspunkt.minusHours(1), "en annen fagsystemId", Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
         ))
         assertFalse(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
-            AVSTEMMINGSNØKKEL + 1, SJEKKSUM, "en annen person", tidspunkt.minusHours(1), "en annen utbetalingsreferanse", Oppdragstatus.AKSEPTERT,
+            AVSTEMMINGSNØKKEL + 1, SJEKKSUM, "en annen person", ORGNR, tidspunkt.minusHours(1), "en annen fagsystemId", Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
         ))
@@ -94,21 +100,24 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
             AVSTEMMINGSNØKKEL,
             SJEKKSUM,
-            PERSON, tidspunkt,
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            PERSON,
+            ORGNR,
+            tidspunkt,
+            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
             BELØP,
             BEHOV
         )
         assertTrue(oppdragDao.oppdaterOppdrag(
             AVSTEMMINGSNØKKEL,
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding))
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding))
 
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
             assertEquals(PERSON, it.fnr)
+            assertEquals(ORGNR, it.mottaker)
             assertEquals(tidspunkt.toEpochSecond(ZoneOffset.UTC), it.opprettet.toEpochSecond(ZoneOffset.UTC))
             assertTrue(it.endret != null && it.endret > tidspunkt)
-            assertEquals(UTBETALINGSREF, it.utbetalingsreferanse)
+            assertEquals(FAGSYSTEMID, it.fagsystemId)
             assertEquals(Oppdragstatus.AKSEPTERT.name, it.status)
             assertEquals(BELØP, it.totalbeløp)
             assertEquals(beskrivelse, it.beskrivelse)
@@ -123,44 +132,44 @@ internal class OppdragDaoTest {
         val første = System.currentTimeMillis()
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første - 1,
             SJEKKSUM - 1,
-            PERSON, tidspunkt.minusDays(1),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT,
+            PERSON, ORGNR, tidspunkt.minusDays(1),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første,
             SJEKKSUM,
-            PERSON, tidspunkt,
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            PERSON, ORGNR, tidspunkt,
+            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 1,
             SJEKKSUM + 1,
-            PERSON, tidspunkt.plusDays(1),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT,
+            PERSON, ORGNR, tidspunkt.plusDays(1),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 2,
             SJEKKSUM + 2,
-            PERSON, tidspunkt.plusDays(2),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL,
+            PERSON, ORGNR, tidspunkt.plusDays(2),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT_MED_FEIL,
             BELØP,
             BEHOV
         )
         val siste = første + 3
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste,
             SJEKKSUM + 3,
-            PERSON, tidspunkt.plusDays(3),
-            UTBETALINGSREF, Oppdragstatus.AVVIST,
+            PERSON, ORGNR, tidspunkt.plusDays(3),
+            FAGSYSTEMID, Oppdragstatus.AVVIST,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste + 1,
             SJEKKSUM + 4,
-            PERSON, tidspunkt.plusDays(4),
-            UTBETALINGSREF, Oppdragstatus.AVVIST,
+            PERSON, ORGNR, tidspunkt.plusDays(4),
+            FAGSYSTEMID, Oppdragstatus.AVVIST,
             BELØP,
             BEHOV
         )
@@ -186,44 +195,44 @@ internal class OppdragDaoTest {
         val første = System.currentTimeMillis()
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første - 1,
             SJEKKSUM - 1,
-            PERSON, tidspunkt.minusDays(1),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT,
+            PERSON, ORGNR, tidspunkt.minusDays(1),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første,
             SJEKKSUM,
-            PERSON, tidspunkt,
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            PERSON, ORGNR, tidspunkt,
+            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 1,
             SJEKKSUM + 1,
-            PERSON, tidspunkt.plusDays(1),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT,
+            PERSON, ORGNR, tidspunkt.plusDays(1),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 2,
             SJEKKSUM + 2,
-            PERSON, tidspunkt.plusDays(2),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL,
+            PERSON, ORGNR, tidspunkt.plusDays(2),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT_MED_FEIL,
             BELØP,
             BEHOV
         )
         val siste = første + 3
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste,
             SJEKKSUM + 3,
-            PERSON, tidspunkt.plusDays(3),
-            UTBETALINGSREF, Oppdragstatus.AVVIST,
+            PERSON, ORGNR, tidspunkt.plusDays(3),
+            FAGSYSTEMID, Oppdragstatus.AVVIST,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste + 1,
             SJEKKSUM + 4,
-            PERSON, tidspunkt.plusDays(4),
-            UTBETALINGSREF, Oppdragstatus.AVVIST,
+            PERSON, ORGNR, tidspunkt.plusDays(4),
+            FAGSYSTEMID, Oppdragstatus.AVVIST,
             BELØP,
             BEHOV
         )
@@ -242,22 +251,22 @@ internal class OppdragDaoTest {
         val første = System.currentTimeMillis()
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første,
             SJEKKSUM,
-            PERSON, tidspunkt,
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            PERSON, ORGNR, tidspunkt,
+            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 1,
             SJEKKSUM + 1,
-            PERSON, tidspunkt.plusDays(1),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT,
+            PERSON, ORGNR, tidspunkt.plusDays(1),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
             BELØP,
             BEHOV
         )
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 2,
             SJEKKSUM + 2,
-            PERSON, tidspunkt.plusDays(2),
-            UTBETALINGSREF, Oppdragstatus.AKSEPTERT_MED_FEIL,
+            PERSON, ORGNR, tidspunkt.plusDays(2),
+            FAGSYSTEMID, Oppdragstatus.AKSEPTERT_MED_FEIL,
             BELØP,
             BEHOV
         )
@@ -273,8 +282,11 @@ internal class OppdragDaoTest {
         val avstemmingsnøkkel = System.currentTimeMillis()
         oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, avstemmingsnøkkel,
             SJEKKSUM,
-            PERSON, tidspunkt,
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
+            PERSON,
+            ORGNR,
+            tidspunkt,
+            FAGSYSTEMID,
+            Oppdragstatus.OVERFØRT,
             BELØP,
             BEHOV
         )
@@ -285,7 +297,7 @@ internal class OppdragDaoTest {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT avstemmingsnokkel, fnr, opprettet, endret, utbetalingsreferanse, status, totalbelop, beskrivelse, feilkode_oppdrag, oppdrag_response " +
+                    "SELECT avstemmingsnokkel, fnr, mottaker, opprettet, endret, fagsystem_id, status, totalbelop, beskrivelse, feilkode_oppdrag, oppdrag_response " +
                             "FROM oppdrag " +
                             "WHERE avstemmingsnokkel = ?" +
                             "LIMIT 1",
@@ -294,9 +306,10 @@ internal class OppdragDaoTest {
                     TestOppdragDto(
                         avstemmingsnøkkel = it.long("avstemmingsnokkel"),
                         fnr = it.string("fnr"),
+                        mottaker = it.string("mottaker"),
                         opprettet = it.localDateTime("opprettet"),
                         endret = it.localDateTimeOrNull("endret"),
-                        utbetalingsreferanse = it.string("utbetalingsreferanse"),
+                        fagsystemId = it.string("fagsystem_id"),
                         status = it.string("status"),
                         totalbeløp = it.int("totalbelop"),
                         beskrivelse = it.stringOrNull("beskrivelse"),
@@ -346,9 +359,10 @@ internal class OppdragDaoTest {
     private class TestOppdragDto(
         val avstemmingsnøkkel: Long,
         val fnr: String,
+        val mottaker: String,
         val opprettet: LocalDateTime,
         val endret: LocalDateTime?,
-        val utbetalingsreferanse: String,
+        val fagsystemId: String,
         val status: String,
         val totalbeløp: Int,
         val beskrivelse: String?,

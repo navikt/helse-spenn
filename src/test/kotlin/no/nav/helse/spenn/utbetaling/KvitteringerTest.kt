@@ -16,7 +16,7 @@ internal class KvitteringerTest {
     private companion object {
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
-        private const val UTBETALINGSREF = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
+        private const val FAGSYSTEMID = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
         private const val AVSTEMMINGSNØKKEL = 1L
         private const val SAKSBEHANDLER = "Navn Navnesen"
         private const val MOTTAK_QUEUE = "statusQueue"
@@ -97,7 +97,7 @@ internal class KvitteringerTest {
         assertEquals("transaksjon_status", rapid.inspektør.felt(0, "@event_name").asText())
         assertEquals(PERSON, rapid.inspektør.felt(0, "fødselsnummer").asText())
         assertEquals(AVSTEMMINGSNØKKEL, rapid.inspektør.felt(0, "avstemmingsnøkkel").asLong())
-        assertEquals(UTBETALINGSREF, rapid.inspektør.felt(0, "utbetalingsreferanse").asText())
+        assertEquals(FAGSYSTEMID, rapid.inspektør.felt(0, "fagsystemId").asText())
         assertEquals(status.name, rapid.inspektør.felt(0, "status").asText())
         assertEquals(alvorlighetsgrad, rapid.inspektør.felt(0, "feilkode_oppdrag").asText())
         assertTrue(rapid.inspektør.felt(0, "beskrivelse").asText().isNotBlank())
@@ -106,7 +106,7 @@ internal class KvitteringerTest {
         assertDoesNotThrow { LocalDateTime.parse(rapid.inspektør.felt(0, "@opprettet").asText()) }
         verify(exactly = 1) { dao.oppdaterOppdrag(
             AVSTEMMINGSNØKKEL,
-            UTBETALINGSREF, status, any(), alvorlighetsgrad, melding) }
+            FAGSYSTEMID, status, any(), alvorlighetsgrad, melding) }
     }
 
     private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
@@ -119,7 +119,7 @@ internal class KvitteringerTest {
         <kodeAksjon>1</kodeAksjon>
         <kodeEndring>NY</kodeEndring>
         <kodeFagomraade>SPREF</kodeFagomraade>
-        <fagsystemId>$UTBETALINGSREF</fagsystemId>
+        <fagsystemId>$FAGSYSTEMID</fagsystemId>
         <utbetFrekvens>MND</utbetFrekvens>
         <oppdragGjelderId>$PERSON</oppdragGjelderId>
         <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>

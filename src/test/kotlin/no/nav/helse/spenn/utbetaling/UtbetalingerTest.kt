@@ -20,7 +20,7 @@ internal class UtbetalingerTest {
         private const val ORGNR = "123456789"
         private const val SJEKKSUM = -873852214
         private const val BELØP = 1000
-        private const val UTBETALINGSREF = "838069327ea2"
+        private const val FAGSYSTEMID = "838069327ea2"
         private const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
         private const val SAKSBEHANDLER = "Navn Navnesen"
         private const val SEND_QUEUE = "utbetalingQueue"
@@ -44,7 +44,7 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser utbetalingsbehov`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns true
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns true
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(1, connection.inspektør.antall())
@@ -57,12 +57,12 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
-        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `utbetalingsbehov med feil`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns false
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns false
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
@@ -70,12 +70,12 @@ internal class UtbetalingerTest {
         rapid.inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
-        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `utbetalingsbehov med exception`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws RuntimeException()
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws RuntimeException()
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, rapid.inspektør.antall())
         assertEquals(0, connection.inspektør.antall())
@@ -98,9 +98,13 @@ internal class UtbetalingerTest {
         verify(exactly = 1) { dao.nyttOppdrag(
             FAGOMRÅDE_REFUSJON, avstemmingsnøkkel,
             SJEKKSUM,
-            PERSON, any(),
-            UTBETALINGSREF, Oppdragstatus.OVERFØRT,
-            BELØP, any()) }
+            PERSON,
+            ORGNR,
+            any(),
+            FAGSYSTEMID,
+            Oppdragstatus.OVERFØRT,
+            BELØP,
+            any()) }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(
@@ -117,13 +121,14 @@ internal class UtbetalingerTest {
                 "@behov" to listOf("Utbetaling"),
                 "@id" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
+                "mottaker" to ORGNR,
                 "fødselsnummer" to PERSON,
                 "saksbehandler" to SAKSBEHANDLER,
                 "maksdato" to "2020-04-20",
                 "mottaker" to ORGNR,
                 "fagområde" to "SPREF",
-                "utbetalingsreferanse" to UTBETALINGSREF,
-                "linjertype" to "NY",
+                "fagsystemId" to FAGSYSTEMID,
+                "endringskode" to "NY",
                 "sjekksum" to SJEKKSUM,
                 "linjer" to utbetalingslinjer.map {
                     mapOf<String, Any?>(
@@ -133,7 +138,8 @@ internal class UtbetalingerTest {
                         "grad" to it["grad"],
                         "delytelseId" to 1,
                         "refDelytelseId" to null,
-                        "linjetype" to "NY",
+                        "refFagsystemId" to null,
+                        "endringskode" to "NY",
                         "klassekode" to "SPREFAG-IOP"
                     )
                 }

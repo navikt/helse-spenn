@@ -19,10 +19,10 @@ internal object UtbetalingslinjerMapper {
 
     private fun refusjonTilArbeidsgiver(packet: JsonMessage) =
         Utbetalingslinjer.RefusjonTilArbeidsgiver(
-            organisasjonsnummer = packet["organisasjonsnummer"].asText(),
-            utbetalingsreferanse = packet["utbetalingsreferanse"].asText(),
+            mottaker = packet["mottaker"].asText(),
+            fagsystemId = packet["fagsystemId"].asText(),
             fødselsnummer = packet["fødselsnummer"].asText(),
-            endringskode = packet["linjertype"].asText(),
+            endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
             maksdato = packet["maksdato"].asLocalDate(),
             sjekksum = packet["sjekksum"].asInt()
@@ -30,9 +30,10 @@ internal object UtbetalingslinjerMapper {
 
     private fun utbetalingTilBruker(packet: JsonMessage) =
         Utbetalingslinjer.UtbetalingTilBruker(
-            utbetalingsreferanse = packet["utbetalingsreferanse"].asText(),
+            fagsystemId = packet["fagsystemId"].asText(),
             fødselsnummer = packet["fødselsnummer"].asText(),
-            endringskode = packet["linjertype"].asText(),
+            mottaker = packet["mottaker"].asText(),
+            endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
             maksdato = packet["maksdato"].asLocalDate(),
             sjekksum = packet["sjekksum"].asInt()
@@ -42,13 +43,14 @@ internal object UtbetalingslinjerMapper {
         linjer.forEach {
             Utbetalingslinjer.Utbetalingslinje(
                 delytelseId = it["delytelseId"].asInt(),
-                endringskode = it["linjetype"].asText(),
+                endringskode = it["endringskode"].asText(),
                 klassekode = it["klassekode"].asText(),
                 fom = it["fom"].asLocalDate(),
                 tom = it["tom"].asLocalDate(),
                 dagsats = it["dagsats"].asInt(),
                 grad = it["grad"].asInt(),
-                refDelytelseId = it.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt()
+                refDelytelseId = it.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
+                refFagsystemId = it.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText()
             ).also { utbetalingslinjer.linje(it) }
         }
     }

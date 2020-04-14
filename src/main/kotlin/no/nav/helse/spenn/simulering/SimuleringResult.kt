@@ -2,8 +2,6 @@ package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import no.nav.helse.spenn.SatsTypeKode
-import no.nav.helse.spenn.UtbetalingsType
 import java.time.LocalDate
 
 @JsonIgnoreProperties(ignoreUnknown = true)

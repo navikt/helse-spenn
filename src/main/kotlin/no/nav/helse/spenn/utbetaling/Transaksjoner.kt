@@ -21,7 +21,7 @@ internal class Transaksjoner(
         River(rapidsConnection).apply {
             validate { it.requireValue("@event_name", "transaksjon_status") }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
-            validate { it.requireKey("@id", "fødselsnummer", "utbetalingsreferanse",
+            validate { it.requireKey("@id", "fødselsnummer", "fagsystemId",
                 "avstemmingsnøkkel", "feilkode_oppdrag", "beskrivelse", "originalXml") }
             validate { it.requireAny("status", Oppdragstatus.values().map(Enum<*>::name)) }
         }.register(this)
@@ -29,14 +29,14 @@ internal class Transaksjoner(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         val fødselsnummer = packet["fødselsnummer"].asText()
-        val utbetalingsreferanse = packet["utbetalingsreferanse"].asText()
+        val fagsystemId = packet["fagsystemId"].asText()
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
         val status = Oppdragstatus.valueOf(packet["status"].asText())
         val tidspunkt = packet["@opprettet"].asLocalDateTime()
         log.info("oppdrag med avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
 
         oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.also {
-            sikkerLogg.info("oppdrag med avstemmingsnøkkel=$avstemmingsnøkkel utbetalingsreferanse=$utbetalingsreferanse " +
+            sikkerLogg.info("oppdrag med avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +
                     "fødselsnummer=$fødselsnummer status=$status tidspunkt=$tidspunkt for behov=${it.toJson()}")
 
             it["@løsning"] = mapOf(

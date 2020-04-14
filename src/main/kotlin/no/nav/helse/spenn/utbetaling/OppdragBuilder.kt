@@ -29,7 +29,7 @@ internal class OppdragBuilder(private val utbetalingslinjer: Utbetalingslinjer,
     private val oppdrag110 = Oppdrag110().apply {
         kodeFagomraade = utbetalingslinjer.fagområde
         kodeEndring = utbetalingslinjer.endringskode
-        fagsystemId = utbetalingslinjer.utbetalingsreferanse
+        fagsystemId = utbetalingslinjer.fagsystemId
         oppdragGjelderId = utbetalingslinjer.fødselsnummer
         saksbehId = utbetalingslinjer.saksbehandler
         kodeAksjon = "1"
@@ -69,6 +69,7 @@ internal class OppdragBuilder(private val utbetalingslinjer: Utbetalingslinjer,
     private fun nyLinje(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = OppdragsLinje150().apply {
         delytelseId = "${utbetalingslinje.delytelseId}"
         refDelytelseId = utbetalingslinje.refDelytelseId?.let { "$it" }
+        refFagsystemId = utbetalingslinje.refFagsystemId?.let { it }
         kodeEndringLinje = utbetalingslinje.endringskode
         kodeKlassifik = utbetalingslinje.klassekode
         datoVedtakFom = utbetalingslinje.fom.asXmlGregorianCalendar()

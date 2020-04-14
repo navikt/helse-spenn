@@ -69,7 +69,7 @@ internal class SimuleringerTest {
             gjelderId = PERSON,
             gjelderNavn = "Navn Navnesen",
             datoBeregnet = LocalDate.now(),
-            totalBelop = 1000.toBigDecimal(),
+            totalBelop = 1000,
             periodeList = emptyList()
         ) else null
     ).also {
@@ -90,13 +90,14 @@ internal class SimuleringerTest {
                 "@behov" to listOf("Simulering"),
                 "@id" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
+                "mottaker" to ORGNR,
                 "fødselsnummer" to PERSON,
                 "maksdato" to "2020-04-20",
                 "saksbehandler" to "Spleis",
                 "mottaker" to ORGNR,
                 "fagområde" to "SPREF",
-                "utbetalingsreferanse" to "ref",
-                "linjertype" to "NY",
+                "fagsystemId" to "ref",
+                "endringskode" to "NY",
                 "sjekksum" to -873852214,
                 "linjer" to utbetalingslinjer.map {
                     mapOf<String, Any?>(
@@ -106,7 +107,8 @@ internal class SimuleringerTest {
                         "grad" to it["grad"],
                         "delytelseId" to 1,
                         "refDelytelseId" to null,
-                        "linjetype" to "NY",
+                        "refFagsystemId" to null,
+                        "endringskode" to "NY",
                         "klassekode" to "SPREFAG-IOP"
                     )
                 }
