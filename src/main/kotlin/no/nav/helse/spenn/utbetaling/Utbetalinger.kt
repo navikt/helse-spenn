@@ -80,6 +80,7 @@ internal class Utbetalinger(
                 packet["@løsning"] = mapOf(
                     "Utbetaling" to mapOf(
                         "status" to Oppdragstatus.OVERFØRT,
+                        "beskrivelse" to "Oppdraget er sendt til Oppdrag/UR. Venter på kvittering",
                         "overføringstidspunkt" to tidspunkt,
                         "avstemmingsnøkkel" to avstemmingsnøkkel
                     )
