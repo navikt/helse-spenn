@@ -1,10 +1,7 @@
 package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.UtbetalingslinjerMapper
 import org.slf4j.LoggerFactory
 
@@ -20,9 +17,9 @@ internal class Simuleringer(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("@event_name", "behov") }
-            validate { it.requireContains("@behov", "Simulering") }
-            validate { it.forbid("@løsning") }
+            validate { it.demandValue("@event_name", "behov") }
+            validate { it.demandAll("@behov", listOf("Simulering")) }
+            validate { it.rejectKey("@løsning") }
             validate { it.require("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
             validate {
@@ -37,6 +34,10 @@ internal class Simuleringer(
                 }
             }
         }.register(this)
+    }
+
+    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
+        sikkerLogg.error("Fikk et Simulering-behov vi ikke validerte:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {

@@ -2,10 +2,7 @@ package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ibm.mq.jms.MQQueue
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.UtbetalingslinjerMapper
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
@@ -32,9 +29,9 @@ internal class Utbetalinger(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("@event_name", "behov") }
-            validate { it.requireContains("@behov", "Utbetaling") }
-            validate { it.forbid("@løsning") }
+            validate { it.demandValue("@event_name", "behov") }
+            validate { it.demandAll("@behov", listOf("Utbetaling")) }
+            validate { it.rejectKey("@løsning") }
             validate { it.require("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
             validate {
@@ -49,6 +46,10 @@ internal class Utbetalinger(
                 }
             }
         }.register(this)
+    }
+
+    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
+        sikkerLogg.error("Fikk et Utbetaling-behov vi ikke validerte:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
