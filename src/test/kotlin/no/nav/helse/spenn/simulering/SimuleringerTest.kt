@@ -3,7 +3,8 @@ package no.nav.helse.spenn.simulering
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.spenn.TestRapid
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.spenn.RapidInspektør
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,6 +31,7 @@ internal class SimuleringerTest {
     private val rapid = TestRapid().apply {
         Simuleringer(this, simuleringService)
     }
+    private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
     fun clear() {
@@ -40,26 +42,26 @@ internal class SimuleringerTest {
     fun `løser simuleringsbehov`() {
         resultat(SimuleringStatus.OK)
         rapid.sendTestMessage(simuleringbehov())
-        assertEquals(1, rapid.inspektør.antall())
-        assertEquals(BEHOV, rapid.inspektør.id(0))
-        assertEquals("OK", rapid.inspektør.løsning(0, "Simulering").path("status").asText())
-        assertFalse(rapid.inspektør.løsning(0, "Simulering").path("simulering").isNull)
+        assertEquals(1, inspektør.size)
+        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals("OK", inspektør.løsning(0, "Simulering").path("status").asText())
+        assertFalse(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
 
     @Test
     fun `ignorerer simuleringsbehov med tomme utbetalingslinjer`() {
         rapid.sendTestMessage(simuleringbehov(emptyList()))
-        assertEquals(0, rapid.inspektør.antall())
+        assertEquals(0, inspektør.size)
     }
 
     @Test
     fun `løser simuleringsbehov med simuleringfeil`() {
         resultat(SimuleringStatus.FEIL)
         rapid.sendTestMessage(simuleringbehov())
-        assertEquals(1, rapid.inspektør.antall())
-        assertEquals(BEHOV, rapid.inspektør.id(0))
-        assertEquals("FEIL", rapid.inspektør.løsning(0, "Simulering").path("status").asText())
-        assertTrue(rapid.inspektør.løsning(0, "Simulering").path("simulering").isNull)
+        assertEquals(1, inspektør.size)
+        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals("FEIL", inspektør.løsning(0, "Simulering").path("status").asText())
+        assertTrue(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
 
     private fun resultat(status: SimuleringStatus) = SimuleringResult(

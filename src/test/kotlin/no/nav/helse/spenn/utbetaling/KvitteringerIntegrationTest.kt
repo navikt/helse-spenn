@@ -3,7 +3,7 @@ package no.nav.helse.spenn.utbetaling
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.spenn.TestRapid
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.apache.activemq.artemis.api.core.TransportConfiguration
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory
@@ -55,7 +55,7 @@ internal class KvitteringerIntegrationTest {
             producer.send(message)
         }
 
-        awaitUntilAsserted(Duration.ofSeconds(5L)) { assertEquals(1, rapid.inspektør.antall()) }
+        awaitUntilAsserted(Duration.ofSeconds(5L)) { assertEquals(1, rapid.inspektør.size) }
     }
 
     @BeforeAll

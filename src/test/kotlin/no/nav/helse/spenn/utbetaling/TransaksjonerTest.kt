@@ -10,8 +10,9 @@ import io.mockk.mockk
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.asLocalDateTime
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.TestConnection
-import no.nav.helse.spenn.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,6 +42,7 @@ internal class TransaksjonerTest {
     private val rapid = TestRapid().apply {
         Transaksjoner(this, dao)
     }
+    private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
     fun clear() {
@@ -54,16 +56,16 @@ internal class TransaksjonerTest {
         val behov = utbetalingsbehov()
         every { dao.hentBehovForOppdrag(any()) } returns JsonMessage(behov, MessageProblems(behov))
         rapid.sendTestMessage(tranaksjonStatus())
-        assertEquals(1, rapid.inspektør.antall())
-        assertEquals("behov", rapid.inspektør.felt(0, "@event_name").asText())
-        assertEquals(listOf("Utbetaling"), rapid.inspektør.felt(0, "@behov").map(JsonNode::asText))
-        assertEquals(BEHOV_ID, rapid.inspektør.felt(0, "@id").asText())
-        assertEquals(ORGNR, rapid.inspektør.felt(0, "organisasjonsnummer").asText())
-        assertEquals(PERSON, rapid.inspektør.felt(0, "fødselsnummer").asText())
-        assertEquals(SAKSBEHANDLER, rapid.inspektør.felt(0, "saksbehandler").asText())
-        assertEquals("2020-04-20", rapid.inspektør.felt(0, "maksdato").asText())
-        assertEquals(FAGSYSTEMID, rapid.inspektør.felt(0, "fagsystemId").asText())
-        rapid.inspektør.løsning(0, "Utbetaling") {
+        assertEquals(1, inspektør.size)
+        assertEquals("behov", rapid.inspektør.field(0, "@event_name").asText())
+        assertEquals(listOf("Utbetaling"), rapid.inspektør.field(0, "@behov").map(JsonNode::asText))
+        assertEquals(BEHOV_ID, rapid.inspektør.field(0, "@id").asText())
+        assertEquals(ORGNR, rapid.inspektør.field(0, "organisasjonsnummer").asText())
+        assertEquals(PERSON, rapid.inspektør.field(0, "fødselsnummer").asText())
+        assertEquals(SAKSBEHANDLER, rapid.inspektør.field(0, "saksbehandler").asText())
+        assertEquals("2020-04-20", rapid.inspektør.field(0, "maksdato").asText())
+        assertEquals(FAGSYSTEMID, rapid.inspektør.field(0, "fagsystemId").asText())
+        inspektør.løsning(0, "Utbetaling") {
             assertEquals(STATUS.name, it.path("status").asText())
             assertEquals(OPPRETTET, it.path("overføringstidspunkt").asLocalDateTime())
             assertEquals(AVSTEMMINGSNØKKEL, it.path("avstemmingsnøkkel").asLong())

@@ -5,8 +5,9 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.TestConnection
-import no.nav.helse.spenn.TestRapid
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -34,6 +35,7 @@ internal class UtbetalingerTest {
             SEND_QUEUE,
             REPLY_TO_QUEUE, dao)
     }
+    private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
     fun clear() {
@@ -46,7 +48,7 @@ internal class UtbetalingerTest {
     fun `løser utbetalingsbehov`() {
         every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns true
         rapid.sendTestMessage(utbetalingsbehov())
-        assertEquals(1, rapid.inspektør.antall())
+        assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
         assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
         assertOverført(0)
@@ -55,7 +57,7 @@ internal class UtbetalingerTest {
     @Test
     fun `ignorerer tomme utbetalingslinjer`() {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
-        assertEquals(0, rapid.inspektør.antall())
+        assertEquals(0, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
         verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
@@ -64,10 +66,10 @@ internal class UtbetalingerTest {
     fun `utbetalingsbehov med feil`() {
         every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns false
         rapid.sendTestMessage(utbetalingsbehov())
-        assertEquals(1, rapid.inspektør.antall())
+        assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
-        assertEquals(BEHOV, rapid.inspektør.id(0))
-        rapid.inspektør.løsning(0, "Utbetaling") {
+        assertEquals(BEHOV, inspektør.id(0))
+        inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
         verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
@@ -77,22 +79,22 @@ internal class UtbetalingerTest {
     fun `utbetalingsbehov med exception`() {
         every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws RuntimeException()
         rapid.sendTestMessage(utbetalingsbehov())
-        assertEquals(1, rapid.inspektør.antall())
+        assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
-        assertEquals(BEHOV, rapid.inspektør.id(0))
-        rapid.inspektør.løsning(0, "Utbetaling") {
+        assertEquals(BEHOV, inspektør.id(0))
+        inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
     }
 
     private fun assertOverført(indeks: Int) {
-        assertEquals(BEHOV, rapid.inspektør.id(indeks))
-        rapid.inspektør.løsning(indeks, "Utbetaling") {
+        assertEquals(BEHOV, inspektør.id(indeks))
+        inspektør.løsning(indeks, "Utbetaling") {
             assertEquals(Oppdragstatus.OVERFØRT.name, it.path("status").asText())
             assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }
             assertDoesNotThrow { LocalDateTime.parse(it.path("overføringstidspunkt").asText()) }
         }
-        val avstemmingsnøkkel = rapid.inspektør.løsning(indeks, "Utbetaling")
+        val avstemmingsnøkkel = inspektør.løsning(indeks, "Utbetaling")
             .path("avstemmingsnøkkel")
             .asLong()
         verify(exactly = 1) { dao.nyttOppdrag(

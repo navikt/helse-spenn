@@ -4,8 +4,8 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.TestConnection
-import no.nav.helse.spenn.TestRapid
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,8 +31,7 @@ internal class KvitteringerTest {
     private val dao = mockk<OppdragDao>()
     private val connection = TestConnection()
     private val rapid = TestRapid().apply {
-        Kvitteringer(this, connection,
-            MOTTAK_QUEUE, dao)
+        Kvitteringer(this, connection, MOTTAK_QUEUE, dao)
     }
 
     @BeforeEach
@@ -93,17 +92,17 @@ internal class KvitteringerTest {
     }
 
     private fun assertKvittering(status: Oppdragstatus, alvorlighetsgrad: String, melding: String) {
-        assertEquals(1, rapid.inspektør.antall())
-        assertEquals("transaksjon_status", rapid.inspektør.felt(0, "@event_name").asText())
-        assertEquals(PERSON, rapid.inspektør.felt(0, "fødselsnummer").asText())
-        assertEquals(AVSTEMMINGSNØKKEL, rapid.inspektør.felt(0, "avstemmingsnøkkel").asLong())
-        assertEquals(FAGSYSTEMID, rapid.inspektør.felt(0, "fagsystemId").asText())
-        assertEquals(status.name, rapid.inspektør.felt(0, "status").asText())
-        assertEquals(alvorlighetsgrad, rapid.inspektør.felt(0, "feilkode_oppdrag").asText())
-        assertTrue(rapid.inspektør.felt(0, "beskrivelse").asText().isNotBlank())
-        assertEquals(melding, rapid.inspektør.felt(0, "originalXml").asText())
-        assertDoesNotThrow { UUID.fromString(rapid.inspektør.felt(0, "@id").asText()) }
-        assertDoesNotThrow { LocalDateTime.parse(rapid.inspektør.felt(0, "@opprettet").asText()) }
+        assertEquals(1, rapid.inspektør.size)
+        assertEquals("transaksjon_status", rapid.inspektør.field(0, "@event_name").asText())
+        assertEquals(PERSON, rapid.inspektør.field(0, "fødselsnummer").asText())
+        assertEquals(AVSTEMMINGSNØKKEL, rapid.inspektør.field(0, "avstemmingsnøkkel").asLong())
+        assertEquals(FAGSYSTEMID, rapid.inspektør.field(0, "fagsystemId").asText())
+        assertEquals(status.name, rapid.inspektør.field(0, "status").asText())
+        assertEquals(alvorlighetsgrad, rapid.inspektør.field(0, "feilkode_oppdrag").asText())
+        assertTrue(rapid.inspektør.field(0, "beskrivelse").asText().isNotBlank())
+        assertEquals(melding, rapid.inspektør.field(0, "originalXml").asText())
+        assertDoesNotThrow { UUID.fromString(rapid.inspektør.field(0, "@id").asText()) }
+        assertDoesNotThrow { LocalDateTime.parse(rapid.inspektør.field(0, "@opprettet").asText()) }
         verify(exactly = 1) { dao.oppdaterOppdrag(
             AVSTEMMINGSNØKKEL,
             FAGSYSTEMID, status, any(), alvorlighetsgrad, melding) }
