@@ -56,7 +56,9 @@ internal sealed class Utbetalingslinjer(
         internal val dagsats: Int,
         internal val grad: Int,
         internal val refDelytelseId: Int?,
-        internal val refFagsystemId: String?
+        internal val refFagsystemId: String?,
+        internal val datoStatusFom: LocalDate?,
+        internal val statuskode: String?
     ) {
         internal companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minBy { it.fom }?.fom

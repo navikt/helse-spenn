@@ -6,6 +6,7 @@ import no.nav.system.os.entiteter.oppdragskjema.Enhet
 import no.nav.system.os.entiteter.oppdragskjema.Grad
 import no.nav.system.os.entiteter.oppdragskjema.RefusjonsInfo
 import no.nav.system.os.entiteter.typer.simpletypes.FradragTillegg
+import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdrag
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdragslinje
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningRequest
@@ -69,6 +70,8 @@ internal class SimuleringRequestBuilder(private val utbetalingslinjer: Utbetalin
         refFagsystemId = utbetalingslinje.refFagsystemId?.let { it }
         kodeEndringLinje = utbetalingslinje.endringskode
         kodeKlassifik = utbetalingslinje.klassekode
+        kodeStatusLinje = utbetalingslinje.statuskode?.let { KodeStatusLinje.valueOf(it) }
+        datoStatusFom = utbetalingslinje.datoStatusFom?.let { "$it" }
         datoVedtakFom = utbetalingslinje.fom.format(tidsstempel)
         datoVedtakTom = utbetalingslinje.tom.format(tidsstempel)
         sats = utbetalingslinje.dagsats.toBigDecimal()

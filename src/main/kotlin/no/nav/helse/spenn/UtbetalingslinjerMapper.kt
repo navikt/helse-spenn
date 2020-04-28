@@ -50,7 +50,9 @@ internal object UtbetalingslinjerMapper {
                 dagsats = it["dagsats"].asInt(),
                 grad = it["grad"].asInt(),
                 refDelytelseId = it.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
-                refFagsystemId = it.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText()
+                refFagsystemId = it.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText(),
+                datoStatusFom = it.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asLocalDate(),
+                statuskode = it.path("statuskode").takeUnless(JsonNode::isMissingOrNull)?.asText()
             ).also { utbetalingslinjer.linje(it) }
         }
     }

@@ -39,7 +39,7 @@ internal class Utbetalinger(
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
                 it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("linjer") {
-                    requireKey("dagsats", "grad", "delytelseId", "klassekode")
+                    requireKey("dagsats", "grad", "delytelseId", "klassekode", "datoStatusFom", "statuskode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
