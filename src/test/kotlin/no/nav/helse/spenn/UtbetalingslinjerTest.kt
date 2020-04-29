@@ -35,8 +35,8 @@ internal class UtbetalingslinjerTest {
     @Test
     fun `første og siste dag`() {
         utbetalingslinjer.apply {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null))
         }
         assertEquals(1.januar, utbetalingslinjer.førsteDag())
         assertEquals(31.januar, utbetalingslinjer.sisteDag())
@@ -45,8 +45,8 @@ internal class UtbetalingslinjerTest {
     @Test
     fun totalbeløp() {
         utbetalingslinjer.apply {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null))
         }
         assertEquals(DAGSATS + DAGSATS, utbetalingslinjer.totalbeløp())
     }

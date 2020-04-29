@@ -3,6 +3,7 @@ package no.nav.helse.spenn.simulering
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.UtbetalingslinjerMapper
+import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
 import org.slf4j.LoggerFactory
 
 internal class Simuleringer(
@@ -27,10 +28,12 @@ internal class Simuleringer(
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
                 it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("linjer") {
-                    requireKey("dagsats", "grad", "delytelseId", "klassekode", "datoStatusFom", "statuskode")
+                    requireKey("dagsats", "grad", "delytelseId", "klassekode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
+                    interestedIn("datoStatusFom", JsonNode::asLocalDate)
+                    interestedIn("statuskode") { value -> KodeStatusLinje.valueOf(value.asText()) }
                 }
             }
         }.register(this)

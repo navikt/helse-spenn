@@ -75,7 +75,7 @@ internal class OppdragBuilder(private val utbetalingslinjer: Utbetalingslinjer,
         datoVedtakFom = utbetalingslinje.fom.asXmlGregorianCalendar()
         datoVedtakTom = utbetalingslinje.tom.asXmlGregorianCalendar()
         kodeStatusLinje = utbetalingslinje.statuskode?.let { TkodeStatusLinje.valueOf(it) }
-        datoStatusFom = utbetalingslinje.datoStatusFom?.let { it.asXmlGregorianCalendar() }
+        datoStatusFom = utbetalingslinje.datoStatusFom?.asXmlGregorianCalendar()
         sats = utbetalingslinje.dagsats.toBigDecimal()
         fradragTillegg = TfradragTillegg.T
         typeSats = "DAG"

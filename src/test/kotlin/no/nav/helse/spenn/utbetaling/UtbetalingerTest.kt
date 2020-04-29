@@ -142,7 +142,9 @@ internal class UtbetalingerTest {
                         "refDelytelseId" to null,
                         "refFagsystemId" to null,
                         "endringskode" to "NY",
-                        "klassekode" to "SPREFAG-IOP"
+                        "klassekode" to "SPREFAG-IOP",
+                        "datoStatusFom" to null,
+                        "statuskode" to null
                     )
                 }
             )

@@ -71,7 +71,7 @@ internal class SimuleringRequestBuilder(private val utbetalingslinjer: Utbetalin
         kodeEndringLinje = utbetalingslinje.endringskode
         kodeKlassifik = utbetalingslinje.klassekode
         kodeStatusLinje = utbetalingslinje.statuskode?.let { KodeStatusLinje.valueOf(it) }
-        datoStatusFom = utbetalingslinje.datoStatusFom?.let { "$it" }
+        datoStatusFom = utbetalingslinje.datoStatusFom?.format(tidsstempel)
         datoVedtakFom = utbetalingslinje.fom.format(tidsstempel)
         datoVedtakTom = utbetalingslinje.tom.format(tidsstempel)
         sats = utbetalingslinje.dagsats.toBigDecimal()
