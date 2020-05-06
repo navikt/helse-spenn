@@ -6,6 +6,7 @@ import no.nav.helse.spenn.UtbetalingslinjerMapper
 import no.nav.helse.spenn.UtenforÅpningstidException
 import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,
@@ -45,6 +46,14 @@ internal class Simuleringer(
     }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+        withMDC(mapOf(
+            "behovId" to packet["@id"].asText()
+        )) {
+            håndter(packet, context)
+        }
+    }
+
+    private fun håndter(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
         val utbetalingslinjer = UtbetalingslinjerMapper.fraBehov(packet)
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
@@ -81,6 +90,16 @@ internal class Simuleringer(
             context.send(packet.toJson().also {
                 sikkerLogg.info("svarer behov=${packet["@id"].asText()} med $it")
             })
+        }
+    }
+
+    private fun withMDC(context: Map<String, String>, block: () -> Unit) {
+        val contextMap = MDC.getCopyOfContextMap() ?: emptyMap()
+        try {
+            MDC.setContextMap(contextMap + context)
+            block()
+        } finally {
+            MDC.setContextMap(contextMap)
         }
     }
 }
