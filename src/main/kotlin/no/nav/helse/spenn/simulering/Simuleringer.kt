@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.UtbetalingslinjerMapper
 import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
+import no.nav.helse.spenn.UtenforÅpningstidException
 import org.slf4j.LoggerFactory
 
 internal class Simuleringer(
@@ -47,14 +48,36 @@ internal class Simuleringer(
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
         val utbetalingslinjer = UtbetalingslinjerMapper.fraBehov(packet)
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
-        simuleringService.simulerOppdrag(SimuleringRequestBuilder(utbetalingslinjer).build()).also { result ->
+
+        try {
+            simuleringService.simulerOppdrag(SimuleringRequestBuilder(utbetalingslinjer).build()).also { result ->
+                packet["@løsning"] = mapOf(
+                    "Simulering" to mapOf(
+                        "status" to result.status,
+                        "feilmelding" to result.feilmelding,
+                        "simulering" to result.simulering
+                    )
+                )
+            }
+        } catch (err: UtenforÅpningstidException) {
             packet["@løsning"] = mapOf(
                 "Simulering" to mapOf(
-                    "status" to result.status,
-                    "feilmelding" to result.feilmelding,
-                    "simulering" to result.simulering
+                    "status" to SimuleringStatus.OPPDRAG_UR_ER_STENGT,
+                    "feilmelding" to "Oppdrag/UR er stengt",
+                    "simulering" to null
                 )
             )
+        } catch (err: Exception) {
+            log.error("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
+            sikkerLogg.error("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
+            packet["@løsning"] = mapOf(
+                "Simulering" to mapOf(
+                    "status" to SimuleringStatus.FEIL,
+                    "feilmelding" to "Fikk teknisk feil ved simulering",
+                    "simulering" to null
+                )
+            )
+        } finally {
             context.send(packet.toJson().also {
                 sikkerLogg.info("svarer behov=${packet["@id"].asText()} med $it")
             })

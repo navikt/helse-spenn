@@ -1,5 +1,7 @@
 package no.nav.helse.spenn.simulering
 
+import com.ctc.wstx.exc.WstxEOFException
+import no.nav.helse.spenn.UtenforÅpningstidException
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
@@ -9,6 +11,7 @@ import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.S
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import javax.xml.ws.soap.SOAPFaultException
 
 class SimuleringService(private val simulerFpService: SimulerFpService) {
 
@@ -26,6 +29,11 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
             sikkerLogg.error("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
             SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = e.faultInfo.errorMessage)
+        } catch (e: SOAPFaultException) {
+            if (e.cause is WstxEOFException) {
+                throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
+            }
+            throw e
         } catch (e: Exception) {
             log.error("Got unexpected error while running Simulering", e)
             SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = e.message ?: "")
