@@ -84,6 +84,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         avstemmingsnøkkel: Long,
         sjekksum: Int,
         fødselsnummer: String,
+        organisasjonsnummer: String,
         mottaker: String,
         tidspunkt: LocalDateTime,
         fagsystemId: String,
@@ -94,9 +95,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json) ON CONFLICT DO NOTHING",
-                    avstemmingsnøkkel, sjekksum, fagområde, fødselsnummer, mottaker, tidspunkt, fagsystemId, totalbeløp, status.name, originalJson
+                    "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, orgnr, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json) ON CONFLICT DO NOTHING",
+                    avstemmingsnøkkel, sjekksum, fagområde, fødselsnummer, organisasjonsnummer, mottaker, tidspunkt, fagsystemId, totalbeløp, status.name, originalJson
                 ).asUpdate
             )
         } == 1

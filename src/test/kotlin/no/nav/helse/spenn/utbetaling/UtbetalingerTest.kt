@@ -46,7 +46,7 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser utbetalingsbehov`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns true
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns true
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
@@ -59,12 +59,12 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
-        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `utbetalingsbehov med feil`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns false
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns false
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
@@ -72,12 +72,12 @@ internal class UtbetalingerTest {
         inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
-        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `utbetalingsbehov med exception`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws RuntimeException()
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws RuntimeException()
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
@@ -98,15 +98,18 @@ internal class UtbetalingerTest {
             .path("avstemmingsnøkkel")
             .asLong()
         verify(exactly = 1) { dao.nyttOppdrag(
-            FAGOMRÅDE_REFUSJON, avstemmingsnøkkel,
-            SJEKKSUM,
-            PERSON,
-            ORGNR,
-            any(),
-            FAGSYSTEMID,
-            Oppdragstatus.OVERFØRT,
-            BELØP,
-            any()) }
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = any(),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = any()
+        ) }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(

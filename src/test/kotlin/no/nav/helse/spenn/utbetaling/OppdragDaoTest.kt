@@ -41,15 +41,18 @@ internal class OppdragDaoTest {
     @Test
     fun `opprette oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
-            AVSTEMMINGSNØKKEL,
-            SJEKKSUM,
-            PERSON,
-            ORGNR,
-            tidspunkt,
-            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
-            BELØP,
-            BEHOV
+        assertTrue(oppdragDao.nyttOppdrag(
+            FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         ))
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
@@ -69,25 +72,44 @@ internal class OppdragDaoTest {
     @Test
     fun `duplikat oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
-            AVSTEMMINGSNØKKEL,
-            SJEKKSUM,
-            PERSON,
-            ORGNR,
-            tidspunkt,
-            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
-            BELØP,
-            BEHOV
+        assertTrue(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         ))
-        assertFalse(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
-            AVSTEMMINGSNØKKEL, SJEKKSUM + 1, "en annen person", ORGNR, tidspunkt.minusHours(1), "en annen fagsystemId", Oppdragstatus.AKSEPTERT,
-            BELØP,
-            BEHOV
+        assertFalse(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
+            sjekksum = SJEKKSUM + 1,
+            fødselsnummer = "en annen person",
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.minusHours(1),
+            fagsystemId = "en annen fagsystemId",
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         ))
-        assertFalse(oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
-            AVSTEMMINGSNØKKEL + 1, SJEKKSUM, "en annen person", ORGNR, tidspunkt.minusHours(1), "en annen fagsystemId", Oppdragstatus.AKSEPTERT,
-            BELØP,
-            BEHOV
+        assertFalse(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = AVSTEMMINGSNØKKEL + 1,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.minusHours(1),
+            fagsystemId = "en annen fagsystemId",
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         ))
     }
 
@@ -97,15 +119,18 @@ internal class OppdragDaoTest {
         val beskrivelse = "en beskrivelse"
         val feilkode = "08"
         val melding = "original xml-melding"
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON,
-            AVSTEMMINGSNØKKEL,
-            SJEKKSUM,
-            PERSON,
-            ORGNR,
-            tidspunkt,
-            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
         assertTrue(oppdragDao.oppdaterOppdrag(
             AVSTEMMINGSNØKKEL,
@@ -130,48 +155,84 @@ internal class OppdragDaoTest {
     fun `oppdrag til avstemming`() {
         val tidspunkt = LocalDateTime.now()
         val første = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første - 1,
-            SJEKKSUM - 1,
-            PERSON, ORGNR, tidspunkt.minusDays(1),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første - 1,
+            sjekksum = SJEKKSUM - 1,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.minusDays(1),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første,
-            SJEKKSUM,
-            PERSON, ORGNR, tidspunkt,
-            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 1,
-            SJEKKSUM + 1,
-            PERSON, ORGNR, tidspunkt.plusDays(1),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første + 1,
+            sjekksum = SJEKKSUM + 1,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(1),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 2,
-            SJEKKSUM + 2,
-            PERSON, ORGNR, tidspunkt.plusDays(2),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT_MED_FEIL,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første + 2,
+            sjekksum = SJEKKSUM + 2,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(2),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT_MED_FEIL,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
         val siste = første + 3
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste,
-            SJEKKSUM + 3,
-            PERSON, ORGNR, tidspunkt.plusDays(3),
-            FAGSYSTEMID, Oppdragstatus.AVVIST,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = siste,
+            sjekksum = SJEKKSUM + 3,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(3),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AVVIST,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste + 1,
-            SJEKKSUM + 4,
-            PERSON, ORGNR, tidspunkt.plusDays(4),
-            FAGSYSTEMID, Oppdragstatus.AVVIST,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = siste + 1,
+            sjekksum = SJEKKSUM + 4,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(4),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AVVIST,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
         val oppdrag = oppdragDao.hentOppdragForAvstemming(første..siste)
         assertEquals(4, oppdrag.size)
@@ -193,48 +254,84 @@ internal class OppdragDaoTest {
     fun `oppdrag til avstemming opp til og med`() {
         val tidspunkt = LocalDateTime.now()
         val første = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første - 1,
-            SJEKKSUM - 1,
-            PERSON, ORGNR, tidspunkt.minusDays(1),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første - 1,
+            sjekksum = SJEKKSUM - 1,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.minusDays(1),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første,
-            SJEKKSUM,
-            PERSON, ORGNR, tidspunkt,
-            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 1,
-            SJEKKSUM + 1,
-            PERSON, ORGNR, tidspunkt.plusDays(1),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første + 1,
+            sjekksum = SJEKKSUM + 1,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(1),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 2,
-            SJEKKSUM + 2,
-            PERSON, ORGNR, tidspunkt.plusDays(2),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT_MED_FEIL,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første + 2,
+            sjekksum = SJEKKSUM + 2,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(2),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT_MED_FEIL,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
         val siste = første + 3
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste,
-            SJEKKSUM + 3,
-            PERSON, ORGNR, tidspunkt.plusDays(3),
-            FAGSYSTEMID, Oppdragstatus.AVVIST,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = siste,
+            sjekksum = SJEKKSUM + 3,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(3),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AVVIST,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, siste + 1,
-            SJEKKSUM + 4,
-            PERSON, ORGNR, tidspunkt.plusDays(4),
-            FAGSYSTEMID, Oppdragstatus.AVVIST,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = siste + 1,
+            sjekksum = SJEKKSUM + 4,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(4),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AVVIST,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
         val oppdrag = oppdragDao.hentOppdragForAvstemming(siste)
             .getValue(FAGOMRÅDE_REFUSJON)
@@ -249,26 +346,44 @@ internal class OppdragDaoTest {
     fun `oppdater oppdrag til avstemming`() {
         val tidspunkt = LocalDateTime.now()
         val første = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første,
-            SJEKKSUM,
-            PERSON, ORGNR, tidspunkt,
-            FAGSYSTEMID, Oppdragstatus.OVERFØRT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 1,
-            SJEKKSUM + 1,
-            PERSON, ORGNR, tidspunkt.plusDays(1),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første + 1,
+            sjekksum = SJEKKSUM + 1,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(1),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, første + 2,
-            SJEKKSUM + 2,
-            PERSON, ORGNR, tidspunkt.plusDays(2),
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT_MED_FEIL,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første + 2,
+            sjekksum = SJEKKSUM + 2,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt.plusDays(2),
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.AKSEPTERT_MED_FEIL,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
 
         assertEquals(0, oppdragDao.oppdaterAvstemteOppdrag(FAGOMRÅDE_REFUSJON, første - 1))
@@ -280,18 +395,112 @@ internal class OppdragDaoTest {
     fun `oppdaterer ikke andre fagområder`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
-        oppdragDao.nyttOppdrag(FAGOMRÅDE_REFUSJON, avstemmingsnøkkel,
-            SJEKKSUM,
-            PERSON,
-            ORGNR,
-            tidspunkt,
-            FAGSYSTEMID,
-            Oppdragstatus.OVERFØRT,
-            BELØP,
-            BEHOV
+        oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
         )
         assertEquals(0, oppdragDao.oppdaterAvstemteOppdrag(FAGOMRÅDE_UTBETALING_BRUKER, avstemmingsnøkkel + 1))
     }
+
+    @Test
+    fun `Insert feiler dersom constraint (fnr, orgnr, sjekksum) er lik`() {
+        val tidspunkt = LocalDateTime.now()
+        val avstemmingsnøkkel = System.currentTimeMillis()
+        assertTrue(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        ))
+        assertFalse(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel + 1,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        ))
+    }
+
+    @Test
+    fun `Insert er vellykket for ulike kombinasjoner av constraint (fnr, orgnr, sjekksum)`() {
+        val tidspunkt = LocalDateTime.now()
+        val avstemmingsnøkkel = System.currentTimeMillis()
+        assertTrue(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        ))
+        assertTrue(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel + 1,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = "annenPerson",
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        ))
+        assertTrue(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel + 2,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = "annenOrg",
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        ))
+        assertTrue(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel + 3,
+            sjekksum = SJEKKSUM + 1,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        ))
+    }
+
 
     private fun finnOppdrag(avstemmingsnøkkel: Long) =
         using(sessionOf(dataSource)) { session ->

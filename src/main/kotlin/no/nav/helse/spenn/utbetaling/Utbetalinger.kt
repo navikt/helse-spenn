@@ -58,6 +58,7 @@ internal class Utbetalinger(
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         log.info("løser utbetalingsbehov id=${packet["@id"].asText()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
+        val organisasjonsnummer = packet["organisasjonsnummer"].asText()
         val mottaker = packet["mottaker"].asText()
         val fagsystemId = packet["fagsystemId"].asText()
         val utbetalingslinjer = UtbetalingslinjerMapper.fraBehov(packet)
@@ -70,8 +71,19 @@ internal class Utbetalinger(
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
         try {
-            if (!oppdragDao.nyttOppdrag(packet["fagområde"].asText(), avstemmingsnøkkel, utbetalingslinjer.sjekksum, fødselsnummer, mottaker, tidspunkt, fagsystemId,
-                    Oppdragstatus.OVERFØRT, utbetalingslinjer.totalbeløp(), packet.toJson())) {
+            if (!oppdragDao.nyttOppdrag(
+                    fagområde = packet["fagområde"].asText(),
+                    avstemmingsnøkkel = avstemmingsnøkkel,
+                    sjekksum = utbetalingslinjer.sjekksum,
+                    fødselsnummer = fødselsnummer,
+                    organisasjonsnummer = organisasjonsnummer,
+                    mottaker = mottaker,
+                    tidspunkt = tidspunkt,
+                    fagsystemId = fagsystemId,
+                    status = Oppdragstatus.OVERFØRT,
+                    totalbeløp = utbetalingslinjer.totalbeløp(),
+                    originalJson = packet.toJson()
+                )) {
                 packet["@løsning"] = mapOf(
                     "Utbetaling" to mapOf(
                         "status" to Oppdragstatus.FEIL,
