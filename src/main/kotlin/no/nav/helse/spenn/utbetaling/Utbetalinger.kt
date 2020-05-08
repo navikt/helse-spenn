@@ -33,7 +33,7 @@ internal class Utbetalinger(
             validate { it.demandValue("@event_name", "behov") }
             validate { it.demandAll("@behov", listOf("Utbetaling")) }
             validate { it.rejectKey("@løsning") }
-            validate { it.require("maksdato", JsonNode::asLocalDate) }
+            validate { it.interestedIn("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
             validate {
                 it.requireKey("mottaker", "fagsystemId", "sjekksum")

@@ -9,7 +9,7 @@ internal sealed class Utbetalingslinjer(
     internal val mottaker: String,
     internal val endringskode: String,
     internal val saksbehandler: String,
-    internal val maksdato: LocalDate,
+    internal val maksdato: LocalDate?,
     internal val sjekksum: Int
 ) : Iterable<Utbetalingslinjer.Utbetalingslinje> {
     private val linjer = mutableListOf<Utbetalingslinje>()
@@ -33,7 +33,7 @@ internal sealed class Utbetalingslinjer(
         fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
-        maksdato: LocalDate,
+        maksdato: LocalDate?,
         sjekksum: Int
     ) : Utbetalingslinjer("SPREF", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato, sjekksum)
 
@@ -43,7 +43,7 @@ internal sealed class Utbetalingslinjer(
         fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
-        maksdato: LocalDate,
+        maksdato: LocalDate?,
         sjekksum: Int
     ) : Utbetalingslinjer("SP", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato, sjekksum)
 

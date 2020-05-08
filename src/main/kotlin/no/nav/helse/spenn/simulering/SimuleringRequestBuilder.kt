@@ -56,7 +56,7 @@ internal class SimuleringRequestBuilder(private val utbetalingslinjer: Utbetalin
         refusjonsInfo = RefusjonsInfo().apply {
             refunderesId = utbetalingslinjer.mottaker.padStart(11, '0')
             datoFom = datoVedtakFom
-            maksDato = utbetalingslinjer.maksdato.format(tidsstempel)
+            maksDato = utbetalingslinjer.maksdato?.format(tidsstempel)
         }
     }
 

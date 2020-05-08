@@ -58,7 +58,7 @@ internal class OppdragBuilder(private val utbetalingslinjer: Utbetalingslinjer,
         refusjonsinfo156 = Refusjonsinfo156().apply {
             refunderesId = utbetalingslinjer.mottaker.padStart(11, '0')
             datoFom = datoVedtakFom
-            maksDato = utbetalingslinjer.maksdato.asXmlGregorianCalendar()
+            maksDato = utbetalingslinjer.maksdato?.asXmlGregorianCalendar()
         }
     }
 
