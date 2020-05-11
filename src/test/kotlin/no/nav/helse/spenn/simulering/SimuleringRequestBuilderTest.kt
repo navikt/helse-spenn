@@ -75,13 +75,13 @@ internal class SimuleringRequestBuilderTest {
 
     private fun simuleringRequestRefusjon(endringskode: String, block: Utbetalingslinjer.() -> Unit): SimulerBeregningRequest {
         val builder = SimuleringRequestBuilder(Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, FAGSYSTEMID,
-            endringskode, SAKSBEHANDLER, MAKSDATO, 0).apply(block))
+            endringskode, SAKSBEHANDLER, MAKSDATO).apply(block))
         return builder.build()
     }
 
     private fun simuleringRequestBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): SimulerBeregningRequest {
         val builder = SimuleringRequestBuilder(Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, FAGSYSTEMID,
-            endringskode, SAKSBEHANDLER, MAKSDATO, 0).apply(block))
+            endringskode, SAKSBEHANDLER, MAKSDATO).apply(block))
         return builder.build()
     }
 

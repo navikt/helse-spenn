@@ -1,7 +1,6 @@
 package no.nav.helse.spenn
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -21,7 +20,7 @@ internal class UtbetalingslinjerTest {
 
     @BeforeEach
     fun setup() {
-        utbetalingslinjer = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX, 0)
+        utbetalingslinjer = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX)
     }
 
     @Test
@@ -49,5 +48,77 @@ internal class UtbetalingslinjerTest {
             linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null))
         }
         assertEquals(DAGSATS + DAGSATS, utbetalingslinjer.totalbeløp())
+    }
+
+    @Test
+    fun `Sjekksum er ulik for to oppdrag når mottaker er forskjellig`() {
+        val oppdrag1 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+        val oppdrag2 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, "Et annet orgnr", UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+
+        assertNotEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
+    }
+
+    @Test
+    fun `Sjekksum er ulik for to oppdrag når fom er forskjellig`() {
+        val oppdrag1 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+        val oppdrag2 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 2.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+
+        assertNotEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
+    }
+
+    @Test
+    fun `Sjekksum er ulik for to oppdrag når tom er forskjellig`() {
+        val oppdrag1 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+        val oppdrag2 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 15.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+
+        assertNotEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
+    }
+
+    @Test
+    fun `Sjekksum er ulik for to oppdrag når dagsats og grad er forskjellig`() {
+        val oppdrag1 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+        val oppdrag2 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS + 1, GRAD - 1, null, null, null, null))
+        }
+
+        assertNotEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
+    }
+
+    @Test
+    fun `Sjekksum er ulik for to oppdrag når datoStatusFom og statuskode er satt på én linje i det ene oppdrag`() {
+        val oppdrag1 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+        val oppdrag2 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, 2.januar, "OPPH"))
+        }
+
+        assertNotEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
+    }
+
+    @Test
+    fun `Sjekksum er lik for to oppdrag som er like`() {
+        val oppdrag1 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+        val oppdrag2 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
+        }
+
+        assertEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
     }
 }

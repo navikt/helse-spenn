@@ -19,7 +19,6 @@ internal class UtbetalingerTest {
         private const val FAGOMRÅDE_REFUSJON = "SPREF"
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
-        private const val SJEKKSUM = -873852214
         private const val BELØP = 1000
         private const val FAGSYSTEMID = "838069327ea2"
         private const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
@@ -100,7 +99,7 @@ internal class UtbetalingerTest {
         verify(exactly = 1) { dao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel,
-            sjekksum = SJEKKSUM,
+            sjekksum = any(),
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -134,7 +133,6 @@ internal class UtbetalingerTest {
                 "fagområde" to "SPREF",
                 "fagsystemId" to FAGSYSTEMID,
                 "endringskode" to "NY",
-                "sjekksum" to SJEKKSUM,
                 "linjer" to utbetalingslinjer.map {
                     mapOf<String, Any?>(
                         "fom" to it["fom"],

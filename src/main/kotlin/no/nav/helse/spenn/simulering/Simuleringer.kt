@@ -3,8 +3,8 @@ package no.nav.helse.spenn.simulering
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.UtbetalingslinjerMapper
-import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
 import no.nav.helse.spenn.UtenforÅpningstidException
+import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
 import org.slf4j.LoggerFactory
 
 internal class Simuleringer(
@@ -25,7 +25,7 @@ internal class Simuleringer(
             validate { it.require("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
             validate {
-                it.requireKey("mottaker", "fagsystemId", "sjekksum")
+                it.requireKey("mottaker", "fagsystemId")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
                 it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("linjer") {

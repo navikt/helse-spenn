@@ -77,7 +77,7 @@ internal class OppdragBuilderTest {
     private fun oppdragRefusjon(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
             Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, FAGSYSTEMID, endringskode,
-                SAKSBEHANDLER, MAKSDATO, 0).apply(block),
+                SAKSBEHANDLER, MAKSDATO).apply(block),
             AVSTEMMINGSNØKKEL,
             NÅ
         )
@@ -87,7 +87,7 @@ internal class OppdragBuilderTest {
     private fun oppdragBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
             Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, FAGSYSTEMID, endringskode,
-                SAKSBEHANDLER, MAKSDATO, 0).apply(block),
+                SAKSBEHANDLER, MAKSDATO).apply(block),
             AVSTEMMINGSNØKKEL,
             NÅ
         )

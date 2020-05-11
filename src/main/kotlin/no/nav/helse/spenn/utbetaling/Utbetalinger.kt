@@ -36,7 +36,7 @@ internal class Utbetalinger(
             validate { it.interestedIn("maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
             validate {
-                it.requireKey("mottaker", "fagsystemId", "sjekksum")
+                it.requireKey("mottaker", "fagsystemId")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
                 it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("linjer") {
@@ -69,13 +69,14 @@ internal class Utbetalinger(
             .toLocalDateTime()
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
+        val sjekksum = utbetalingslinjer.hashCode()
 
         try {
             if (!oppdragDao.nyttOppdrag(
                     fagområde = packet["fagområde"].asText(),
                     avstemmingsnøkkel = avstemmingsnøkkel,
-                    sjekksum = utbetalingslinjer.sjekksum,
                     fødselsnummer = fødselsnummer,
+                    sjekksum = sjekksum,
                     organisasjonsnummer = organisasjonsnummer,
                     mottaker = mottaker,
                     tidspunkt = tidspunkt,

@@ -9,8 +9,7 @@ internal sealed class Utbetalingslinjer(
     internal val mottaker: String,
     internal val endringskode: String,
     internal val saksbehandler: String,
-    internal val maksdato: LocalDate?,
-    internal val sjekksum: Int
+    internal val maksdato: LocalDate?
 ) : Iterable<Utbetalingslinjer.Utbetalingslinje> {
     private val linjer = mutableListOf<Utbetalingslinje>()
 
@@ -25,7 +24,7 @@ internal sealed class Utbetalingslinjer(
 
     override fun iterator() = linjer.toList().listIterator()
     override fun equals(other: Any?) = other is Utbetalingslinjer && this.hashCode() == other.hashCode()
-    override fun hashCode() = sjekksum
+    override fun hashCode() = linjer.hashCode() * 67 + mottaker.hashCode()
 
     class RefusjonTilArbeidsgiver(
         fødselsnummer: String,
@@ -33,9 +32,16 @@ internal sealed class Utbetalingslinjer(
         fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
-        maksdato: LocalDate?,
-        sjekksum: Int
-    ) : Utbetalingslinjer("SPREF", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato, sjekksum)
+        maksdato: LocalDate?
+    ) : Utbetalingslinjer(
+        "SPREF",
+        fagsystemId,
+        fødselsnummer,
+        mottaker,
+        endringskode,
+        saksbehandler,
+        maksdato
+    )
 
     class UtbetalingTilBruker(
         fødselsnummer: String,
@@ -43,9 +49,8 @@ internal sealed class Utbetalingslinjer(
         fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
-        maksdato: LocalDate?,
-        sjekksum: Int
-    ) : Utbetalingslinjer("SP", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato, sjekksum)
+        maksdato: LocalDate?
+    ) : Utbetalingslinjer("SP", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato)
 
     internal class Utbetalingslinje(
         internal val delytelseId: Int,
@@ -65,5 +70,14 @@ internal sealed class Utbetalingslinjer(
             fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxBy { it.tom }?.tom
             fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.dagsats }
         }
+
+        override fun hashCode() = fom.hashCode() * 37 +
+                tom.hashCode() * 17 +
+                dagsats.hashCode() * 41 +
+                grad.hashCode() * 61 +
+                endringskode.hashCode() * 59 +
+                datoStatusFom.hashCode() * 23
+
+        override fun equals(other: Any?) = other is Utbetalingslinje && this.hashCode() == other.hashCode()
     }
 }

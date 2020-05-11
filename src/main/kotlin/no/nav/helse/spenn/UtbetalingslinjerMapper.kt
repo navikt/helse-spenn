@@ -24,8 +24,7 @@ internal object UtbetalingslinjerMapper {
             fødselsnummer = packet["fødselsnummer"].asText(),
             endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
-            maksdato = packet["maksdato"].takeUnless(JsonNode::isMissingOrNull)?.asLocalDate(),
-            sjekksum = packet["sjekksum"].asInt()
+            maksdato = packet["maksdato"].takeUnless(JsonNode::isMissingOrNull)?.asLocalDate()
         )
 
     private fun utbetalingTilBruker(packet: JsonMessage) =
@@ -35,8 +34,7 @@ internal object UtbetalingslinjerMapper {
             mottaker = packet["mottaker"].asText(),
             endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
-            maksdato = packet["maksdato"].takeUnless(JsonNode::isMissingOrNull)?.asLocalDate(),
-            sjekksum = packet["sjekksum"].asInt()
+            maksdato = packet["maksdato"].takeUnless(JsonNode::isMissingOrNull)?.asLocalDate()
         )
 
     private fun mapLinjer(utbetalingslinjer: Utbetalingslinjer, linjer: JsonNode) {
