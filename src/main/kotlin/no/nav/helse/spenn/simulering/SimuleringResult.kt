@@ -54,5 +54,6 @@ data class Detaljer(
 enum class SimuleringStatus {
     OK,
     OPPDRAG_UR_ER_STENGT,
-    FEIL
+    FUNKSJONELL_FEIL,
+    TEKNISK_FEIL
 }

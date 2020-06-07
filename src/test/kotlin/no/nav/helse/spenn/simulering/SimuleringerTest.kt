@@ -56,11 +56,21 @@ internal class SimuleringerTest {
 
     @Test
     fun `løser simuleringsbehov med simuleringfeil`() {
-        resultat(SimuleringStatus.FEIL)
+        resultat(SimuleringStatus.FUNKSJONELL_FEIL)
         rapid.sendTestMessage(simuleringbehov())
         assertEquals(1, inspektør.size)
         assertEquals(BEHOV, inspektør.id(0))
-        assertEquals("FEIL", inspektør.løsning(0, "Simulering").path("status").asText())
+        assertEquals("FUNKSJONELL_FEIL", inspektør.løsning(0, "Simulering").path("status").asText())
+        assertTrue(inspektør.løsning(0, "Simulering").path("simulering").isNull)
+    }
+
+    @Test
+    fun `løser simuleringsbehov med teknisk feil`() {
+        resultat(SimuleringStatus.TEKNISK_FEIL)
+        rapid.sendTestMessage(simuleringbehov())
+        assertEquals(1, inspektør.size)
+        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals("TEKNISK_FEIL", inspektør.løsning(0, "Simulering").path("status").asText())
         assertTrue(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
 

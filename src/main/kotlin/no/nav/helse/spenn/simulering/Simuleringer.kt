@@ -81,7 +81,7 @@ internal class Simuleringer(
             sikkerLogg.error("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
             packet["@løsning"] = mapOf(
                 "Simulering" to mapOf(
-                    "status" to SimuleringStatus.FEIL,
+                    "status" to SimuleringStatus.TEKNISK_FEIL,
                     "feilmelding" to "Fikk teknisk feil ved simulering",
                     "simulering" to null
                 )

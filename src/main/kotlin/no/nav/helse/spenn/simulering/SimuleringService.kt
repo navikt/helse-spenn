@@ -10,7 +10,10 @@ import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.slf4j.LoggerFactory
+import java.net.SocketException
 import java.time.LocalDate
+import javax.net.ssl.SSLException
+import javax.xml.ws.WebServiceException
 import javax.xml.ws.soap.SOAPFaultException
 
 class SimuleringService(private val simulerFpService: SimulerFpService) {
@@ -24,21 +27,29 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         return try {
             simulerFpService.simulerBeregning(simulerRequest)?.response?.let {
                 mapResponseToResultat(it)
-            } ?: SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = "Fikk ingen respons")
+            } ?: SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = "Fikk ingen respons")
         } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
             sikkerLogg.error("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
-            SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = e.faultInfo.errorMessage)
+            SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = e.faultInfo.errorMessage)
         } catch (e: SOAPFaultException) {
             if (e.cause is WstxEOFException) {
                 throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
             }
             throw e
-        } catch (e: Exception) {
-            log.error("Got unexpected error while running Simulering", e)
-            SimuleringResult(status = SimuleringStatus.FEIL, feilmelding = e.message ?: "")
+        } catch (e: WebServiceException) {
+            if (e.cause is SSLException || e.rootCause is SocketException) {
+                throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
+            }
+            throw e
         }
     }
+
+    private val Throwable.rootCause: Throwable get() {
+            var rootCause: Throwable = this
+            while (rootCause.cause != null) rootCause = rootCause.cause!!
+            return rootCause
+        }
 
     private fun mapResponseToResultat(response: SimulerBeregningResponse) = SimuleringResult(
         status = SimuleringStatus.OK,
