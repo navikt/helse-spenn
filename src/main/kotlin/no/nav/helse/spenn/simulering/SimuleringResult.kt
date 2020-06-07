@@ -8,7 +8,7 @@ import java.time.LocalDate
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SimuleringResult(
     val status: SimuleringStatus,
-    val feilmelding: String = "",
+    val feilmelding: String? = null,
     val simulering: Simulering? = null)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
