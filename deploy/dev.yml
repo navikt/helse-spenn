@@ -34,7 +34,7 @@ spec:
     enabled: true
     paths:
       - mountPath: /var/run/secrets/nais.io/vault
-        kvPath: /kv/preprod/fss/spenn/default
+        kvPath: /kv/preprod/fss/spenn/tbd
       - mountPath: /var/run/secrets/nais.io/service_user
         kvPath: /serviceuser/data/dev/srvspenn
   webproxy: true
