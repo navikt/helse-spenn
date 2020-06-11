@@ -47,7 +47,6 @@ jobs:
 
   snyk:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - uses: actions/checkout@v1
       - name: Gradle vulnerability check
@@ -57,12 +56,12 @@ jobs:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --org=tbd-ty7 --fail-on=all
+          args: --org=tbd-ty7 --fail-on=all --project-name=spesialist
           command: monitor
 
   deploy_dev:
     runs-on: ubuntu-latest
-    needs: [set_version, snyk]
+    needs: [set_version, snyk, build]
     steps:
       - uses: actions/checkout@v1
       - name: deploy to dev
