@@ -12,16 +12,17 @@ buildscript {
 
 val junitJupiterVersion = "5.4.0"
 val tjenestespesifikasjonVersion = "1.2020.04.03-12.49-f6b874c7ef1f"
+val cxfVersion = "3.3.4"
 
 val githubUser: String by project
 val githubPassword: String by project
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:1.47c31b4")
+    implementation("com.github.navikt:rapids-and-rivers:1.74ae9cb")
 
     implementation("org.flywaydb:flyway-core:6.3.1")
     implementation("com.zaxxer:HikariCP:3.4.2")
-    implementation("no.nav:vault-jdbc:1.3.1")
+    implementation("no.nav:vault-jdbc:1.3.7")
     implementation("com.github.seratch:kotliquery:1.3.1")
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.2.0")
@@ -34,10 +35,10 @@ dependencies {
     implementation("javax.activation:activation:1.1.1")
     implementation("org.apache.commons:commons-dbcp2:2.5.0")
     implementation("javax.xml.stream:stax-api:1.0-2")
-    implementation("org.apache.cxf:cxf-rt-features-logging:3.3.3")
-    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:3.3.3")
-    implementation("org.apache.cxf:cxf-rt-transports-http:3.3.3")
-    implementation("org.apache.cxf:cxf-rt-ws-security:3.3.3")
+    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
+    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
+    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
+    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
     implementation("javax.xml.ws:jaxws-api:2.3.1")
     implementation("javax.jws:javax.jws-api:1.1")
     implementation("com.sun.xml.messaging.saaj:saaj-impl:1.5.1")
@@ -65,6 +66,7 @@ configure<SourceSetContainer> {
 
 repositories {
     mavenCentral()
+    maven("https://kotlin.bintray.com/ktor")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/rapids-and-rivers")
         credentials {
