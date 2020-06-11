@@ -4,7 +4,7 @@ metadata:
   labels:
     team: {{team}}
   name: spenn
-  namespace: default
+  namespace: tbd
 spec:
   image: {{image}}:{{tag}}
   port: 8080

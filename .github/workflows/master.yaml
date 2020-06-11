@@ -5,7 +5,6 @@ on:
     branches:
       - master
 env:
-  APP: spenn
   TEAM: tbd
   IMAGE: docker.pkg.github.com/${{ github.repository }}/spenn
 
@@ -47,7 +46,7 @@ jobs:
           RESOURCE: deploy/dev.yml,deploy/dev-job.yml
           WAIT: false
           PRINT_PAYLOAD: true
-          VAR: "image=${{env.IMAGE}},tag=${{env.TAG}},team=${{env.TEAM}},app=${{env.APP}}"
+          VAR: "image=${{env.IMAGE}},tag=${{env.TAG}},team=${{env.TEAM}}"
       - name: deploy to prod
         uses: nais/deploy/actions/deploy@v1
         env:
@@ -57,5 +56,5 @@ jobs:
           RESOURCE: deploy/prod.yml,deploy/prod-job.yml
           WAIT: false
           PRINT_PAYLOAD: true
-          VAR: "image=${{env.IMAGE}},tag=${{env.TAG}},team=${{env.TEAM}},app=${{env.APP}}"
+          VAR: "image=${{env.IMAGE}},tag=${{env.TAG}},team=${{env.TEAM}}"
 

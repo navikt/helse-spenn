@@ -1,7 +1,9 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: {{app}}
+  labels:
+    team: {{team}}
+  name: spenn-avstemming
   namespace: tbd
 spec:
   schedule: "0 7 * * *"
@@ -12,7 +14,7 @@ spec:
       template:
         spec:
           containers:
-            - name: {{app}}
+            - name: spenn-avstemming
               image: {{image}}:{{tag}}
               resources:
                 requests:
@@ -88,13 +90,13 @@ spec:
                 - -vault=https://vault.adeo.no
                 - -one-shot
                 - -save-token=/var/run/secrets/nais.io/vault/vault_token
-                - -cn=secret:kv/prod/fss/{{app}}/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
-                - -cn=secret:serviceuser/data/prod/srv{{app}}:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
+                - -cn=secret:kv/prod/fss/spenn-avstemming/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
+                - -cn=secret:serviceuser/data/prod/srvspenn:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
               env:
                 - name: VAULT_AUTH_METHOD
                   value: kubernetes
                 - name: VAULT_SIDEKICK_ROLE
-                  value: {{app}}
+                  value: spenn-avstemming
                 - name: VAULT_K8S_LOGIN_PATH
                   value: auth/kubernetes/prod/fss/login
           serviceAccount: podcreator
