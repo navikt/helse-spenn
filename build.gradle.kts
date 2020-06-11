@@ -11,7 +11,7 @@ buildscript {
 }
 
 val junitJupiterVersion = "5.4.0"
-val tjenestespesifikasjonVersion = "1.2020.04.03-12.49-f6b874c7ef1f"
+val tjenestespesifikasjonVersion = "1.2020.06.11-19.53-1cad83414166"
 val cxfVersion = "3.3.4"
 
 val githubUser: String by project
@@ -43,9 +43,9 @@ dependencies {
     implementation("javax.jws:javax.jws-api:1.1")
     implementation("com.sun.xml.messaging.saaj:saaj-impl:1.5.1")
 
-    implementation("com.github.navikt:avstemming-v1-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
-    implementation("com.github.navikt:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
-    implementation("com.github.navikt:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
+    implementation("no.nav.tjenestespesifikasjoner:avstemming-v1-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
+    implementation("no.nav.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
+    implementation("no.nav.tjenestespesifikasjoner:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
 
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.9.3")
@@ -75,7 +75,7 @@ repositories {
         }
     }
     maven {
-        url = uri("https://maven.pkg.github.com/navikt/tjenestespesifikasjoner-tbd")
+        url = uri("https://maven.pkg.github.com/navikt/tjenestespesifikasjoner")
         credentials {
             username = githubUser
             password = githubPassword
