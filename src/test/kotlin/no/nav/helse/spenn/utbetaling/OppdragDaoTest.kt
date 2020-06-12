@@ -412,7 +412,7 @@ internal class OppdragDaoTest {
     }
 
     @Test
-    fun `Insert feiler dersom constraint (fnr, orgnr, sjekksum) er lik`() {
+    fun `Insert feiler dersom constraint sjekksum er lik`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
         assertTrue(oppdragDao.nyttOppdrag(
@@ -441,10 +441,23 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
+        assertTrue(oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = avstemmingsnøkkel + 1,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = "en annen person",
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        ))
     }
 
     @Test
-    fun `Insert er vellykket for ulike kombinasjoner av constraint (fnr, orgnr, sjekksum)`() {
+    fun `Insert er vellykket for ulike kombinasjoner av constraint sjekksum`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
         assertTrue(oppdragDao.nyttOppdrag(
@@ -463,7 +476,7 @@ internal class OppdragDaoTest {
         assertTrue(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel + 1,
-            sjekksum = SJEKKSUM,
+            sjekksum = SJEKKSUM + 1,
             fødselsnummer = "annenPerson",
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -476,7 +489,7 @@ internal class OppdragDaoTest {
         assertTrue(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel + 2,
-            sjekksum = SJEKKSUM,
+            sjekksum = SJEKKSUM + 2,
             fødselsnummer = PERSON,
             organisasjonsnummer = "annenOrg",
             mottaker = ORGNR,

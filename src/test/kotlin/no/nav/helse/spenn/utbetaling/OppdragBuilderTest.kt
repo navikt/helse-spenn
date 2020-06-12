@@ -86,7 +86,7 @@ internal class OppdragBuilderTest {
 
     private fun oppdragBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
-            Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, FAGSYSTEMID, endringskode,
+            Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, ORGNR, FAGSYSTEMID, endringskode,
                 SAKSBEHANDLER, MAKSDATO).apply(block),
             AVSTEMMINGSNØKKEL,
             NÅ

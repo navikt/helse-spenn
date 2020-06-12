@@ -7,6 +7,7 @@ internal sealed class Utbetalingslinjer(
     internal val fagsystemId: String,
     internal val fødselsnummer: String,
     internal val mottaker: String,
+    internal val organisasjonsnummer: String,
     internal val endringskode: String,
     internal val saksbehandler: String,
     internal val maksdato: LocalDate?
@@ -24,7 +25,10 @@ internal sealed class Utbetalingslinjer(
 
     override fun iterator() = linjer.toList().listIterator()
     override fun equals(other: Any?) = other is Utbetalingslinjer && this.hashCode() == other.hashCode()
-    override fun hashCode() = linjer.hashCode() * 67 + mottaker.hashCode()
+    override fun hashCode() = linjer.hashCode() * 67 +
+            mottaker.hashCode() * 71 +
+            organisasjonsnummer.hashCode() * 73 +
+            fødselsnummer.hashCode()
 
     class RefusjonTilArbeidsgiver(
         fødselsnummer: String,
@@ -38,6 +42,7 @@ internal sealed class Utbetalingslinjer(
         fagsystemId,
         fødselsnummer,
         mottaker,
+        mottaker,
         endringskode,
         saksbehandler,
         maksdato
@@ -46,11 +51,12 @@ internal sealed class Utbetalingslinjer(
     class UtbetalingTilBruker(
         fødselsnummer: String,
         mottaker: String,
+        organisasjonsnummer: String,
         fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
         maksdato: LocalDate?
-    ) : Utbetalingslinjer("SP", fagsystemId, fødselsnummer, mottaker, endringskode, saksbehandler, maksdato)
+    ) : Utbetalingslinjer("SP", fagsystemId, fødselsnummer, mottaker, organisasjonsnummer, endringskode, saksbehandler, maksdato)
 
     internal class Utbetalingslinje(
         internal val delytelseId: Int,

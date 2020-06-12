@@ -32,6 +32,7 @@ internal object UtbetalingslinjerMapper {
             fagsystemId = packet["fagsystemId"].asText(),
             fødselsnummer = packet["fødselsnummer"].asText(),
             mottaker = packet["mottaker"].asText(),
+            organisasjonsnummer = packet["organisasjonsnummer"].asText(),
             endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
             maksdato = packet["maksdato"].takeUnless(JsonNode::isMissingOrNull)?.asLocalDate()

@@ -80,7 +80,7 @@ internal class SimuleringRequestBuilderTest {
     }
 
     private fun simuleringRequestBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): SimulerBeregningRequest {
-        val builder = SimuleringRequestBuilder(Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, FAGSYSTEMID,
+        val builder = SimuleringRequestBuilder(Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, ORGNR, FAGSYSTEMID,
             endringskode, SAKSBEHANDLER, MAKSDATO).apply(block))
         return builder.build()
     }
