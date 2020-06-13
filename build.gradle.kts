@@ -49,7 +49,12 @@ dependencies {
 
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.9.3")
-    testImplementation("org.apache.activemq:apache-artemis:2.11.0")
+    testImplementation("org.apache.activemq:apache-artemis:2.11.0") {
+        /* this is a shaded jar that creates conflicts on classpath, see:
+            https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
+        */
+        exclude("org.apache.activemq", "artemis-jms-client-all")
+    }
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
