@@ -26,6 +26,7 @@
    </logger>
 
    <logger name="org.apache.cxf" level="WARN" />
+   <logger name="org.apache.cxf.phase.PhaseInterceptorChain" level="ERROR" />
    <logger name="org.apache.cxf.ws.addressing" level="ERROR" />
 
    <root level="INFO">
