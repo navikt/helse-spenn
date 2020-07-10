@@ -1,6 +1,7 @@
-Spenn 
-=====
+# Spenn 
+![Bygg og deploy](https://github.com/navikt/helse-spenn/workflows/Bygg%20og%20deploy/badge.svg)
 
+## Beskrivelse
 Lese utbetalingsbehov og simuleringsbehov og håndterer kommunikasjon videre mot Oppdrag/UR.
 
 ### Avstemming
@@ -21,3 +22,9 @@ For å teste en cronjob (for å slippe å vente til schedule slår inn), så kan
 NAME          READY   STATUS     RESTARTS   AGE
 spenn-8jrkm   0/1     Init:0/1   0          6s
 ```
+
+## Henvendelser
+Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
+
+### For NAV-ansatte
+Interne henvendelser kan sendes via Slack i kanalen #område-helse.
