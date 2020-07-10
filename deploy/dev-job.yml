@@ -2,7 +2,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   labels:
-    team: {{team}}
+    team: tbd
   name: spenn-avstemming
   namespace: tbd
 spec:
@@ -15,7 +15,7 @@ spec:
         spec:
           containers:
             - name: spenn-avstemming
-              image: {{image}}:{{tag}}
+              image: {{image}}
               resources:
                 requests:
                   memory: 256Mi

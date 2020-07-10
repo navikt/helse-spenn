@@ -1,51 +1,43 @@
-name: Bygg og deploy master
+name: Bygg og deploy
 
 on:
   push:
     branches:
       - master
-env:
-  TEAM: tbd
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/spenn
 
 jobs:
   set_version:
+    name: set image name
     runs-on: ubuntu-latest
     steps:
       - name: create docker tag
         run: echo ::set-env name=TAG::$(echo ${{ github.sha }} | cut -c1-7)
     outputs:
-      tag: ${{ env.TAG }}
+      image: docker.pkg.github.com/${{ github.repository }}/spenn:${{ env.TAG }}
 
   build:
+    name: build docker image
     runs-on: ubuntu-latest
     needs: set_version
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/cache@v1
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-          restore-keys: |
-              ${{ runner.os }}-gradle-
       - uses: actions/setup-java@v1
         with:
           java-version: '14.x'
-      - name: unit test and build
+      - name: test and build
         run: ./gradlew test build
         env:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: build docker image
-        run: docker build . --pull -t ${{ env.IMAGE }}:${{ needs.set_version.outputs.tag }}
+        run: docker build . --pull -t ${{ needs.set_version.outputs.image }}
       - name: push docker image
         run: |
-          echo "$GITHUB_TOKEN" | docker login --username "$GITHUB_REPOSITORY" --password-stdin https://docker.pkg.github.com
-          docker push ${{ env.IMAGE }}:${{ needs.set_version.outputs.tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          docker login --username "$GITHUB_REPOSITORY" -p ${{ secrets.GITHUB_TOKEN }} https://docker.pkg.github.com
+          docker push ${{ needs.set_version.outputs.image }}
 
   snyk:
+    name: check vulnerabilities
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -56,38 +48,31 @@ jobs:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --org=tbd-ty7 --fail-on=all --project-name=spenn
+          args: --project-name=spenn --org=tbd-ty7 --fail-on=all
           command: monitor
 
-  deploy_dev:
+  deployDev:
+    name: deploy to dev
+    needs: [set_version, build, snyk]
     runs-on: ubuntu-latest
-    needs: [set_version, snyk, build]
     steps:
       - uses: actions/checkout@v1
-      - name: deploy to dev
-        uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          ENVIRONMENT: dev-fss
           RESOURCE: deploy/dev.yml,deploy/dev-job.yml
-          WAIT: false
-          PRINT_PAYLOAD: true
-          VAR: "image=${{env.IMAGE}},tag=${{ needs.set_version.outputs.tag }},team=${{env.TEAM}}"
+          IMAGE: ${{ needs.set_version.outputs.image }}
 
-  deploy_prod:
+  deployProd:
+    name: deploy to prod
+    needs: [set_version, deployDev]
     runs-on: ubuntu-latest
-    needs: [set_version, deploy_dev]
     steps:
       - uses: actions/checkout@v1
-      - name: deploy to prod
-        uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          ENVIRONMENT: prod-fss
           RESOURCE: deploy/prod.yml,deploy/prod-job.yml
-          WAIT: false
-          PRINT_PAYLOAD: true
-          VAR: "image=${{env.IMAGE}},tag=${{ needs.set_version.outputs.tag }},team=${{env.TEAM}}"
-
+          IMAGE: ${{ needs.set_version.outputs.image }}
