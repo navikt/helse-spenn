@@ -30,7 +30,7 @@ jobs:
               ${{ runner.os }}-gradle-
       - uses: actions/setup-java@v1
         with:
-          java-version: '12.x'
+          java-version: '14.x'
       - name: unit test and build
         run: ./gradlew test build
         env:
