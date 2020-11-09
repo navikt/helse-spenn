@@ -68,7 +68,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         }
 
-    fun hentOppdragForSjekksum(sjekksum: Int) = using(sessionOf(dataSource)) { session ->
+    internal fun hentOppdragForSjekksum(sjekksum: Int) = using(sessionOf(dataSource)) { session ->
         val query = "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag WHERE sjekksum = ?"
         session.run(
             queryOf(query, sjekksum).map { it.toOppdragDto() }.asSingle

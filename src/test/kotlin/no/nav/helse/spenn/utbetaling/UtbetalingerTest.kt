@@ -54,6 +54,30 @@ internal class UtbetalingerTest {
     }
 
     @Test
+    fun `løser duplikat utbetalingsbehov`() {
+        val avstemmingsnøkkel = CapturingSlot<Long>()
+        val message = utbetalingsbehov()
+        fun oppdragDto() = OppdragDto(
+            avstemmingsnøkkel.captured,
+            PERSON,
+            FAGSYSTEMID,
+            LocalDateTime.now(),
+            Oppdragstatus.OVERFØRT,
+            BELØP,
+            null
+        )
+        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkkel), any(), any(), any(), any(), any(), any(), any(), any(), any()) } coAnswers { oppdragDto() } coAndThen { null }
+        every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto() }
+        rapid.sendTestMessage(message)
+        rapid.sendTestMessage(message)
+        assertEquals(2, inspektør.size)
+        assertEquals(1, connection.inspektør.antall())
+        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
+        assertOverført(0)
+        assertOverført(1)
+    }
+
+    @Test
     fun `ignorerer tomme utbetalingslinjer`() {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, inspektør.size)
