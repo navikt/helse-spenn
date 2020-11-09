@@ -68,6 +68,33 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         }
 
+    fun hentOppdragForSjekksum(sjekksum: Int) = using(sessionOf(dataSource)) { session ->
+        val query = "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag WHERE sjekksum = ?"
+        session.run(
+            queryOf(query, sjekksum).map { it.toOppdragDto() }.asSingle
+        )
+    }
+
+    internal fun nyttOppdrag(
+        fagområde: String,
+        avstemmingsnøkkel: Long,
+        sjekksum: Int,
+        fødselsnummer: String,
+        organisasjonsnummer: String,
+        mottaker: String,
+        tidspunkt: LocalDateTime,
+        fagsystemId: String,
+        status: Oppdragstatus,
+        totalbeløp: Int,
+        originalJson: String
+    ): OppdragDto? {
+        if (!lagre(fagområde, avstemmingsnøkkel, sjekksum, fødselsnummer, organisasjonsnummer, mottaker, tidspunkt, fagsystemId, status, totalbeløp, originalJson)) {
+            return null
+        }
+        return OppdragDto(avstemmingsnøkkel, fødselsnummer, fagsystemId, tidspunkt, status, totalbeløp, null)
+    }
+
+
     private fun Row.toOppdragDto() =
         OppdragDto(
             avstemmingsnøkkel = long("avstemmingsnokkel"),
@@ -79,7 +106,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             oppdragXml = stringOrNull("oppdrag_response")
         )
 
-    fun nyttOppdrag(
+    private fun lagre(
         fagområde: String,
         avstemmingsnøkkel: Long,
         sjekksum: Int,

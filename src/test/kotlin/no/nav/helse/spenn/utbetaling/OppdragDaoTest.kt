@@ -41,7 +41,7 @@ internal class OppdragDaoTest {
     @Test
     fun `opprette oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
             sjekksum = SJEKKSUM,
@@ -72,7 +72,7 @@ internal class OppdragDaoTest {
     @Test
     fun `duplikat oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
             sjekksum = SJEKKSUM,
@@ -85,7 +85,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
-        assertFalse(oppdragDao.nyttOppdrag(
+        assertNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
             sjekksum = SJEKKSUM + 1,
@@ -98,7 +98,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
-        assertFalse(oppdragDao.nyttOppdrag(
+        assertNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = AVSTEMMINGSNØKKEL + 1,
             sjekksum = SJEKKSUM,
@@ -415,7 +415,7 @@ internal class OppdragDaoTest {
     fun `Insert feiler dersom constraint sjekksum er lik`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel,
             sjekksum = SJEKKSUM,
@@ -428,7 +428,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
-        assertFalse(oppdragDao.nyttOppdrag(
+        assertNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel + 1,
             sjekksum = SJEKKSUM,
@@ -441,7 +441,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel + 1,
             sjekksum = SJEKKSUM,
@@ -460,7 +460,7 @@ internal class OppdragDaoTest {
     fun `Insert er vellykket for ulike kombinasjoner av constraint sjekksum`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel,
             sjekksum = SJEKKSUM,
@@ -473,7 +473,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel + 1,
             sjekksum = SJEKKSUM + 1,
@@ -486,7 +486,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel + 2,
             sjekksum = SJEKKSUM + 2,
@@ -499,7 +499,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         ))
-        assertTrue(oppdragDao.nyttOppdrag(
+        assertNotNull(oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel + 3,
             sjekksum = SJEKKSUM + 1,

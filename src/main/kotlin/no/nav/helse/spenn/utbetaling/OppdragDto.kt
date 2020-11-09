@@ -82,6 +82,14 @@ internal class OppdragDto(
         private fun totalbeløp(liste: List<OppdragDto>) = liste.sumBy { it.totalbeløp }
     }
 
+    internal fun somLøsning() =
+        mapOf(
+            "status" to status,
+            "beskrivelse" to status.beskrivelse(),
+            "overføringstidspunkt" to opprettet,
+            "avstemmingsnøkkel" to avstemmingsnøkkel
+        )
+
     private val kvittering = oppdragXml?.let { OppdragXml.unmarshal(it) }
 
     private fun somDetalj(): Detaljdata? {

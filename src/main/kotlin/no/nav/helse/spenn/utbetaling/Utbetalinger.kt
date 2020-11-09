@@ -72,36 +72,25 @@ internal class Utbetalinger(
         val sjekksum = utbetalingslinjer.hashCode()
 
         try {
-            if (!oppdragDao.nyttOppdrag(
-                    fagområde = packet["fagområde"].asText(),
-                    avstemmingsnøkkel = avstemmingsnøkkel,
-                    fødselsnummer = fødselsnummer,
-                    sjekksum = sjekksum,
-                    organisasjonsnummer = organisasjonsnummer,
-                    mottaker = mottaker,
-                    tidspunkt = tidspunkt,
-                    fagsystemId = fagsystemId,
-                    status = Oppdragstatus.OVERFØRT,
-                    totalbeløp = utbetalingslinjer.totalbeløp(),
-                    originalJson = packet.toJson()
-                )) {
-                packet["@løsning"] = mapOf(
-                    "Utbetaling" to mapOf(
-                        "status" to Oppdragstatus.FEIL,
-                        "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
-                    )
-                )
-            } else {
-                sendOppdrag(oppdrag)
-                packet["@løsning"] = mapOf(
-                    "Utbetaling" to mapOf(
-                        "status" to Oppdragstatus.OVERFØRT,
-                        "beskrivelse" to "Oppdraget er sendt til Oppdrag/UR. Venter på kvittering",
-                        "overføringstidspunkt" to tidspunkt,
-                        "avstemmingsnøkkel" to avstemmingsnøkkel
-                    )
-                )
-            }
+            val oppdragDto = oppdragDao.nyttOppdrag(
+                fagområde = packet["fagområde"].asText(),
+                avstemmingsnøkkel = avstemmingsnøkkel,
+                fødselsnummer = fødselsnummer,
+                sjekksum = sjekksum,
+                organisasjonsnummer = organisasjonsnummer,
+                mottaker = mottaker,
+                tidspunkt = tidspunkt,
+                fagsystemId = fagsystemId,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = utbetalingslinjer.totalbeløp(),
+                originalJson = packet.toJson()
+            )?.also { sendOppdrag(oppdrag) } ?: oppdragDao.hentOppdragForSjekksum(sjekksum)
+            packet["@løsning"] = mapOf(
+                "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(
+                    "status" to Oppdragstatus.FEIL,
+                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
+                ))
+            )
         } catch (err: Exception) {
             log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)
             packet["@løsning"] = mapOf(

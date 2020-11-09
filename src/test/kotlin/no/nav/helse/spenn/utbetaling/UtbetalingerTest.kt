@@ -1,10 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.TestConnection
@@ -45,7 +42,10 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser utbetalingsbehov`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns true
+        val avstemmingsnøkkel = CapturingSlot<Long>()
+        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkkel), any(), any(), any(), any(), any(), any(), any(), any(), any()) } answers {
+            OppdragDto(avstemmingsnøkkel.captured, PERSON, FAGSYSTEMID, LocalDateTime.now(), Oppdragstatus.OVERFØRT, BELØP, null)
+        }
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
@@ -63,7 +63,7 @@ internal class UtbetalingerTest {
 
     @Test
     fun `utbetalingsbehov med feil`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns false
+        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns null
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
