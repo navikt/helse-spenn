@@ -23,13 +23,13 @@ internal class Simuleringer(
             validate { it.demandValue("@event_name", "behov") }
             validate { it.demandAll("@behov", listOf("Simulering")) }
             validate { it.rejectKey("@løsning") }
-            validate { it.require("maksdato", JsonNode::asLocalDate) }
-            validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "saksbehandler") }
+            validate { it.require("Simulering.maksdato", JsonNode::asLocalDate) }
+            validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "Simulering.saksbehandler") }
             validate {
-                it.requireKey("mottaker", "fagsystemId")
-                it.requireAny("fagområde", listOf("SPREF", "SP"))
-                it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
-                it.requireArray("linjer") {
+                it.requireKey("Simulering", "Simulering.mottaker", "Simulering.fagsystemId")
+                it.requireAny("Simulering.fagområde", listOf("SPREF", "SP"))
+                it.requireAny("Simulering.endringskode", listOf("NY", "UEND", "ENDR"))
+                it.requireArray("Simulering.linjer") {
                     requireKey("dagsats", "grad", "delytelseId", "klassekode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
@@ -55,7 +55,8 @@ internal class Simuleringer(
 
     private fun håndter(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
-        val utbetalingslinjer = UtbetalingslinjerMapper.fraBehov(packet)
+        val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
+                .fraBehov(packet["Simulering"])
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
         try {

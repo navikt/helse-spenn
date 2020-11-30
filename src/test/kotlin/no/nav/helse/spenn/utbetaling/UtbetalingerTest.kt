@@ -149,29 +149,31 @@ internal class UtbetalingerTest {
                 "@behov" to listOf("Utbetaling"),
                 "@id" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
-                "mottaker" to ORGNR,
                 "fødselsnummer" to PERSON,
-                "saksbehandler" to SAKSBEHANDLER,
-                "maksdato" to "2020-04-20",
-                "mottaker" to ORGNR,
-                "fagområde" to "SPREF",
-                "fagsystemId" to FAGSYSTEMID,
-                "endringskode" to "NY",
-                "linjer" to utbetalingslinjer.map {
-                    mapOf<String, Any?>(
-                        "fom" to it["fom"],
-                        "tom" to it["tom"],
-                        "dagsats" to it["dagsats"],
-                        "grad" to it["grad"],
-                        "delytelseId" to 1,
-                        "refDelytelseId" to null,
-                        "refFagsystemId" to null,
-                        "endringskode" to "NY",
-                        "klassekode" to "SPREFAG-IOP",
-                        "datoStatusFom" to null,
-                        "statuskode" to null
-                    )
-                }
+                "Utbetaling" to mapOf(
+                    "mottaker" to ORGNR,
+                    "saksbehandler" to SAKSBEHANDLER,
+                    "maksdato" to "2020-04-20",
+                    "mottaker" to ORGNR,
+                    "fagområde" to "SPREF",
+                    "fagsystemId" to FAGSYSTEMID,
+                    "endringskode" to "NY",
+                    "linjer" to utbetalingslinjer.map {
+                        mapOf<String, Any?>(
+                            "fom" to it["fom"],
+                            "tom" to it["tom"],
+                            "dagsats" to it["dagsats"],
+                            "grad" to it["grad"],
+                            "delytelseId" to 1,
+                            "refDelytelseId" to null,
+                            "refFagsystemId" to null,
+                            "endringskode" to "NY",
+                            "klassekode" to "SPREFAG-IOP",
+                            "datoStatusFom" to null,
+                            "statuskode" to null
+                        )
+                    }
+                )
             )
         )
     }

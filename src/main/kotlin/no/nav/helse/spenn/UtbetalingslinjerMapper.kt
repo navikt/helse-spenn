@@ -5,8 +5,11 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.isMissingOrNull
 
-internal object UtbetalingslinjerMapper {
-    fun fraBehov(packet: JsonMessage): Utbetalingslinjer {
+internal class UtbetalingslinjerMapper(
+        private val fødselsnummer: String,
+        private val organisasjonsnummer: String
+) {
+    fun fraBehov(packet: JsonNode): Utbetalingslinjer {
         val fagområde = packet["fagområde"].asText()
         return when (fagområde) {
             "SPREF" -> refusjonTilArbeidsgiver(packet)
@@ -17,22 +20,22 @@ internal object UtbetalingslinjerMapper {
         }
     }
 
-    private fun refusjonTilArbeidsgiver(packet: JsonMessage) =
+    private fun refusjonTilArbeidsgiver(packet: JsonNode) =
         Utbetalingslinjer.RefusjonTilArbeidsgiver(
             mottaker = packet["mottaker"].asText(),
             fagsystemId = packet["fagsystemId"].asText(),
-            fødselsnummer = packet["fødselsnummer"].asText(),
+            fødselsnummer = fødselsnummer,
             endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
             maksdato = packet["maksdato"].takeUnless(JsonNode::isMissingOrNull)?.asLocalDate()
         )
 
-    private fun utbetalingTilBruker(packet: JsonMessage) =
+    private fun utbetalingTilBruker(packet: JsonNode) =
         Utbetalingslinjer.UtbetalingTilBruker(
             fagsystemId = packet["fagsystemId"].asText(),
-            fødselsnummer = packet["fødselsnummer"].asText(),
+            fødselsnummer = fødselsnummer,
             mottaker = packet["mottaker"].asText(),
-            organisasjonsnummer = packet["organisasjonsnummer"].asText(),
+            organisasjonsnummer = organisasjonsnummer,
             endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
             maksdato = packet["maksdato"].takeUnless(JsonNode::isMissingOrNull)?.asLocalDate()

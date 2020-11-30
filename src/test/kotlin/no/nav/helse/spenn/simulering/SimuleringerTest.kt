@@ -102,30 +102,32 @@ internal class SimuleringerTest {
                 "@behov" to listOf("Simulering"),
                 "@id" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
-                "mottaker" to ORGNR,
                 "fødselsnummer" to PERSON,
-                "maksdato" to "2020-04-20",
-                "saksbehandler" to "Spleis",
-                "mottaker" to ORGNR,
-                "fagområde" to "SPREF",
-                "fagsystemId" to "ref",
-                "endringskode" to "NY",
-                "sjekksum" to -873852214,
-                "linjer" to utbetalingslinjer.map {
-                    mapOf<String, Any?>(
-                        "fom" to it["fom"],
-                        "tom" to it["tom"],
-                        "dagsats" to it["dagsats"],
-                        "grad" to it["grad"],
-                        "delytelseId" to 1,
-                        "refDelytelseId" to null,
-                        "refFagsystemId" to null,
-                        "endringskode" to "NY",
-                        "klassekode" to "SPREFAG-IOP",
-                        "datoStatusFom" to null,
-                        "statuskode" to null
-                    )
-                }
+                "Simulering" to mapOf(
+                    "mottaker" to ORGNR,
+                    "maksdato" to "2020-04-20",
+                    "saksbehandler" to "Spleis",
+                    "mottaker" to ORGNR,
+                    "fagområde" to "SPREF",
+                    "fagsystemId" to "ref",
+                    "endringskode" to "NY",
+                    "sjekksum" to -873852214,
+                    "linjer" to utbetalingslinjer.map {
+                        mapOf<String, Any?>(
+                            "fom" to it["fom"],
+                            "tom" to it["tom"],
+                            "dagsats" to it["dagsats"],
+                            "grad" to it["grad"],
+                            "delytelseId" to 1,
+                            "refDelytelseId" to null,
+                            "refFagsystemId" to null,
+                            "endringskode" to "NY",
+                            "klassekode" to "SPREFAG-IOP",
+                            "datoStatusFom" to null,
+                            "statuskode" to null
+                        )
+                    }
+                )
             )
         )
     }
