@@ -1,6 +1,6 @@
 val junitJupiterVersion = "5.7.1"
 val tjenestespesifikasjonVersion = "1.4201aa"
-val cxfVersion = "3.4.2"
+val cxfVersion = "3.3.7"
 
 plugins {
     kotlin("jvm") version "1.4.30"
@@ -22,9 +22,9 @@ dependencies {
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.2.1.0")
 
-    implementation("com.sun.xml.bind:jaxb-core:3.0.0")
-    implementation("com.sun.xml.bind:jaxb-impl:3.0.0")
-    implementation("com.sun.xml.messaging.saaj:saaj-impl:2.0.0")
+    implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
+    implementation("com.sun.xml.bind:jaxb-impl:2.3.3")
+    implementation("com.sun.xml.messaging.saaj:saaj-impl:1.5.2")
     implementation("javax.activation:activation:1.1.1")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("javax.jws:javax.jws-api:1.1")
@@ -32,7 +32,7 @@ dependencies {
     implementation("javax.xml.bind:jaxb-api:2.3.1")
     implementation("javax.xml.stream:stax-api:1.0-2")
     implementation("javax.xml.ws:jaxws-api:2.3.1")
-    implementation("org.apache.commons:commons-dbcp2:2.8.0")
+    implementation("org.apache.commons:commons-dbcp2:2.7.0")
     implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
@@ -41,6 +41,15 @@ dependencies {
     implementation("com.github.navikt.tjenestespesifikasjoner:avstemming-v1-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
+
+    constraints {
+        implementation("com.fasterxml.woodstox:woodstox-core:6.2.3") {
+            because("får java.lang.NoSuchMethodError: 'org.codehaus.stax2.ri.EmptyIterator org.codehaus.stax2.ri.EmptyIterator.getInstance()'")
+        }
+        implementation("org.codehaus.woodstox:woodstox-core-asl:4.4.1") {
+            because("får java.lang.NoSuchMethodError: 'org.codehaus.stax2.ri.EmptyIterator org.codehaus.stax2.ri.EmptyIterator.getInstance()'")
+        }
+    }
 
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.10.6")
