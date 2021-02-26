@@ -72,8 +72,8 @@ internal sealed class Utbetalingslinjer(
         internal val statuskode: String?
     ) {
         internal companion object {
-            fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minBy { it.fom }?.fom
-            fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxBy { it.tom }?.tom
+            fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minByOrNull { it.fom }?.fom
+            fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxByOrNull { it.tom }?.tom
             fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.dagsats }
         }
 

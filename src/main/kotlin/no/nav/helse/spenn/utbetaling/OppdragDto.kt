@@ -20,16 +20,16 @@ internal class OppdragDto(
         fun periode(liste: List<OppdragDto>): ClosedRange<LocalDateTime> {
             check(liste.isNotEmpty())
             return object : ClosedRange<LocalDateTime> {
-                override val start = liste.minBy { it.opprettet }!!.opprettet
-                override val endInclusive = liste.maxBy { it.opprettet }!!.opprettet
+                override val start = liste.minOf { it.opprettet }
+                override val endInclusive = liste.maxOf { it.opprettet }
             }
         }
 
         fun avstemmingsperiode(liste: List<OppdragDto>): ClosedRange<Long> {
             check(liste.isNotEmpty())
             return LongRange(
-                liste.minBy { it.avstemmingsnøkkel }!!.avstemmingsnøkkel,
-                liste.maxBy { it.avstemmingsnøkkel }!!.avstemmingsnøkkel
+                liste.minOf { it.avstemmingsnøkkel },
+                liste.maxOf { it.avstemmingsnøkkel }
             )
         }
 

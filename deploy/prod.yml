@@ -38,9 +38,13 @@ spec:
       - mountPath: /var/run/secrets/nais.io/service_user
         kvPath: /serviceuser/data/prod/srvspenn
   webproxy: true
+  kafka:
+    pool: nav-prod
   secureLogs:
     enabled: true
   env:
+    - name: KAFKA_PREFER_ON_PREM
+      value: "true"
     - name: KAFKA_CONSUMER_GROUP_ID
       value: spenn-1
     - name: KAFKA_RAPID_TOPIC

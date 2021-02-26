@@ -41,11 +41,11 @@ internal class Simuleringer(
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext) {
         sikkerLogg.error("Fikk et Simulering-behov vi ikke validerte:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         withMDC(mapOf(
             "behovId" to packet["@id"].asText()
         )) {
@@ -53,7 +53,7 @@ internal class Simuleringer(
         }
     }
 
-    private fun håndter(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    private fun håndter(packet: JsonMessage, context: MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
         val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
                 .fraBehov(packet["Simulering"])
@@ -88,7 +88,7 @@ internal class Simuleringer(
                 )
             )
         } finally {
-            context.send(packet.toJson().also {
+            context.publish(packet.toJson().also {
                 sikkerLogg.info("svarer behov=${packet["@id"].asText()} med $it")
             })
         }

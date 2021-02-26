@@ -51,11 +51,11 @@ internal class Utbetalinger(
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext) {
         sikkerLogg.error("Fikk et Utbetaling-behov vi ikke validerte:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         log.info("løser utbetalingsbehov id=${packet["@id"].asText()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
         val organisasjonsnummer = packet["organisasjonsnummer"].asText()
@@ -102,7 +102,7 @@ internal class Utbetalinger(
             )
         }
 
-        context.send(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
+        context.publish(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
     }
 
     private fun sendOppdrag(oppdrag: Oppdrag) {

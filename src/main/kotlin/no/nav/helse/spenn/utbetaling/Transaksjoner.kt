@@ -1,10 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDateTime
+import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 
 internal class Transaksjoner(
@@ -27,7 +24,7 @@ internal class Transaksjoner(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val fødselsnummer = packet["fødselsnummer"].asText()
         val fagsystemId = packet["fagsystemId"].asText()
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
@@ -47,7 +44,7 @@ internal class Transaksjoner(
                     "beskrivelse" to packet["beskrivelse"].asText()
                 )
             )
-            context.send(it.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
+            context.publish(it.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
         }
     }
 }
