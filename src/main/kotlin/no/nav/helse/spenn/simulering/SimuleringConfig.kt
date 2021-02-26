@@ -29,7 +29,7 @@ class SimuleringConfig(
 ) {
     private companion object {
         private val log = LoggerFactory.getLogger(SimuleringConfig::class.java)
-        private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerFpServiceWSBinding.wsdl"
+        private val WSDL = "wsdl/no/nav/system/os/eksponering/simulerfpservicewsbinding.wsdl"
         private val NAMESPACE = "http://nav.no/system/os/eksponering/simulerFpServiceWSBinding"
         private val SERVICE = QName(NAMESPACE, "simulerFpService")
         private val PORT = QName(NAMESPACE, "simulerFpServicePort")
