@@ -27,21 +27,16 @@ spec:
                 - mountPath: /var/run/secrets/nais.io/vault
                   name: vault-secrets
                   subPath: subpath/var/run/secrets/nais.io/vault
-                - mountPath: /var/run/secrets/nais.io/service_user
-                  name: vault-secrets
-                  subPath: subpath/var/run/secrets/nais.io/service_user
-                - mountPath: /etc/ssl/certs/java/cacerts
-                  name: ca-bundle
-                  subPath: ca-bundle.jks
+                - mountPath: /var/run/secrets/nais.io/kafka
+                  name: kafka-credentials
+                  readOnly: true
               env:
                 - name: VAULT_TOKEN_PATH
                   value: /var/run/secrets/nais.io/vault/vault_token
                 - name: CRON_JOB_MODE
                   value: "true"
-                - name: KAFKA_BOOTSTRAP_SERVERS
-                  value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
                 - name: KAFKA_RAPID_TOPIC
-                  value: helse-rapid-v1
+                  value: tbd.rapid.v1
                 - name: DATABASE_HOST
                   value: b27dbvl007.preprod.local
                 - name: DATABASE_PORT
@@ -61,10 +56,20 @@ spec:
                 - name: AVSTEMMING_QUEUE_SEND
                   # Setter target client = 1 for bakoverkompabilitet med stormaskin
                   value: queue:///QA.Q1_234.OB29_AVSTEMMING_XML?targetClient=1
-                - name: NAV_TRUSTSTORE_PATH
-                  value: /etc/ssl/certs/java/cacerts
-                - name: NAV_TRUSTSTORE_PASSWORD
-                  value: changeme
+                - name: KAFKA_BROKERS
+                  valueFrom:
+                    secretKeyRef:
+                      key: KAFKA_BROKERS
+                      name: kafka-spenn-avstemming-nav-dev-54a6fb8c
+                - name: KAFKA_CREDSTORE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: KAFKA_CREDSTORE_PASSWORD
+                      name: kafka-spenn-avstemming-nav-dev-54a6fb8c
+                - name: KAFKA_KEYSTORE_PATH
+                  value: /var/run/secrets/nais.io/kafka/client.keystore.p12
+                - name: KAFKA_TRUSTSTORE_PATH
+                  value: /var/run/secrets/nais.io/kafka/client.truststore.jks
           imagePullSecrets:
             - name: gpr-credentials
           initContainers:
@@ -81,17 +86,12 @@ spec:
                 - mountPath: /var/run/secrets/nais.io/vault
                   name: vault-secrets
                   subPath: subpath/var/run/secrets/nais.io/vault
-                - mountPath: /var/run/secrets/nais.io/service_user
-                  name: vault-secrets
-                  subPath: subpath/var/run/secrets/nais.io/service_user
               args:
                 - -v=10
                 - -logtostderr
                 - -vault=https://vault.adeo.no
                 - -one-shot
                 - -save-token=/var/run/secrets/nais.io/vault/vault_token
-                - -cn=secret:kv/preprod/fss/spenn-avstemming/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
-                - -cn=secret:serviceuser/data/dev/srvspenn:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
               env:
                 - name: VAULT_AUTH_METHOD
                   value: kubernetes
@@ -105,9 +105,19 @@ spec:
             - name: vault-secrets
               emptyDir:
                 medium: Memory
-            - name: ca-bundle
-              configMap:
+            - name: kafka-credentials
+              secret:
                 defaultMode: 420
-                name: ca-bundle-jks
+                items:
+                  - key: KAFKA_CERTIFICATE
+                    path: kafka.crt
+                  - key: KAFKA_PRIVATE_KEY
+                    path: kafka.key
+                  - key: KAFKA_CA
+                    path: ca.crt
+                  - key: client.keystore.p12
+                    path: client.keystore.p12
+                  - key: client.truststore.jks
+                    path: client.truststore.jks
+                secretName: kafka-spenn-avstemming-nav-dev-54a6fb8c
           restartPolicy: Never
-
