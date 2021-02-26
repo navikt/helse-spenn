@@ -1,5 +1,5 @@
 val junitJupiterVersion = "5.7.1"
-val tjenestespesifikasjonVersion = "1.2020.06.11-19.53-1cad83414166"
+val tjenestespesifikasjonVersion = "1.4201aa"
 val cxfVersion = "3.4.2"
 
 plugins {
@@ -13,13 +13,6 @@ repositories {
     mavenCentral()
     maven("https://kotlin.bintray.com/ktor")
     maven("https://jitpack.io")
-    maven {
-        url = uri("https://maven.pkg.github.com/navikt/tjenestespesifikasjoner")
-        credentials {
-            username = githubUser
-            password = githubPassword
-        }
-    }
 }
 
 dependencies {
@@ -48,9 +41,9 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
 
-    implementation("no.nav.tjenestespesifikasjoner:avstemming-v1-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
-    implementation("no.nav.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
-    implementation("no.nav.tjenestespesifikasjoner:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
+    implementation("com.github.navikt.tjenestespesifikasjoner:avstemming-v1-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
+    implementation("com.github.navikt.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
+    implementation("com.github.navikt.tjenestespesifikasjoner:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
 
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.10.6")
