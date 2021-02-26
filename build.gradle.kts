@@ -20,7 +20,7 @@ dependencies {
     implementation("no.nav:vault-jdbc:1.3.7")
     implementation("com.github.seratch:kotliquery:1.3.1")
 
-    implementation("com.ibm.mq:com.ibm.mq.allclient:9.1.5.0")
+    implementation("com.ibm.mq:com.ibm.mq.allclient:9.2.1.0")
 
     implementation("com.sun.xml.bind:jaxb-core:3.0.0")
     implementation("com.sun.xml.bind:jaxb-impl:3.0.0")
@@ -32,7 +32,7 @@ dependencies {
     implementation("javax.xml.bind:jaxb-api:2.3.1")
     implementation("javax.xml.stream:stax-api:1.0-2")
     implementation("javax.xml.ws:jaxws-api:2.3.1")
-    implementation("org.apache.commons:commons-dbcp2:2.7.0")
+    implementation("org.apache.commons:commons-dbcp2:2.8.0")
     implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
@@ -44,7 +44,7 @@ dependencies {
 
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.10.6")
-    testImplementation("org.apache.activemq:apache-artemis:2.13.0") {
+    testImplementation("org.apache.activemq:apache-artemis:2.17.0") {
         /* this is a shaded jar that creates conflicts on classpath, see:
             https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
         */

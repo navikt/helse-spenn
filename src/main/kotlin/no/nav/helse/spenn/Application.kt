@@ -1,6 +1,7 @@
 package no.nav.helse.spenn
 
 import com.ibm.mq.jms.MQConnectionFactory
+import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.wmq.WMQConstants
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -115,6 +116,7 @@ private fun mqConnection(env: Map<String, String>) =
         channel = env.getValue("MQ_CHANNEL")
         queueManager = env.getValue("MQ_QUEUE_MANAGER")
         transportType = WMQConstants.WMQ_CM_CLIENT
+        setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, false)
     }.createConnection(env.getValue("MQ_USERNAME"), env.getValue("MQ_PASSWORD"))
 
 private fun String.readFile() = File(this).readText(Charsets.UTF_8)
