@@ -35,8 +35,8 @@ private fun rapidApp(env: Map<String, String>) {
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
         stsSoapUrl = env.getValue("SECURITYTOKENSERVICE_URL"),
-        username = "/var/run/secrets/nais.io/service_user/username".readFile(),
-        password = "/var/run/secrets/nais.io/service_user/password".readFile(),
+        username = "/var/run/secrets/nais.io/service_user/username".readFile() ?: throw IllegalArgumentException("Forventer username"),
+        password = "/var/run/secrets/nais.io/service_user/password".readFile() ?: throw IllegalArgumentException("Forventer passord"),
         disableCNCheck = true
     )
 
@@ -82,10 +82,12 @@ private fun avstemmingJob(env: Map<String, String>) {
     val dataSource = dataSourceBuilder.getDataSource()
     val kafkaConfig = no.nav.helse.spenn.avstemming.KafkaConfig(
         bootstrapServers = env.getValue("KAFKA_BROKERS"),
+        username = "/var/run/secrets/nais.io/service_user/username".readFile(),
+        password = "/var/run/secrets/nais.io/service_user/password".readFile(),
         truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
         truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
-        keystoreLocation = env.getValue("KAFKA_KEYSTORE_PATH"),
-        keystorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
+        keystoreLocation = env["KAFKA_KEYSTORE_PATH"],
+        keystorePassword = env["KAFKA_CREDSTORE_PASSWORD"],
     )
     val strings = StringSerializer()
 
@@ -119,4 +121,4 @@ private fun mqConnection(env: Map<String, String>) =
         setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, false)
     }.createConnection(env.getValue("MQ_USERNAME"), env.getValue("MQ_PASSWORD"))
 
-private fun String.readFile() = File(this).readText(Charsets.UTF_8)
+private fun String.readFile() = try { File(this).readText(Charsets.UTF_8) } catch (err: Exception) { null }

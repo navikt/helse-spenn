@@ -38,7 +38,7 @@ spec:
                   value: /var/run/secrets/nais.io/vault/vault_token
                 - name: CRON_JOB_MODE
                   value: "true"
-                - name: KAFKA_BOOTSTRAP_SERVERS
+                - name: KAFKA_BROKERS
                   value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
                 - name: KAFKA_RAPID_TOPIC
                   value: helse-rapid-v1
@@ -61,9 +61,9 @@ spec:
                 - name: AVSTEMMING_QUEUE_SEND
                   # Setter target client = 1 for bakoverkompabilitet med stormaskin
                   value: queue:///QA.P234.OB29_AVSTEMMING_XML?targetClient=1
-                - name: NAV_TRUSTSTORE_PATH
+                - name: KAFKA_TRUSTSTORE_PATH
                   value: /etc/ssl/certs/java/cacerts
-                - name: NAV_TRUSTSTORE_PASSWORD
+                - name: KAFKA_CREDSTORE_PASSWORD
                   value: changeme
           imagePullSecrets:
             - name: gpr-credentials
