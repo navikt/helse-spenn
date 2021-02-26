@@ -92,6 +92,7 @@ spec:
                 - -vault=https://vault.adeo.no
                 - -one-shot
                 - -save-token=/var/run/secrets/nais.io/vault/vault_token
+                - -cn=secret:kv/preprod/fss/spenn-avstemming/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
               env:
                 - name: VAULT_AUTH_METHOD
                   value: kubernetes
