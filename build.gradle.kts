@@ -42,15 +42,6 @@ dependencies {
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
 
-    constraints {
-        implementation("com.fasterxml.woodstox:woodstox-core:6.2.3") {
-            because("får java.lang.NoSuchMethodError: 'org.codehaus.stax2.ri.EmptyIterator org.codehaus.stax2.ri.EmptyIterator.getInstance()'")
-        }
-        implementation("org.codehaus.woodstox:woodstox-core-asl:4.4.1") {
-            because("får java.lang.NoSuchMethodError: 'org.codehaus.stax2.ri.EmptyIterator org.codehaus.stax2.ri.EmptyIterator.getInstance()'")
-        }
-    }
-
     testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.10.6")
     testImplementation("org.apache.activemq:apache-artemis:2.17.0") {
