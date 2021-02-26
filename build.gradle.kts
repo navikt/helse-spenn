@@ -6,9 +6,6 @@ plugins {
     kotlin("jvm") version "1.4.30"
 }
 
-val githubUser: String by project
-val githubPassword: String by project
-
 repositories {
     mavenCentral()
     maven("https://kotlin.bintray.com/ktor")
