@@ -5,9 +5,11 @@ import com.ibm.mq.jms.MQQueue
 import com.ibm.msg.client.jms.JmsProducer
 import com.ibm.msg.client.jms.JmsQueue
 import com.ibm.msg.client.wmq.common.internal.Reason
+import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.jms.JMSException
@@ -91,9 +93,9 @@ internal class OppdragDto(
         private fun totalbeløp(liste: List<OppdragDto>) = liste.sumBy { it.totalbeløp }
     }
 
-    internal fun sendOppdrag(dao: OppdragDao, oppdrag: Oppdrag, jmsSession: Session, producer: MessageProducer, queue: JmsQueue) {
+    internal fun sendOppdrag(dao: OppdragDao, utbetalingslinjer: Utbetalingslinjer, nå: Instant, jmsSession: Session, producer: MessageProducer, queue: JmsQueue) {
         if (status != Oppdragstatus.MOTTATT) return
-
+        val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
         try {
             val oppdragXml = OppdragXml.marshal(oppdrag)
             val message = jmsSession.createTextMessage(oppdragXml)

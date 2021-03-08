@@ -73,7 +73,6 @@ internal class Utbetalinger(
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
-        val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
         val sjekksum = utbetalingslinjer.hashCode()
 
         try {
@@ -91,7 +90,7 @@ internal class Utbetalinger(
                 originalJson = packet.toJson()
             ) ?: oppdragDao.hentOppdragForSjekksum(sjekksum)
 
-            oppdragDto?.sendOppdrag(oppdragDao, oppdrag, jmsSession, producer, MQQueue(replyTo))
+            oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, jmsSession, producer, MQQueue(replyTo))
 
             packet["@løsning"] = mapOf(
                 "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(
