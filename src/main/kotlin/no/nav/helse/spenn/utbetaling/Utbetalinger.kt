@@ -1,7 +1,10 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ibm.mq.MQException
 import com.ibm.mq.jms.MQQueue
+import com.ibm.msg.client.jms.DetailedJMSException
+import com.ibm.msg.client.wmq.common.internal.Reason
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.UtbetalingslinjerMapper
@@ -11,6 +14,7 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId
 import javax.jms.Connection
+import javax.jms.JMSException
 
 internal class Utbetalinger(
         rapidsConnection: RapidsConnection,
@@ -74,24 +78,27 @@ internal class Utbetalinger(
 
         try {
             val oppdragDto = oppdragDao.nyttOppdrag(
-                    fagområde = packet["Utbetaling.fagområde"].asText(),
-                    avstemmingsnøkkel = avstemmingsnøkkel,
-                    fødselsnummer = fødselsnummer,
-                    sjekksum = sjekksum,
-                    organisasjonsnummer = organisasjonsnummer,
-                    mottaker = mottaker,
-                    tidspunkt = tidspunkt,
-                    fagsystemId = fagsystemId,
-                    status = Oppdragstatus.OVERFØRT,
-                    totalbeløp = utbetalingslinjer.totalbeløp(),
-                    originalJson = packet.toJson()
+                fagområde = packet["Utbetaling.fagområde"].asText(),
+                avstemmingsnøkkel = avstemmingsnøkkel,
+                fødselsnummer = fødselsnummer,
+                sjekksum = sjekksum,
+                organisasjonsnummer = organisasjonsnummer,
+                mottaker = mottaker,
+                tidspunkt = tidspunkt,
+                fagsystemId = fagsystemId,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = utbetalingslinjer.totalbeløp(),
+                originalJson = packet.toJson()
             )?.also { sendOppdrag(oppdrag) } ?: oppdragDao.hentOppdragForSjekksum(sjekksum)
             packet["@løsning"] = mapOf(
-                    "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(
-                            "status" to Oppdragstatus.FEIL,
-                            "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
-                    ))
+                "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(
+                    "status" to Oppdragstatus.FEIL,
+                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
+                ))
             )
+        } catch (err: MQErNede) {
+            // kast exception videre oppover; dersom MQ er nede ønsker vi at spenn skal restarte
+            throw err
         } catch (err: Exception) {
             log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)
             packet["@løsning"] = mapOf(
@@ -106,9 +113,21 @@ internal class Utbetalinger(
     }
 
     private fun sendOppdrag(oppdrag: Oppdrag) {
-        val oppdragXml = OppdragXml.marshal(oppdrag)
-        val message = jmsSession.createTextMessage(oppdragXml)
-        message.jmsReplyTo = MQQueue(replyTo)
-        producer.send(message)
+        try {
+            val oppdragXml = OppdragXml.marshal(oppdrag)
+            val message = jmsSession.createTextMessage(oppdragXml)
+            message.jmsReplyTo = MQQueue(replyTo)
+            producer.send(message)
+        } catch (err: JMSException) {
+            val message = err.message
+            val cause = err.cause
+
+            if ( (cause != null && cause is MQException && Reason.isConnectionBroken(cause.reason))
+                || (message != null && message.contains("Failed to send a message to destination"))) {
+                throw MQErNede("Kan ikke sende melding på MQ-kø", err)
+            }
+
+            throw err
+        }
     }
 }
