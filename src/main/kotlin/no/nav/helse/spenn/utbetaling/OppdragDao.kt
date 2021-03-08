@@ -29,6 +29,20 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         } == 1
 
+    fun oppdaterOppdrag(
+        avstemmingsnøkkel: Long,
+        fagsystemId: String,
+        status: Oppdragstatus
+    ) =
+        using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    "UPDATE oppdrag SET endret = now(), status = ? WHERE avstemmingsnokkel = ? AND fagsystem_id = ?",
+                    status.name, avstemmingsnøkkel, fagsystemId
+                ).asUpdate
+            )
+        } == 1
+
     fun hentBehovForOppdrag(avstemmingsnøkkel: Long) =
         using(sessionOf(dataSource)) { session ->
             session.run(queryOf("SELECT behov FROM oppdrag WHERE avstemmingsnokkel = ?", avstemmingsnøkkel).map {

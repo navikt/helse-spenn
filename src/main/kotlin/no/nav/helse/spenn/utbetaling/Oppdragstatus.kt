@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
 enum class Oppdragstatus {
+    MOTTATT,
     OVERFØRT,
     AKSEPTERT,
     AKSEPTERT_MED_FEIL,
@@ -8,6 +9,7 @@ enum class Oppdragstatus {
     FEIL;
 
     fun beskrivelse() = when (this) {
+        MOTTATT -> "Oppdraget er mottatt, men ikke sendt til Oppdrag/UR"
         OVERFØRT -> "Oppdraget er sendt til Oppdrag/UR. Venter på kvittering"
         AKSEPTERT -> "Oppdraget ble akseptert uten feil"
         AKSEPTERT_MED_FEIL -> "Oppdraget ble akseptert, men noe er feil"

@@ -1,0 +1,1 @@
+UPDATE oppdrag SET status='MOTTATT' WHERE status='OVERFØRT' AND opprettet > '2021-03-08 00:00:00' AND opprettet < '2021-03-08 10:00:00';

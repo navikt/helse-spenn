@@ -1,16 +1,25 @@
 package no.nav.helse.spenn.utbetaling
 
+import com.ibm.mq.MQException
+import com.ibm.mq.jms.MQQueue
+import com.ibm.msg.client.jms.JmsProducer
+import com.ibm.msg.client.jms.JmsQueue
+import com.ibm.msg.client.wmq.common.internal.Reason
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
+import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import javax.jms.JMSException
+import javax.jms.MessageProducer
+import javax.jms.Session
 
 internal class OppdragDto(
     private val avstemmingsnøkkel: Long,
     private val fødselsnummer: String,
     private val fagsystemId: String,
     private val opprettet: LocalDateTime,
-    private val status: Oppdragstatus,
+    private var status: Oppdragstatus,
     private val totalbeløp: Int,
     oppdragXml: String?
 ) {
@@ -80,6 +89,29 @@ internal class OppdragDto(
         }
 
         private fun totalbeløp(liste: List<OppdragDto>) = liste.sumBy { it.totalbeløp }
+    }
+
+    internal fun sendOppdrag(dao: OppdragDao, oppdrag: Oppdrag, jmsSession: Session, producer: MessageProducer, queue: JmsQueue) {
+        if (status != Oppdragstatus.MOTTATT) return
+
+        try {
+            val oppdragXml = OppdragXml.marshal(oppdrag)
+            val message = jmsSession.createTextMessage(oppdragXml)
+            message.jmsReplyTo = queue
+            producer.send(message)
+            status = Oppdragstatus.OVERFØRT
+            dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
+        } catch (err: JMSException) {
+            val message = err.message
+            val cause = err.cause
+
+            if ( (cause != null && cause is MQException && Reason.isConnectionBroken(cause.reason))
+                || (message != null && message.contains("Failed to send a message to destination"))) {
+                throw MQErNede("Kan ikke sende melding på MQ-kø", err)
+            }
+
+            throw err
+        }
     }
 
     internal fun somLøsning() =
