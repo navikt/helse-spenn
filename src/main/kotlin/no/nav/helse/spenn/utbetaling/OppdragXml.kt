@@ -29,11 +29,13 @@ object OppdragXml {
         }
     }
 
+    fun normalizeXml(oppdragXML: String) =
+        oppdragXML
+            .replace("<oppdrag xmlns=", "<ns2:oppdrag xmlns:ns2=", ignoreCase = true)
+            .replace("</Oppdrag>", "</ns2:oppdrag>", ignoreCase = true)
+
     fun unmarshal(oppdragXML: String): Oppdrag {
-        return StringReader(oppdragXML
-            .replace("<oppdrag xmlns=", "<ns2:oppdrag xmlns:ns2=")
-            .replace("</Oppdrag>", "</ns2:oppdrag>")
-        ).use {
+        return StringReader(normalizeXml(oppdragXML)).use {
             xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
             xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)
             unmarshaller.unmarshal(

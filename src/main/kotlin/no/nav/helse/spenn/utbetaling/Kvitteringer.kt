@@ -25,7 +25,7 @@ internal class Kvitteringer(
     init {
         consumer.setMessageListener { message ->
             try {
-                val body = message.getBody(String::class.java)
+                val body = OppdragXml.normalizeXml(message.getBody(String::class.java))
                 try {
                     sikkerLogg.info("mottok kvittering fra oppdrag body:\n$body")
                     onMessage(body)
@@ -40,6 +40,13 @@ internal class Kvitteringer(
     }
 
     private fun onMessage(xmlMessage: String) {
+        rapidsConnection.publish(JsonMessage.newMessage(mapOf(
+            "@event_name" to "oppdrag_kvittering",
+            "@id" to UUID.randomUUID(),
+            "@opprettet" to LocalDateTime.now(),
+            "originalXml" to xmlMessage
+        )).toJson().also { sikkerLogg.info("sender oppdrag_kvittering:\n$it") })
+
         val oppdrag = OppdragXml.unmarshal(xmlMessage)
         val avstemmingsnøkkel = requireNotNull(oppdrag.oppdrag110.avstemming115.nokkelAvstemming).toLong()
         val fagsystemId = requireNotNull(oppdrag.oppdrag110.fagsystemId)

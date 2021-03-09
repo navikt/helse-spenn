@@ -55,7 +55,11 @@ internal class KvitteringerIntegrationTest {
             producer.send(message)
         }
 
-        awaitUntilAsserted(Duration.ofSeconds(5L)) { assertEquals(1, rapid.inspektør.size) }
+        awaitUntilAsserted(Duration.ofSeconds(5L)) {
+            assertEquals(2, rapid.inspektør.size)
+            assertEquals("oppdrag_kvittering", rapid.inspektør.field(0, "@event_name").asText())
+            assertEquals("transaksjon_status", rapid.inspektør.field(1, "@event_name").asText())
+        }
     }
 
     @BeforeAll
