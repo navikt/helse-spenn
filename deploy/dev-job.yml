@@ -24,6 +24,9 @@ spec:
                   memory: 4096Mi
                   cpu: 2000m
               volumeMounts:
+                - mountPath: /var/run/secrets/nais.io/vault
+                  name: vault-secrets
+                  subPath: subpath/var/run/secrets/nais.io/vault
                 - mountPath: /var/run/secrets/nais.io/kafka
                   name: kafka-credentials
                   readOnly: true
