@@ -33,8 +33,6 @@ spec:
   vault:
     enabled: true
     paths:
-      - mountPath: /var/run/secrets/nais.io/vault
-        kvPath: /kv/prod/fss/spenn/tbd
       - mountPath: /var/run/secrets/nais.io/service_user
         kvPath: /serviceuser/data/prod/srvspenn
   webproxy: true
@@ -42,6 +40,8 @@ spec:
     pool: nav-prod
   secureLogs:
     enabled: true
+  envFrom:
+    - secret: spenn
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-v1

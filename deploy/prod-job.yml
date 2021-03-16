@@ -24,12 +24,12 @@ spec:
                   memory: 4096Mi
                   cpu: 2000m
               volumeMounts:
-                - mountPath: /var/run/secrets/nais.io/vault
-                  name: vault-secrets
-                  subPath: subpath/var/run/secrets/nais.io/vault
                 - mountPath: /var/run/secrets/nais.io/kafka
                   name: kafka-credentials
                   readOnly: true
+              envFrom:
+                - secretRef:
+                    name: spenn
               env:
                 - name: VAULT_TOKEN_PATH
                   value: /var/run/secrets/nais.io/vault/vault_token
@@ -92,7 +92,6 @@ spec:
                 - -vault=https://vault.adeo.no
                 - -one-shot
                 - -save-token=/var/run/secrets/nais.io/vault/vault_token
-                - -cn=secret:kv/prod/fss/spenn-avstemming/tbd:dir=/var/run/secrets/nais.io/vault,fmt=flatten,retries=1
               env:
                 - name: VAULT_AUTH_METHOD
                   value: kubernetes
