@@ -81,6 +81,32 @@ internal class UtbetalingerTest {
     }
 
     @Test
+    fun `Tillater duplikat melding ved AVVIST`() {
+        val avstemmingsnøkler = mutableListOf<Long>()
+        val message = utbetalingsbehov()
+        fun oppdragDto(status: Oppdragstatus = Oppdragstatus.OVERFØRT) = OppdragDto(
+                avstemmingsnøkler.first(),
+                PERSON,
+                FAGSYSTEMID,
+                LocalDateTime.now(),
+                status,
+                BELØP,
+                null
+        )
+        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkler), any(), any(), any(), any(), any(), any(), any(), any(), any()) } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
+        every { dao.oppdaterOppdrag(match { it == avstemmingsnøkler.first() }, any(), Oppdragstatus.OVERFØRT) } returns true
+        every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto(Oppdragstatus.AVVIST) }
+        rapid.sendTestMessage(message)
+        rapid.sendTestMessage(message)
+        assertEquals(2, inspektør.size)
+        assertEquals(2, connection.inspektør.antall())
+        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
+        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(1).jmsReplyTo.toString())
+        assertOverført(indeks = 0, antallOverforinger = 2)
+        assertOverført(indeks = 1, antallOverforinger = 2)
+    }
+
+    @Test
     fun `ignorerer tomme utbetalingslinjer`() {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, inspektør.size)
@@ -113,7 +139,7 @@ internal class UtbetalingerTest {
         }
     }
 
-    private fun assertOverført(indeks: Int) {
+    private fun assertOverført(indeks: Int, antallOverforinger : Int = 1) {
         assertEquals(BEHOV, inspektør.id(indeks))
         inspektør.løsning(indeks, "Utbetaling") {
             assertEquals(Oppdragstatus.OVERFØRT.name, it.path("status").asText())
@@ -136,7 +162,7 @@ internal class UtbetalingerTest {
             totalbeløp = BELØP,
             originalJson = any()
         ) }
-        verify(exactly = 1) { dao.oppdaterOppdrag(avstemmingsnøkkel, FAGSYSTEMID, Oppdragstatus.OVERFØRT) }
+        verify(exactly = antallOverforinger) { dao.oppdaterOppdrag(avstemmingsnøkkel, FAGSYSTEMID, Oppdragstatus.OVERFØRT) }
     }
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(

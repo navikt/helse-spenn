@@ -94,7 +94,7 @@ internal class OppdragDto(
     }
 
     internal fun sendOppdrag(dao: OppdragDao, utbetalingslinjer: Utbetalingslinjer, nå: Instant, jmsSession: Session, producer: MessageProducer, queue: JmsQueue) {
-        if (status != Oppdragstatus.MOTTATT) return
+        if (!setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST).contains(status)) return
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
         try {
             val oppdragXml = OppdragXml.marshal(oppdrag)
