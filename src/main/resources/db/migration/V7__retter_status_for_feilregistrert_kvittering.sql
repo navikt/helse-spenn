@@ -1,0 +1,4 @@
+UPDATE oppdrag
+SET status = 'AKSEPTERT'
+WHERE fagsystem_id = 'POMGJZFCQFGZVLG2O5SCLDVPIQ'
+  AND avstemmingsnokkel = '1618823296742431266';
