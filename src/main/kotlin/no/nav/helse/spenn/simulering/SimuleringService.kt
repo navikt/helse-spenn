@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.simulering
 
 import com.ctc.wstx.exc.WstxEOFException
+import com.ctc.wstx.exc.WstxIOException
 import no.nav.helse.spenn.UtenforÅpningstidException
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
@@ -33,7 +34,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             sikkerLogg.error("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
             SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = e.faultInfo.errorMessage)
         } catch (e: SOAPFaultException) {
-            if (e.cause is WstxEOFException) {
+            if (e.cause is WstxEOFException || e.cause is WstxIOException) {
                 throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
             }
             throw e
