@@ -28,11 +28,11 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         return try {
             simulerFpService.simulerBeregning(simulerRequest)?.response?.let {
                 mapResponseToResultat(it)
-            } ?: SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = "Fikk ingen respons")
+            } ?: SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = "Fikk ingen respons")
         } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
             sikkerLogg.error("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
-            SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = e.faultInfo.errorMessage)
+            SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = e.faultInfo.errorMessage)
         } catch (e: SOAPFaultException) {
             if (e.cause is WstxEOFException || e.cause is WstxIOException) {
                 throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
