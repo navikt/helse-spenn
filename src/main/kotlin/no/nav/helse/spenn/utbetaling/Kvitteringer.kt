@@ -56,7 +56,8 @@ internal class Kvitteringer(
         val (status, beskrivelse) = when (feilkode) {
             "00" -> Oppdragstatus.AKSEPTERT to (meldingFraOppdrag ?: "Oppdraget ble akseptert uten feil")
             "04" -> Oppdragstatus.AKSEPTERT_MED_FEIL to (meldingFraOppdrag ?: "Oppdraget ble akseptert, men noe er feil")
-            "08", "12" -> Oppdragstatus.AVVIST to (meldingFraOppdrag ?: "Oppdraget ble avvist")
+            "08" -> Oppdragstatus.AVVIST to (meldingFraOppdrag ?: "Oppdraget ble avvist")
+            "12" -> Oppdragstatus.FEIL to "Teknisk feil fra oppdrag, forsøk utbetaling på nytt"
             else -> Oppdragstatus.FEIL to "Spenn forstår ikke responsen fra Oppdrag. Fikk ukjent kode: $feilkode"
         }
 
