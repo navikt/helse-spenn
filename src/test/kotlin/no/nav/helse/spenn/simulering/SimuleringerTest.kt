@@ -52,6 +52,24 @@ internal class SimuleringerTest {
     }
 
     @Test
+    fun `løser simuleringsbehov for engangsutbetaling`() {
+        resultat(SimuleringStatus.OK)
+        val utbetalingslinjer = listOf(
+            mapOf(
+                "satstype" to "ENG",
+                "sats" to 10000,
+                "fom" to "2020-04-20",
+                "tom" to "2020-04-20"
+            )
+        )
+        rapid.sendTestMessage(simuleringbehov(utbetalingslinjer))
+        assertEquals(1, inspektør.size)
+        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals("OK", inspektør.løsning(0, "Simulering").path("status").asText())
+        assertFalse(inspektør.løsning(0, "Simulering").path("simulering").isNull)
+    }
+
+    @Test
     fun `ignorerer simuleringsbehov med tomme utbetalingslinjer`() {
         rapid.sendTestMessage(simuleringbehov(emptyList()))
         assertEquals(0, inspektør.size)
@@ -109,7 +127,8 @@ internal class SimuleringerTest {
     private fun simuleringbehov(
         utbetalingslinjer: List<Map<String, Any>> = listOf(
             mapOf(
-                "dagsats" to 1000,
+                "satstype" to "DAG",
+                "sats" to 1000,
                 "fom" to "2020-04-20",
                 "tom" to "2020-05-20",
                 "grad" to 100
@@ -136,7 +155,8 @@ internal class SimuleringerTest {
                         mapOf<String, Any?>(
                             "fom" to it["fom"],
                             "tom" to it["tom"],
-                            "dagsats" to it["dagsats"],
+                            "sats" to it["sats"],
+                            "satstype" to it["satstype"],
                             "grad" to it["grad"],
                             "delytelseId" to 1,
                             "refDelytelseId" to null,

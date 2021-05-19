@@ -76,14 +76,14 @@ internal class OppdragBuilder(private val utbetalingslinjer: Utbetalingslinjer,
         datoVedtakTom = utbetalingslinje.tom.asXmlGregorianCalendar()
         kodeStatusLinje = utbetalingslinje.statuskode?.let { TkodeStatusLinje.valueOf(it) }
         datoStatusFom = utbetalingslinje.datoStatusFom?.asXmlGregorianCalendar()
-        sats = utbetalingslinje.dagsats.toBigDecimal()
+        sats = utbetalingslinje.sats.toBigDecimal()
         fradragTillegg = TfradragTillegg.T
-        typeSats = "DAG"
+        typeSats = utbetalingslinje.satstype
         saksbehId = utbetalingslinjer.saksbehandler
         brukKjoreplan = "N"
         grad170.add(Grad170().apply {
             typeGrad = "UFOR"
-            grad = utbetalingslinje.grad.toBigInteger()
+            grad = utbetalingslinje.grad?.toBigInteger()
         })
         attestant180.add(Attestant180().apply {
             attestantId = utbetalingslinjer.saksbehandler

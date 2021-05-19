@@ -34,15 +34,19 @@ object OppdragXml {
             .replace("<oppdrag xmlns=", "<ns2:oppdrag xmlns:ns2=", ignoreCase = true)
             .replace("</Oppdrag>", "</ns2:oppdrag>", ignoreCase = true)
 
-    fun unmarshal(oppdragXML: String): Oppdrag {
-        return StringReader(normalizeXml(oppdragXML)).use {
-            xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
-            xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)
-            unmarshaller.unmarshal(
-                xmlInputFactory.createXMLStreamReader(StreamSource(it)),
-                Oppdrag::class.java
-            ).value
-        }
+
+    fun unmarshal(oppdragXML: String, normalize : Boolean = true): Oppdrag {
+        return oppdragXML
+            .let {if(normalize) normalizeXml(it) else it}
+            .let {StringReader(it)}
+            .use {
+                xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
+                xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)
+                unmarshaller.unmarshal(
+                    xmlInputFactory.createXMLStreamReader(StreamSource(it)),
+                    Oppdrag::class.java
+                ).value
+            }
     }
 
 }

@@ -1,7 +1,6 @@
 package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.isMissingOrNull
 
@@ -49,8 +48,9 @@ internal class UtbetalingslinjerMapper(
                 klassekode = it["klassekode"].asText(),
                 fom = it["fom"].asLocalDate(),
                 tom = it["tom"].asLocalDate(),
-                dagsats = it["dagsats"].asInt(),
-                grad = it["grad"].asInt(),
+                sats = it["sats"].asInt(),
+                satstype = it["satstype"].asText(),
+                grad = it["grad"].takeUnless(JsonNode::isMissingOrNull)?.asInt(),
                 refDelytelseId = it.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
                 refFagsystemId = it.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText(),
                 datoStatusFom = it.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asLocalDate(),

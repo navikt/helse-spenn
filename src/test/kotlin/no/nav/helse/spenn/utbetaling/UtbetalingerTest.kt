@@ -56,6 +56,36 @@ internal class UtbetalingerTest {
     }
 
     @Test
+    fun `løser utbetalingsbehov med engangsutbetaling`() {
+        val avstemmingsnøkkel = CapturingSlot<Long>()
+
+        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkkel), any(), any(), any(), any(), any(), any(), any(), any(), any()) } answers {
+            OppdragDto(avstemmingsnøkkel.captured, PERSON, FAGSYSTEMID, LocalDateTime.now(), Oppdragstatus.MOTTATT, BELØP, null)
+        }
+        every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
+
+
+        val utbetalingslinjer = listOf(
+            mapOf(
+                "satstype" to "ENG",
+                "sats" to BELØP,
+                "fom" to "2020-04-20",
+                "tom" to "2020-04-20"
+            )
+        )
+        rapid.sendTestMessage(utbetalingsbehov(utbetalingslinjer))
+        assertEquals(1, inspektør.size)
+        assertEquals(1, connection.inspektør.antall())
+        val body = connection.inspektør.melding(0).getBody(String::class.java)
+        val unmarshalled = OppdragXml.unmarshal(body, false)
+        assertEquals(null, unmarshalled.oppdrag110.oppdragsLinje150[0].grad170[0].grad)
+        assertEquals("ENG", unmarshalled.oppdrag110.oppdragsLinje150[0].typeSats)
+
+        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
+        assertOverført(0)
+    }
+
+    @Test
     fun `løser duplikat utbetalingsbehov`() {
         val avstemmingsnøkler = mutableListOf<Long>()
         val message = utbetalingsbehov()
@@ -167,7 +197,8 @@ internal class UtbetalingerTest {
 
     private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(
         mapOf(
-            "dagsats" to "$BELØP",
+            "satstype" to "DAG",
+            "sats" to "$BELØP",
             "fom" to "2020-04-20",
             "tom" to "2020-05-20",
             "grad" to 100
@@ -192,7 +223,8 @@ internal class UtbetalingerTest {
                         mapOf<String, Any?>(
                             "fom" to it["fom"],
                             "tom" to it["tom"],
-                            "dagsats" to it["dagsats"],
+                            "sats" to it["sats"],
+                            "satstype" to it["satstype"],
                             "grad" to it["grad"],
                             "delytelseId" to 1,
                             "refDelytelseId" to null,

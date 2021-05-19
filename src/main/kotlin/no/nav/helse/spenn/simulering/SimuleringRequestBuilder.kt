@@ -74,14 +74,14 @@ internal class SimuleringRequestBuilder(private val utbetalingslinjer: Utbetalin
         datoStatusFom = utbetalingslinje.datoStatusFom?.format(tidsstempel)
         datoVedtakFom = utbetalingslinje.fom.format(tidsstempel)
         datoVedtakTom = utbetalingslinje.tom.format(tidsstempel)
-        sats = utbetalingslinje.dagsats.toBigDecimal()
+        sats = utbetalingslinje.sats.toBigDecimal()
         fradragTillegg = FradragTillegg.T
-        typeSats = "DAG"
+        typeSats = utbetalingslinje.satstype
         saksbehId = utbetalingslinjer.saksbehandler
         brukKjoreplan = "N"
         grad.add(Grad().apply {
             typeGrad = "UFOR"
-            grad = utbetalingslinje.grad.toBigInteger()
+            grad = utbetalingslinje.grad?.toBigInteger()
         })
         attestant.add(Attestant().apply {
             attestantId = utbetalingslinjer.saksbehandler

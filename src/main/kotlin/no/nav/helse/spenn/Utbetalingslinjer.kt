@@ -64,22 +64,24 @@ internal sealed class Utbetalingslinjer(
         internal val klassekode: String,
         internal val fom: LocalDate,
         internal val tom: LocalDate,
-        internal val dagsats: Int,
-        internal val grad: Int,
+        internal val sats: Int,
+        internal val grad: Int?,
         internal val refDelytelseId: Int?,
         internal val refFagsystemId: String?,
         internal val datoStatusFom: LocalDate?,
-        internal val statuskode: String?
+        internal val statuskode: String?,
+        internal val satstype: String
     ) {
+
         internal companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minByOrNull { it.fom }?.fom
             fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxByOrNull { it.tom }?.tom
-            fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.dagsats }
+            fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.sats }
         }
 
         override fun hashCode() = fom.hashCode() * 37 +
                 tom.hashCode() * 17 +
-                dagsats.hashCode() * 41 +
+                sats.hashCode() * 41 +
                 grad.hashCode() * 61 +
                 endringskode.hashCode() * 59 +
                 datoStatusFom.hashCode() * 23

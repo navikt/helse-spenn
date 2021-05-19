@@ -30,12 +30,14 @@ internal class Simuleringer(
                 it.requireAny("Simulering.fagområde", listOf("SPREF", "SP"))
                 it.requireAny("Simulering.endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("Simulering.linjer") {
-                    requireKey("dagsats", "grad", "delytelseId", "klassekode")
+                    requireKey("sats", "delytelseId", "klassekode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
+                    requireAny("satstype", listOf("DAG", "ENG"))
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
                     interestedIn("statuskode") { value -> KodeStatusLinje.valueOf(value.asText()) }
+                    interestedIn("grad")
                 }
             }
         }.register(this)

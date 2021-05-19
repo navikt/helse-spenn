@@ -1,27 +1,22 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ibm.mq.MQException
 import com.ibm.mq.jms.MQQueue
-import com.ibm.msg.client.jms.DetailedJMSException
-import com.ibm.msg.client.wmq.common.internal.Reason
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.UtbetalingslinjerMapper
-import no.trygdeetaten.skjema.oppdrag.Oppdrag
 import no.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId
 import javax.jms.Connection
-import javax.jms.JMSException
 
 internal class Utbetalinger(
-        rapidsConnection: RapidsConnection,
-        jmsConnection: Connection,
-        sendQueue: String,
-        private val replyTo: String,
-        private val oppdragDao: OppdragDao
+    rapidsConnection: RapidsConnection,
+    jmsConnection: Connection,
+    sendQueue: String,
+    private val replyTo: String,
+    private val oppdragDao: OppdragDao
 ) : River.PacketListener {
 
     private companion object {
@@ -44,12 +39,14 @@ internal class Utbetalinger(
                 it.requireAny("Utbetaling.fagområde", listOf("SPREF", "SP"))
                 it.requireAny("Utbetaling.endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("Utbetaling.linjer") {
-                    requireKey("dagsats", "grad", "delytelseId", "klassekode")
+                    requireKey("sats", "delytelseId", "klassekode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
+                    requireAny("satstype", listOf("DAG", "ENG"))
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
                     interestedIn("statuskode") { value -> TkodeStatusLinje.valueOf(value.asText()) }
+                    interestedIn("grad")
                 }
             }
         }.register(this)
@@ -65,13 +62,14 @@ internal class Utbetalinger(
         val organisasjonsnummer = packet["organisasjonsnummer"].asText()
         val mottaker = packet["Utbetaling.mottaker"].asText()
         val fagsystemId = packet["Utbetaling.fagsystemId"].asText()
-        val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
+        val utbetalingslinjer =
+            UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
                 .fraBehov(packet["Utbetaling"])
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
         val nå = Instant.now()
         val tidspunkt = nå
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
         val sjekksum = utbetalingslinjer.hashCode()
 
@@ -101,10 +99,10 @@ internal class Utbetalinger(
         } catch (err: Exception) {
             log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)
             packet["@løsning"] = mapOf(
-                    "Utbetaling" to mapOf(
-                            "status" to Oppdragstatus.FEIL,
-                            "beskrivelse" to "Kunne ikke opprette nytt Oppdrag pga. teknisk feil"
-                    )
+                "Utbetaling" to mapOf(
+                    "status" to Oppdragstatus.FEIL,
+                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag pga. teknisk feil"
+                )
             )
 
             // kast exception videre oppover; dersom MQ er nede ønsker vi at spenn skal restarte

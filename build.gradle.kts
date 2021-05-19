@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 val junitJupiterVersion = "5.7.1"
 val tjenestespesifikasjonVersion = "1.4201aa"
 val cxfVersion = "3.3.7"
@@ -54,6 +56,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 configure<SourceSetContainer> {
@@ -101,4 +104,12 @@ tasks {
     withType<Wrapper> {
         gradleVersion = "6.8.3"
     }
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }
