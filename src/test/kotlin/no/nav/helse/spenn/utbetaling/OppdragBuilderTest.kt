@@ -36,8 +36,8 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag til arbeidsgiver`() {
         val oppdrag = oppdragRefusjon(ENDRINGSKODE_ENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
         assertArbeidsgiverlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
@@ -47,8 +47,8 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag til bruker`() {
         val oppdrag = oppdragBruker(ENDRINGSKODE_UENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
+            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_UENDRET)
         assertBrukerlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
@@ -58,7 +58,7 @@ internal class OppdragBuilderTest {
     @Test
     fun `arbeidsgiverlinje opphører`() {
         val oppdrag = oppdragRefusjon(ENDRINGSKODE_ENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_ENDRET, "SPREFAG-IOP", 1.januar, 31.januar, DAGSATS, GRAD, null, null, 1.januar, "OPPH"))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_ENDRET, "SPREFAG-IOP", 1.januar, 31.januar, DAGSATS, GRAD, null, null, 1.januar, "OPPH", "DAG"))
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
         assertArbeidsgiverlinje(oppdrag, 0, "1", ENDRINGSKODE_ENDRET, 1.januar, 31.januar, 1.januar, TkodeStatusLinje.OPPH)
@@ -67,7 +67,7 @@ internal class OppdragBuilderTest {
     @Test
     fun `brukerlinje opphører`() {
         val oppdrag = oppdragBruker(ENDRINGSKODE_ENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_ENDRET, "SP", 1.januar, 31.januar, DAGSATS, GRAD, null, null, 1.januar, "OPPH"))
+            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_ENDRET, "SP", 1.januar, 31.januar, DAGSATS, GRAD, null, null, 1.januar, "OPPH", "DAG"))
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
         assertBrukerlinje(oppdrag, 0, "1", ENDRINGSKODE_ENDRET, 1.januar, 31.januar, 1.januar, TkodeStatusLinje.OPPH)
