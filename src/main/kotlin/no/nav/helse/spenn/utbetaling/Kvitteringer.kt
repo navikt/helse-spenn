@@ -2,16 +2,14 @@ package no.nav.helse.spenn.utbetaling
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.spenn.JmsConsumerSession
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
-import javax.jms.Connection
-import javax.jms.Session
 
 internal class Kvitteringer(
     private val rapidsConnection: RapidsConnection,
-    connection: Connection,
-    mottakQueue: String,
+    jmsConsumer: JmsConsumerSession,
     private val oppdragDao: OppdragDao
 ) {
     private companion object {
@@ -19,13 +17,11 @@ internal class Kvitteringer(
         private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
     }
 
-    private val jmsSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    private val consumer = jmsSession.createConsumer(jmsSession.createQueue(mottakQueue))
 
     init {
-        consumer.setMessageListener { message ->
+        jmsConsumer.setMessageListener (log){ message ->
             try {
-                val body = OppdragXml.normalizeXml(message.getBody(String::class.java))
+                val body = OppdragXml.normalizeXml(message)
                 try {
                     sikkerLogg.info("mottok kvittering fra oppdrag body:\n$body")
                     onMessage(body)

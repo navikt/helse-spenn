@@ -1,31 +1,25 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ibm.mq.jms.MQQueue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
+import no.nav.helse.spenn.JmsPublisherSession
 import no.nav.helse.spenn.UtbetalingslinjerMapper
 import no.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId
-import javax.jms.Connection
 
 internal class Utbetalinger(
     rapidsConnection: RapidsConnection,
-    jmsConnection: Connection,
-    sendQueue: String,
-    private val replyTo: String,
-    private val oppdragDao: OppdragDao
+    private val oppdragDao: OppdragDao,
+    private val jmsPublisher: JmsPublisherSession
 ) : River.PacketListener {
 
     private companion object {
         private val log = LoggerFactory.getLogger(Utbetalinger::class.java)
         private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
     }
-
-    private val jmsSession = jmsConnection.createSession()
-    private val producer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
 
     init {
         River(rapidsConnection).apply {
@@ -88,7 +82,7 @@ internal class Utbetalinger(
                 originalJson = packet.toJson()
             ) ?: oppdragDao.hentOppdragForSjekksum(sjekksum)
 
-            oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, jmsSession, producer, MQQueue(replyTo))
+            oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, jmsPublisher)
 
             packet["@løsning"] = mapOf(
                 "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(

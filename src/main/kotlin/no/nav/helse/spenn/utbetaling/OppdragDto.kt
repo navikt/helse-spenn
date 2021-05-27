@@ -1,8 +1,6 @@
 package no.nav.helse.spenn.utbetaling
 
-import com.ibm.mq.MQException
-import com.ibm.msg.client.jms.JmsQueue
-import com.ibm.msg.client.wmq.common.internal.Reason
+import no.nav.helse.spenn.JmsPublisherSession
 import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import org.slf4j.LoggerFactory
@@ -10,9 +8,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import javax.jms.JMSException
-import javax.jms.MessageProducer
-import javax.jms.Session
 
 internal class OppdragDto(
     private val avstemmingsnøkkel: Long,
@@ -98,31 +93,15 @@ internal class OppdragDto(
         dao: OppdragDao,
         utbetalingslinjer: Utbetalingslinjer,
         nå: Instant,
-        jmsSession: Session,
-        producer: MessageProducer,
-        queue: JmsQueue
+        jmsPublisher: JmsPublisherSession
     ) {
         if (status !in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)) return
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
-        try {
-            val oppdragXml = OppdragXml.marshal(oppdrag)
-            val message = jmsSession.createTextMessage(oppdragXml)
-            message.jmsReplyTo = queue
-            producer.send(message)
-            status = Oppdragstatus.OVERFØRT
-            dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
-        } catch (err: JMSException) {
-            val message = err.message
-            val cause = err.cause
 
-            if ((cause != null && cause is MQException && Reason.isConnectionBroken(cause.reason))
-                || (message != null && message.contains("Failed to send a message to destination"))
-            ) {
-                throw MQErNede("Kan ikke sende melding på MQ-kø", err)
-            }
-
-            throw err
-        }
+        val oppdragXml = OppdragXml.marshal(oppdrag)
+        jmsPublisher.send(oppdragXml)
+        status = Oppdragstatus.OVERFØRT
+        dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
     }
 
     internal fun somLøsning() =

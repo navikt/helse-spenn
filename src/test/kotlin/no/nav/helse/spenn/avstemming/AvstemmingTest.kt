@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.helse.spenn.Avstemmingsnøkkel
+import no.nav.helse.spenn.JmsPublisherSession
 import no.nav.helse.spenn.TestConnection
 import no.nav.helse.spenn.januar
 import no.nav.helse.spenn.utbetaling.OppdragDao
@@ -131,7 +132,7 @@ internal class AvstemmingTest {
     fun clear() {
         clearAllMocks()
         connection.reset()
-        avstemming = Avstemming(connection, SEND_QUEUE, producer, "rapidTopic", dao, avstemmingDao)
+        avstemming = Avstemming(JmsPublisherSession(connection, SEND_QUEUE), producer, "rapidTopic", dao, avstemmingDao)
     }
 
     private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>

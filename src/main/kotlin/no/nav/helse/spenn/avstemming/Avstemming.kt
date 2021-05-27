@@ -2,6 +2,7 @@ package no.nav.helse.spenn.avstemming
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.spenn.Avstemmingsnøkkel
+import no.nav.helse.spenn.JmsPublisherSession
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.OppdragDto
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
@@ -11,11 +12,9 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
-import javax.jms.Connection
 
 internal class Avstemming(
-    connection: Connection,
-    sendQueue: String,
+    private val jmsPublisher: JmsPublisherSession,
     private val kafkaProducer: Producer<String, String>,
     private val rapidTopic: String,
     private val oppdragDao: OppdragDao,
@@ -24,9 +23,6 @@ internal class Avstemming(
     private companion object {
         private val log = LoggerFactory.getLogger(Avstemming::class.java)
     }
-
-    private val jmsSession = connection.createSession()
-    private val jmsProducer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
 
     fun avstem(dagen: LocalDate) {
         val id = UUID.randomUUID()
@@ -87,6 +83,6 @@ internal class Avstemming(
 
     private fun sendAvstemmingsmelding(melding: Avstemmingsdata) {
         val xmlMelding = AvstemmingdataXml.marshal(melding)
-        jmsProducer.send(jmsSession.createTextMessage(xmlMelding))
+        jmsPublisher.sendNoErrorHandling(xmlMelding)
     }
 }

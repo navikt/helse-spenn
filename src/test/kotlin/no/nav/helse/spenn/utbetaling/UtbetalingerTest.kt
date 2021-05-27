@@ -3,6 +3,7 @@ package no.nav.helse.spenn.utbetaling
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.spenn.JmsPublisherSession
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.TestConnection
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -28,9 +29,11 @@ internal class UtbetalingerTest {
     private val connection = TestConnection()
     private val rapid = TestRapid().apply {
         Utbetalinger(
-            this, connection,
-            SEND_QUEUE,
-            REPLY_TO_QUEUE, dao
+            this, dao, JmsPublisherSession(
+                connection,
+                SEND_QUEUE,
+                REPLY_TO_QUEUE
+            )
         )
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)

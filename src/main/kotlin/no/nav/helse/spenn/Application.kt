@@ -43,23 +43,38 @@ private fun rapidApp(env: Map<String, String>) {
     )
 
     val simuleringService = SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
-    val oppdragDao = OppdragDao(dataSource)
 
     val jmsConnection: Connection = mqConnection(env)
+
+    val oppdragDao = OppdragDao(dataSource)
+    val sendQueue = env.getValue("OPPDRAG_QUEUE_SEND")
+    val replyTo = env.getValue("OPPDRAG_QUEUE_MOTTAK")
+
+    FeriepengeHack(
+        dataSource,
+        oppdragDao,
+        jmsConnection,
+        env.getValue("OPPDRAG_QUEUE_SEND"),
+        env.getValue("OPPDRAG_QUEUE_MOTTAK")
+    ).trigger()
 
     RapidApplication.create(env).apply {
         Simuleringer(this, simuleringService)
         Utbetalinger(
             this,
-            jmsConnection,
-            env.getValue("OPPDRAG_QUEUE_SEND"),
-            env.getValue("OPPDRAG_QUEUE_MOTTAK"),
-            oppdragDao
+            oppdragDao,
+            JmsPublisherSession(
+                jmsConnection,
+                sendQueue,
+                replyTo
+            )
         )
         Kvitteringer(
             this,
-            jmsConnection,
-            env.getValue("OPPDRAG_QUEUE_MOTTAK"),
+            JmsConsumerSession(
+                jmsConnection,
+                replyTo,
+            ),
             oppdragDao
         )
         Transaksjoner(this, oppdragDao)
@@ -99,12 +114,14 @@ private fun avstemmingJob(env: Map<String, String>) {
 
             val dagen = LocalDate.now().minusDays(1)
             Avstemming(
-                jmsConnection,
-                env.getValue("AVSTEMMING_QUEUE_SEND"),
                 producer,
                 env.getValue("KAFKA_RAPID_TOPIC"),
                 OppdragDao(dataSource),
-                AvstemmingDao(dataSource)
+                AvstemmingDao(dataSource),
+                JmsPublisherSession(
+                    jmsConnection,
+                    env.getValue("AVSTEMMING_QUEUE_SEND"),
+                )
             ).avstem(dagen)
 
             log.info("avstemming utført dagen=$dagen")

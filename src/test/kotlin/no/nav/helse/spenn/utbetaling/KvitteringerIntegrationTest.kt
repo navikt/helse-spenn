@@ -4,6 +4,7 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.spenn.JmsConsumerSession
 import org.apache.activemq.artemis.api.core.TransportConfiguration
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory
@@ -67,7 +68,7 @@ internal class KvitteringerIntegrationTest {
         server.start()
         ActiveMQConnectionFactory("vm://0").also { connection = it.createConnection() }
         rapid = TestRapid().apply {
-            Kvitteringer(this, connection, MOTTAK_QUEUE, dao)
+            Kvitteringer(this, JmsConsumerSession(connection, MOTTAK_QUEUE), dao)
         }
         connection.start()
     }
