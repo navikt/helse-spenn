@@ -5,8 +5,8 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.isMissingOrNull
 
 internal class UtbetalingslinjerMapper(
-        private val fødselsnummer: String,
-        private val organisasjonsnummer: String
+    private val fødselsnummer: String,
+    private val organisasjonsnummer: String
 ) {
     fun fraBehov(packet: JsonNode): Utbetalingslinjer {
         val fagområde = packet["fagområde"].asText()

@@ -95,8 +95,11 @@ internal class KvitteringerIntegrationTest {
         val end = System.currentTimeMillis() + duration.toMillis()
         var error: AssertionError? = null
         while (System.currentTimeMillis() < end) {
-            try { return test() }
-            catch (err: AssertionError) { error = err }
+            try {
+                return test()
+            } catch (err: AssertionError) {
+                error = err
+            }
             Thread.sleep(250)
         }
         throw error ?: fail { "failed to wait for test to pass" }

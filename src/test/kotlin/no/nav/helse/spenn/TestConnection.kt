@@ -46,9 +46,13 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
 
         constructor() : this(mockk())
 
-        fun sendMessage(message: Message) { listener?.onMessage(message) }
+        fun sendMessage(message: Message) {
+            listener?.onMessage(message)
+        }
 
-        override fun setMessageListener(listener: MessageListener) { this.listener = listener }
+        override fun setMessageListener(listener: MessageListener) {
+            this.listener = listener
+        }
     }
 
     private class TestTextMessage private constructor(

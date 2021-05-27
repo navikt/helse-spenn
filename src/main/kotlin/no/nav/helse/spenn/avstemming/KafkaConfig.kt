@@ -37,7 +37,10 @@ internal class KafkaConfig(
         put(SaslConfigs.SASL_MECHANISM, "PLAIN")
         put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "PLAINTEXT")
         if (username != null) {
-            put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$username\" password=\"$password\";")
+            put(
+                SaslConfigs.SASL_JAAS_CONFIG,
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$username\" password=\"$password\";"
+            )
         }
         if (truststore != null) {
             try {

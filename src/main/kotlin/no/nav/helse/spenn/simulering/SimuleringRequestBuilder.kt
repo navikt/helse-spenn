@@ -52,17 +52,19 @@ internal class SimuleringRequestBuilder(private val utbetalingslinjer: Utbetalin
         }
     }
 
-    private fun refusjonTilArbeidsgiver(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = nyLinje(utbetalingslinje).apply {
-        refusjonsInfo = RefusjonsInfo().apply {
-            refunderesId = utbetalingslinjer.mottaker.padStart(11, '0')
-            datoFom = datoVedtakFom
-            maksDato = utbetalingslinjer.maksdato?.format(tidsstempel)
+    private fun refusjonTilArbeidsgiver(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) =
+        nyLinje(utbetalingslinje).apply {
+            refusjonsInfo = RefusjonsInfo().apply {
+                refunderesId = utbetalingslinjer.mottaker.padStart(11, '0')
+                datoFom = datoVedtakFom
+                maksDato = utbetalingslinjer.maksdato?.format(tidsstempel)
+            }
         }
-    }
 
-    private fun utbetalingTilBruker(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = nyLinje(utbetalingslinje).apply {
-        utbetalesTilId = utbetalingslinjer.mottaker
-    }
+    private fun utbetalingTilBruker(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) =
+        nyLinje(utbetalingslinje).apply {
+            utbetalesTilId = utbetalingslinjer.mottaker
+        }
 
     private fun nyLinje(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = Oppdragslinje().apply {
         delytelseId = "${utbetalingslinje.delytelseId}"

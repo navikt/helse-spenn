@@ -48,16 +48,19 @@ internal class Simuleringer(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        withMDC(mapOf(
-            "behovId" to packet["@id"].asText()
-        )) {
+        withMDC(
+            mapOf(
+                "behovId" to packet["@id"].asText()
+            )
+        ) {
             håndter(packet, context)
         }
     }
 
     private fun håndter(packet: JsonMessage, context: MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
-        val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
+        val utbetalingslinjer =
+            UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
                 .fraBehov(packet["Simulering"])
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 

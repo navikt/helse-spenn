@@ -24,6 +24,7 @@ internal class Avstemming(
     private companion object {
         private val log = LoggerFactory.getLogger(Avstemming::class.java)
     }
+
     private val jmsSession = connection.createSession()
     private val jmsProducer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
 
@@ -38,11 +39,19 @@ internal class Avstemming(
             log.info("Avstemming id=$id fagområde=$fagområde dagen=$dagen er ferdig")
         }
 
-        kafkaProducer.send(ProducerRecord(rapidTopic, avstemmingevent(id, dagen, fagområder.map { it.value.size }.sum(), avstemteFagområder)
-            .toJson().also { log.info("sender $it") }))
+        kafkaProducer.send(
+            ProducerRecord(rapidTopic,
+                avstemmingevent(id, dagen, fagområder.map { it.value.size }.sum(), avstemteFagområder)
+                    .toJson().also { log.info("sender $it") })
+        )
     }
 
-    private fun avstemOppdrag(id: UUID, fagområde: String, oppdrag: List<OppdragDto>, avstemteFagområder: MutableList<Map<String, Any>>) {
+    private fun avstemOppdrag(
+        id: UUID,
+        fagområde: String,
+        oppdrag: List<OppdragDto>,
+        avstemteFagområder: MutableList<Map<String, Any>>
+    ) {
         if (oppdrag.isEmpty()) return log.info("ingenting å avstemme")
         val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag)
         val meldinger = AvstemmingBuilder(id, fagområde, oppdrag).build()
@@ -50,22 +59,31 @@ internal class Avstemming(
         log.info("avstemmer nøkkelFom=${avstemmingsperiode.start} nøkkelTom=${avstemmingsperiode.endInclusive}: sender ${meldinger.size} meldinger")
         meldinger.forEach { sendAvstemmingsmelding(it) }
         oppdragDao.oppdaterAvstemteOppdrag(fagområde, avstemmingsperiode.endInclusive)
-        avstemteFagområder.add(mapOf(
-            "nøkkel_fom" to avstemmingsperiode.start,
-            "nøkkel_tom" to avstemmingsperiode.endInclusive,
-            "antall_oppdrag" to oppdrag.size,
-            "antall_avstemmingsmeldinger" to meldinger.size
-        ))
+        avstemteFagområder.add(
+            mapOf(
+                "nøkkel_fom" to avstemmingsperiode.start,
+                "nøkkel_tom" to avstemmingsperiode.endInclusive,
+                "antall_oppdrag" to oppdrag.size,
+                "antall_avstemmingsmeldinger" to meldinger.size
+            )
+        )
     }
 
-    private fun avstemmingevent(id: UUID, dagen: LocalDate, antallOppdrag: Int, avstemteFagområder: MutableList<Map<String, Any>>) = JsonMessage.newMessage(mapOf(
-        "@event_name" to "avstemming",
-        "@id" to id,
-        "@opprettet" to LocalDateTime.now(),
-        "dagen" to dagen,
-        "antall_oppdrag" to antallOppdrag,
-        "fagområder" to avstemteFagområder
-    ))
+    private fun avstemmingevent(
+        id: UUID,
+        dagen: LocalDate,
+        antallOppdrag: Int,
+        avstemteFagområder: MutableList<Map<String, Any>>
+    ) = JsonMessage.newMessage(
+        mapOf(
+            "@event_name" to "avstemming",
+            "@id" to id,
+            "@opprettet" to LocalDateTime.now(),
+            "dagen" to dagen,
+            "antall_oppdrag" to antallOppdrag,
+            "fagområder" to avstemteFagområder
+        )
+    )
 
     private fun sendAvstemmingsmelding(melding: Avstemmingsdata) {
         val xmlMelding = AvstemmingdataXml.marshal(melding)

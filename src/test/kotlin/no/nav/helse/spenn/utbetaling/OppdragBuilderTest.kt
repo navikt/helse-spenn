@@ -36,8 +36,38 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag til arbeidsgiver`() {
         val oppdrag = oppdragRefusjon(ENDRINGSKODE_ENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SPREFAG-IOP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SPREFAG-IOP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
+            linje(
+                Utbetalingslinjer.Utbetalingslinje(
+                    1,
+                    ENDRINGSKODE_NY,
+                    "SPREFAG-IOP",
+                    1.januar,
+                    14.januar,
+                    DAGSATS,
+                    GRAD,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "DAG"
+                )
+            )
+            linje(
+                Utbetalingslinjer.Utbetalingslinje(
+                    2,
+                    ENDRINGSKODE_NY,
+                    "SPREFAG-IOP",
+                    15.januar,
+                    31.januar,
+                    DAGSATS,
+                    GRAD,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "DAG"
+                )
+            )
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
         assertArbeidsgiverlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
@@ -47,8 +77,38 @@ internal class OppdragBuilderTest {
     @Test
     fun `bygger oppdrag til bruker`() {
         val oppdrag = oppdragBruker(ENDRINGSKODE_UENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_NY, "SP", 1.januar, 14.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
-            linje(Utbetalingslinjer.Utbetalingslinje(2, ENDRINGSKODE_NY, "SP", 15.januar, 31.januar, DAGSATS, GRAD, null, null, null, null, "DAG"))
+            linje(
+                Utbetalingslinjer.Utbetalingslinje(
+                    1,
+                    ENDRINGSKODE_NY,
+                    "SP",
+                    1.januar,
+                    14.januar,
+                    DAGSATS,
+                    GRAD,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "DAG"
+                )
+            )
+            linje(
+                Utbetalingslinjer.Utbetalingslinje(
+                    2,
+                    ENDRINGSKODE_NY,
+                    "SP",
+                    15.januar,
+                    31.januar,
+                    DAGSATS,
+                    GRAD,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "DAG"
+                )
+            )
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_UENDRET)
         assertBrukerlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
@@ -58,16 +118,55 @@ internal class OppdragBuilderTest {
     @Test
     fun `arbeidsgiverlinje opphører`() {
         val oppdrag = oppdragRefusjon(ENDRINGSKODE_ENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_ENDRET, "SPREFAG-IOP", 1.januar, 31.januar, DAGSATS, GRAD, null, null, 1.januar, "OPPH", "DAG"))
+            linje(
+                Utbetalingslinjer.Utbetalingslinje(
+                    1,
+                    ENDRINGSKODE_ENDRET,
+                    "SPREFAG-IOP",
+                    1.januar,
+                    31.januar,
+                    DAGSATS,
+                    GRAD,
+                    null,
+                    null,
+                    1.januar,
+                    "OPPH",
+                    "DAG"
+                )
+            )
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
-        assertArbeidsgiverlinje(oppdrag, 0, "1", ENDRINGSKODE_ENDRET, 1.januar, 31.januar, 1.januar, TkodeStatusLinje.OPPH)
+        assertArbeidsgiverlinje(
+            oppdrag,
+            0,
+            "1",
+            ENDRINGSKODE_ENDRET,
+            1.januar,
+            31.januar,
+            1.januar,
+            TkodeStatusLinje.OPPH
+        )
     }
 
     @Test
     fun `brukerlinje opphører`() {
         val oppdrag = oppdragBruker(ENDRINGSKODE_ENDRET) {
-            linje(Utbetalingslinjer.Utbetalingslinje(1, ENDRINGSKODE_ENDRET, "SP", 1.januar, 31.januar, DAGSATS, GRAD, null, null, 1.januar, "OPPH", "DAG"))
+            linje(
+                Utbetalingslinjer.Utbetalingslinje(
+                    1,
+                    ENDRINGSKODE_ENDRET,
+                    "SP",
+                    1.januar,
+                    31.januar,
+                    DAGSATS,
+                    GRAD,
+                    null,
+                    null,
+                    1.januar,
+                    "OPPH",
+                    "DAG"
+                )
+            )
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
         assertBrukerlinje(oppdrag, 0, "1", ENDRINGSKODE_ENDRET, 1.januar, 31.januar, 1.januar, TkodeStatusLinje.OPPH)
@@ -76,8 +175,10 @@ internal class OppdragBuilderTest {
 
     private fun oppdragRefusjon(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
-            Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, FAGSYSTEMID, endringskode,
-                SAKSBEHANDLER, MAKSDATO).apply(block),
+            Utbetalingslinjer.RefusjonTilArbeidsgiver(
+                PERSON, ORGNR, FAGSYSTEMID, endringskode,
+                SAKSBEHANDLER, MAKSDATO
+            ).apply(block),
             AVSTEMMINGSNØKKEL,
             NÅ
         )
@@ -86,8 +187,10 @@ internal class OppdragBuilderTest {
 
     private fun oppdragBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
-            Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, ORGNR, FAGSYSTEMID, endringskode,
-                SAKSBEHANDLER, MAKSDATO).apply(block),
+            Utbetalingslinjer.UtbetalingTilBruker(
+                PERSON, PERSON, ORGNR, FAGSYSTEMID, endringskode,
+                SAKSBEHANDLER, MAKSDATO
+            ).apply(block),
             AVSTEMMINGSNØKKEL,
             NÅ
         )
@@ -102,18 +205,45 @@ internal class OppdragBuilderTest {
         assertEquals(endringskode, oppdrag.oppdrag110.kodeEndring)
     }
 
-    private fun assertArbeidsgiverlinje(oppdrag: Oppdrag, index: Int, delytelseId: String, endringskode: String, fom: LocalDate, tom: LocalDate, datoStatusFom: LocalDate? = null, statuskode: TkodeStatusLinje? = null) {
+    private fun assertArbeidsgiverlinje(
+        oppdrag: Oppdrag,
+        index: Int,
+        delytelseId: String,
+        endringskode: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        datoStatusFom: LocalDate? = null,
+        statuskode: TkodeStatusLinje? = null
+    ) {
         assertOppdragslinje(oppdrag, index, delytelseId, endringskode, fom, tom, datoStatusFom, statuskode)
         assertEquals(MAKSDATO, oppdrag.oppdrag110.oppdragsLinje150[index].refusjonsinfo156.maksDato.toLocalDate())
         assertEquals("00$ORGNR", oppdrag.oppdrag110.oppdragsLinje150[index].refusjonsinfo156.refunderesId)
     }
 
-    private fun assertBrukerlinje(oppdrag: Oppdrag, index: Int, delytelseId: String, endringskode: String, fom: LocalDate, tom: LocalDate, datoStatusFom: LocalDate? = null, statuskode: TkodeStatusLinje? = null) {
+    private fun assertBrukerlinje(
+        oppdrag: Oppdrag,
+        index: Int,
+        delytelseId: String,
+        endringskode: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        datoStatusFom: LocalDate? = null,
+        statuskode: TkodeStatusLinje? = null
+    ) {
         assertOppdragslinje(oppdrag, index, delytelseId, endringskode, fom, tom, datoStatusFom, statuskode)
         assertEquals(PERSON, oppdrag.oppdrag110.oppdragsLinje150[index].utbetalesTilId)
     }
 
-    private fun assertOppdragslinje(oppdrag: Oppdrag, index: Int, delytelseId: String, endringskode: String, fom: LocalDate, tom: LocalDate, datoStatusFom: LocalDate?, statuskode: TkodeStatusLinje?) {
+    private fun assertOppdragslinje(
+        oppdrag: Oppdrag,
+        index: Int,
+        delytelseId: String,
+        endringskode: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        datoStatusFom: LocalDate?,
+        statuskode: TkodeStatusLinje?
+    ) {
         assertEquals(delytelseId, oppdrag.oppdrag110.oppdragsLinje150[index].delytelseId)
         assertEquals(endringskode, oppdrag.oppdrag110.oppdragsLinje150[index].kodeEndringLinje)
         assertEquals(DAGSATS.toBigDecimal(), oppdrag.oppdrag110.oppdragsLinje150[index].sats)

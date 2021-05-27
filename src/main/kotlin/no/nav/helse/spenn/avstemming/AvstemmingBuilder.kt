@@ -7,10 +7,11 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.max
 
-internal class AvstemmingBuilder(id: UUID,
-                                 private val fagområde: String,
-                                 private val oppdrag: List<OppdragDto>,
-                                 private val detaljerPerMelding: Int = DETALJER_PER_AVSTEMMINGMELDING
+internal class AvstemmingBuilder(
+    id: UUID,
+    private val fagområde: String,
+    private val oppdrag: List<OppdragDto>,
+    private val detaljerPerMelding: Int = DETALJER_PER_AVSTEMMINGMELDING
 ) {
 
     private companion object {

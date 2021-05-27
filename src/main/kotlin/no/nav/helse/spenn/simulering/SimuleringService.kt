@@ -46,7 +46,8 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         }
     }
 
-    private val Throwable.rootCause: Throwable get() {
+    private val Throwable.rootCause: Throwable
+        get() {
             var rootCause: Throwable = this
             while (rootCause.cause != null) rootCause = rootCause.cause!!
             return rootCause

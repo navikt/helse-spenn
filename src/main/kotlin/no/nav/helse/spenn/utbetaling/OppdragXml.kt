@@ -35,10 +35,10 @@ object OppdragXml {
             .replace("</Oppdrag>", "</ns2:oppdrag>", ignoreCase = true)
 
 
-    fun unmarshal(oppdragXML: String, normalize : Boolean = true): Oppdrag {
+    fun unmarshal(oppdragXML: String, normalize: Boolean = true): Oppdrag {
         return oppdragXML
-            .let {if(normalize) normalizeXml(it) else it}
-            .let {StringReader(it)}
+            .let { if (normalize) normalizeXml(it) else it }
+            .let { StringReader(it) }
             .use {
                 xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
                 xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)

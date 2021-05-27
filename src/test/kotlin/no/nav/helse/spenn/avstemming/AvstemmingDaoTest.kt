@@ -60,7 +60,8 @@ internal class AvstemmingDaoTest {
                         avstemmingsnøkkelTom = it.long("avstemmingsnokkel_tom"),
                         antallAvstemteOppdrag = it.int("antall_avstemte_oppdrag")
                     )
-                }.asSingle)
+                }.asSingle
+            )
         } ?: fail { "Fant ikke noen avstemming" }
 
     @BeforeAll

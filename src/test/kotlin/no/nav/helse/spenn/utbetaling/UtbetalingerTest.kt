@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
-import kotlin.properties.Delegates
 
 internal class UtbetalingerTest {
     private companion object {
@@ -28,9 +27,11 @@ internal class UtbetalingerTest {
     private val dao = mockk<OppdragDao>()
     private val connection = TestConnection()
     private val rapid = TestRapid().apply {
-        Utbetalinger(this, connection,
+        Utbetalinger(
+            this, connection,
             SEND_QUEUE,
-            REPLY_TO_QUEUE, dao)
+            REPLY_TO_QUEUE, dao
+        )
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
@@ -44,8 +45,30 @@ internal class UtbetalingerTest {
     @Test
     fun `løser utbetalingsbehov`() {
         val avstemmingsnøkkel = CapturingSlot<Long>()
-        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkkel), any(), any(), any(), any(), any(), any(), any(), any(), any()) } answers {
-            OppdragDto(avstemmingsnøkkel.captured, PERSON, FAGSYSTEMID, LocalDateTime.now(), Oppdragstatus.MOTTATT, BELØP, null)
+        every {
+            dao.nyttOppdrag(
+                any(),
+                capture(avstemmingsnøkkel),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } answers {
+            OppdragDto(
+                avstemmingsnøkkel.captured,
+                PERSON,
+                FAGSYSTEMID,
+                LocalDateTime.now(),
+                Oppdragstatus.MOTTATT,
+                BELØP,
+                null
+            )
         }
         every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
         rapid.sendTestMessage(utbetalingsbehov())
@@ -59,8 +82,30 @@ internal class UtbetalingerTest {
     fun `løser utbetalingsbehov med engangsutbetaling`() {
         val avstemmingsnøkkel = CapturingSlot<Long>()
 
-        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkkel), any(), any(), any(), any(), any(), any(), any(), any(), any()) } answers {
-            OppdragDto(avstemmingsnøkkel.captured, PERSON, FAGSYSTEMID, LocalDateTime.now(), Oppdragstatus.MOTTATT, BELØP, null)
+        every {
+            dao.nyttOppdrag(
+                any(),
+                capture(avstemmingsnøkkel),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } answers {
+            OppdragDto(
+                avstemmingsnøkkel.captured,
+                PERSON,
+                FAGSYSTEMID,
+                LocalDateTime.now(),
+                Oppdragstatus.MOTTATT,
+                BELØP,
+                null
+            )
         }
         every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
 
@@ -98,8 +143,28 @@ internal class UtbetalingerTest {
             BELØP,
             null
         )
-        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkler), any(), any(), any(), any(), any(), any(), any(), any(), any()) } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
-        every { dao.oppdaterOppdrag(match { it == avstemmingsnøkler.first() }, any(), Oppdragstatus.OVERFØRT) } returns true
+        every {
+            dao.nyttOppdrag(
+                any(),
+                capture(avstemmingsnøkler),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
+        every {
+            dao.oppdaterOppdrag(
+                match { it == avstemmingsnøkler.first() },
+                any(),
+                Oppdragstatus.OVERFØRT
+            )
+        } returns true
         every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto() }
         rapid.sendTestMessage(message)
         rapid.sendTestMessage(message)
@@ -115,16 +180,36 @@ internal class UtbetalingerTest {
         val avstemmingsnøkler = mutableListOf<Long>()
         val message = utbetalingsbehov()
         fun oppdragDto(status: Oppdragstatus = Oppdragstatus.OVERFØRT) = OppdragDto(
-                avstemmingsnøkler.first(),
-                PERSON,
-                FAGSYSTEMID,
-                LocalDateTime.now(),
-                status,
-                BELØP,
-                null
+            avstemmingsnøkler.first(),
+            PERSON,
+            FAGSYSTEMID,
+            LocalDateTime.now(),
+            status,
+            BELØP,
+            null
         )
-        every { dao.nyttOppdrag(any(), capture(avstemmingsnøkler), any(), any(), any(), any(), any(), any(), any(), any(), any()) } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
-        every { dao.oppdaterOppdrag(match { it == avstemmingsnøkler.first() }, any(), Oppdragstatus.OVERFØRT) } returns true
+        every {
+            dao.nyttOppdrag(
+                any(),
+                capture(avstemmingsnøkler),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
+        every {
+            dao.oppdaterOppdrag(
+                match { it == avstemmingsnøkler.first() },
+                any(),
+                Oppdragstatus.OVERFØRT
+            )
+        } returns true
         every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto(Oppdragstatus.AVVIST) }
         rapid.sendTestMessage(message)
         rapid.sendTestMessage(message)
@@ -141,12 +226,40 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov(emptyList()))
         assertEquals(0, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
-        verify(exactly = 0) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 0) {
+            dao.nyttOppdrag(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
     fun `utbetalingsbehov med feil`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns null
+        every {
+            dao.nyttOppdrag(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns null
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
@@ -154,12 +267,40 @@ internal class UtbetalingerTest {
         inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
-        verify(exactly = 1) { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        verify(exactly = 1) {
+            dao.nyttOppdrag(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
     fun `utbetalingsbehov med exception`() {
-        every { dao.nyttOppdrag(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws RuntimeException()
+        every {
+            dao.nyttOppdrag(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } throws RuntimeException()
         rapid.sendTestMessage(utbetalingsbehov())
         assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
@@ -169,7 +310,7 @@ internal class UtbetalingerTest {
         }
     }
 
-    private fun assertOverført(indeks: Int, antallOverforinger : Int = 1) {
+    private fun assertOverført(indeks: Int, antallOverforinger: Int = 1) {
         assertEquals(BEHOV, inspektør.id(indeks))
         inspektør.løsning(indeks, "Utbetaling") {
             assertEquals(Oppdragstatus.OVERFØRT.name, it.path("status").asText())
@@ -179,31 +320,41 @@ internal class UtbetalingerTest {
         val avstemmingsnøkkel = inspektør.løsning(indeks, "Utbetaling")
             .path("avstemmingsnøkkel")
             .asLong()
-        verify(exactly = 1) { dao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel,
-            sjekksum = any(),
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = any(),
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.MOTTATT,
-            totalbeløp = BELØP,
-            originalJson = any()
-        ) }
-        verify(exactly = antallOverforinger) { dao.oppdaterOppdrag(avstemmingsnøkkel, FAGSYSTEMID, Oppdragstatus.OVERFØRT) }
+        verify(exactly = 1) {
+            dao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel,
+                sjekksum = any(),
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = any(),
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.MOTTATT,
+                totalbeløp = BELØP,
+                originalJson = any()
+            )
+        }
+        verify(exactly = antallOverforinger) {
+            dao.oppdaterOppdrag(
+                avstemmingsnøkkel,
+                FAGSYSTEMID,
+                Oppdragstatus.OVERFØRT
+            )
+        }
     }
 
-    private fun utbetalingsbehov(utbetalingslinjer: List<Map<String, Any>> = listOf(
-        mapOf(
-            "satstype" to "DAG",
-            "sats" to "$BELØP",
-            "fom" to "2020-04-20",
-            "tom" to "2020-05-20",
-            "grad" to 100
+    private fun utbetalingsbehov(
+        utbetalingslinjer: List<Map<String, Any>> = listOf(
+            mapOf(
+                "satstype" to "DAG",
+                "sats" to "$BELØP",
+                "fom" to "2020-04-20",
+                "tom" to "2020-05-20",
+                "grad" to 100
+            )
         )
-    )): String {
+    ): String {
         return jacksonObjectMapper().writeValueAsString(
             mapOf(
                 "@event_name" to "behov",

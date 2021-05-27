@@ -18,8 +18,12 @@ internal class Transaksjoner(
         River(rapidsConnection).apply {
             validate { it.requireValue("@event_name", "transaksjon_status") }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
-            validate { it.requireKey("@id", "fødselsnummer", "fagsystemId",
-                "avstemmingsnøkkel", "feilkode_oppdrag", "beskrivelse", "originalXml") }
+            validate {
+                it.requireKey(
+                    "@id", "fødselsnummer", "fagsystemId",
+                    "avstemmingsnøkkel", "feilkode_oppdrag", "beskrivelse", "originalXml"
+                )
+            }
             validate { it.requireAny("status", Oppdragstatus.values().map(Enum<*>::name)) }
         }.register(this)
     }
@@ -33,8 +37,10 @@ internal class Transaksjoner(
         log.info("oppdrag med avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
 
         oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.also {
-            sikkerLogg.info("oppdrag med avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +
-                    "fødselsnummer=$fødselsnummer status=$status tidspunkt=$tidspunkt for behov=${it.toJson()}")
+            sikkerLogg.info(
+                "oppdrag med avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +
+                        "fødselsnummer=$fødselsnummer status=$status tidspunkt=$tidspunkt for behov=${it.toJson()}"
+            )
 
             it["@løsning"] = mapOf(
                 "Utbetaling" to mapOf(

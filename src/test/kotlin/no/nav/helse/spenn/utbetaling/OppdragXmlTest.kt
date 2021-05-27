@@ -28,12 +28,17 @@ internal class OppdragXmlTest {
     }
 
     private fun kvittering(alvorlighetsgrad: String) =
-        kvittering("<ns2:oppdrag xmlns:ns2=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</ns2:oppdrag>", alvorlighetsgrad)
+        kvittering(
+            "<ns2:oppdrag xmlns:ns2=\"http://www.trygdeetaten.no/skjema/oppdrag\">",
+            "</ns2:oppdrag>",
+            alvorlighetsgrad
+        )
 
     private fun rarKvittering(alvorlighetsgrad: String) =
         kvittering("<oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</Oppdrag>", alvorlighetsgrad)
 
-    private fun kvittering(head: String, foot: String, alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
+    private fun kvittering(head: String, foot: String, alvorlighetsgrad: String) =
+        """<?xml version="1.0" encoding="utf-8"?>
 $head
     <mmel>
         <systemId>231-OPPD</systemId>

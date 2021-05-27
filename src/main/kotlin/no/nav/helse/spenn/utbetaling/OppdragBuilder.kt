@@ -9,9 +9,11 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.xml.datatype.DatatypeFactory
 
-internal class OppdragBuilder(private val utbetalingslinjer: Utbetalingslinjer,
-                              private val avstemmingsnøkkel: Long,
-                              tidspunkt: Instant = Instant.now()) {
+internal class OppdragBuilder(
+    private val utbetalingslinjer: Utbetalingslinjer,
+    private val avstemmingsnøkkel: Long,
+    tidspunkt: Instant = Instant.now()
+) {
     private companion object {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
             .withZone(ZoneId.systemDefault())
@@ -54,17 +56,19 @@ internal class OppdragBuilder(private val utbetalingslinjer: Utbetalingslinjer,
         }
     }
 
-    private fun refusjonTilArbeidsgiver(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = nyLinje(utbetalingslinje).apply {
-        refusjonsinfo156 = Refusjonsinfo156().apply {
-            refunderesId = utbetalingslinjer.mottaker.padStart(11, '0')
-            datoFom = datoVedtakFom
-            maksDato = utbetalingslinjer.maksdato?.asXmlGregorianCalendar()
+    private fun refusjonTilArbeidsgiver(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) =
+        nyLinje(utbetalingslinje).apply {
+            refusjonsinfo156 = Refusjonsinfo156().apply {
+                refunderesId = utbetalingslinjer.mottaker.padStart(11, '0')
+                datoFom = datoVedtakFom
+                maksDato = utbetalingslinjer.maksdato?.asXmlGregorianCalendar()
+            }
         }
-    }
 
-    private fun utbetalingTilBruker(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = nyLinje(utbetalingslinje).apply {
-        utbetalesTilId = utbetalingslinjer.mottaker
-    }
+    private fun utbetalingTilBruker(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) =
+        nyLinje(utbetalingslinje).apply {
+            utbetalesTilId = utbetalingslinjer.mottaker
+        }
 
     private fun nyLinje(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = OppdragsLinje150().apply {
         delytelseId = "${utbetalingslinje.delytelseId}"

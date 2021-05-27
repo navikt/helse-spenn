@@ -24,14 +24,17 @@ object AvstemmingdataXml {
         setProperty(XMLInputFactory.SUPPORT_DTD, false)
     }
 
-    fun marshal(avstemmingsdata: Avstemmingsdata) : String {
+    fun marshal(avstemmingsdata: Avstemmingsdata): String {
         return StringWriter().use {
-            marshaller.marshal(JAXBElement(QName("", "Avstemmingsdata"), Avstemmingsdata::class.java, avstemmingsdata), it)
+            marshaller.marshal(
+                JAXBElement(QName("", "Avstemmingsdata"), Avstemmingsdata::class.java, avstemmingsdata),
+                it
+            )
             it.toString()
         }
     }
 
-    fun unmarshal(avstemmingsdataXML: String) : Avstemmingsdata {
+    fun unmarshal(avstemmingsdataXML: String): Avstemmingsdata {
         return StringReader(avstemmingsdataXML).use {
             xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
             xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)

@@ -1,10 +1,6 @@
 package no.nav.helse.spenn
 
-import no.nav.helse.spenn.januar
-import no.nav.helse.spenn.mandag
-import no.nav.helse.spenn.mars
-import no.nav.helse.spenn.søndag
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 

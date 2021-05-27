@@ -41,19 +41,21 @@ internal class OppdragDaoTest {
     @Test
     fun `opprette oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertNotNull(oppdragDao.nyttOppdrag(
-            FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
-            sjekksum = SJEKKSUM,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
+                sjekksum = SJEKKSUM,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
             assertEquals(PERSON, it.fnr)
@@ -72,45 +74,51 @@ internal class OppdragDaoTest {
     @Test
     fun `duplikat oppdrag`() {
         val tidspunkt = LocalDateTime.now()
-        assertNotNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
-            sjekksum = SJEKKSUM,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
-        assertNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
-            sjekksum = SJEKKSUM + 1,
-            fødselsnummer = "en annen person",
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt.minusHours(1),
-            fagsystemId = "en annen fagsystemId",
-            status = Oppdragstatus.AKSEPTERT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
-        assertNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = AVSTEMMINGSNØKKEL + 1,
-            sjekksum = SJEKKSUM,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt.minusHours(1),
-            fagsystemId = "en annen fagsystemId",
-            status = Oppdragstatus.AKSEPTERT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
+                sjekksum = SJEKKSUM,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
+                sjekksum = SJEKKSUM + 1,
+                fødselsnummer = "en annen person",
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt.minusHours(1),
+                fagsystemId = "en annen fagsystemId",
+                status = Oppdragstatus.AKSEPTERT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = AVSTEMMINGSNØKKEL + 1,
+                sjekksum = SJEKKSUM,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt.minusHours(1),
+                fagsystemId = "en annen fagsystemId",
+                status = Oppdragstatus.AKSEPTERT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
     }
 
     @Test
@@ -132,9 +140,12 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV
         )
-        assertTrue(oppdragDao.oppdaterOppdrag(
-            AVSTEMMINGSNØKKEL,
-            FAGSYSTEMID, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding))
+        assertTrue(
+            oppdragDao.oppdaterOppdrag(
+                AVSTEMMINGSNØKKEL,
+                FAGSYSTEMID, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding
+            )
+        )
 
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
@@ -241,12 +252,16 @@ internal class OppdragDaoTest {
             assertEquals(siste, it.endInclusive)
         }
         OppdragDto.periode(oppdrag).also {
-            assertEquals(tidspunkt.format(tidsstempel), it.start.format(
-                tidsstempel
-            ))
-            assertEquals(tidspunkt.plusDays(3).format(tidsstempel), it.endInclusive.format(
-                tidsstempel
-            ))
+            assertEquals(
+                tidspunkt.format(tidsstempel), it.start.format(
+                    tidsstempel
+                )
+            )
+            assertEquals(
+                tidspunkt.plusDays(3).format(tidsstempel), it.endInclusive.format(
+                    tidsstempel
+                )
+            )
         }
     }
 
@@ -415,103 +430,117 @@ internal class OppdragDaoTest {
     fun `Insert feiler dersom constraint sjekksum er lik`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
-        assertNotNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel,
-            sjekksum = SJEKKSUM,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
-        assertNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel + 1,
-            sjekksum = SJEKKSUM,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
-        assertNotNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel + 1,
-            sjekksum = SJEKKSUM,
-            fødselsnummer = "en annen person",
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel,
+                sjekksum = SJEKKSUM,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel + 1,
+                sjekksum = SJEKKSUM,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel + 1,
+                sjekksum = SJEKKSUM,
+                fødselsnummer = "en annen person",
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
     }
 
     @Test
     fun `Insert er vellykket for ulike kombinasjoner av constraint sjekksum`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
-        assertNotNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel,
-            sjekksum = SJEKKSUM,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
-        assertNotNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel + 1,
-            sjekksum = SJEKKSUM + 1,
-            fødselsnummer = "annenPerson",
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
-        assertNotNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel + 2,
-            sjekksum = SJEKKSUM + 2,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = "annenOrg",
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
-        assertNotNull(oppdragDao.nyttOppdrag(
-            fagområde = FAGOMRÅDE_REFUSJON,
-            avstemmingsnøkkel = avstemmingsnøkkel + 3,
-            sjekksum = SJEKKSUM + 1,
-            fødselsnummer = PERSON,
-            organisasjonsnummer = ORGNR,
-            mottaker = ORGNR,
-            tidspunkt = tidspunkt,
-            fagsystemId = FAGSYSTEMID,
-            status = Oppdragstatus.OVERFØRT,
-            totalbeløp = BELØP,
-            originalJson = BEHOV
-        ))
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel,
+                sjekksum = SJEKKSUM,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel + 1,
+                sjekksum = SJEKKSUM + 1,
+                fødselsnummer = "annenPerson",
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel + 2,
+                sjekksum = SJEKKSUM + 2,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = "annenOrg",
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel + 3,
+                sjekksum = SJEKKSUM + 1,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
     }
 
 
@@ -538,7 +567,8 @@ internal class OppdragDaoTest {
                         feilkode_oppdrag = it.stringOrNull("feilkode_oppdrag"),
                         oppdrag_response = it.stringOrNull("oppdrag_response")
                     )
-                }.asSingle)
+                }.asSingle
+            )
         } ?: fail { "Fant ikke oppdrag med avstemmingsnøkkel $avstemmingsnøkkel" }
 
     @BeforeAll

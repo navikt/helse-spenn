@@ -35,8 +35,10 @@ private fun rapidApp(env: Map<String, String>) {
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
         stsSoapUrl = env.getValue("SECURITYTOKENSERVICE_URL"),
-        username = "/var/run/secrets/nais.io/service_user/username".readFile() ?: throw IllegalArgumentException("Forventer username"),
-        password = "/var/run/secrets/nais.io/service_user/password".readFile() ?: throw IllegalArgumentException("Forventer passord"),
+        username = "/var/run/secrets/nais.io/service_user/username".readFile()
+            ?: throw IllegalArgumentException("Forventer username"),
+        password = "/var/run/secrets/nais.io/service_user/password".readFile()
+            ?: throw IllegalArgumentException("Forventer passord"),
         disableCNCheck = true
     )
 
@@ -121,4 +123,8 @@ private fun mqConnection(env: Map<String, String>) =
         setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, false)
     }.createConnection(env.getValue("MQ_USERNAME"), env.getValue("MQ_PASSWORD"))
 
-private fun String.readFile() = try { File(this).readText(Charsets.UTF_8) } catch (err: Exception) { null }
+private fun String.readFile() = try {
+    File(this).readText(Charsets.UTF_8)
+} catch (err: Exception) {
+    null
+}

@@ -122,24 +122,26 @@ internal class OppdragDtoTest {
     fun totaldata() {
         OppdragDto.totaldata(oppdrag).also {
             assertEquals(oppdrag.size, it.totalAntall)
-            assertEquals((4* BELØP).toBigDecimal(), it.totalBelop)
+            assertEquals((4 * BELØP).toBigDecimal(), it.totalBelop)
             assertEquals(Fortegn.T, it.fortegn)
         }
     }
 
     @Test
     fun `totaldata negativt beløp`() {
-        OppdragDto.totaldata(listOf(
-            OppdragDto(
-                AVSTEMMINGSNØKKEL,
-                PERSON,
-                UTBETALINGSREF,
-                OPPRETTET,
-                Oppdragstatus.OVERFØRT,
-                -1 * BELØP,
-                null
+        OppdragDto.totaldata(
+            listOf(
+                OppdragDto(
+                    AVSTEMMINGSNØKKEL,
+                    PERSON,
+                    UTBETALINGSREF,
+                    OPPRETTET,
+                    Oppdragstatus.OVERFØRT,
+                    -1 * BELØP,
+                    null
+                )
             )
-        )).also {
+        ).also {
             assertEquals(1, it.totalAntall)
             assertEquals((-BELØP).toBigDecimal(), it.totalBelop)
             assertEquals(Fortegn.F, it.fortegn)
@@ -159,7 +161,7 @@ internal class OppdragDtoTest {
             it.avvistBelop = (-BELØP).toBigDecimal()
             it.avvistFortegn = Fortegn.F
             it.manglerAntall = 2
-            it.manglerBelop = (2* BELØP).toBigDecimal()
+            it.manglerBelop = (2 * BELØP).toBigDecimal()
             it.manglerFortegn = Fortegn.T
         }
     }

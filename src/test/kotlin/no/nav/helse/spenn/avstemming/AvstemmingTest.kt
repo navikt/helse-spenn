@@ -55,10 +55,42 @@ internal class AvstemmingTest {
             OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, OVERFØRT, BELØP, null),
             OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
             OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, tirsdag, AKSEPTERT, BELØP, kvittering(OK)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, onsdag, AKSEPTERT_MED_FEIL, BELØP, kvittering(OK_MED_VARSEL)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, torsdag, AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, fredag, AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, lørdag, AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 3,
+                PERSON,
+                UTBETALINGSREF,
+                onsdag,
+                AKSEPTERT_MED_FEIL,
+                BELØP,
+                kvittering(OK_MED_VARSEL)
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 4,
+                PERSON,
+                UTBETALINGSREF,
+                torsdag,
+                AVVIST,
+                BELØP,
+                kvittering(AVVIST_FUNKSJONELLE_FEIL)
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 5,
+                PERSON,
+                UTBETALINGSREF,
+                fredag,
+                AVVIST,
+                -BELØP,
+                kvittering(AVVIST_FUNKSJONELLE_FEIL)
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 6,
+                PERSON,
+                UTBETALINGSREF,
+                lørdag,
+                AVVIST,
+                -BELØP,
+                kvittering(AVVIST_TEKNISK_FEIL)
+            ),
             OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, søndag, FEIL, BELØP, kvittering(OK))
         )
     )
@@ -71,7 +103,14 @@ internal class AvstemmingTest {
         every { dao.hentOppdragForAvstemming(avstemmingsperiodeForDagen.endInclusive) } returns oppdrag
         avstemming.avstem(dagen)
         assertEquals(3, connection.inspektør.antall())
-        verify(exactly = 1) { avstemmingDao.nyAvstemming(any(), FAGOMRÅDE_REFUSJON, avstemmingsperiode.endInclusive, oppdrag.getValue(FAGOMRÅDE_REFUSJON).size) }
+        verify(exactly = 1) {
+            avstemmingDao.nyAvstemming(
+                any(),
+                FAGOMRÅDE_REFUSJON,
+                avstemmingsperiode.endInclusive,
+                oppdrag.getValue(FAGOMRÅDE_REFUSJON).size
+            )
+        }
         verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(FAGOMRÅDE_REFUSJON, avstemmingsperiode.endInclusive) }
         verify(exactly = 1) { producer.send(any()) }
     }

@@ -104,9 +104,12 @@ internal class KvitteringerTest {
         assertEquals(melding, rapid.inspektør.field(1, "originalXml").asText())
         assertDoesNotThrow { UUID.fromString(rapid.inspektør.field(1, "@id").asText()) }
         assertDoesNotThrow { LocalDateTime.parse(rapid.inspektør.field(1, "@opprettet").asText()) }
-        verify(exactly = 1) { dao.oppdaterOppdrag(
-            AVSTEMMINGSNØKKEL,
-            FAGSYSTEMID, status, any(), alvorlighetsgrad, melding) }
+        verify(exactly = 1) {
+            dao.oppdaterOppdrag(
+                AVSTEMMINGSNØKKEL,
+                FAGSYSTEMID, status, any(), alvorlighetsgrad, melding
+            )
+        }
     }
 
     private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>

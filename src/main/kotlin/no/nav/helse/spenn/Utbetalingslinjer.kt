@@ -56,7 +56,16 @@ internal sealed class Utbetalingslinjer(
         endringskode: String,
         saksbehandler: String,
         maksdato: LocalDate?
-    ) : Utbetalingslinjer("SP", fagsystemId, fødselsnummer, mottaker, organisasjonsnummer, endringskode, saksbehandler, maksdato)
+    ) : Utbetalingslinjer(
+        "SP",
+        fagsystemId,
+        fødselsnummer,
+        mottaker,
+        organisasjonsnummer,
+        endringskode,
+        saksbehandler,
+        maksdato
+    )
 
     internal class Utbetalingslinje(
         internal val delytelseId: Int,
