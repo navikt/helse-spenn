@@ -523,4 +523,16 @@ internal class UtbetalingslinjerTest {
 
         assertEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
     }
+
+    @Test
+    fun `Sjekksum kan ha kollisjoner`() {
+        val oppdrag1 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(1, "NY", "SPREFAG-IOP", 19.januar(2021), 15.februar(2021), 266, 25, null, null, null, null, "DAG"))
+        }
+        val oppdrag2 = Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, UTBETALINGSREF, "NY", "", LocalDate.MAX).apply {
+            linje(Utbetalingslinjer.Utbetalingslinje(2, "NY", "SPREFAG-IOP", 16.februar(2021), 28.februar(2021), 213, 20, null, null, null, null, "DAG"))
+        }
+
+        assertEquals(oppdrag1.hashCode(), oppdrag2.hashCode())
+    }
 }

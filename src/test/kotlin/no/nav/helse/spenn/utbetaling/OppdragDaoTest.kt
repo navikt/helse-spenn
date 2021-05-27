@@ -407,6 +407,41 @@ internal class OppdragDaoTest {
     }
 
     @Test
+    fun `Ved kollisjon i sjekksum og personnummer lages det ikke noe nytt oppdrag`() {
+        val tidspunkt = LocalDateTime.now()
+        val første = System.currentTimeMillis()
+        val nyttOppdrag = oppdragDao.nyttOppdrag(
+            fagområde = FAGOMRÅDE_REFUSJON,
+            avstemmingsnøkkel = første,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = ORGNR,
+            mottaker = ORGNR,
+            tidspunkt = tidspunkt,
+            fagsystemId = FAGSYSTEMID,
+            status = Oppdragstatus.OVERFØRT,
+            totalbeløp = BELØP,
+            originalJson = BEHOV
+        )
+        val forlengelse = oppdragDao.nyttOppdrag(
+            fagområde = "foo",
+            avstemmingsnøkkel = første + 1,
+            sjekksum = SJEKKSUM,
+            fødselsnummer = PERSON,
+            organisasjonsnummer = "ORGNR",
+            mottaker = "ORGNR",
+            tidspunkt = tidspunkt.plusDays(1),
+            fagsystemId = "FAGSYSTEMID",
+            status = Oppdragstatus.AKSEPTERT,
+            totalbeløp = BELØP - 1,
+            originalJson = BEHOV
+        )
+
+        assertNotNull(nyttOppdrag)
+        assertNull(forlengelse)
+    }
+
+    @Test
     fun `oppdaterer ikke andre fagområder`() {
         val tidspunkt = LocalDateTime.now()
         val avstemmingsnøkkel = System.currentTimeMillis()
@@ -527,6 +562,21 @@ internal class OppdragDaoTest {
             )
         )
         assertNotNull(
+            oppdragDao.nyttOppdrag(
+                fagområde = FAGOMRÅDE_REFUSJON,
+                avstemmingsnøkkel = avstemmingsnøkkel + 3,
+                sjekksum = SJEKKSUM + 1,
+                fødselsnummer = PERSON,
+                organisasjonsnummer = ORGNR,
+                mottaker = ORGNR,
+                tidspunkt = tidspunkt,
+                fagsystemId = FAGSYSTEMID,
+                status = Oppdragstatus.OVERFØRT,
+                totalbeløp = BELØP,
+                originalJson = BEHOV
+            )
+        )
+        assertNull(
             oppdragDao.nyttOppdrag(
                 fagområde = FAGOMRÅDE_REFUSJON,
                 avstemmingsnøkkel = avstemmingsnøkkel + 3,
