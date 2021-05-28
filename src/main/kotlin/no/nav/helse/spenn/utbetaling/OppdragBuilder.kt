@@ -85,10 +85,12 @@ internal class OppdragBuilder(
         typeSats = utbetalingslinje.satstype
         saksbehId = utbetalingslinjer.saksbehandler
         brukKjoreplan = "N"
-        grad170.add(Grad170().apply {
-            typeGrad = "UFOR"
-            grad = utbetalingslinje.grad?.toBigInteger()
-        })
+        if (utbetalingslinje.grad != null) {
+            grad170.add(Grad170().apply {
+                typeGrad = "UFOR"
+                grad = utbetalingslinje.grad.toBigInteger()
+            })
+        }
         attestant180.add(Attestant180().apply {
             attestantId = utbetalingslinjer.saksbehandler
         })
