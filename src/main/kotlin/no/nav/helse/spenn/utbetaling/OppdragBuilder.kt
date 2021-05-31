@@ -80,8 +80,8 @@ internal class OppdragBuilder(
         datoVedtakTom = utbetalingslinje.tom.asXmlGregorianCalendar()
         kodeStatusLinje = utbetalingslinje.statuskode?.let { TkodeStatusLinje.valueOf(it) }
         datoStatusFom = utbetalingslinje.datoStatusFom?.asXmlGregorianCalendar()
-        sats = utbetalingslinje.sats.toBigDecimal()
-        fradragTillegg = TfradragTillegg.T
+        sats = utbetalingslinje.sats.toBigDecimal().abs()
+        fradragTillegg = if(utbetalingslinje.sats >= 0) TfradragTillegg.T else TfradragTillegg.F
         typeSats = utbetalingslinje.satstype
         saksbehId = utbetalingslinjer.saksbehandler
         brukKjoreplan = "N"
