@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.LocalDate
 import javax.jms.Connection
+import javax.sql.DataSource
 
 fun main() {
     val env = System.getenv()
@@ -46,9 +47,25 @@ private fun rapidApp(env: Map<String, String>) {
 
     val jmsConnection: Connection = mqConnection(env)
 
+    val tilOppdragQueue = env.getValue("OPPDRAG_QUEUE_SEND")
+    val svarFraOppdragQueue = env.getValue("OPPDRAG_QUEUE_MOTTAK")
+
+    val jms = Jms(
+        jmsConnection,
+        tilOppdragQueue,
+        svarFraOppdragQueue
+    )
+    startRapidApp(dataSource, env, simuleringService, jms, dataSourceBuilder)
+}
+
+fun startRapidApp(
+    dataSource: DataSource,
+    env: Map<String, String>,
+    simuleringService: SimuleringService,
+    kø: Kø,
+    database: Database
+) {
     val oppdragDao = OppdragDao(dataSource)
-    val sendQueue = env.getValue("OPPDRAG_QUEUE_SEND")
-    val replyTo = env.getValue("OPPDRAG_QUEUE_MOTTAK")
 
     FeriepengeHack(
         dataSource,
@@ -63,30 +80,23 @@ private fun rapidApp(env: Map<String, String>) {
         Utbetalinger(
             this,
             oppdragDao,
-            JmsPublisherSession(
-                jmsConnection,
-                sendQueue,
-                replyTo
-            )
+            kø.sendSession()
         )
         Kvitteringer(
             this,
-            JmsConsumerSession(
-                jmsConnection,
-                replyTo,
-            ),
+            kø,
             oppdragDao
         )
         Transaksjoner(this, oppdragDao)
     }.apply {
         register(object : RapidsConnection.StatusListener {
             override fun onStartup(rapidsConnection: RapidsConnection) {
-                dataSourceBuilder.migrate()
-                jmsConnection.start()
+                database.migrate()
+                kø.start()
             }
 
             override fun onShutdown(rapidsConnection: RapidsConnection) {
-                jmsConnection.close()
+                kø.close()
             }
         })
     }.start()
@@ -114,14 +124,14 @@ private fun avstemmingJob(env: Map<String, String>) {
 
             val dagen = LocalDate.now().minusDays(1)
             Avstemming(
+                JmsUtSesjon(
+                    jmsConnection,
+                    env.getValue("AVSTEMMING_QUEUE_SEND"),
+                ),
                 producer,
                 env.getValue("KAFKA_RAPID_TOPIC"),
                 OppdragDao(dataSource),
                 AvstemmingDao(dataSource),
-                JmsPublisherSession(
-                    jmsConnection,
-                    env.getValue("AVSTEMMING_QUEUE_SEND"),
-                )
             ).avstem(dagen)
 
             log.info("avstemming utført dagen=$dagen")

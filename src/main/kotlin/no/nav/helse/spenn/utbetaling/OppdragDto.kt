@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.utbetaling
 
-import no.nav.helse.spenn.JmsPublisherSession
+import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import org.slf4j.LoggerFactory
@@ -93,13 +93,13 @@ internal class OppdragDto(
         dao: OppdragDao,
         utbetalingslinjer: Utbetalingslinjer,
         nå: Instant,
-        jmsPublisher: JmsPublisherSession
+        tilOppdrag: UtKø
     ) {
         if (status !in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)) return
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
         val oppdragXml = OppdragXml.marshal(oppdrag)
-        jmsPublisher.send(oppdragXml)
+        tilOppdrag.send(oppdragXml)
         status = Oppdragstatus.OVERFØRT
         dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
     }

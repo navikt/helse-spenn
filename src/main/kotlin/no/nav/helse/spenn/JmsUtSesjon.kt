@@ -7,11 +7,11 @@ import no.nav.helse.spenn.utbetaling.MQErNede
 import javax.jms.Connection
 import javax.jms.JMSException
 
-class JmsPublisherSession(val connection: Connection, sendQueue: String, val replyTo: String? = null) {
-        val jmsSession = connection.createSession()
-        val producer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
+class JmsUtSesjon(connection: Connection, sendQueue: String, private val replyTo: String? = null) : UtKø {
+    private val jmsSession = connection.createSession()
+    private val producer = jmsSession.createProducer(jmsSession.createQueue(sendQueue))
 
-    fun send(messageString: String) {
+    override fun send(messageString: String) {
         try {
             sendToMq(messageString)
         } catch (err: JMSException) {
@@ -32,12 +32,12 @@ class JmsPublisherSession(val connection: Connection, sendQueue: String, val rep
 
         val message = jmsSession.createTextMessage(messageString)
         replyTo
-            ?.let {MQQueue(it)}
+            ?.let { MQQueue(it) }
             ?.let { message.jmsReplyTo = it }
         producer.send(message)
     }
 
-    fun sendNoErrorHandling(messageString: String) {
+    override fun sendNoErrorHandling(messageString: String) {
         sendToMq(messageString)
     }
 }

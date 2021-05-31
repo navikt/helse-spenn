@@ -2,7 +2,8 @@ package no.nav.helse.spenn.avstemming
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.spenn.Avstemmingsnøkkel
-import no.nav.helse.spenn.JmsPublisherSession
+import no.nav.helse.spenn.JmsUtSesjon
+import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.OppdragDto
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
@@ -14,7 +15,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 internal class Avstemming(
-    private val jmsPublisher: JmsPublisherSession,
+    private val tilAvstemming: UtKø,
     private val kafkaProducer: Producer<String, String>,
     private val rapidTopic: String,
     private val oppdragDao: OppdragDao,
@@ -83,6 +84,6 @@ internal class Avstemming(
 
     private fun sendAvstemmingsmelding(melding: Avstemmingsdata) {
         val xmlMelding = AvstemmingdataXml.marshal(melding)
-        jmsPublisher.sendNoErrorHandling(xmlMelding)
+        tilAvstemming.sendNoErrorHandling(xmlMelding)
     }
 }

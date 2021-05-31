@@ -6,8 +6,13 @@ import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 import javax.sql.DataSource
 
+interface Database {
+    fun getDataSource(): DataSource
+    fun migrate()
+}
+
 // Understands how to create a data source from environment variables
-internal class DataSourceBuilder(env: Map<String, String>) {
+internal class DataSourceBuilder(env: Map<String, String>) : Database {
     private val databaseName = env["DATABASE_NAME"]
 
     private val vaultMountPath = env["VAULT_MOUNTPATH"]
@@ -46,7 +51,10 @@ internal class DataSourceBuilder(env: Map<String, String>) {
         }
     }
 
-    fun getDataSource(role: Role = Role.User): DataSource {
+    override fun getDataSource(): DataSource =
+        getDataSource(Role.User)
+
+    private fun getDataSource(role: Role = Role.User): DataSource {
         if (!shouldGetCredentialsFromVault) return HikariDataSource(hikariConfig)
         return HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(
             hikariConfig,
@@ -55,7 +63,7 @@ internal class DataSourceBuilder(env: Map<String, String>) {
         )
     }
 
-    fun migrate() {
+    override fun migrate() {
         var initSql: String? = null
         if (shouldGetCredentialsFromVault) {
             initSql = "SET ROLE \"$databaseName-${Role.Admin}\""
@@ -71,7 +79,7 @@ internal class DataSourceBuilder(env: Map<String, String>) {
             .load()
             .migrate()
 
-    enum class Role {
+    private enum class Role {
         Admin, User, ReadOnly;
 
         override fun toString() = name.toLowerCase()

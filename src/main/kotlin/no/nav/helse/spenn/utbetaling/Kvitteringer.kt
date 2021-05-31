@@ -2,14 +2,14 @@ package no.nav.helse.spenn.utbetaling
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.spenn.JmsConsumerSession
+import no.nav.helse.spenn.Kø
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
 
 internal class Kvitteringer(
     private val rapidsConnection: RapidsConnection,
-    jmsConsumer: JmsConsumerSession,
+    fraOppdrag: Kø,
     private val oppdragDao: OppdragDao
 ) {
     private companion object {
@@ -19,7 +19,7 @@ internal class Kvitteringer(
 
 
     init {
-        jmsConsumer.setMessageListener (log){ message ->
+        fraOppdrag.setMessageListener { message ->
             try {
                 val body = OppdragXml.normalizeXml(message)
                 try {

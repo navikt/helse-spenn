@@ -3,7 +3,7 @@ package no.nav.helse.spenn.utbetaling
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
-import no.nav.helse.spenn.JmsPublisherSession
+import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.UtbetalingslinjerMapper
 import no.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
@@ -13,7 +13,7 @@ import java.time.ZoneId
 internal class Utbetalinger(
     rapidsConnection: RapidsConnection,
     private val oppdragDao: OppdragDao,
-    private val jmsPublisher: JmsPublisherSession
+    private val tilOppdrag: UtKø
 ) : River.PacketListener {
 
     private companion object {
@@ -82,7 +82,7 @@ internal class Utbetalinger(
                 originalJson = packet.toJson()
             ) ?: oppdragDao.hentOppdragForSjekksum(sjekksum)
 
-            oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, jmsPublisher)
+            oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
 
             packet["@løsning"] = mapOf(
                 "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(

@@ -5,7 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.spenn.JmsConsumerSession
+import no.nav.helse.spenn.Jms
 import no.nav.helse.spenn.TestConnection
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +32,7 @@ internal class KvitteringerTest {
     private val dao = mockk<OppdragDao>()
     private val connection = TestConnection()
     private val rapid = TestRapid().apply {
-        Kvitteringer(this, JmsConsumerSession( connection, MOTTAK_QUEUE), dao)
+        Kvitteringer(this, Jms( connection, "sendQueue", MOTTAK_QUEUE), dao)
     }
 
     @BeforeEach
