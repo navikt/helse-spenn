@@ -48,13 +48,13 @@ private fun rapidApp(env: Map<String, String>) {
 
     val jmsConnection: Connection = mqConnection(env)
 
-    FeriepengeHack(
+    /*FeriepengeHack(
         dataSource,
         oppdragDao,
         jmsConnection,
         env.getValue("OPPDRAG_QUEUE_SEND"),
         env.getValue("OPPDRAG_QUEUE_MOTTAK")
-    ).trigger()
+    ).trigger()*/
 
     RapidApplication.create(env).apply {
         Simuleringer(this, simuleringService)
