@@ -46,7 +46,7 @@ internal class FeriepengeHack(
                             fødselsnummer = it.string("fnr"),
                             fagsystemId = it.string("fagsystem_id"),
                             opprettet = it.localDateTime("opprettet"),
-                            status = Oppdragstatus.valueOf(it.string("status")),
+                            status = Oppdragstatus.MOTTATT,
                             totalbeløp = it.int("totalbelop"),
                             oppdragXml = it.stringOrNull("oppdrag_response")
                         ),

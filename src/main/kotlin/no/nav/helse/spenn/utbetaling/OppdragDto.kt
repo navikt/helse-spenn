@@ -5,6 +5,7 @@ import com.ibm.msg.client.jms.JmsQueue
 import com.ibm.msg.client.wmq.common.internal.Reason
 import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
+import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
@@ -24,6 +25,7 @@ internal class OppdragDto(
 ) {
     internal companion object {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
+        private val sikkerLogg = LoggerFactory.getLogger("tjenestekall") //TODO: Fjern etter rekjøring av feriepenger
 
         fun periode(liste: List<OppdragDto>): ClosedRange<LocalDateTime> {
             check(liste.isNotEmpty())
@@ -101,7 +103,7 @@ internal class OppdragDto(
         producer: MessageProducer,
         queue: JmsQueue
     ) {
-        if (!setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST).contains(status)) return
+        if (status !in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)) return
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
         try {
             val oppdragXml = OppdragXml.marshal(oppdrag)
@@ -110,6 +112,7 @@ internal class OppdragDto(
             producer.send(message)
             status = Oppdragstatus.OVERFØRT
             dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
+            sikkerLogg.info("Sendt oppdrag og oppdatert status for oppdrag med fagsystemId $fagsystemId. $message")
         } catch (err: JMSException) {
             val message = err.message
             val cause = err.cause
