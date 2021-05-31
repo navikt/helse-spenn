@@ -70,9 +70,7 @@ fun startRapidApp(
     FeriepengeHack(
         dataSource,
         oppdragDao,
-        jmsConnection,
-        env.getValue("OPPDRAG_QUEUE_SEND"),
-        env.getValue("OPPDRAG_QUEUE_MOTTAK")
+        kø.sendSession()
     ).trigger()
 
     RapidApplication.create(env).apply {
