@@ -48,14 +48,6 @@ private fun rapidApp(env: Map<String, String>) {
 
     val jmsConnection: Connection = mqConnection(env)
 
-    FeriepengeHack(
-        dataSource,
-        oppdragDao,
-        jmsConnection,
-        env.getValue("OPPDRAG_QUEUE_SEND"),
-        env.getValue("OPPDRAG_QUEUE_MOTTAK")
-    ).trigger()
-
     RapidApplication.create(env).apply {
         Simuleringer(this, simuleringService)
         Utbetalinger(
@@ -77,6 +69,14 @@ private fun rapidApp(env: Map<String, String>) {
             override fun onStartup(rapidsConnection: RapidsConnection) {
                 dataSourceBuilder.migrate()
                 jmsConnection.start()
+
+                FeriepengeHack(
+                    dataSource,
+                    oppdragDao,
+                    jmsConnection,
+                    env.getValue("OPPDRAG_QUEUE_SEND"),
+                    env.getValue("OPPDRAG_QUEUE_MOTTAK")
+                ).trigger()
             }
 
             override fun onShutdown(rapidsConnection: RapidsConnection) {

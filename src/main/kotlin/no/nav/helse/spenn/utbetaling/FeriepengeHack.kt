@@ -28,6 +28,9 @@ internal class FeriepengeHack(
             it.oppdragDto.sendOppdrag(oppdragDao, it.utbetalingslinjer, Instant.now(), jmsSession, producer, MQQueue(replyTo))
             lagreFeriepengeRekjøring(it.fagsystemId, it.avstemmingnøkkel)
         }
+
+        jmsSession.close()
+        producer.close()
     }
 
     internal fun hentOppdragMedNegativtBeløp() =
