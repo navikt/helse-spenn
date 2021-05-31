@@ -34,7 +34,7 @@ internal class FeriepengeHack(
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT avstemmingsnokkel, fnr, fagsystem_id, opprette, status, totalbelop, oppdrag_response, behov FROM oppdrag o " +
+                    "SELECT avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response, behov FROM oppdrag o " +
                             "WHERE totalbelop < 0 AND NOT EXISTS (SELECT 1 FROM feriepenger_rekjoring fr WHERE fr.avstemmingsnokkel=o.avstemmingnokkel AND fr.fagsystemId=o.fagsystemId)",
                 ).map {
                     OppdragHack(
