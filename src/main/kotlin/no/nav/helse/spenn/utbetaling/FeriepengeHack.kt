@@ -35,7 +35,7 @@ internal class FeriepengeHack(
             session.run(
                 queryOf(
                     "SELECT avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response, behov FROM oppdrag o " +
-                            "WHERE totalbelop < 0 AND NOT EXISTS (SELECT 1 FROM feriepenger_rekjoring fr WHERE fr.avstemmingsnokkel=o.avstemmingsnokkel AND fr.fagsystemId=o.fagsystemId)",
+                            "WHERE totalbelop < 0 AND NOT EXISTS (SELECT 1 FROM feriepenger_rekjoring fr WHERE fr.avstemmingsnokkel=o.avstemmingsnokkel AND fr.fagsystemId=o.fagsystem_id)",
                 ).map {
                     OppdragHack(
                         oppdragDto = OppdragDto(
