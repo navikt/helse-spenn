@@ -10,7 +10,6 @@ import no.nav.helse.spenn.avstemming.AvstemmingDao
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.Simuleringer
-import no.nav.helse.spenn.utbetaling.FeriepengeHack
 import no.nav.helse.spenn.utbetaling.Kvitteringer
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.Transaksjoner
@@ -69,14 +68,6 @@ private fun rapidApp(env: Map<String, String>) {
             override fun onStartup(rapidsConnection: RapidsConnection) {
                 dataSourceBuilder.migrate()
                 jmsConnection.start()
-
-                FeriepengeHack(
-                    dataSource,
-                    oppdragDao,
-                    jmsConnection,
-                    env.getValue("OPPDRAG_QUEUE_SEND"),
-                    env.getValue("OPPDRAG_QUEUE_MOTTAK")
-                ).trigger()
             }
 
             override fun onShutdown(rapidsConnection: RapidsConnection) {

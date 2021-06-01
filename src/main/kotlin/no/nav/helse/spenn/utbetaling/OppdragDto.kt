@@ -25,7 +25,6 @@ internal class OppdragDto(
 ) {
     internal companion object {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
-        private val sikkerLogg = LoggerFactory.getLogger("tjenestekall") //TODO: Fjern etter rekjøring av feriepenger
 
         fun periode(liste: List<OppdragDto>): ClosedRange<LocalDateTime> {
             check(liste.isNotEmpty())
@@ -112,7 +111,6 @@ internal class OppdragDto(
             producer.send(message)
             status = Oppdragstatus.OVERFØRT
             dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
-            sikkerLogg.info("Sendt oppdrag og oppdatert status for oppdrag med fagsystemId $fagsystemId. $message")
         } catch (err: JMSException) {
             val message = err.message
             val cause = err.cause
