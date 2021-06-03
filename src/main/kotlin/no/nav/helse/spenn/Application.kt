@@ -10,10 +10,7 @@ import no.nav.helse.spenn.avstemming.AvstemmingDao
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.Simuleringer
-import no.nav.helse.spenn.utbetaling.Kvitteringer
-import no.nav.helse.spenn.utbetaling.OppdragDao
-import no.nav.helse.spenn.utbetaling.Transaksjoner
-import no.nav.helse.spenn.utbetaling.Utbetalinger
+import no.nav.helse.spenn.utbetaling.*
 import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringSerializer
@@ -21,7 +18,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.LocalDate
 import javax.jms.Connection
-import javax.sql.DataSource
 
 fun main() {
     val env = System.getenv()
@@ -31,7 +27,6 @@ fun main() {
 
 private fun rapidApp(env: Map<String, String>) {
     val dataSourceBuilder = DataSourceBuilder(env)
-    val dataSource = dataSourceBuilder.getDataSource()
 
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
@@ -55,25 +50,21 @@ private fun rapidApp(env: Map<String, String>) {
         tilOppdragQueue,
         svarFraOppdragQueue
     )
-    startRapidApp(dataSource, env, simuleringService, jms, dataSourceBuilder)
+    val rapid: RapidsConnection = RapidApplication.create(env)
+    rapidApp(rapid, simuleringService, jms, dataSourceBuilder)
+    rapid.start()
 }
 
-fun startRapidApp(
-    dataSource: DataSource,
-    env: Map<String, String>,
+fun rapidApp(
+    rapid: RapidsConnection,
     simuleringService: SimuleringService,
     kø: Kø,
     database: Database
 ) {
+    val dataSource = database.getDataSource()
     val oppdragDao = OppdragDao(dataSource)
 
-    FeriepengeHack(
-        dataSource,
-        oppdragDao,
-        kø.sendSession()
-    ).trigger()
-
-    RapidApplication.create(env).apply {
+    rapid.apply {
         Simuleringer(this, simuleringService)
         Utbetalinger(
             this,
@@ -97,7 +88,7 @@ fun startRapidApp(
                 kø.close()
             }
         })
-    }.start()
+    }
 }
 
 private fun avstemmingJob(env: Map<String, String>) {

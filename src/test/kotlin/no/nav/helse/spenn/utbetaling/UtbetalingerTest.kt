@@ -13,16 +13,16 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 internal class UtbetalingerTest {
-    private companion object {
-        private const val FAGOMRÅDE_REFUSJON = "SPREF"
-        private const val PERSON = "12345678911"
-        private const val ORGNR = "123456789"
-        private const val BELØP = 1000
-        private const val FAGSYSTEMID = "838069327ea2"
-        private const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
-        private const val SAKSBEHANDLER = "Navn Navnesen"
-        private const val SEND_QUEUE = "utbetalingQueue"
-        private const val REPLY_TO_QUEUE = "statusQueue"
+    companion object {
+        const val FAGOMRÅDE_REFUSJON = "SPREF"
+        const val PERSON = "12345678911"
+        const val ORGNR = "123456789"
+        const val BELØP = 1000
+        const val FAGSYSTEMID = "838069327ea2"
+        const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
+        const val SAKSBEHANDLER = "Navn Navnesen"
+        const val SEND_QUEUE = "utbetalingQueue"
+        const val REPLY_TO_QUEUE = "statusQueue"
     }
 
     private val dao = mockk<OppdragDao>()

@@ -9,7 +9,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-internal class OppdragDto(
+class OppdragDto(
     private val avstemmingsnøkkel: Long,
     private val fødselsnummer: String,
     private val fagsystemId: String,

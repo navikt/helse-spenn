@@ -123,16 +123,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
     }
 
 
-    private fun Row.toOppdragDto() =
-        OppdragDto(
-            avstemmingsnøkkel = long("avstemmingsnokkel"),
-            fødselsnummer = string("fnr"),
-            fagsystemId = string("fagsystem_id"),
-            opprettet = localDateTime("opprettet"),
-            status = Oppdragstatus.valueOf(string("status")),
-            totalbeløp = int("totalbelop"),
-            oppdragXml = stringOrNull("oppdrag_response")
-        )
+
 
     private fun lagre(
         fagområde: String,
@@ -166,4 +157,17 @@ internal class OppdragDao(private val dataSource: DataSource) {
                 ).asUpdate
             )
         } == 1
+
+    companion object {
+        fun Row.toOppdragDto() =
+            OppdragDto(
+                avstemmingsnøkkel = long("avstemmingsnokkel"),
+                fødselsnummer = string("fnr"),
+                fagsystemId = string("fagsystem_id"),
+                opprettet = localDateTime("opprettet"),
+                status = Oppdragstatus.valueOf(string("status")),
+                totalbeløp = int("totalbelop"),
+                oppdragXml = stringOrNull("oppdrag_response")
+            )
+    }
 }
