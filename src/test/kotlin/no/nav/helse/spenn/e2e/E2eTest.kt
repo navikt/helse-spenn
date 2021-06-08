@@ -18,6 +18,8 @@ class E2eTest {
             val behovsvar = rapid.inspektør.message(0)
             val løsning = behovsvar["@løsning"]["Utbetaling"]
             val avstemming = løsning["avstemmingsnøkkel"].asLong()
+            val ubetalingsid = løsning["utbetalingsid"].asText()
+
             assertEquals("OVERFØRT", løsning["status"].asText())
 
             oppdrag.meldingFraOppdrag(

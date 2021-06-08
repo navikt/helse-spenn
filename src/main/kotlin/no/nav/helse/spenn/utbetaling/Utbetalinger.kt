@@ -1,7 +1,12 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.UtbetalingslinjerMapper
@@ -9,6 +14,7 @@ import no.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId
+import java.util.*
 
 internal class Utbetalinger(
     rapidsConnection: RapidsConnection,
@@ -29,7 +35,7 @@ internal class Utbetalinger(
                 it.rejectKey("@løsning")
                 it.requireKey("@id", "fødselsnummer", "organisasjonsnummer")
                 it.interestedIn("Utbetaling.maksdato", JsonNode::asLocalDate)
-                it.requireKey("Utbetaling", "Utbetaling.saksbehandler", "Utbetaling.mottaker", "Utbetaling.fagsystemId")
+                it.requireKey("Utbetaling", "Utbetaling.saksbehandler", "Utbetaling.mottaker", "Utbetaling.fagsystemId", "utbetalingId")
                 it.requireAny("Utbetaling.fagområde", listOf("SPREF", "SP"))
                 it.requireAny("Utbetaling.endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("Utbetaling.linjer") {
@@ -56,6 +62,7 @@ internal class Utbetalinger(
         val organisasjonsnummer = packet["organisasjonsnummer"].asText()
         val mottaker = packet["Utbetaling.mottaker"].asText()
         val fagsystemId = packet["Utbetaling.fagsystemId"].asText()
+        val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())
         val utbetalingslinjer =
             UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
                 .fraBehov(packet["Utbetaling"])
@@ -68,22 +75,29 @@ internal class Utbetalinger(
         val sjekksum = utbetalingslinjer.hashCode()
 
         try {
-            val oppdragDto = oppdragDao.nyttOppdrag(
-                fagområde = packet["Utbetaling.fagområde"].asText(),
-                avstemmingsnøkkel = avstemmingsnøkkel,
-                fødselsnummer = fødselsnummer,
-                sjekksum = sjekksum,
-                organisasjonsnummer = organisasjonsnummer,
-                mottaker = mottaker,
-                tidspunkt = tidspunkt,
-                fagsystemId = fagsystemId,
-                status = Oppdragstatus.MOTTATT,
-                totalbeløp = utbetalingslinjer.totalbeløp(),
-                originalJson = packet.toJson()
-            ) ?: oppdragDao.hentOppdragForSjekksum(sjekksum)
+            if (oppdragDao.finnesFraFør()){
+               log.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
+                // hvis Oppdrag har feilet tidligere, send til Oppdrag på nytt
 
-            oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
+                //send eksisterende løsning til Spleis så verden kan gå videre
+            }else {
+                val oppdragDto = oppdragDao.nyttOppdrag(
+                    fagområde = packet["Utbetaling.fagområde"].asText(),
+                    avstemmingsnøkkel = avstemmingsnøkkel,
+                    fødselsnummer = fødselsnummer,
+                    utbetalingId = utbetalingId,
+                    sjekksum = sjekksum,
+                    organisasjonsnummer = organisasjonsnummer,
+                    mottaker = mottaker,
+                    tidspunkt = tidspunkt,
+                    fagsystemId = fagsystemId,
+                    status = Oppdragstatus.MOTTATT,
+                    totalbeløp = utbetalingslinjer.totalbeløp(),
+                    originalJson = packet.toJson()
+                ) ?: oppdragDao.hentOppdragForSjekksum(sjekksum)
 
+                oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
+            }
             packet["@løsning"] = mapOf(
                 "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(
                     "status" to Oppdragstatus.FEIL,

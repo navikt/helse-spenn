@@ -1,12 +1,15 @@
 package no.nav.helse.spenn.utbetaling
 
+import kotliquery.Query
 import kotliquery.Row
+import kotliquery.action.NullableResultQueryAction
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
+import java.util.*
 import javax.sql.DataSource
 
 internal class OppdragDao(private val dataSource: DataSource) {
@@ -90,9 +93,19 @@ internal class OppdragDao(private val dataSource: DataSource) {
         )
     }
 
+    fun finnesFraFør(fnr: String, utbetalingId: UUID): Boolean = using(sessionOf(dataSource)) { session ->
+        val query =
+            """SELECT 1
+                FROM (select fnr, behov ->> 'utbetalingId'as utbetalingId from oppdrag) as sub
+                WHERE sub.fnr = :fnr and sub.utbetalingId = :utbetalingId """
+        session.run(queryOf(query, mapOf("fnr" to fnr, "utbetalingId" to utbetalingId)).exists()) == true
+
+    }
+
     internal fun nyttOppdrag(
         fagområde: String,
         avstemmingsnøkkel: Long,
+        utbetalingId: UUID,
         sjekksum: Int,
         fødselsnummer: String,
         organisasjonsnummer: String,
@@ -121,8 +134,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
         }
         return OppdragDto(avstemmingsnøkkel, fødselsnummer, fagsystemId, tidspunkt, status, totalbeløp, null)
     }
-
-
 
 
     private fun lagre(
@@ -158,6 +169,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         } == 1
 
+
     companion object {
         fun Row.toOppdragDto() =
             OppdragDto(
@@ -171,3 +183,5 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
     }
 }
+
+private fun Query.exists(): NullableResultQueryAction<Boolean> = this.map { true }.asSingle
