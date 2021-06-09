@@ -1,7 +1,11 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.*
+import io.mockk.CapturingSlot
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.Jms
 import no.nav.helse.spenn.RapidInspektør
@@ -163,7 +167,7 @@ internal class UtbetalingerTest {
                 any(),
                 any()
             )
-        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
+        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) }
         every {
             dao.oppdaterOppdrag(
                 match { it == avstemmingsnøkler.first() },
@@ -209,7 +213,7 @@ internal class UtbetalingerTest {
                 any(),
                 any()
             )
-        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
+        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) }
         every {
             dao.oppdaterOppdrag(
                 match { it == avstemmingsnøkler.first() },
@@ -234,49 +238,6 @@ internal class UtbetalingerTest {
         assertEquals(0, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
         verify(exactly = 0) {
-            dao.nyttOppdrag(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
-            )
-        }
-    }
-
-    @Test
-    fun `utbetalingsbehov med feil`() {
-        every {
-            dao.nyttOppdrag(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
-            )
-        } returns null
-        rapid.sendTestMessage(utbetalingsbehov())
-        assertEquals(1, inspektør.size)
-        assertEquals(0, connection.inspektør.antall())
-        assertEquals(BEHOV, inspektør.id(0))
-        inspektør.løsning(0, "Utbetaling") {
-            assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
-        }
-        verify(exactly = 1) {
             dao.nyttOppdrag(
                 any(),
                 any(),

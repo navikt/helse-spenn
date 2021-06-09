@@ -98,7 +98,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             """SELECT 1
                 FROM (select fnr, behov ->> 'utbetalingId'as utbetalingId from oppdrag) as sub
                 WHERE sub.fnr = :fnr and sub.utbetalingId = :utbetalingId """
-        session.run(queryOf(query, mapOf("fnr" to fnr, "utbetalingId" to utbetalingId)).exists()) == true
+        session.run(queryOf(query, mapOf("fnr" to fnr, "utbetalingId" to utbetalingId.toString())).exists()) == true
 
     }
 
@@ -115,23 +115,20 @@ internal class OppdragDao(private val dataSource: DataSource) {
         status: Oppdragstatus,
         totalbeløp: Int,
         originalJson: String
-    ): OppdragDto? {
-        if (!lagre(
-                fagområde,
-                avstemmingsnøkkel,
-                sjekksum,
-                fødselsnummer,
-                organisasjonsnummer,
-                mottaker,
-                tidspunkt,
-                fagsystemId,
-                status,
-                totalbeløp,
-                originalJson
-            )
-        ) {
-            return null
-        }
+    ): OppdragDto {
+        lagre(
+            fagområde,
+            avstemmingsnøkkel,
+            sjekksum,
+            fødselsnummer,
+            organisasjonsnummer,
+            mottaker,
+            tidspunkt,
+            fagsystemId,
+            status,
+            totalbeløp,
+            originalJson
+        )
         return OppdragDto(avstemmingsnøkkel, fødselsnummer, fagsystemId, tidspunkt, status, totalbeløp, null)
     }
 
@@ -153,7 +150,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             session.run(
                 queryOf(
                     "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, orgnr, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json) ON CONFLICT DO NOTHING",
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json)",
                     avstemmingsnøkkel,
                     sjekksum,
                     fagområde,

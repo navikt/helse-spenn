@@ -28,16 +28,23 @@ class E2eTestApp(
         oppdrag.reset()
     }
 
-    fun spleisløsning(index: Int): Løsning {
+
+    fun okLøsning(index: Int): Løsning {
         val behovsvar = rapid.inspektør.message(index)
         val løsning = behovsvar["@løsning"]["Utbetaling"]
         return Løsning(
             status = løsning["status"].asText(),
-            avstemmingsnøkkel = løsning["avstemmingsnøkkel"].asLong(),
-            overføringstidspunkt = løsning["overføringstidspunkt"].asLocalDateTime()
+            overføringstidspunkt = løsning["overføringstidspunkt"].asLocalDateTime(),
+            avstemmingsnøkkel = løsning["avstemmingsnøkkel"].asLong()
         )
     }
 
+
+    fun erLøsningOverført(index: Int): Boolean {
+        val behovsvar = rapid.inspektør.message(index)
+        val løsning = behovsvar["@løsning"]["Utbetaling"]
+        return løsning["status"].asText() == "OVERFØRT"
+    }
 
 
     companion object {
@@ -54,7 +61,7 @@ class E2eTestApp(
         data class Løsning(
             val status: String,
             val avstemmingsnøkkel: Long,
-            val overføringstidspunkt: LocalDateTime
+            val overføringstidspunkt: LocalDateTime?
         )
     }
 

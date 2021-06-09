@@ -5,6 +5,7 @@ import no.nav.helse.spenn.e2e.Kvittering.Companion.kvittering
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.UUID.randomUUID
 
@@ -18,10 +19,10 @@ class E2eTest {
             assertEquals(1, this.oppdrag.meldinger.size)
             assertEquals(1, rapid.inspektør.size)
 
-            val løsning = spleisløsning(0)
-            val avstemming = løsning.avstemmingsnøkkel
+            assertTrue(erLøsningOverført(0))
 
-            assertEquals("OVERFØRT", løsning.status)
+            val løsning = okLøsning(0)
+            val avstemming = løsning.avstemmingsnøkkel
 
             oppdrag.meldingFraOppdrag(
                 Kvittering(
@@ -43,12 +44,12 @@ class E2eTest {
         val utbetalingKopi = utbetaling1.fagsystemId("to")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = spleisløsning(0)
+            val løsning1 = okLøsning(0)
 
             oppdrag.meldingFraOppdrag(
                 kvittering
                     .fagsystemId(utbetaling1.fagsystemId)
-                    .avstemmingsnøkkel(løsning1.avstemmingsnøkkel)
+                    .avstemmingsnøkkel(løsning1.avstemmingsnøkkel!!)
                     .akseptert()
                     .toXml()
             )
@@ -59,7 +60,7 @@ class E2eTest {
             assertEquals(1, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
 
-            val løsningKopi = spleisløsning(1)
+            val løsningKopi = okLøsning(1)
             assertNotEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
             assertEquals("OVERFØRT", løsningKopi.status)
@@ -72,7 +73,7 @@ class E2eTest {
         val utbetalingKopi = utbetaling1.fagsystemId("to")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = spleisløsning(0)
+            val løsning1 = okLøsning(0)
 
             oppdrag.meldingFraOppdrag(
                 kvittering
@@ -88,7 +89,7 @@ class E2eTest {
             assertEquals(2, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
 
-            val løsningKopi = spleisløsning(1)
+            val løsningKopi = okLøsning(1)
             assertNotEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
             assertEquals("OVERFØRT", løsningKopi.status)
@@ -101,7 +102,7 @@ class E2eTest {
         val utbetaling2 = utbetalingsbehov.fnr("10987654321").utbetalingId(utbetaling1.utbetalingId)
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = spleisløsning(0)
+            val løsning1 = okLøsning(0)
 
             rapid.sendTestMessage(utbetaling2.json())
 
