@@ -38,4 +38,8 @@ class TestKø : Kø {
     fun meldingFraOppdrag(melding: String) {
         listener?.let { it(melding) }
     }
+
+    fun feilVedNesteMelding(exception: Exception) {
+        TODO("Not yet implemented")
+    }
 }

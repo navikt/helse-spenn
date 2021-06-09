@@ -83,13 +83,16 @@ internal class Utbetalinger(
         try {
             if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId)) {
                 log.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
-                //TODO: hvis Oppdrag har feilet tidligere, send til Oppdrag på nytt
-                //send eksisterende løsning til Spleis så verden kan gå videre
+                val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId)
+                //Hvis mottatt - send gammel xml på nytt
+                if (gammeltOppdrag.kanSendes()) {
+                    //Her lager vi en frankenstein av nye utbetalingslinjer og gammelt oppdrag.
+                    // Dette er videreføring av gammel oppførsel, men bør nok rettes til enten å bruke gammelt eller nytt oppdrag.
+                    //TODO: Sjekk at dette stemmer overens med gammel oppførsel
+                    gammeltOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
+                }
                 packet["@løsning"] = mapOf(
-                    "Utbetaling" to mapOf(
-                        "status" to Oppdragstatus.FEIL,
-                        "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
-                    )
+                    "Utbetaling" to gammeltOppdrag.somLøsning()
                 )
             } else {
                 val oppdragDto = oppdragDao.nyttOppdrag(

@@ -21,8 +21,38 @@ class E2eTest {
 
             assertTrue(erLøsningOverført(0))
 
-            val løsning = okLøsning(0)
+            val løsning = okLøsning(rapid.inspektør.message(0))
             val avstemming = løsning.avstemmingsnøkkel
+
+            oppdrag.meldingFraOppdrag(
+                Kvittering(
+                    fagsystemId = utbetalingsbehov.fagsystemId,
+                    avstemmingsnøkkel = avstemming
+                ).toXml()
+            )
+            assertEquals(3, rapid.inspektør.size)
+            assertEquals("oppdrag_kvittering", rapid.inspektør.message(1)["@event_name"].asText())
+
+            val status = rapid.inspektør.message(2)
+            assertEquals("transaksjon_status", status["@event_name"].asText())
+            assertEquals("AKSEPTERT", status["status"].asText())
+        }
+    }
+
+    @Test
+    fun `Ved feil rapporteres feilen til kafka og skrives til databasen - Ingen retry`() {
+        e2eTest {
+            oppdrag.feilVedNesteMelding(Exception("På gjørs"))
+            rapid.sendTestMessage(utbetalingsbehov.json())
+
+            assertEquals(1, database.hentAlleOppdrag().size)
+            assertEquals(1, this.oppdrag.meldinger.size)
+            assertEquals(1, rapid.inspektør.size)
+
+            val løsning = okLøsning(rapid.inspektør.message(0))
+            val avstemming = løsning.avstemmingsnøkkel
+
+            assertEquals("OVERFØRT", løsning.status)
 
             oppdrag.meldingFraOppdrag(
                 Kvittering(
@@ -39,20 +69,12 @@ class E2eTest {
     }
 
     @Test
-    fun `utbetalinger på samme fnr og med samme utbetalingsid sendes ikke på nytt til oppdrag etter aksept`() {
+    fun `utbetalinger på samme fnr og med samme utbetalingsid sendes ikke på nytt til oppdrag etter overført`() {
         val utbetaling1 = utbetalingsbehov.fagsystemId("en").utbetalingId(randomUUID())
         val utbetalingKopi = utbetaling1.fagsystemId("to")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = okLøsning(0)
-
-            oppdrag.meldingFraOppdrag(
-                kvittering
-                    .fagsystemId(utbetaling1.fagsystemId)
-                    .avstemmingsnøkkel(løsning1.avstemmingsnøkkel!!)
-                    .akseptert()
-                    .toXml()
-            )
+            val løsning1 = okLøsning(rapid.inspektør.message(0))
 
             rapid.sendTestMessage(utbetalingKopi.json())
 
@@ -60,20 +82,20 @@ class E2eTest {
             assertEquals(1, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
 
-            val løsningKopi = okLøsning(1)
-            assertNotEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
+            val løsningKopi = okLøsning(rapid.inspektør.message(1))
+            assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
             assertEquals("OVERFØRT", løsningKopi.status)
         }
     }
 
     @Test
-    fun `utbetalinger på samme fnr og med samme utbetalingsid sender på oppdrag på nytt hvis det feilet tidligere`() {
+    fun `utbetalinger på samme fnr og med samme utbetalingsid sender oppdrag på nytt hvis det feilet tidligere`() {
         val utbetaling1 = utbetalingsbehov.fagsystemId("en").utbetalingId(randomUUID())
         val utbetalingKopi = utbetaling1.fagsystemId("to")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = okLøsning(0)
+            val løsning1 = okLøsning(rapid.inspektør.message(0))
 
             oppdrag.meldingFraOppdrag(
                 kvittering
@@ -87,10 +109,10 @@ class E2eTest {
 
             assertEquals(1, database.hentAlleOppdrag().size)
             assertEquals(2, this.oppdrag.meldinger.size)
-            assertEquals(2, rapid.inspektør.size)
+            assertEquals(4, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
 
-            val løsningKopi = okLøsning(1)
-            assertNotEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
+            val løsningKopi = okLøsning(rapid.inspektør.message(3))
+            assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
             assertEquals("OVERFØRT", løsningKopi.status)
         }
@@ -102,7 +124,7 @@ class E2eTest {
         val utbetaling2 = utbetalingsbehov.fnr("10987654321").utbetalingId(utbetaling1.utbetalingId)
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = okLøsning(0)
+            val løsning1 = okLøsning(rapid.inspektør.message(0))
 
             rapid.sendTestMessage(utbetaling2.json())
 

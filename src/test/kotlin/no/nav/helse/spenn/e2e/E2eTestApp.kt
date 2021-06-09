@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.e2e
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.clearMocks
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.asLocalDateTime
@@ -29,8 +30,7 @@ class E2eTestApp(
     }
 
 
-    fun okLøsning(index: Int): Løsning {
-        val behovsvar = rapid.inspektør.message(index)
+    fun okLøsning(behovsvar: JsonNode): Løsning {
         val løsning = behovsvar["@løsning"]["Utbetaling"]
         return Løsning(
             status = løsning["status"].asText(),

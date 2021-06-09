@@ -166,6 +166,19 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         } == 1
 
+    fun hentOppdrag(fødselsnummer: String, utbetalingId: UUID): OppdragDto = using(sessionOf(dataSource)) { session ->
+        val query =
+            """SELECT *
+                FROM (select *, behov ->> 'utbetalingId' as utbetalingId from oppdrag) as sub
+                WHERE sub.fnr = :fnr and sub.utbetalingId = :utbetalingId """
+        session.run(
+            queryOf(
+                query,
+                mapOf("fnr" to fødselsnummer, "utbetalingId" to utbetalingId.toString())
+            ).map { it.toOppdragDto() }.asSingle
+        )!!
+    }
+
 
     companion object {
         fun Row.toOppdragDto() =

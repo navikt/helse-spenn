@@ -95,7 +95,7 @@ class OppdragDto(
         nå: Instant,
         tilOppdrag: UtKø
     ) {
-        if (status !in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)) return
+        if (!kanSendes()) return
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
         val oppdragXml = OppdragXml.marshal(oppdrag)
@@ -103,6 +103,9 @@ class OppdragDto(
         status = Oppdragstatus.OVERFØRT
         dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
     }
+
+    internal fun kanSendes() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)
+
 
     internal fun somLøsning() =
         mapOf(
