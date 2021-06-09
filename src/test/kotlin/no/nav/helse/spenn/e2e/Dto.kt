@@ -3,11 +3,13 @@ package no.nav.helse.spenn.e2e
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.spenn.utbetaling.UtbetalingerTest
 import java.time.LocalDate
+import java.util.*
 
 data class Utbetalingsbehov(
     val fnr: String = UtbetalingerTest.PERSON,
+    val utbetalingId: UUID = UUID.randomUUID(),
     val linjer: List<Utbetalingslinje> = listOf(Utbetalingslinje()),
-    val fagsystemid: String = UtbetalingerTest.FAGSYSTEMID
+    val fagsystemId: String = UtbetalingerTest.FAGSYSTEMID
 ) {
     fun json() = jacksonObjectMapper().writeValueAsString(toMap())
     fun toMap(): Map<String, Any> {
@@ -17,13 +19,14 @@ data class Utbetalingsbehov(
             "@id" to UtbetalingerTest.BEHOV,
             "organisasjonsnummer" to UtbetalingerTest.ORGNR,
             "fødselsnummer" to fnr,
+            "utbetalingId" to utbetalingId.toString(),
             "Utbetaling" to mapOf(
                 "mottaker" to UtbetalingerTest.ORGNR,
                 "saksbehandler" to UtbetalingerTest.SAKSBEHANDLER,
                 "maksdato" to "2020-04-20",
                 "mottaker" to UtbetalingerTest.ORGNR,
                 "fagområde" to "SPREF",
-                "fagsystemId" to fagsystemid,
+                "fagsystemId" to fagsystemId,
                 "endringskode" to "NY",
                 "linjer" to linjer.map { it.toMap() }
             )
@@ -34,6 +37,10 @@ data class Utbetalingsbehov(
         copy(linjer = linjer.toList())
 
     fun fnr(it: String) = copy(fnr = it)
+
+    fun fagsystemId(it: String) = copy(fagsystemId = it)
+
+    fun utbetalingId(it: UUID) = copy(utbetalingId = it)
 
     companion object {
         val utbetalingsbehov = Utbetalingsbehov()
@@ -78,6 +85,11 @@ data class Kvittering(
     val orgnr: String = "123456789",
 
     ) {
+    fun fagsystemId(it: String) = copy(fagsystemId=it)
+    fun avstemmingsnøkkel(it: Long) = copy(avstemmingsnøkkel=it)
+    fun akseptert() = copy(alvorlighetsgrad=AKSEPTERT_UTEN_FEIL)
+    fun funksjonellFeil() = copy(alvorlighetsgrad=AVVIST_FUNKSJONELLE_FEIL)
+
     fun toXml(): String {
         return """<?xml version="1.0" encoding="utf-8"?>
     <ns2:oppdrag xmlns:ns2="http://www.trygdeetaten.no/skjema/oppdrag">
@@ -179,6 +191,8 @@ data class Kvittering(
         </oppdrag-110>
     </ns2:oppdrag>"""
     }
+
+
 
     companion object {
         val kvittering = Kvittering()

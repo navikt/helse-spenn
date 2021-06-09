@@ -1,12 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.MessageProblems
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.UtbetalingslinjerMapper
@@ -35,7 +30,13 @@ internal class Utbetalinger(
                 it.rejectKey("@løsning")
                 it.requireKey("@id", "fødselsnummer", "organisasjonsnummer")
                 it.interestedIn("Utbetaling.maksdato", JsonNode::asLocalDate)
-                it.requireKey("Utbetaling", "Utbetaling.saksbehandler", "Utbetaling.mottaker", "Utbetaling.fagsystemId", "utbetalingId")
+                it.requireKey(
+                    "Utbetaling",
+                    "Utbetaling.saksbehandler",
+                    "Utbetaling.mottaker",
+                    "Utbetaling.fagsystemId",
+                    "utbetalingId"
+                )
                 it.requireAny("Utbetaling.fagområde", listOf("SPREF", "SP"))
                 it.requireAny("Utbetaling.endringskode", listOf("NY", "UEND", "ENDR"))
                 it.requireArray("Utbetaling.linjer") {
@@ -75,12 +76,17 @@ internal class Utbetalinger(
         val sjekksum = utbetalingslinjer.hashCode()
 
         try {
-            if (oppdragDao.finnesFraFør()){
-               log.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
-                // hvis Oppdrag har feilet tidligere, send til Oppdrag på nytt
-
+            if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId)) {
+                log.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
+                //TODO: hvis Oppdrag har feilet tidligere, send til Oppdrag på nytt
                 //send eksisterende løsning til Spleis så verden kan gå videre
-            }else {
+                packet["@løsning"] = mapOf(
+                    "Utbetaling" to mapOf(
+                        "status" to Oppdragstatus.FEIL,
+                        "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
+                    )
+                )
+            } else {
                 val oppdragDto = oppdragDao.nyttOppdrag(
                     fagområde = packet["Utbetaling.fagområde"].asText(),
                     avstemmingsnøkkel = avstemmingsnøkkel,
@@ -99,10 +105,10 @@ internal class Utbetalinger(
                 oppdragDto?.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
             }
             packet["@løsning"] = mapOf(
-                "Utbetaling" to (oppdragDto?.somLøsning() ?: mapOf(
+                "Utbetaling" to mapOf(
                     "status" to Oppdragstatus.FEIL,
                     "beskrivelse" to "Kunne ikke opprette nytt Oppdrag: har samme avstemmingsnøkkel eller sjekksum"
-                ))
+                )
             )
         } catch (err: Exception) {
             log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)

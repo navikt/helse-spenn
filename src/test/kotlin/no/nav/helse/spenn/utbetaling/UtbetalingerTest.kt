@@ -60,6 +60,7 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
+                any(),
                 any()
             )
         } answers {
@@ -89,6 +90,7 @@ internal class UtbetalingerTest {
             dao.nyttOppdrag(
                 any(),
                 capture(avstemmingsnøkkel),
+                any(),
                 any(),
                 any(),
                 any(),
@@ -158,6 +160,7 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
+                any(),
                 any()
             )
         } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) } coAndThen { null }
@@ -195,6 +198,7 @@ internal class UtbetalingerTest {
             dao.nyttOppdrag(
                 any(),
                 capture(avstemmingsnøkler),
+                any(),
                 any(),
                 any(),
                 any(),
@@ -241,6 +245,7 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
+                any(),
                 any()
             )
         }
@@ -250,6 +255,7 @@ internal class UtbetalingerTest {
     fun `utbetalingsbehov med feil`() {
         every {
             dao.nyttOppdrag(
+                any(),
                 any(),
                 any(),
                 any(),
@@ -282,6 +288,7 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
+                any(),
                 any()
             )
         }
@@ -291,6 +298,7 @@ internal class UtbetalingerTest {
     fun `utbetalingsbehov med exception`() {
         every {
             dao.nyttOppdrag(
+                any(),
                 any(),
                 any(),
                 any(),
@@ -327,6 +335,7 @@ internal class UtbetalingerTest {
             dao.nyttOppdrag(
                 fagområde = FAGOMRÅDE_REFUSJON,
                 avstemmingsnøkkel = avstemmingsnøkkel,
+                utbetalingId=any(),
                 sjekksum = any(),
                 fødselsnummer = PERSON,
                 organisasjonsnummer = ORGNR,
