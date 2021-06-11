@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.util.*
 
 data class Utbetalingsbehov(
-    val fnr: String = UtbetalingerTest.PERSON,
+    val fnr: String = "12345678911",
     val utbetalingId: UUID = UUID.randomUUID(),
     val linjer: List<Utbetalingslinje> = listOf(Utbetalingslinje()),
     val fagsystemId: String = UtbetalingerTest.FAGSYSTEMID
@@ -50,18 +50,25 @@ data class Utbetalingsbehov(
 
 data class Utbetalingslinje(
     val sats: Int = 1000,
-    val grad: Int = 100,
+    val grad: Int? = 100,
     val fom: LocalDate = LocalDate.parse("2020-04-20"),
     val tom: LocalDate = LocalDate.parse("2020-05-20"),
-    val delytelseId: Int = 1
+    val delytelseId: Int = 1,
+    val satstype: String = "DAG"
 ) {
+    fun satstype(it: String) = copy(satstype=it)
+    fun sats(it: Int) = copy(sats=it)
+    fun fom(it: LocalDate) = copy(fom=it)
+    fun tom(it: LocalDate) = copy(tom=it)
+    fun grad(it: Int?) = copy(grad=it)
+
     fun toMap() =
         mapOf(
-            "satstype" to "DAG",
+            "satstype" to satstype,
             "sats" to "$sats",
             "fom" to "$fom",
             "tom" to "$tom",
-            "grad" to "$grad",
+            "grad" to grad?.toString(),
             "delytelseId" to "$delytelseId",
             "refDelytelseId" to null,
             "refFagsystemId" to null,

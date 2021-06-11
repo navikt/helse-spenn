@@ -3,7 +3,6 @@ package no.nav.helse.spenn.utbetaling
 import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
-import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
@@ -95,7 +94,7 @@ class OppdragDto(
         nå: Instant,
         tilOppdrag: UtKø
     ) {
-        if (!kanSendes()) return
+        if (!kanSendesPåNytt()) return
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
         val oppdragXml = OppdragXml.marshal(oppdrag)
@@ -104,7 +103,7 @@ class OppdragDto(
         dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
     }
 
-    internal fun kanSendes() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)
+    internal fun kanSendesPåNytt() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)
 
 
     internal fun somLøsning() =

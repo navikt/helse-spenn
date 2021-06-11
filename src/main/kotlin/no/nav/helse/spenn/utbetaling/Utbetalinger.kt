@@ -85,7 +85,7 @@ internal class Utbetalinger(
                 log.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
                 val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId)
                 //Hvis mottatt - send gammel xml på nytt
-                if (gammeltOppdrag.kanSendes()) {
+                if (gammeltOppdrag.kanSendesPåNytt()) {
                     //Her lager vi en frankenstein av nye utbetalingslinjer og gammelt oppdrag.
                     // Dette er videreføring av gammel oppførsel, men bør nok rettes til enten å bruke gammelt eller nytt oppdrag.
                     //TODO: Sjekk at dette stemmer overens med gammel oppførsel

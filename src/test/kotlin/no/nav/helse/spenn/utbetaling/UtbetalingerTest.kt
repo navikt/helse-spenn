@@ -1,15 +1,12 @@
 package no.nav.helse.spenn.utbetaling
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.CapturingSlot
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.Jms
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.TestConnection
+import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
+import no.nav.helse.spenn.e2e.Utbetalingslinje.Companion.utbetalingslinje
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -18,7 +15,6 @@ import java.time.LocalDateTime
 
 internal class UtbetalingerTest {
     companion object {
-        const val FAGOMRÅDE_REFUSJON = "SPREF"
         const val PERSON = "12345678911"
         const val ORGNR = "123456789"
         const val BELØP = 1000
@@ -52,6 +48,7 @@ internal class UtbetalingerTest {
     @Test
     fun `løser utbetalingsbehov`() {
         val avstemmingsnøkkel = CapturingSlot<Long>()
+        val behov = utbetalingsbehov
         every {
             dao.nyttOppdrag(
                 any(),
@@ -70,7 +67,7 @@ internal class UtbetalingerTest {
         } answers {
             OppdragDto(
                 avstemmingsnøkkel.captured,
-                PERSON,
+                behov.fnr,
                 FAGSYSTEMID,
                 LocalDateTime.now(),
                 Oppdragstatus.MOTTATT,
@@ -78,8 +75,9 @@ internal class UtbetalingerTest {
                 null
             )
         }
-        every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
-        rapid.sendTestMessage(utbetalingsbehov())
+        every { dao.oppdaterOppdrag(any(), behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
+        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns false
+        rapid.sendTestMessage(behov.json())
         assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
         assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
@@ -90,6 +88,12 @@ internal class UtbetalingerTest {
     fun `løser utbetalingsbehov med engangsutbetaling`() {
         val avstemmingsnøkkel = CapturingSlot<Long>()
 
+        val behov = utbetalingsbehov.linjer(
+            utbetalingslinje
+                .grad(null)
+                .satstype("ENG")
+        )
+
         every {
             dao.nyttOppdrag(
                 any(),
@@ -108,26 +112,18 @@ internal class UtbetalingerTest {
         } answers {
             OppdragDto(
                 avstemmingsnøkkel.captured,
-                PERSON,
-                FAGSYSTEMID,
+                behov.fnr,
+                behov.fagsystemId,
                 LocalDateTime.now(),
                 Oppdragstatus.MOTTATT,
-                BELØP,
+                behov.linjer[0].sats,
                 null
             )
         }
+        every { dao.finnesFraFør(utbetalingsbehov.fnr, utbetalingsbehov.utbetalingId) } returns false
         every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
 
-
-        val utbetalingslinjer = listOf(
-            mapOf(
-                "satstype" to "ENG",
-                "sats" to BELØP,
-                "fom" to "2020-04-20",
-                "tom" to "2020-04-20"
-            )
-        )
-        rapid.sendTestMessage(utbetalingsbehov(utbetalingslinjer))
+        rapid.sendTestMessage(behov.json())
         assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
         val body = connection.inspektør.melding(0).getBody(String::class.java)
@@ -141,11 +137,11 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser duplikat utbetalingsbehov`() {
+        val behov = utbetalingsbehov
         val avstemmingsnøkler = mutableListOf<Long>()
-        val message = utbetalingsbehov()
         fun oppdragDto(status: Oppdragstatus = Oppdragstatus.OVERFØRT) = OppdragDto(
             avstemmingsnøkler.first(),
-            PERSON,
+            behov.fnr,
             FAGSYSTEMID,
             LocalDateTime.now(),
             status,
@@ -175,9 +171,15 @@ internal class UtbetalingerTest {
                 Oppdragstatus.OVERFØRT
             )
         } returns true
+
         every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto() }
-        rapid.sendTestMessage(message)
-        rapid.sendTestMessage(message)
+        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns false
+        rapid.sendTestMessage(behov.json())
+
+        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns true
+        every { dao.hentOppdrag(behov.fnr, behov.utbetalingId) } answers { oppdragDto() }
+        rapid.sendTestMessage(behov.json())
+
         assertEquals(2, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
         assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
@@ -188,10 +190,11 @@ internal class UtbetalingerTest {
     @Test
     fun `Tillater duplikat melding ved AVVIST`() {
         val avstemmingsnøkler = mutableListOf<Long>()
-        val message = utbetalingsbehov()
+        val behov = utbetalingsbehov
+
         fun oppdragDto(status: Oppdragstatus = Oppdragstatus.OVERFØRT) = OppdragDto(
             avstemmingsnøkler.first(),
-            PERSON,
+            behov.fnr,
             FAGSYSTEMID,
             LocalDateTime.now(),
             status,
@@ -221,9 +224,15 @@ internal class UtbetalingerTest {
                 Oppdragstatus.OVERFØRT
             )
         } returns true
+
         every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto(Oppdragstatus.AVVIST) }
-        rapid.sendTestMessage(message)
-        rapid.sendTestMessage(message)
+        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns false
+        rapid.sendTestMessage(behov.json())
+
+        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns true
+        every { dao.hentOppdrag(behov.fnr, behov.utbetalingId) } answers { oppdragDto(Oppdragstatus.AVVIST) }
+        rapid.sendTestMessage(behov.json())
+
         assertEquals(2, inspektør.size)
         assertEquals(2, connection.inspektør.antall())
         assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
@@ -234,7 +243,8 @@ internal class UtbetalingerTest {
 
     @Test
     fun `ignorerer tomme utbetalingslinjer`() {
-        rapid.sendTestMessage(utbetalingsbehov(emptyList()))
+        val behov = utbetalingsbehov.linjer()
+        rapid.sendTestMessage(behov.json())
         assertEquals(0, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
         verify(exactly = 0) {
@@ -273,7 +283,7 @@ internal class UtbetalingerTest {
                 any()
             )
         } throws RuntimeException()
-        rapid.sendTestMessage(utbetalingsbehov())
+        rapid.sendTestMessage(utbetalingsbehov.json())
         assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
         assertEquals(BEHOV, inspektør.id(0))
@@ -294,11 +304,11 @@ internal class UtbetalingerTest {
             .asLong()
         verify(exactly = 1) {
             dao.nyttOppdrag(
-                fagområde = FAGOMRÅDE_REFUSJON,
+                fagområde = "SPREF",
                 avstemmingsnøkkel = avstemmingsnøkkel,
-                utbetalingId=any(),
+                utbetalingId = any(),
                 sjekksum = any(),
-                fødselsnummer = PERSON,
+                fødselsnummer = utbetalingsbehov.fnr,
                 organisasjonsnummer = ORGNR,
                 mottaker = ORGNR,
                 tidspunkt = any(),
@@ -316,52 +326,4 @@ internal class UtbetalingerTest {
             )
         }
     }
-
-    private fun utbetalingsbehov(
-        utbetalingslinjer: List<Map<String, Any>> = listOf(
-            mapOf(
-                "satstype" to "DAG",
-                "sats" to "$BELØP",
-                "fom" to "2020-04-20",
-                "tom" to "2020-05-20",
-                "grad" to 100
-            )
-        )
-    ): String {
-        return jacksonObjectMapper().writeValueAsString(
-            mapOf(
-                "@event_name" to "behov",
-                "@behov" to listOf("Utbetaling"),
-                "@id" to BEHOV,
-                "organisasjonsnummer" to ORGNR,
-                "fødselsnummer" to PERSON,
-                "Utbetaling" to mapOf(
-                    "mottaker" to ORGNR,
-                    "saksbehandler" to SAKSBEHANDLER,
-                    "maksdato" to "2020-04-20",
-                    "mottaker" to ORGNR,
-                    "fagområde" to "SPREF",
-                    "fagsystemId" to FAGSYSTEMID,
-                    "endringskode" to "NY",
-                    "linjer" to utbetalingslinjer.map {
-                        mapOf<String, Any?>(
-                            "fom" to it["fom"],
-                            "tom" to it["tom"],
-                            "sats" to it["sats"],
-                            "satstype" to it["satstype"],
-                            "grad" to it["grad"],
-                            "delytelseId" to 1,
-                            "refDelytelseId" to null,
-                            "refFagsystemId" to null,
-                            "endringskode" to "NY",
-                            "klassekode" to "SPREFAG-IOP",
-                            "datoStatusFom" to null,
-                            "statuskode" to null
-                        )
-                    }
-                )
-            )
-        )
-    }
-
 }
