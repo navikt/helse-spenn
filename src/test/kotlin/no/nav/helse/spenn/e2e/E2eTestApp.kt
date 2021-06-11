@@ -30,14 +30,19 @@ class E2eTestApp(
     }
 
 
-    fun okLøsning(behovsvar: JsonNode): Løsning {
+    fun parseOkLøsning(behovsvar: JsonNode): OkLøsning {
         val løsning = behovsvar["@løsning"]["Utbetaling"]
-        return Løsning(
+        return OkLøsning(
             status = løsning["status"].asText(),
             overføringstidspunkt = løsning["overføringstidspunkt"].asLocalDateTime(),
             avstemmingsnøkkel = løsning["avstemmingsnøkkel"].asLong()
         )
     }
+
+    fun parseFeilLøsning(behovsvar: JsonNode): FeilLøsning = FeilLøsning(
+        status = behovsvar["@løsning"]["Utbetaling"]["status"].asText(),
+        beskrivelse = behovsvar["@løsning"]["Utbetaling"]["beskrivelse"].asText(),
+    )
 
 
     fun erLøsningOverført(index: Int): Boolean {
@@ -58,10 +63,15 @@ class E2eTestApp(
             }
         }
 
-        data class Løsning(
+        data class OkLøsning(
             val status: String,
             val avstemmingsnøkkel: Long,
             val overføringstidspunkt: LocalDateTime?
+        )
+
+        data class FeilLøsning(
+            val status: String,
+            val beskrivelse: String
         )
     }
 

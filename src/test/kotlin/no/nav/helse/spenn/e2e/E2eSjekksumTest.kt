@@ -68,6 +68,7 @@ class E2eSjekksumTest {
 
     }
 
+
     //TODO: Denne tester et feilscenario og bør løpet som testes bør feile.
     @Test
     fun `ved kollisjon for sjekksum og fnr vil andre pakke rapporteres som sendt uten å overføres til oppdrag`() {

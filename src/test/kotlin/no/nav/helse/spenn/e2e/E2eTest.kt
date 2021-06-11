@@ -3,14 +3,16 @@ package no.nav.helse.spenn.e2e
 import no.nav.helse.spenn.e2e.E2eTestApp.Companion.e2eTest
 import no.nav.helse.spenn.e2e.Kvittering.Companion.kvittering
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import no.nav.helse.spenn.e2e.Utbetalingslinje.Companion.utbetalingslinje
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.util.UUID.randomUUID
 
 class E2eTest {
+    val feilmelding_duplisert_linje = "Kunne ikke opprette nytt Oppdrag pga. teknisk feil"
+
     @Test
     fun `happy path`() {
         e2eTest {
@@ -22,7 +24,7 @@ class E2eTest {
 
             assertTrue(erLøsningOverført(0))
 
-            val løsning = okLøsning(rapid.inspektør.message(0))
+            val løsning = parseOkLøsning(rapid.inspektør.message(0))
             val avstemming = løsning.avstemmingsnøkkel
 
             oppdrag.meldingFraOppdrag(
@@ -52,7 +54,7 @@ class E2eTest {
             assertEquals(1, this.oppdrag.meldinger.size)
             assertEquals(1, rapid.inspektør.size)
 
-            val løsning = okLøsning(rapid.inspektør.message(0))
+            val løsning = parseOkLøsning(rapid.inspektør.message(0))
             val avstemming = løsning.avstemmingsnøkkel
 
             assertEquals("OVERFØRT", løsning.status)
@@ -77,7 +79,7 @@ class E2eTest {
         val utbetalingKopi = utbetaling1.fagsystemId("to")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = okLøsning(rapid.inspektør.message(0))
+            val løsning1 = parseOkLøsning(rapid.inspektør.message(0))
 
             rapid.sendTestMessage(utbetalingKopi.json())
 
@@ -85,7 +87,7 @@ class E2eTest {
             assertEquals(1, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
 
-            val løsningKopi = okLøsning(rapid.inspektør.message(1))
+            val løsningKopi = parseOkLøsning(rapid.inspektør.message(1))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
             assertEquals("OVERFØRT", løsningKopi.status)
@@ -98,7 +100,7 @@ class E2eTest {
         val utbetalingKopi = utbetaling1.fagsystemId("to")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
-            val løsning1 = okLøsning(rapid.inspektør.message(0))
+            val løsning1 = parseOkLøsning(rapid.inspektør.message(0))
 
             oppdrag.meldingFraOppdrag(
                 kvittering
@@ -114,7 +116,7 @@ class E2eTest {
             assertEquals(2, this.oppdrag.meldinger.size)
             assertEquals(4, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
 
-            val løsningKopi = okLøsning(rapid.inspektør.message(3))
+            val løsningKopi = parseOkLøsning(rapid.inspektør.message(3))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
             assertEquals("OVERFØRT", løsningKopi.status)
@@ -133,6 +135,91 @@ class E2eTest {
             assertEquals(2, database.hentAlleOppdrag().size)
             assertEquals(2, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
+        }
+    }
+
+
+    @Test
+    fun `Linjer hvor bare fagsystemid er forskjellig er en sterk indikator på alvorlig feil i spleis og avvises`() {
+        val utbetaling1 = utbetalingsbehov.fagsystemId("en")
+        val utbetaling2 = utbetaling1
+            .fagsystemId("to")
+            .utbetalingId(randomUUID())
+
+        e2eTest {
+            rapid.sendTestMessage(utbetaling1.json())
+            rapid.sendTestMessage(utbetaling2.json())
+
+            assertEquals(1, database.hentAlleOppdrag().size)
+            assertEquals(1, this.oppdrag.meldinger.size)
+            assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
+
+            val løsningFraUtbetaling2 = parseFeilLøsning(rapid.inspektør.message(1))
+            assertEquals("FEIL", løsningFraUtbetaling2.status)
+            assertEquals(feilmelding_duplisert_linje, løsningFraUtbetaling2.beskrivelse)
+        }
+    }
+
+    @Test
+    fun `Linjer hvor bare fagsystemid er forskjellig er en sterk indikator på alvorlig feil i spleis og avvises - flere linjer`() {
+        val utbetaling1 = utbetalingsbehov
+            .linjer(
+                utbetalingslinje,
+                utbetalingslinje
+                    .grad(20)
+                    .sats(100)
+                    .fom(utbetalingslinje.tom.plusDays(1))
+                    .tom(utbetalingslinje.tom.plusDays(2))
+            )
+            .fagsystemId("en")
+        val utbetaling2 = utbetaling1
+            .fagsystemId("to")
+            .utbetalingId(randomUUID())
+
+        e2eTest {
+            rapid.sendTestMessage(utbetaling1.json())
+            rapid.sendTestMessage(utbetaling2.json())
+
+            assertEquals(1, database.hentAlleOppdrag().size)
+            assertEquals(1, this.oppdrag.meldinger.size)
+            assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
+
+            val løsningFraUtbetaling2 = parseFeilLøsning(rapid.inspektør.message(1))
+            assertEquals("FEIL", løsningFraUtbetaling2.status)
+            assertEquals(feilmelding_duplisert_linje, løsningFraUtbetaling2.beskrivelse)
+        }
+    }
+    @Test
+    fun `Hvis bare noen linjer er like skal meldingen slippes gjennom`() {
+        val utbetaling1 = utbetalingsbehov
+            .linjer(
+                utbetalingslinje,
+                utbetalingslinje
+                    .grad(20)
+                    .sats(100)
+                    .fom(utbetalingslinje.tom.plusDays(1))
+                    .tom(utbetalingslinje.tom.plusDays(2))
+            )
+            .fagsystemId("en")
+        val utbetaling2 = utbetaling1
+            .linjer(
+                utbetalingslinje,
+                utbetalingslinje
+                    .tom(LocalDate.now())
+            )
+            .fagsystemId("to")
+            .utbetalingId(randomUUID())
+
+        e2eTest {
+            rapid.sendTestMessage(utbetaling1.json())
+            rapid.sendTestMessage(utbetaling2.json())
+
+            assertEquals(2, database.hentAlleOppdrag().size)
+            assertEquals(2, this.oppdrag.meldinger.size)
+            assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
+
+            val løsningFraUtbetaling2 = parseOkLøsning(rapid.inspektør.message(1))
+            assertEquals("OVERFØRT", løsningFraUtbetaling2.status)
         }
     }
 }
