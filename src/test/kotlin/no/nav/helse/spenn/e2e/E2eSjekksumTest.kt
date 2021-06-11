@@ -4,6 +4,8 @@ import no.nav.helse.spenn.e2e.E2eTestApp.Companion.e2eTest
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import no.nav.helse.spenn.e2e.Utbetalingslinje.Companion.utbetalingslinje
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -69,9 +71,9 @@ class E2eSjekksumTest {
     }
 
 
-    //TODO: Denne tester et feilscenario og bør løpet som testes bør feile.
     @Test
-    fun `ved kollisjon for sjekksum og fnr vil andre pakke rapporteres som sendt uten å overføres til oppdrag`() {
+    @Disabled("Denne tester et feilscenario og bør løpet som testes bør feile.")
+    fun `Utbetalinger med ulike linjer men sjekksumkollisjon skal utbetales`() {
         val fnr = "12345678912"
         e2eTest {
             rapid.sendTestMessage(
@@ -114,8 +116,8 @@ class E2eSjekksumTest {
                     .json()
             )
 
-            assertEquals(1, database.hentAlleOppdrag().size)
-            assertEquals(1, this.oppdrag.meldinger.size)
+            assertEquals(2, database.hentAlleOppdrag().size)
+            assertEquals(2, this.oppdrag.meldinger.size)
 
             assertEquals(2, rapid.inspektør.size)
 
@@ -124,7 +126,7 @@ class E2eSjekksumTest {
             assertEquals("213", behovSvar2["Utbetaling"]["linjer"][0]["sats"].asText())
 
             assertEquals("OVERFØRT", løsning2["status"].asText())
-            assertEquals(avstemming1, løsning2["avstemmingsnøkkel"].asText())
+            assertNotEquals(avstemming1, løsning2["avstemmingsnøkkel"].asText())
         }
     }
 }
