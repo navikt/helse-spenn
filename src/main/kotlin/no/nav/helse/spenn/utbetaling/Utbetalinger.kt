@@ -77,14 +77,14 @@ internal class Utbetalinger(
 
         try {
             if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId)) {
-                log.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
-                sikkerLogg.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for $fødselsnummer")
+                log.info("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
+                sikkerLogg.info("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for $fødselsnummer")
                 val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId)
                 //Hvis mottatt - send gammel xml på nytt
                 if (gammeltOppdrag.kanSendesPåNytt()) {
-                    //Her lager vi en frankenstein av nye utbetalingslinjer og gammelt oppdrag.
-                    // Dette er videreføring av gammel oppførsel, men bør nok rettes til enten å bruke gammelt eller nytt oppdrag.
-                    //TODO: Sjekk at dette stemmer overens med gammel oppførsel
+                    //Her lager vi en blander vi nye utbetalingslinjer og gammelt oppdrag.
+                    // Behov-json i basen kan være på et gammelt format og da kan vi ikke parse.
+                    // Det er opp til avsender å alltid sende samme oppdrag for samme utbetalingsid
                     gammeltOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
                 }
                 packet["@løsning"] = mapOf(
@@ -92,7 +92,7 @@ internal class Utbetalinger(
                 )
             } else {
                 if (oppdragDao.erSjekksumDuplikat(fødselsnummer, sjekksum)) {
-                    sikkerLogg.warn("Sjekksumkollisjon for fnr $fødselsnummer og utbetalingsid $utbetalingId. Indikerer duplikat utbetaling.")
+                    sikkerLogg.error("Sjekksumkollisjon for fnr $fødselsnummer og utbetalingsid $utbetalingId. Indikerer duplikat utbetaling.")
                 }
                 val oppdragDto = oppdragDao.nyttOppdrag(
                     fagområde = packet["Utbetaling.fagområde"].asText(),

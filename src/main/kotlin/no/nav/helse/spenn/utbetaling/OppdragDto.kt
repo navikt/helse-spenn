@@ -94,7 +94,6 @@ class OppdragDto(
         nå: Instant,
         tilOppdrag: UtKø
     ) {
-        if (!kanSendesPåNytt()) return
         val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
         val oppdragXml = OppdragXml.marshal(oppdrag)
