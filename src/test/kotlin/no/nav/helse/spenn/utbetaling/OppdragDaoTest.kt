@@ -56,7 +56,6 @@ internal class OppdragDaoTest {
                 status = Oppdragstatus.OVERFØRT,
                 totalbeløp = BELØP,
                 originalJson = BEHOV,
-                utbetalingId = UTBETLING_ID,
             )
         )
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
@@ -92,7 +91,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.OVERFØRT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         assertTrue(
             oppdragDao.oppdaterOppdrag(
@@ -132,7 +130,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -146,7 +143,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.OVERFØRT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -160,7 +156,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -174,7 +169,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT_MED_FEIL,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         val siste = første + 3
         oppdragDao.nyttOppdrag(
@@ -189,7 +183,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AVVIST,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -203,7 +196,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AVVIST,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         val oppdrag = oppdragDao.hentOppdragForAvstemming(første..siste)
         assertEquals(4, oppdrag.size)
@@ -241,7 +233,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -255,7 +246,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.OVERFØRT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -269,7 +259,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -283,7 +272,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT_MED_FEIL,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         val siste = første + 3
         oppdragDao.nyttOppdrag(
@@ -298,7 +286,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AVVIST,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -312,7 +299,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AVVIST,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         val oppdrag = oppdragDao.hentOppdragForAvstemming(siste)
             .getValue(FAGOMRÅDE_REFUSJON)
@@ -339,7 +325,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.OVERFØRT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -353,7 +338,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
@@ -367,7 +351,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.AKSEPTERT_MED_FEIL,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
 
         assertEquals(0, oppdragDao.oppdaterAvstemteOppdrag(FAGOMRÅDE_REFUSJON, første - 1))
@@ -391,7 +374,6 @@ internal class OppdragDaoTest {
             status = Oppdragstatus.OVERFØRT,
             totalbeløp = BELØP,
             originalJson = BEHOV,
-            utbetalingId = UTBETLING_ID,
         )
         assertEquals(0, oppdragDao.oppdaterAvstemteOppdrag(FAGOMRÅDE_UTBETALING_BRUKER, avstemmingsnøkkel + 1))
     }

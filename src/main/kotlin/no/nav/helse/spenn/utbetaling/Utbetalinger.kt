@@ -1,12 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.MessageProblems
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.UtbetalingslinjerMapper
@@ -83,6 +78,7 @@ internal class Utbetalinger(
         try {
             if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId)) {
                 log.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
+                sikkerLogg.warn("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for $fødselsnummer")
                 val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId)
                 //Hvis mottatt - send gammel xml på nytt
                 if (gammeltOppdrag.kanSendesPåNytt()) {
@@ -95,11 +91,13 @@ internal class Utbetalinger(
                     "Utbetaling" to gammeltOppdrag.somLøsning()
                 )
             } else {
+                if (oppdragDao.erSjekksumDuplikat(fødselsnummer, sjekksum)) {
+                    sikkerLogg.warn("Sjekksumkollisjon for fnr $fødselsnummer og utbetalingsid $utbetalingId. Indikerer duplikat utbetaling.")
+                }
                 val oppdragDto = oppdragDao.nyttOppdrag(
                     fagområde = packet["Utbetaling.fagområde"].asText(),
                     avstemmingsnøkkel = avstemmingsnøkkel,
                     fødselsnummer = fødselsnummer,
-                    utbetalingId = utbetalingId,
                     sjekksum = sjekksum,
                     organisasjonsnummer = organisasjonsnummer,
                     mottaker = mottaker,

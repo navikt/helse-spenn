@@ -11,8 +11,6 @@ import java.time.LocalDate
 import java.util.UUID.randomUUID
 
 class E2eTest {
-    val feilmelding_duplisert_linje = "Kunne ikke opprette nytt Oppdrag pga. teknisk feil"
-
     @Test
     fun `happy path`() {
         e2eTest {
@@ -43,35 +41,6 @@ class E2eTest {
         }
     }
 
-    @Disabled("Denne bør på plass etter hvert men er ikke påkrevd for revurdering. Er litt keitete å skrive ettersom vi må sende transaksjoner tilbake til applikasjonen")
-    @Test
-    fun `Ved feil rapporteres feilen til kafka og skrives til databasen - Ingen retry`() {
-        e2eTest {
-            oppdrag.feilVedNesteMelding(Exception("På gjørs"))
-            rapid.sendTestMessage(utbetalingsbehov.json())
-
-            assertEquals(1, database.hentAlleOppdrag().size)
-            assertEquals(1, this.oppdrag.meldinger.size)
-            assertEquals(1, rapid.inspektør.size)
-
-            val løsning = parseOkLøsning(rapid.inspektør.message(0))
-            val avstemming = løsning.avstemmingsnøkkel
-
-            assertEquals("OVERFØRT", løsning.status)
-
-            oppdrag.meldingFraOppdrag(
-                Kvittering(
-                    fagsystemId = utbetalingsbehov.fagsystemId,
-                    avstemmingsnøkkel = avstemming
-                ).toXml()
-            )
-            assertEquals("oppdrag_kvittering", rapid.inspektør.message(1)["@event_name"].asText())
-
-            val status = rapid.inspektør.message(2)
-            assertEquals("transaksjon_status", status["@event_name"].asText())
-            assertEquals("AKSEPTERT", status["status"].asText())
-        }
-    }
 
     @Test
     fun `utbetalinger på samme fnr og med samme utbetalingsid sendes ikke på nytt til oppdrag etter overført`() {
@@ -86,6 +55,8 @@ class E2eTest {
             assertEquals(1, database.hentAlleOppdrag().size)
             assertEquals(1, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
+
+            assertEquals(1, sikkerLoggMeldinger().filter { it.startsWith("Motatt duplikat") }.size)
 
             val løsningKopi = parseOkLøsning(rapid.inspektør.message(1))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
@@ -140,7 +111,7 @@ class E2eTest {
 
 
     @Test
-    fun `Linjer hvor bare fagsystemid er forskjellig er en sterk indikator på alvorlig feil i spleis og avvises`() {
+    fun `Linjer hvor bare fagsystemid er forskjellig er en indikator på dobbelt utbetaling, skal utbetales men logges`() {
         val utbetaling1 = utbetalingsbehov.fagsystemId("en")
         val utbetaling2 = utbetaling1
             .fagsystemId("to")
@@ -150,18 +121,19 @@ class E2eTest {
             rapid.sendTestMessage(utbetaling1.json())
             rapid.sendTestMessage(utbetaling2.json())
 
-            assertEquals(1, database.hentAlleOppdrag().size)
-            assertEquals(1, this.oppdrag.meldinger.size)
+            assertEquals(2, database.hentAlleOppdrag().size)
+            assertEquals(2, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
 
-            val løsningFraUtbetaling2 = parseFeilLøsning(rapid.inspektør.message(1))
-            assertEquals("FEIL", løsningFraUtbetaling2.status)
-            assertEquals(feilmelding_duplisert_linje, løsningFraUtbetaling2.beskrivelse)
+            assertEquals(1, sikkerLoggMeldinger().filter { it.startsWith("Sjekksumkollisjon for fnr") }.size)
+
+            val løsningFraUtbetaling2 = parseOkLøsning(rapid.inspektør.message(1))
+            assertEquals("OVERFØRT", løsningFraUtbetaling2.status)
         }
     }
 
     @Test
-    fun `Linjer hvor bare fagsystemid er forskjellig er en sterk indikator på alvorlig feil i spleis og avvises - flere linjer`() {
+    fun `Linjer hvor bare fagsystemid er forskjellig er en indikator på dobbelt utbetaling, skal utbetales men logges- flere linjer`() {
         val utbetaling1 = utbetalingsbehov
             .linjer(
                 utbetalingslinje,
@@ -180,15 +152,17 @@ class E2eTest {
             rapid.sendTestMessage(utbetaling1.json())
             rapid.sendTestMessage(utbetaling2.json())
 
-            assertEquals(1, database.hentAlleOppdrag().size)
-            assertEquals(1, this.oppdrag.meldinger.size)
+            assertEquals(2, database.hentAlleOppdrag().size)
+            assertEquals(2, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
 
-            val løsningFraUtbetaling2 = parseFeilLøsning(rapid.inspektør.message(1))
-            assertEquals("FEIL", løsningFraUtbetaling2.status)
-            assertEquals(feilmelding_duplisert_linje, løsningFraUtbetaling2.beskrivelse)
+            assertEquals(1, sikkerLoggMeldinger().filter { it.startsWith("Sjekksumkollisjon for fnr") }.size)
+
+            val løsningFraUtbetaling2 = parseOkLøsning(rapid.inspektør.message(1))
+            assertEquals("OVERFØRT", løsningFraUtbetaling2.status)
         }
     }
+
     @Test
     fun `Hvis bare noen linjer er like skal meldingen slippes gjennom`() {
         val utbetaling1 = utbetalingsbehov

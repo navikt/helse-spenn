@@ -1,5 +1,8 @@
 package no.nav.helse.spenn.e2e
 
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.clearMocks
 import io.mockk.mockk
@@ -7,16 +10,21 @@ import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.rapidApp
 import no.nav.helse.spenn.simulering.SimuleringService
+import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 class E2eTestApp(
     var rapid: TestRapid = TestRapid(),
     val simuleringService: SimuleringService = mockk(),
     val oppdrag: TestKø = TestKø(),
-    val database: TestDatabase = TestDatabase()
+    val database: TestDatabase = TestDatabase(),
+    var listAppender: ListAppender<ILoggingEvent> = ListAppender()
 ) {
 
     private fun start() {
+        val sikkerLogg = LoggerFactory.getLogger("tjenestekall") as Logger
+        listAppender.start()
+        sikkerLogg.addAppender(listAppender)
         database.migrate()
         rapidApp(rapid, simuleringService, oppdrag, database)
         rapid.start()
@@ -27,6 +35,7 @@ class E2eTestApp(
         rapid = TestRapid()
         clearMocks(simuleringService)
         oppdrag.reset()
+        listAppender = ListAppender()
     }
 
 
@@ -38,6 +47,10 @@ class E2eTestApp(
             avstemmingsnøkkel = løsning["avstemmingsnøkkel"].asLong()
         )
     }
+
+    fun sikkerLoggMeldinger()  =
+        listAppender.list.map{it.message}
+
 
     fun parseFeilLøsning(behovsvar: JsonNode): FeilLøsning = FeilLøsning(
         status = behovsvar["@løsning"]["Utbetaling"]["status"].asText(),
@@ -56,7 +69,7 @@ class E2eTestApp(
         private val testEnv by lazy { E2eTestApp() }
         fun e2eTest(f: E2eTestApp.() -> Unit) {
             try {
-                testEnv.start();
+                testEnv.start()
                 f(testEnv)
             } finally {
                 testEnv.reset()

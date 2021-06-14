@@ -1,11 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
-import kotliquery.Query
-import kotliquery.Row
+import kotliquery.*
 import kotliquery.action.NullableResultQueryAction
-import kotliquery.queryOf
-import kotliquery.sessionOf
-import kotliquery.using
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
@@ -93,6 +89,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         )
     }
 
+
     fun finnesFraFør(fnr: String, utbetalingId: UUID): Boolean = using(sessionOf(dataSource)) { session ->
         val query =
             """SELECT 1
@@ -105,7 +102,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
     internal fun nyttOppdrag(
         fagområde: String,
         avstemmingsnøkkel: Long,
-        utbetalingId: UUID,
         sjekksum: Int,
         fødselsnummer: String,
         organisasjonsnummer: String,
@@ -177,6 +173,16 @@ internal class OppdragDao(private val dataSource: DataSource) {
                 mapOf("fnr" to fødselsnummer, "utbetalingId" to utbetalingId.toString())
             ).map { it.toOppdragDto() }.asSingle
         )!!
+    }
+
+    fun erSjekksumDuplikat(fødselsnummer: String, sjekksum: Int) = using(sessionOf(dataSource)) { session ->
+        val query =
+            """SELECT 1
+                FROM oppdrag
+                WHERE sjekksum = :sjekksum
+                AND fnr = :fnr
+                """
+        session.run(queryOf(query, mapOf("fnr" to fødselsnummer, "sjekksum" to sjekksum)).exists()) == true
     }
 
 

@@ -61,7 +61,6 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
-                any(),
                 any()
             )
         } answers {
@@ -77,6 +76,7 @@ internal class UtbetalingerTest {
         }
         every { dao.oppdaterOppdrag(any(), behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
         every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns false
+        every { dao.erSjekksumDuplikat(any(), any()) } returns false
         rapid.sendTestMessage(behov.json())
         assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
@@ -106,7 +106,6 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
-                any(),
                 any()
             )
         } answers {
@@ -122,6 +121,7 @@ internal class UtbetalingerTest {
         }
         every { dao.finnesFraFør(utbetalingsbehov.fnr, utbetalingsbehov.utbetalingId) } returns false
         every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
+        every { dao.erSjekksumDuplikat(any(), any()) } returns false
 
         rapid.sendTestMessage(behov.json())
         assertEquals(1, inspektør.size)
@@ -135,111 +135,6 @@ internal class UtbetalingerTest {
         assertOverført(0)
     }
 
-    @Test
-    fun `løser duplikat utbetalingsbehov`() {
-        val behov = utbetalingsbehov
-        val avstemmingsnøkler = mutableListOf<Long>()
-        fun oppdragDto(status: Oppdragstatus = Oppdragstatus.OVERFØRT) = OppdragDto(
-            avstemmingsnøkler.first(),
-            behov.fnr,
-            FAGSYSTEMID,
-            LocalDateTime.now(),
-            status,
-            BELØP,
-            null
-        )
-        every {
-            dao.nyttOppdrag(
-                any(),
-                capture(avstemmingsnøkler),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
-            )
-        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) }
-        every {
-            dao.oppdaterOppdrag(
-                match { it == avstemmingsnøkler.first() },
-                any(),
-                Oppdragstatus.OVERFØRT
-            )
-        } returns true
-
-        every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto() }
-        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns false
-        rapid.sendTestMessage(behov.json())
-
-        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns true
-        every { dao.hentOppdrag(behov.fnr, behov.utbetalingId) } answers { oppdragDto() }
-        rapid.sendTestMessage(behov.json())
-
-        assertEquals(2, inspektør.size)
-        assertEquals(1, connection.inspektør.antall())
-        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
-        assertOverført(0)
-        assertOverført(1)
-    }
-
-    @Test
-    fun `Tillater duplikat melding ved AVVIST`() {
-        val avstemmingsnøkler = mutableListOf<Long>()
-        val behov = utbetalingsbehov
-
-        fun oppdragDto(status: Oppdragstatus = Oppdragstatus.OVERFØRT) = OppdragDto(
-            avstemmingsnøkler.first(),
-            behov.fnr,
-            FAGSYSTEMID,
-            LocalDateTime.now(),
-            status,
-            BELØP,
-            null
-        )
-        every {
-            dao.nyttOppdrag(
-                any(),
-                capture(avstemmingsnøkler),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
-            )
-        } coAnswers { oppdragDto(Oppdragstatus.MOTTATT) }
-        every {
-            dao.oppdaterOppdrag(
-                match { it == avstemmingsnøkler.first() },
-                any(),
-                Oppdragstatus.OVERFØRT
-            )
-        } returns true
-
-        every { dao.hentOppdragForSjekksum(any()) } answers { oppdragDto(Oppdragstatus.AVVIST) }
-        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns false
-        rapid.sendTestMessage(behov.json())
-
-        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId) } returns true
-        every { dao.hentOppdrag(behov.fnr, behov.utbetalingId) } answers { oppdragDto(Oppdragstatus.AVVIST) }
-        rapid.sendTestMessage(behov.json())
-
-        assertEquals(2, inspektør.size)
-        assertEquals(2, connection.inspektør.antall())
-        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
-        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(1).jmsReplyTo.toString())
-        assertOverført(indeks = 0, antallOverforinger = 2)
-        assertOverført(indeks = 1, antallOverforinger = 2)
-    }
 
     @Test
     fun `ignorerer tomme utbetalingslinjer`() {
@@ -259,7 +154,6 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
-                any(),
                 any()
             )
         }
@@ -269,7 +163,6 @@ internal class UtbetalingerTest {
     fun `utbetalingsbehov med exception`() {
         every {
             dao.nyttOppdrag(
-                any(),
                 any(),
                 any(),
                 any(),
@@ -306,7 +199,6 @@ internal class UtbetalingerTest {
             dao.nyttOppdrag(
                 fagområde = "SPREF",
                 avstemmingsnøkkel = avstemmingsnøkkel,
-                utbetalingId = any(),
                 sjekksum = any(),
                 fødselsnummer = utbetalingsbehov.fnr,
                 organisasjonsnummer = ORGNR,
