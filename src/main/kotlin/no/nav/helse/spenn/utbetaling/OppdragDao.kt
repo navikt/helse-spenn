@@ -7,6 +7,8 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
+import no.nav.helse.spenn.utbetaling.Oppdragstatus.AKSEPTERT
+import no.nav.helse.spenn.utbetaling.Oppdragstatus.OVERFØRT
 
 internal class OppdragDao(private val dataSource: DataSource) {
 
@@ -181,6 +183,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
                 FROM oppdrag
                 WHERE sjekksum = :sjekksum
                 AND fnr = :fnr
+                AND status IN ('$AKSEPTERT', '$OVERFØRT')
                 """
         session.run(queryOf(query, mapOf("fnr" to fødselsnummer, "sjekksum" to sjekksum)).exists()) == true
     }
