@@ -28,7 +28,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         return try {
             simulerFpService.simulerBeregning(simulerRequest)?.response?.let {
                 mapResponseToResultat(it)
-            } ?: SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = "Fikk ingen respons")
+            } ?: SimuleringResult(status = SimuleringStatus.OK)
         } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
             sikkerLogg.error("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
