@@ -42,11 +42,7 @@ private fun rapidApp(env: Map<String, String>) {
 
     val simuleringService = SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
 
-    val mqUserName = if (isProd(env)) env.getValue("MQ_USERNAME") else serviceAccountUserName
-    val mqPassword = if (isProd(env)) env.getValue("MQ_PASSWORD") else serviceAccountPassword
-
-    val jmsConnection: Connection = mqConnection(env, mqUserName, mqPassword)
-
+    val jmsConnection: Connection = mqConnection(env, serviceAccountUserName, serviceAccountPassword)
 
     val tilOppdragQueue = env.getValue("OPPDRAG_QUEUE_SEND")
     val svarFraOppdragQueue = env.getValue("OPPDRAG_QUEUE_MOTTAK")
@@ -120,11 +116,8 @@ private fun avstemmingJob(env: Map<String, String>) {
     )
     val strings = StringSerializer()
 
-    val mqUserName = if (isProd(env)) env.getValue("MQ_USERNAME") else serviceAccountUserName
-    val mqPassword = if (isProd(env)) env.getValue("MQ_PASSWORD") else serviceAccountPassword
-
     KafkaProducer(kafkaConfig.producerConfig(), strings, strings).use { producer ->
-        mqConnection(env, mqUserName, mqPassword).use { jmsConnection ->
+        mqConnection(env, serviceAccountUserName, serviceAccountPassword).use { jmsConnection ->
             jmsConnection.start()
 
             val dagen = LocalDate.now().minusDays(1)
@@ -152,10 +145,7 @@ private fun mqConnection(env: Map<String, String>, mqUserName: String, mqPasswor
         channel = env.getValue("MQ_CHANNEL")
         queueManager = env.getValue("MQ_QUEUE_MANAGER")
         transportType = WMQConstants.WMQ_CM_CLIENT
-        setBooleanProperty(
-            JmsConstants.USER_AUTHENTICATION_MQCSP,
-            env.get("MQ_OPPDRAG_AUTHENTICATION").toBoolean()
-        )
+        setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
     }.createConnection(mqUserName, mqPassword)
 
 private fun String.readFile() = try {

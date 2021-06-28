@@ -62,16 +62,14 @@ spec:
     - name: VAULT_MOUNTPATH
       value: postgresql/prod-fss/
     - name: MQ_HOSTNAME
-      value: a01apvl063.adeo.no
+      value: a01apvl269.adeo.no
     - name: MQ_CHANNEL
       value: P_SPENN
     - name: MQ_PORT
       value: "1414"
     - name: MQ_QUEUE_MANAGER
-      value: MPLSC02
+      value: MPLS02
     - name: OPPDRAG_QUEUE_SEND
       value: QA.P231.OB04_OPPDRAG_XML
     - name: OPPDRAG_QUEUE_MOTTAK
       value: QA.P_SPENN.OPPDRAG_SP_XML_KVITT
-    - name: MQ_OPPDRAG_AUTHENTICATION
-      value: "false"
