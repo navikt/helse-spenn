@@ -49,13 +49,15 @@ spec:
                 - name: VAULT_MOUNTPATH
                   value: postgresql/preprod-fss/
                 - name: MQ_HOSTNAME
-                  value: b27apvl176.preprod.local
+                  value: b27apvl220.preprod.local
                 - name: MQ_CHANNEL
-                  value: Q1_FPSAK
+                  value: Q1_SPENN
                 - name: MQ_PORT
                   value: "1413"
                 - name: MQ_QUEUE_MANAGER
-                  value: MQ1LSC02
+                  value: MQLS02
+                - name: MQ_OPPDRAG_AUTHENTICATION
+                  value: true
                 - name: AVSTEMMING_QUEUE_SEND
                   # Setter target client = 1 for bakoverkompabilitet med stormaskin
                   value: queue:///QA.Q1_234.OB29_AVSTEMMING_XML?targetClient=1

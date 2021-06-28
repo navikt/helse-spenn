@@ -27,20 +27,26 @@ fun main() {
 
 private fun rapidApp(env: Map<String, String>) {
     val dataSourceBuilder = DataSourceBuilder(env)
+    val serviceAccountUserName = "/var/run/secrets/nais.io/service_user/username".readFile()
+        ?: throw IllegalArgumentException("Forventer username")
+    val serviceAccountPassword = "/var/run/secrets/nais.io/service_user/password".readFile()
+        ?: throw IllegalArgumentException("Forventer passord")
 
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
         stsSoapUrl = env.getValue("SECURITYTOKENSERVICE_URL"),
-        username = "/var/run/secrets/nais.io/service_user/username".readFile()
-            ?: throw IllegalArgumentException("Forventer username"),
-        password = "/var/run/secrets/nais.io/service_user/password".readFile()
-            ?: throw IllegalArgumentException("Forventer passord"),
+        username = serviceAccountUserName,
+        password = serviceAccountPassword,
         disableCNCheck = true
     )
 
     val simuleringService = SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
 
-    val jmsConnection: Connection = mqConnection(env)
+    val mqUserName = if (isProd(env)) env.getValue("MQ_USERNAME") else serviceAccountUserName
+    val mqPassword = if (isProd(env)) env.getValue("MQ_PASSWORD") else serviceAccountPassword
+
+    val jmsConnection: Connection = mqConnection(env, mqUserName, mqPassword)
+
 
     val tilOppdragQueue = env.getValue("OPPDRAG_QUEUE_SEND")
     val svarFraOppdragQueue = env.getValue("OPPDRAG_QUEUE_MOTTAK")
@@ -54,6 +60,8 @@ private fun rapidApp(env: Map<String, String>) {
     rapidApp(rapid, simuleringService, jms, dataSourceBuilder)
     rapid.start()
 }
+
+fun isProd(env: Map<String, String>) = (env.getValue("NAIS_CLUSTER_NAME").startsWith("prod"))
 
 fun rapidApp(
     rapid: RapidsConnection,
@@ -94,12 +102,17 @@ fun rapidApp(
 private fun avstemmingJob(env: Map<String, String>) {
     val log = LoggerFactory.getLogger("no.nav.helse.Spenn")
     Thread.setDefaultUncaughtExceptionHandler { _, throwable -> log.error(throwable.message, throwable) }
+
+    val serviceAccountUserName = "/var/run/secrets/nais.io/service_user/username".readFile()
+        ?: throw IllegalArgumentException("Forventer username")
+    val serviceAccountPassword = "/var/run/secrets/nais.io/service_user/password".readFile()
+        ?: throw IllegalArgumentException("Forventer password")
     val dataSourceBuilder = DataSourceBuilder(env)
     val dataSource = dataSourceBuilder.getDataSource()
     val kafkaConfig = no.nav.helse.spenn.avstemming.KafkaConfig(
         bootstrapServers = env.getValue("KAFKA_BROKERS"),
-        username = "/var/run/secrets/nais.io/service_user/username".readFile(),
-        password = "/var/run/secrets/nais.io/service_user/password".readFile(),
+        username = serviceAccountUserName,
+        password = serviceAccountPassword,
         truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
         truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
         keystoreLocation = env["KAFKA_KEYSTORE_PATH"],
@@ -107,8 +120,11 @@ private fun avstemmingJob(env: Map<String, String>) {
     )
     val strings = StringSerializer()
 
+    val mqUserName = if (isProd(env)) env.getValue("MQ_USERNAME") else serviceAccountUserName
+    val mqPassword = if (isProd(env)) env.getValue("MQ_PASSWORD") else serviceAccountPassword
+
     KafkaProducer(kafkaConfig.producerConfig(), strings, strings).use { producer ->
-        mqConnection(env).use { jmsConnection ->
+        mqConnection(env, mqUserName, mqPassword).use { jmsConnection ->
             jmsConnection.start()
 
             val dagen = LocalDate.now().minusDays(1)
@@ -129,15 +145,18 @@ private fun avstemmingJob(env: Map<String, String>) {
     }
 }
 
-private fun mqConnection(env: Map<String, String>) =
+private fun mqConnection(env: Map<String, String>, mqUserName: String, mqPassword: String) =
     MQConnectionFactory().apply {
         hostName = env.getValue("MQ_HOSTNAME")
         port = env.getValue("MQ_PORT").toInt()
         channel = env.getValue("MQ_CHANNEL")
         queueManager = env.getValue("MQ_QUEUE_MANAGER")
         transportType = WMQConstants.WMQ_CM_CLIENT
-        setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, false)
-    }.createConnection(env.getValue("MQ_USERNAME"), env.getValue("MQ_PASSWORD"))
+        setBooleanProperty(
+            JmsConstants.USER_AUTHENTICATION_MQCSP,
+            env.get("MQ_OPPDRAG_AUTHENTICATION").toBoolean()
+        )
+    }.createConnection(mqUserName, mqPassword)
 
 private fun String.readFile() = try {
     File(this).readText(Charsets.UTF_8)

@@ -60,14 +60,16 @@ spec:
     - name: VAULT_MOUNTPATH
       value: postgresql/preprod-fss/
     - name: MQ_HOSTNAME
-      value: b27apvl176.preprod.local
+      value: b27apvl220.preprod.local
     - name: MQ_CHANNEL
-      value: Q1_FPSAK
+      value: Q1_SPENN
     - name: MQ_PORT
       value: "1413"
     - name: MQ_QUEUE_MANAGER
-      value: MQ1LSC02
+      value: MQLS02
     - name: OPPDRAG_QUEUE_SEND
       value: QA.Q1_231.OB04_OPPDRAG_XML
     - name: OPPDRAG_QUEUE_MOTTAK
       value: QA.Q1_SPENN.OPPDRAG_SP_XML_KVITT
+    - name: MQ_OPPDRAG_AUTHENTICATION
+      value: true
