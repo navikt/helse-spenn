@@ -74,4 +74,4 @@ spec:
     - name: OPPDRAG_QUEUE_MOTTAK
       value: QA.P_SPENN.OPPDRAG_SP_XML_KVITT
     - name: MQ_OPPDRAG_AUTHENTICATION
-      value: false
+      value: "false"

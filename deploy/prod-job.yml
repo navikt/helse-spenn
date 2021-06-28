@@ -57,7 +57,7 @@ spec:
                 - name: MQ_QUEUE_MANAGER
                   value: MPLSC02
                 - name: MQ_OPPDRAG_AUTHENTICATION
-                  value: false
+                  value: "false"
                 - name: AVSTEMMING_QUEUE_SEND
                   # Setter target client = 1 for bakoverkompabilitet med stormaskin
                   value: queue:///QA.P234.OB29_AVSTEMMING_XML?targetClient=1
