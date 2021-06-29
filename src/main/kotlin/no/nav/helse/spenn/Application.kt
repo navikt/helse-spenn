@@ -65,8 +65,6 @@ private fun rapidApp(env: Map<String, String>) {
     rapid.start()
 }
 
-fun isProd(env: Map<String, String>) = (env.getValue("NAIS_CLUSTER_NAME").startsWith("prod"))
-
 fun rapidApp(
     rapid: RapidsConnection,
     simuleringService: SimuleringService,
@@ -134,8 +132,6 @@ private fun avstemmingJob(env: Map<String, String>) {
     val dataSource = dataSourceBuilder.getDataSource()
     val kafkaConfig = no.nav.helse.spenn.avstemming.KafkaConfig(
         bootstrapServers = env.getValue("KAFKA_BROKERS"),
-        username = serviceAccountUserName,
-        password = serviceAccountPassword,
         truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
         truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
         keystoreLocation = env["KAFKA_KEYSTORE_PATH"],

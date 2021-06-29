@@ -27,6 +27,9 @@ spec:
                 - mountPath: /var/run/secrets/nais.io/vault
                   name: vault-secrets
                   subPath: subpath/var/run/secrets/nais.io/vault
+                - mountPath: /var/run/secrets/nais.io/service_user
+                  name: vault-secrets
+                  subPath: subpath/var/run/secrets/nais.io/service_user
                 - mountPath: /var/run/secrets/nais.io/kafka
                   name: kafka-credentials
                   readOnly: true
@@ -89,12 +92,16 @@ spec:
                 - mountPath: /var/run/secrets/nais.io/vault
                   name: vault-secrets
                   subPath: subpath/var/run/secrets/nais.io/vault
+                - mountPath: /var/run/secrets/nais.io/service_user
+                  name: vault-secrets
+                  subPath: subpath/var/run/secrets/nais.io/service_user
               args:
                 - -v=10
                 - -logtostderr
                 - -vault=https://vault.adeo.no
                 - -one-shot
                 - -save-token=/var/run/secrets/nais.io/vault/vault_token
+                - -cn=secret:serviceuser/data/prod/srvspenn:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
               env:
                 - name: VAULT_AUTH_METHOD
                   value: kubernetes
