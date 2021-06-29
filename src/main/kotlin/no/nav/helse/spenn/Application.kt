@@ -1,5 +1,9 @@
 package no.nav.helse.spenn
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.wmq.WMQConstants
@@ -16,6 +20,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.time.Instant
 import java.time.LocalDate
 import javax.jms.Connection
 
@@ -67,6 +72,8 @@ fun rapidApp(
 ) {
     val dataSource = database.getDataSource()
     val oppdragDao = OppdragDao(dataSource)
+    val log = LoggerFactory.getLogger(RapidsConnection::class.java)
+
 
     rapid.apply {
         Simuleringer(this, simuleringService)
@@ -86,6 +93,21 @@ fun rapidApp(
             override fun onStartup(rapidsConnection: RapidsConnection) {
                 database.migrate()
                 kø.start()
+
+                val objectMapper = jacksonObjectMapper()
+                    .registerModule(JavaTimeModule())
+                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                val (json, borkedOppdrag) = oppdragDao.hentBorkedOppdrag()
+                val packet = objectMapper.readTree(json)
+
+                if(borkedOppdrag.kanSendesPåNytt()){
+                    val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
+                        .fraBehov(packet["Utbetaling"])
+                    log.info("Rekjører et feriepengeoppdrag")
+                    borkedOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, Instant.now(), kø.sendSession())
+                    log.info("Rekjøring av feriepengeoppdrag er utført")
+                }
             }
 
             override fun onShutdown(rapidsConnection: RapidsConnection) {
