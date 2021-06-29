@@ -14,7 +14,10 @@ import no.nav.helse.spenn.avstemming.AvstemmingDao
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.Simuleringer
-import no.nav.helse.spenn.utbetaling.*
+import no.nav.helse.spenn.utbetaling.Kvitteringer
+import no.nav.helse.spenn.utbetaling.OppdragDao
+import no.nav.helse.spenn.utbetaling.Transaksjoner
+import no.nav.helse.spenn.utbetaling.Utbetalinger
 import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringSerializer
@@ -101,13 +104,14 @@ fun rapidApp(
                 oppdragDao.hentBorkedOppdrag()?.also { (json, borkedOppdrag) ->
                     val packet = objectMapper.readTree(json)
 
-                    if(borkedOppdrag.kanSendesPåNytt()){
-                        val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
-                            .fraBehov(packet["Utbetaling"])
-                        log.info("Rekjører et feriepengeoppdrag")
-                        borkedOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, Instant.now(), kø.sendSession())
-                        log.info("Rekjøring av feriepengeoppdrag er utført")
-                    }
+                    val utbetalingslinjer = UtbetalingslinjerMapper(
+                        packet["fødselsnummer"].asText(),
+                        packet["organisasjonsnummer"].asText()
+                    )
+                        .fraBehov(packet["Utbetaling"])
+                    log.info("Rekjører et feriepengeoppdrag")
+                    borkedOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, Instant.now(), kø.sendSession())
+                    log.info("Rekjøring av feriepengeoppdrag er utført")
                 }
             }
 
