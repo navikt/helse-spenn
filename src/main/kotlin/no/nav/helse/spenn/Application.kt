@@ -98,15 +98,16 @@ fun rapidApp(
                     .registerModule(JavaTimeModule())
                     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                val (json, borkedOppdrag) = oppdragDao.hentBorkedOppdrag()
-                val packet = objectMapper.readTree(json)
+                oppdragDao.hentBorkedOppdrag()?.also { (json, borkedOppdrag) ->
+                    val packet = objectMapper.readTree(json)
 
-                if(borkedOppdrag.kanSendesPåNytt()){
-                    val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
-                        .fraBehov(packet["Utbetaling"])
-                    log.info("Rekjører et feriepengeoppdrag")
-                    borkedOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, Instant.now(), kø.sendSession())
-                    log.info("Rekjøring av feriepengeoppdrag er utført")
+                    if(borkedOppdrag.kanSendesPåNytt()){
+                        val utbetalingslinjer = UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
+                            .fraBehov(packet["Utbetaling"])
+                        log.info("Rekjører et feriepengeoppdrag")
+                        borkedOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, Instant.now(), kø.sendSession())
+                        log.info("Rekjøring av feriepengeoppdrag er utført")
+                    }
                 }
             }
 

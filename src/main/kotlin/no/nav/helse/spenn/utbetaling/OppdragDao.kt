@@ -177,9 +177,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
         )!!
     }
 
-    fun hentBorkedOppdrag(): Pair<String, OppdragDto> = using(sessionOf(dataSource)) { session ->
+    fun hentBorkedOppdrag(): Pair<String, OppdragDto>? = using(sessionOf(dataSource)) { session ->
         val query = """select * from oppdrag where fagsystem_id='SH7L6IWLGNGC7MLQTD625BL57Q'"""
-        session.run(queryOf(query).map { it.string("behov") to it.toOppdragDto() }.asSingle)!!
+        session.run(queryOf(query).map { it.string("behov") to it.toOppdragDto() }.asSingle)
     }
 
     fun erSjekksumDuplikat(fødselsnummer: String, sjekksum: Int) = using(sessionOf(dataSource)) { session ->
