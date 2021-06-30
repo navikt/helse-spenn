@@ -1,11 +1,13 @@
 package no.nav.helse.spenn
 
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
+import java.time.*
 import kotlin.math.pow
 
 internal object Avstemmingsnøkkel {
+
+    fun tilOgMed(dag: LocalDate): Long {
+        return opprett(dag.atEndOfDay(ZoneId.systemDefault()).toInstant())
+    }
 
     fun periode(dag: LocalDate): ClosedRange<Long> = with(ZoneId.systemDefault()) {
         opprett(dag.atStartOfDay(this).toInstant())..opprett(dag.atEndOfDay(this).toInstant())

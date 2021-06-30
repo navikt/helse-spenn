@@ -2,7 +2,6 @@ package no.nav.helse.spenn.avstemming
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.spenn.Avstemmingsnøkkel
-import no.nav.helse.spenn.JmsUtSesjon
 import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.OppdragDto
@@ -27,9 +26,8 @@ internal class Avstemming(
 
     fun avstemTilOgMed(dagen: LocalDate) {
         val id = UUID.randomUUID()
-        val avstemmingsperiodeForDag = Avstemmingsnøkkel.periode(dagen)
         val avstemteFagområder = mutableListOf<Map<String, Any>>()
-        val fagområder = oppdragDao.hentOppdragForAvstemming(avstemmingsperiodeForDag.endInclusive)
+        val fagområder = oppdragDao.hentOppdragForAvstemming(Avstemmingsnøkkel.tilOgMed(dagen))
         fagområder.forEach { (fagområde, oppdrag) ->
             log.info("Starter avstemming id=$id fagområde=$fagområde frem til og med $dagen")
             avstemOppdrag(id, fagområde, oppdrag, avstemteFagområder)
