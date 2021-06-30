@@ -143,7 +143,7 @@ private fun avstemmingJob(env: Map<String, String>) {
         mqConnection(env, serviceAccountUserName, serviceAccountPassword).use { jmsConnection ->
             jmsConnection.start()
 
-            val dagen = LocalDate.now().minusDays(1)
+            val igår = LocalDate.now().minusDays(1)
             Avstemming(
                 JmsUtSesjon(
                     jmsConnection,
@@ -153,9 +153,9 @@ private fun avstemmingJob(env: Map<String, String>) {
                 env.getValue("KAFKA_RAPID_TOPIC"),
                 OppdragDao(dataSource),
                 AvstemmingDao(dataSource),
-            ).avstem(dagen)
+            ).avstemTilOgMed(igår)
 
-            log.info("avstemming utført dagen=$dagen")
+            log.info("avstemming utført for betalinger frem til og med $igår")
         }
         producer.flush()
     }

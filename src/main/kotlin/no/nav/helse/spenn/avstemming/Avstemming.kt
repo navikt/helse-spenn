@@ -25,15 +25,15 @@ internal class Avstemming(
         private val log = LoggerFactory.getLogger(Avstemming::class.java)
     }
 
-    fun avstem(dagen: LocalDate) {
+    fun avstemTilOgMed(dagen: LocalDate) {
         val id = UUID.randomUUID()
         val avstemmingsperiodeForDag = Avstemmingsnøkkel.periode(dagen)
         val avstemteFagområder = mutableListOf<Map<String, Any>>()
         val fagområder = oppdragDao.hentOppdragForAvstemming(avstemmingsperiodeForDag.endInclusive)
         fagområder.forEach { (fagområde, oppdrag) ->
-            log.info("Starter avstemming id=$id fagområde=$fagområde dagen=$dagen")
+            log.info("Starter avstemming id=$id fagområde=$fagområde frem til og med $dagen")
             avstemOppdrag(id, fagområde, oppdrag, avstemteFagområder)
-            log.info("Avstemming id=$id fagområde=$fagområde dagen=$dagen er ferdig")
+            log.info("Avstemming id=$id fagområde=$fagområde frem til og med $dagen er ferdig")
         }
 
         kafkaProducer.send(
