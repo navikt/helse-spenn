@@ -12,6 +12,9 @@ spec:
       ttlSecondsAfterFinished: 43200
       backoffLimit: 1
       template:
+        metadata:
+          labels:
+            team: tbd
         spec:
           containers:
             - name: spenn-avstemming
