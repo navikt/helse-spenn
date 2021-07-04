@@ -9,8 +9,7 @@ import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.wmq.WMQConstants
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.spenn.avstemming.Avstemming
-import no.nav.helse.spenn.avstemming.AvstemmingDao
+import no.nav.helse.spenn.avstemming.avstemmingJob
 import no.nav.helse.spenn.simulering.SimuleringConfig
 import no.nav.helse.spenn.simulering.SimuleringService
 import no.nav.helse.spenn.simulering.Simuleringer
@@ -19,12 +18,9 @@ import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.Transaksjoner
 import no.nav.helse.spenn.utbetaling.Utbetalinger
 import org.apache.cxf.bus.extension.ExtensionManagerBus
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Instant
-import java.time.LocalDate
 import javax.jms.Connection
 
 fun main() {
@@ -75,7 +71,6 @@ fun rapidApp(
     val oppdragDao = OppdragDao(dataSource)
     val log = LoggerFactory.getLogger(RapidsConnection::class.java)
 
-
     rapid.apply {
         Simuleringer(this, simuleringService)
         Utbetalinger(
@@ -120,48 +115,7 @@ fun rapidApp(
     }
 }
 
-private fun avstemmingJob(env: Map<String, String>) {
-    val log = LoggerFactory.getLogger("no.nav.helse.Spenn")
-    Thread.setDefaultUncaughtExceptionHandler { _, throwable -> log.error(throwable.message, throwable) }
-
-    val serviceAccountUserName = "/var/run/secrets/nais.io/service_user/username".readFile()
-        ?: throw IllegalArgumentException("Forventer username")
-    val serviceAccountPassword = "/var/run/secrets/nais.io/service_user/password".readFile()
-        ?: throw IllegalArgumentException("Forventer password")
-    val dataSourceBuilder = DataSourceBuilder(env)
-    val dataSource = dataSourceBuilder.getDataSource()
-    val kafkaConfig = no.nav.helse.spenn.avstemming.KafkaConfig(
-        bootstrapServers = env.getValue("KAFKA_BROKERS"),
-        truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
-        truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
-        keystoreLocation = env["KAFKA_KEYSTORE_PATH"],
-        keystorePassword = env["KAFKA_CREDSTORE_PASSWORD"],
-    )
-    val strings = StringSerializer()
-
-    KafkaProducer(kafkaConfig.producerConfig(), strings, strings).use { producer ->
-        mqConnection(env, serviceAccountUserName, serviceAccountPassword).use { jmsConnection ->
-            jmsConnection.start()
-
-            val igår = LocalDate.now().minusDays(1)
-            Avstemming(
-                JmsUtSesjon(
-                    jmsConnection,
-                    env.getValue("AVSTEMMING_QUEUE_SEND"),
-                ),
-                producer,
-                env.getValue("KAFKA_RAPID_TOPIC"),
-                OppdragDao(dataSource),
-                AvstemmingDao(dataSource),
-            ).avstemTilOgMed(igår)
-
-            log.info("avstemming utført for betalinger frem til og med $igår")
-        }
-        producer.flush()
-    }
-}
-
-private fun mqConnection(env: Map<String, String>, mqUserName: String, mqPassword: String) =
+internal fun mqConnection(env: Map<String, String>, mqUserName: String, mqPassword: String) =
     MQConnectionFactory().apply {
         hostName = env.getValue("MQ_HOSTNAME")
         port = env.getValue("MQ_PORT").toInt()
@@ -171,7 +125,7 @@ private fun mqConnection(env: Map<String, String>, mqUserName: String, mqPasswor
         setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
     }.createConnection(mqUserName, mqPassword)
 
-private fun String.readFile() = try {
+fun String.readFile() = try {
     File(this).readText(Charsets.UTF_8)
 } catch (err: Exception) {
     null
