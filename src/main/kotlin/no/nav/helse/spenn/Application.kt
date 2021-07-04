@@ -32,9 +32,7 @@ fun main() {
 private fun rapidApp(env: Map<String, String>) {
     val dataSourceBuilder = DataSourceBuilder(env)
     val serviceAccountUserName = "/var/run/secrets/nais.io/service_user/username".readFile()
-        ?: throw IllegalArgumentException("Forventer username")
     val serviceAccountPassword = "/var/run/secrets/nais.io/service_user/password".readFile()
-        ?: throw IllegalArgumentException("Forventer passord")
 
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
@@ -125,8 +123,4 @@ internal fun mqConnection(env: Map<String, String>, mqUserName: String, mqPasswo
         setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
     }.createConnection(mqUserName, mqPassword)
 
-fun String.readFile() = try {
-    File(this).readText(Charsets.UTF_8)
-} catch (err: Exception) {
-    null
-}
+fun String.readFile() = File(this).readText(Charsets.UTF_8)

@@ -15,9 +15,7 @@ internal fun avstemmingJob(env: Map<String, String>) {
     Thread.setDefaultUncaughtExceptionHandler { _, throwable -> log.error(throwable.message, throwable) }
 
     val serviceAccountUserName = "/var/run/secrets/nais.io/service_user/username".readFile()
-            ?: throw IllegalArgumentException("Forventer username")
     val serviceAccountPassword = "/var/run/secrets/nais.io/service_user/password".readFile()
-            ?: throw IllegalArgumentException("Forventer password")
     val dataSource = DataSourceBuilder(env).getDataSource()
 
     val kafkaConfig = KafkaConfig(
