@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.avstemming
 
 import io.prometheus.client.CollectorRegistry
-import io.prometheus.client.Counter
+import io.prometheus.client.Gauge
 import io.prometheus.client.exporter.PushGateway
 import no.nav.helse.spenn.DataSourceBuilder
 import no.nav.helse.spenn.JmsUtSesjon
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
 
-private val avstemmingsTeller = Counter.build("avstemming", "teller vellykkede avstemmingsjobber").register()
+private val avstemmingsTid = Gauge.build("avstemming", "tidpusnkt for siste vellykkede avstemming").register()
 
 internal fun avstemmingJob(env: Map<String, String>) {
     val log = LoggerFactory.getLogger("no.nav.helse.Spenn")
@@ -49,7 +49,7 @@ internal fun avstemmingJob(env: Map<String, String>) {
             log.info("avstemming utført for betalinger frem til og med $igår")
         }
         producer.flush()
-        avstemmingsTeller.inc()
+        avstemmingsTid.setToCurrentTime()
         PushGateway("nais-prometheus-pushgateway.nais:9091").push(CollectorRegistry.defaultRegistry, "spenn_avstemming")
     }
 }
