@@ -1,5 +1,8 @@
 package no.nav.helse.spenn.avstemming
 
+import io.prometheus.client.CollectorRegistry
+import io.prometheus.client.Gauge
+import io.prometheus.client.exporter.PushGateway
 import no.nav.helse.spenn.DataSourceBuilder
 import no.nav.helse.spenn.JmsUtSesjon
 import no.nav.helse.spenn.mqConnection
@@ -10,6 +13,9 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
+
+private val avstemmingsTeller = Gauge.build("avstemming", "teller vellykkede avstemmingsjobber").register()
+
 internal fun avstemmingJob(env: Map<String, String>) {
     val log = LoggerFactory.getLogger("no.nav.helse.Spenn")
     Thread.setDefaultUncaughtExceptionHandler { _, throwable -> log.error(throwable.message, throwable) }
@@ -19,11 +25,11 @@ internal fun avstemmingJob(env: Map<String, String>) {
     val dataSource = DataSourceBuilder(env).getDataSource()
 
     val kafkaConfig = KafkaConfig(
-            bootstrapServers = env.getValue("KAFKA_BROKERS"),
-            truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
-            truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
-            keystoreLocation = env["KAFKA_KEYSTORE_PATH"],
-            keystorePassword = env["KAFKA_CREDSTORE_PASSWORD"],
+        bootstrapServers = env.getValue("KAFKA_BROKERS"),
+        truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
+        truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
+        keystoreLocation = env["KAFKA_KEYSTORE_PATH"],
+        keystorePassword = env["KAFKA_CREDSTORE_PASSWORD"],
     )
 
     val strings = StringSerializer()
@@ -33,15 +39,17 @@ internal fun avstemmingJob(env: Map<String, String>) {
 
             val igår = LocalDate.now().minusDays(1)
             Avstemming(
-                    JmsUtSesjon(jmsConnection, env.getValue("AVSTEMMING_QUEUE_SEND")),
-                    producer,
-                    env.getValue("KAFKA_RAPID_TOPIC"),
-                    OppdragDao(dataSource),
-                    AvstemmingDao(dataSource),
+                JmsUtSesjon(jmsConnection, env.getValue("AVSTEMMING_QUEUE_SEND")),
+                producer,
+                env.getValue("KAFKA_RAPID_TOPIC"),
+                OppdragDao(dataSource),
+                AvstemmingDao(dataSource),
             ).avstemTilOgMed(igår)
 
             log.info("avstemming utført for betalinger frem til og med $igår")
         }
         producer.flush()
+        avstemmingsTeller.set(1.0)
+        PushGateway("nais-prometheus-pushgateway.nais:9091").push(CollectorRegistry.defaultRegistry, "spenn_avstemming")
     }
 }

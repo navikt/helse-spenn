@@ -21,6 +21,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.2")
     implementation("no.nav:vault-jdbc:1.3.7")
     implementation("com.github.seratch:kotliquery:1.3.1")
+    implementation ("io.prometheus:simpleclient_pushgateway:0.9.0")
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.2.1.0")
 
