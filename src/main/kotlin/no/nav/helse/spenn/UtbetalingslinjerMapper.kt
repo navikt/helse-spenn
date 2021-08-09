@@ -22,7 +22,7 @@ internal class UtbetalingslinjerMapper(
     private fun refusjonTilArbeidsgiver(packet: JsonNode) =
         Utbetalingslinjer.RefusjonTilArbeidsgiver(
             mottaker = packet["mottaker"].asText(),
-            fagsystemId = packet["fagsystemId"].asText(),
+            fagsystemId = packet["fagsystemId"].asText().trim(),
             fødselsnummer = fødselsnummer,
             endringskode = packet["endringskode"].asText(),
             saksbehandler = packet["saksbehandler"].asText(),
@@ -31,7 +31,7 @@ internal class UtbetalingslinjerMapper(
 
     private fun utbetalingTilBruker(packet: JsonNode) =
         Utbetalingslinjer.UtbetalingTilBruker(
-            fagsystemId = packet["fagsystemId"].asText(),
+            fagsystemId = packet["fagsystemId"].asText().trim(),
             fødselsnummer = fødselsnummer,
             mottaker = packet["mottaker"].asText(),
             organisasjonsnummer = organisasjonsnummer,
@@ -52,7 +52,7 @@ internal class UtbetalingslinjerMapper(
                 satstype = it["satstype"].asText(),
                 grad = it["grad"].takeUnless(JsonNode::isMissingOrNull)?.asInt(),
                 refDelytelseId = it.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
-                refFagsystemId = it.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText(),
+                refFagsystemId = it.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText()?.trim(),
                 datoStatusFom = it.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asLocalDate(),
                 statuskode = it.path("statuskode").takeUnless(JsonNode::isMissingOrNull)?.asText()
             ).also { utbetalingslinjer.linje(it) }

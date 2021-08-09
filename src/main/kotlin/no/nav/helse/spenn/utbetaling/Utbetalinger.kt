@@ -62,7 +62,7 @@ internal class Utbetalinger(
         val fødselsnummer = packet["fødselsnummer"].asText()
         val organisasjonsnummer = packet["organisasjonsnummer"].asText()
         val mottaker = packet["Utbetaling.mottaker"].asText()
-        val fagsystemId = packet["Utbetaling.fagsystemId"].asText()
+        val fagsystemId = packet["Utbetaling.fagsystemId"].asText().trim()
         val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())
         val utbetalingslinjer =
             UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
