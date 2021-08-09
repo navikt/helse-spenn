@@ -31,7 +31,7 @@ internal class OppdragBuilder(
     private val oppdrag110 = Oppdrag110().apply {
         kodeFagomraade = utbetalingslinjer.fagområde
         kodeEndring = utbetalingslinjer.endringskode
-        fagsystemId = utbetalingslinjer.fagsystemId
+        fagsystemId = utbetalingslinjer.fagsystemId.trim()
         oppdragGjelderId = utbetalingslinjer.fødselsnummer
         saksbehId = utbetalingslinjer.saksbehandler
         kodeAksjon = "1"
