@@ -73,7 +73,7 @@ internal class OppdragBuilder(
     private fun nyLinje(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = OppdragsLinje150().apply {
         delytelseId = "${utbetalingslinje.delytelseId}"
         refDelytelseId = utbetalingslinje.refDelytelseId?.let { "$it" }
-        refFagsystemId = utbetalingslinje.refFagsystemId?.let { it }
+        refFagsystemId = utbetalingslinje.refFagsystemId?.trim()
         kodeEndringLinje = utbetalingslinje.endringskode
         kodeKlassifik = utbetalingslinje.klassekode
         datoVedtakFom = utbetalingslinje.fom.asXmlGregorianCalendar()
