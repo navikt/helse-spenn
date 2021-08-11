@@ -119,7 +119,7 @@ class OppdragDto(
         return Detaljdata().apply {
             detaljType = detaljType() ?: return null
             offnr = fødselsnummer
-            avleverendeTransaksjonNokkel = fagsystemId
+            avleverendeTransaksjonNokkel = fagsystemId.trim()
             tidspunkt = tidsstempel.format(opprettet)
             if (kvittering != null && (detaljType == DetaljType.AVVI || detaljType == DetaljType.VARS)) {
                 meldingKode = kvittering.mmel.kodeMelding
