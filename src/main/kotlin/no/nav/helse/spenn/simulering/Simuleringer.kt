@@ -83,8 +83,8 @@ internal class Simuleringer(
                 )
             )
         } catch (err: Exception) {
-            log.error("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
-            sikkerLogg.error("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
+            log.warn("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
+            sikkerLogg.warn("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
             packet["@løsning"] = mapOf(
                 "Simulering" to mapOf(
                     "status" to SimuleringStatus.TEKNISK_FEIL,
