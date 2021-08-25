@@ -30,8 +30,8 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
                 mapResponseToResultat(it)
             } ?: SimuleringResult(status = SimuleringStatus.OK)
         } catch (e: SimulerBeregningFeilUnderBehandling) {
-            log.error("Got error while running Simulering, sjekk sikkerLogg for detaljer", e)
-            sikkerLogg.error("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
+            log.warn("Got error while running Simulering, sjekk sikkerLogg for detaljer")
+            sikkerLogg.warn("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
             SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = e.faultInfo.errorMessage)
         } catch (e: SOAPFaultException) {
             if (e.cause is WstxEOFException || e.cause is WstxIOException) {
