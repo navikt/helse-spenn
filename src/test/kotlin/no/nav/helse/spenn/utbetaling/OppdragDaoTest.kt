@@ -15,7 +15,6 @@ import java.sql.Connection
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.UUID.randomUUID
 import javax.sql.DataSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -28,9 +27,7 @@ internal class OppdragDaoTest {
         private const val FAGSYSTEMID = "838069327ea2"
         private const val BELØP = Integer.MAX_VALUE
         private const val BEHOV = "{}"
-        private val UTBETLING_ID = randomUUID()
         private val AVSTEMMINGSNØKKEL = System.currentTimeMillis()
-        private const val SJEKKSUM = 1
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss")
     }
 
@@ -47,7 +44,6 @@ internal class OppdragDaoTest {
             oppdragDao.nyttOppdrag(
                 FAGOMRÅDE_REFUSJON,
                 avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
-                sjekksum = SJEKKSUM,
                 fødselsnummer = PERSON,
                 organisasjonsnummer = ORGNR,
                 mottaker = ORGNR,
@@ -82,7 +78,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
-            sjekksum = SJEKKSUM,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -121,7 +116,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første - 1,
-            sjekksum = SJEKKSUM - 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -134,7 +128,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første,
-            sjekksum = SJEKKSUM,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -147,7 +140,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første + 1,
-            sjekksum = SJEKKSUM + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -160,7 +152,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første + 2,
-            sjekksum = SJEKKSUM + 2,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -174,7 +165,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = siste,
-            sjekksum = SJEKKSUM + 3,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -187,7 +177,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = siste + 1,
-            sjekksum = SJEKKSUM + 4,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -224,7 +213,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første - 1,
-            sjekksum = SJEKKSUM - 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -237,7 +225,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første,
-            sjekksum = SJEKKSUM,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -250,7 +237,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første + 1,
-            sjekksum = SJEKKSUM + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -263,7 +249,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første + 2,
-            sjekksum = SJEKKSUM + 2,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -277,7 +262,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = siste,
-            sjekksum = SJEKKSUM + 3,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -290,7 +274,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = siste + 1,
-            sjekksum = SJEKKSUM + 4,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -316,7 +299,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første,
-            sjekksum = SJEKKSUM,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -329,7 +311,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første + 1,
-            sjekksum = SJEKKSUM + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -342,7 +323,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = første + 2,
-            sjekksum = SJEKKSUM + 2,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,
@@ -365,7 +345,6 @@ internal class OppdragDaoTest {
         oppdragDao.nyttOppdrag(
             fagområde = FAGOMRÅDE_REFUSJON,
             avstemmingsnøkkel = avstemmingsnøkkel,
-            sjekksum = SJEKKSUM,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
             mottaker = ORGNR,

@@ -83,13 +83,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         }
 
-    internal fun hentOppdragForSjekksum(sjekksum: Int) = using(sessionOf(dataSource)) { session ->
-        val query =
-            "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag WHERE sjekksum = ?"
-        session.run(
-            queryOf(query, sjekksum).map { it.toOppdragDto() }.asSingle
-        )
-    }
 
 
     fun finnesFraFør(fnr: String, utbetalingId: UUID): Boolean = using(sessionOf(dataSource)) { session ->
@@ -104,7 +97,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
     internal fun nyttOppdrag(
         fagområde: String,
         avstemmingsnøkkel: Long,
-        sjekksum: Int,
         fødselsnummer: String,
         organisasjonsnummer: String,
         mottaker: String,
@@ -117,7 +109,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
         lagre(
             fagområde,
             avstemmingsnøkkel,
-            sjekksum,
             fødselsnummer,
             organisasjonsnummer,
             mottaker,
@@ -134,7 +125,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
     private fun lagre(
         fagområde: String,
         avstemmingsnøkkel: Long,
-        sjekksum: Int,
         fødselsnummer: String,
         organisasjonsnummer: String,
         mottaker: String,
@@ -147,10 +137,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "INSERT INTO oppdrag (avstemmingsnokkel, sjekksum, fagomrade, fnr, orgnr, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json)",
+                    "INSERT INTO oppdrag (avstemmingsnokkel, fagomrade, fnr, orgnr, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json)",
                     avstemmingsnøkkel,
-                    sjekksum,
                     fagområde,
                     fødselsnummer,
                     organisasjonsnummer,
@@ -180,17 +169,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
     fun hentBorkedOppdrag(): Pair<String, OppdragDto>? = using(sessionOf(dataSource)) { session ->
         val query = """select * from oppdrag where fagsystem_id='SH7L6IWLGNGC7MLQTD625BL57Q'"""
         session.run(queryOf(query).map { it.string("behov") to it.toOppdragDto() }.asSingle)
-    }
-
-    fun erSjekksumDuplikat(fødselsnummer: String, sjekksum: Int) = using(sessionOf(dataSource)) { session ->
-        val query =
-            """SELECT 1
-                FROM oppdrag
-                WHERE sjekksum = :sjekksum
-                AND fnr = :fnr
-                AND status IN ('$AKSEPTERT', '$OVERFØRT')
-                """
-        session.run(queryOf(query, mapOf("fnr" to fødselsnummer, "sjekksum" to sjekksum)).exists()) == true
     }
 
 

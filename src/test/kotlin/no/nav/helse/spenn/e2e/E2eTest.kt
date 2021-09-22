@@ -3,11 +3,8 @@ package no.nav.helse.spenn.e2e
 import no.nav.helse.spenn.e2e.E2eTestApp.Companion.e2eTest
 import no.nav.helse.spenn.e2e.Kvittering.Companion.kvittering
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
-import no.nav.helse.spenn.e2e.Utbetalingslinje.Companion.utbetalingslinje
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 import java.util.UUID.randomUUID
 
 class E2eTest {
@@ -106,94 +103,6 @@ class E2eTest {
             assertEquals(2, database.hentAlleOppdrag().size)
             assertEquals(2, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
-        }
-    }
-
-
-    @Test
-    fun `Linjer hvor bare fagsystemid er forskjellig er en indikator på dobbelt utbetaling, skal utbetales men logges`() {
-        val utbetaling1 = utbetalingsbehov.fagsystemId("en")
-        val utbetaling2 = utbetaling1
-            .fagsystemId("to")
-            .utbetalingId(randomUUID())
-
-        e2eTest {
-            rapid.sendTestMessage(utbetaling1.json())
-            rapid.sendTestMessage(utbetaling2.json())
-
-            assertEquals(2, database.hentAlleOppdrag().size)
-            assertEquals(2, this.oppdrag.meldinger.size)
-            assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
-
-            assertEquals(1, sikkerLoggMeldinger().filter { it.startsWith("Sjekksumkollisjon for fnr") }.size)
-
-            val løsningFraUtbetaling2 = parseOkLøsning(rapid.inspektør.message(1))
-            assertEquals("OVERFØRT", løsningFraUtbetaling2.status)
-        }
-    }
-
-    @Test
-    fun `Linjer hvor bare fagsystemid er forskjellig er en indikator på dobbelt utbetaling, skal utbetales men logges- flere linjer`() {
-        val utbetaling1 = utbetalingsbehov
-            .linjer(
-                utbetalingslinje,
-                utbetalingslinje
-                    .grad(20)
-                    .sats(100)
-                    .fom(utbetalingslinje.tom.plusDays(1))
-                    .tom(utbetalingslinje.tom.plusDays(2))
-            )
-            .fagsystemId("en")
-        val utbetaling2 = utbetaling1
-            .fagsystemId("to")
-            .utbetalingId(randomUUID())
-
-        e2eTest {
-            rapid.sendTestMessage(utbetaling1.json())
-            rapid.sendTestMessage(utbetaling2.json())
-
-            assertEquals(2, database.hentAlleOppdrag().size)
-            assertEquals(2, this.oppdrag.meldinger.size)
-            assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
-
-            assertEquals(1, sikkerLoggMeldinger().filter { it.startsWith("Sjekksumkollisjon for fnr") }.size)
-
-            val løsningFraUtbetaling2 = parseOkLøsning(rapid.inspektør.message(1))
-            assertEquals("OVERFØRT", løsningFraUtbetaling2.status)
-        }
-    }
-
-    @Test
-    fun `Hvis bare noen linjer er like skal meldingen slippes gjennom`() {
-        val utbetaling1 = utbetalingsbehov
-            .linjer(
-                utbetalingslinje,
-                utbetalingslinje
-                    .grad(20)
-                    .sats(100)
-                    .fom(utbetalingslinje.tom.plusDays(1))
-                    .tom(utbetalingslinje.tom.plusDays(2))
-            )
-            .fagsystemId("en")
-        val utbetaling2 = utbetaling1
-            .linjer(
-                utbetalingslinje,
-                utbetalingslinje
-                    .tom(LocalDate.now())
-            )
-            .fagsystemId("to")
-            .utbetalingId(randomUUID())
-
-        e2eTest {
-            rapid.sendTestMessage(utbetaling1.json())
-            rapid.sendTestMessage(utbetaling2.json())
-
-            assertEquals(2, database.hentAlleOppdrag().size)
-            assertEquals(2, this.oppdrag.meldinger.size)
-            assertEquals(2, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
-
-            val løsningFraUtbetaling2 = parseOkLøsning(rapid.inspektør.message(1))
-            assertEquals("OVERFØRT", løsningFraUtbetaling2.status)
         }
     }
 }

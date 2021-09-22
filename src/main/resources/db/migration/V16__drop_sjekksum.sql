@@ -1,0 +1,1 @@
+ALTER TABLE oppdrag DROP COLUMN sjekksum;

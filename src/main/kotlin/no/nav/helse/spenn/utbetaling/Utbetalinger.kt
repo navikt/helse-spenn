@@ -73,7 +73,6 @@ internal class Utbetalinger(
             .atZone(ZoneId.systemDefault())
             .toLocalDateTime()
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
-        val sjekksum = utbetalingslinjer.hashCode()
 
         try {
             if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId)) {
@@ -91,14 +90,10 @@ internal class Utbetalinger(
                     "Utbetaling" to gammeltOppdrag.somLøsning()
                 )
             } else {
-                if (oppdragDao.erSjekksumDuplikat(fødselsnummer, sjekksum)) {
-                    sikkerLogg.error("Sjekksumkollisjon for fnr $fødselsnummer og utbetalingsid $utbetalingId. Indikerer duplikat utbetaling.")
-                }
                 val oppdragDto = oppdragDao.nyttOppdrag(
                     fagområde = packet["Utbetaling.fagområde"].asText(),
                     avstemmingsnøkkel = avstemmingsnøkkel,
                     fødselsnummer = fødselsnummer,
-                    sjekksum = sjekksum,
                     organisasjonsnummer = organisasjonsnummer,
                     mottaker = mottaker,
                     tidspunkt = tidspunkt,
