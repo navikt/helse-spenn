@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val junitJupiterVersion = "5.7.1"
 val tjenestespesifikasjonVersion = "1.4201aa"
 val cxfVersion = "3.3.7"
+val testcontainersVersion = "1.16.2"
 
 plugins {
     kotlin("jvm") version "1.4.30"
@@ -45,7 +46,6 @@ dependencies {
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
 
-    testImplementation("com.opentable.components:otj-pg-embedded:0.13.3")
     testImplementation("io.mockk:mockk:1.10.6")
     testImplementation("org.apache.activemq:apache-artemis:2.17.0") {
         /* this is a shaded jar that creates conflicts on classpath, see:
@@ -57,6 +57,11 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+
+    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
+    testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
+
     implementation(kotlin("stdlib-jdk8"))
 }
 

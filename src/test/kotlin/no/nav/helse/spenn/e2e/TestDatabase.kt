@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.e2e
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.runBlocking
@@ -10,12 +9,15 @@ import kotliquery.using
 import no.nav.helse.spenn.Database
 import no.nav.helse.spenn.utbetaling.OppdragDao.Companion.toOppdragDto
 import org.flywaydb.core.Flyway
+import org.testcontainers.containers.PostgreSQLContainer
 
 class TestDatabase : Database {
     private val dataSource = run {
-        val embeddedPostgres = EmbeddedPostgres.builder().setPort(56789).start()
+        val postgres = PostgreSQLContainer<Nothing>("postgres:13").also { it.start() }
         val hikariConfig = HikariConfig().apply {
-            jdbcUrl = embeddedPostgres.getJdbcUrl("postgres", "postgres")
+            jdbcUrl = postgres.jdbcUrl
+            username = postgres.username
+            password = postgres.password
             maximumPoolSize = 3
             minimumIdle = 1
             idleTimeout = 10001

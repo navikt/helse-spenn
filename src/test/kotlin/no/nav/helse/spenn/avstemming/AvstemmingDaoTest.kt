@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.avstemming
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
@@ -10,8 +9,8 @@ import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.io.TempDir
+import org.testcontainers.containers.PostgreSQLContainer
 import java.nio.file.Path
-import java.sql.Connection
 import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
@@ -26,8 +25,7 @@ internal class AvstemmingDaoTest {
         private const val ANTALL_AVSTEMTE_OPPDRAG = 1
     }
 
-    private lateinit var embeddedPostgres: EmbeddedPostgres
-    private lateinit var postgresConnection: Connection
+    private lateinit var postgres: PostgreSQLContainer<Nothing>
     private lateinit var dataSource: DataSource
     private lateinit var flyway: Flyway
     private lateinit var avstemmingDao: AvstemmingDao
@@ -66,14 +64,12 @@ internal class AvstemmingDaoTest {
 
     @BeforeAll
     internal fun setupAll(@TempDir postgresPath: Path) {
-        embeddedPostgres = EmbeddedPostgres.builder()
-            .setOverrideWorkingDirectory(postgresPath.toFile())
-            .setDataDirectory(postgresPath.resolve("datadir"))
-            .start()
-        postgresConnection = embeddedPostgres.postgresDatabase.connection
+        postgres = PostgreSQLContainer<Nothing>("postgres:13").also { it.start() }
 
         dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = embeddedPostgres.getJdbcUrl("postgres", "postgres")
+            jdbcUrl = postgres.jdbcUrl
+            username = postgres.username
+            password = postgres.password
             maximumPoolSize = 3
             minimumIdle = 1
             idleTimeout = 10001
@@ -91,8 +87,7 @@ internal class AvstemmingDaoTest {
 
     @AfterAll
     internal fun tearDown() {
-        postgresConnection.close()
-        embeddedPostgres.close()
+        postgres.stop()
     }
 
     @BeforeEach

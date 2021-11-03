@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.utbetaling
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
@@ -10,8 +9,8 @@ import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.io.TempDir
+import org.testcontainers.containers.PostgreSQLContainer
 import java.nio.file.Path
-import java.sql.Connection
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -31,8 +30,7 @@ internal class OppdragDaoTest {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss")
     }
 
-    private lateinit var embeddedPostgres: EmbeddedPostgres
-    private lateinit var postgresConnection: Connection
+    private lateinit var postgres: PostgreSQLContainer<Nothing>
     private lateinit var dataSource: DataSource
     private lateinit var flyway: Flyway
     private lateinit var oppdragDao: OppdragDao
@@ -389,14 +387,12 @@ internal class OppdragDaoTest {
 
     @BeforeAll
     internal fun setupAll(@TempDir postgresPath: Path) {
-        embeddedPostgres = EmbeddedPostgres.builder()
-            .setOverrideWorkingDirectory(postgresPath.toFile())
-            .setDataDirectory(postgresPath.resolve("datadir"))
-            .start()
-        postgresConnection = embeddedPostgres.postgresDatabase.connection
+        postgres = PostgreSQLContainer<Nothing>("postgres:13").also { it.start() }
 
         dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = embeddedPostgres.getJdbcUrl("postgres", "postgres")
+            jdbcUrl = postgres.jdbcUrl
+            username = postgres.username
+            password = postgres.password
             maximumPoolSize = 3
             minimumIdle = 1
             idleTimeout = 10001
@@ -414,8 +410,7 @@ internal class OppdragDaoTest {
 
     @AfterAll
     internal fun tearDown() {
-        postgresConnection.close()
-        embeddedPostgres.close()
+        postgres.stop()
     }
 
     @BeforeEach
