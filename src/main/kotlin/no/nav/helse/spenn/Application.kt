@@ -25,7 +25,7 @@ import javax.jms.Connection
 
 fun main() {
     val env = System.getenv()
-    if ("true" == env["CRON_JOB_MODE"]?.toLowerCase()) return avstemmingJob(env)
+    if ("true" == env["CRON_JOB_MODE"]?.lowercase()) return avstemmingJob(env)
     rapidApp(env)
 }
 

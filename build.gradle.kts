@@ -1,12 +1,10 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 val junitJupiterVersion = "5.7.1"
 val tjenestespesifikasjonVersion = "1.4201aa"
 val cxfVersion = "3.3.7"
 val testcontainersVersion = "1.16.2"
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.5.31"
 }
 
 repositories {
@@ -16,7 +14,7 @@ repositories {
 
 dependencies {
     implementation("com.github.navikt:rapids-and-rivers:1.a77261b")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.21")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
     implementation("org.flywaydb:flyway-core:7.5.4")
     implementation("com.zaxxer:HikariCP:4.0.2")
@@ -46,7 +44,7 @@ dependencies {
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
     implementation("com.github.navikt.tjenestespesifikasjoner:nav-system-os-simuler-fp-service-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
 
-    testImplementation("io.mockk:mockk:1.10.6")
+    testImplementation("io.mockk:mockk:1.12.0")
     testImplementation("org.apache.activemq:apache-artemis:2.17.0") {
         /* this is a shaded jar that creates conflicts on classpath, see:
             https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
@@ -61,8 +59,6 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
-
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 configure<SourceSetContainer> {
@@ -75,10 +71,10 @@ configure<SourceSetContainer> {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "15"
+        kotlinOptions.jvmTarget = "16"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "15"
+        kotlinOptions.jvmTarget = "16"
     }
 
     named<Jar>("jar") {
@@ -108,14 +104,6 @@ tasks {
     }
 
     withType<Wrapper> {
-        gradleVersion = "6.8.3"
+        gradleVersion = "7.1.1"
     }
-}
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
 }

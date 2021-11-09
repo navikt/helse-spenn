@@ -80,7 +80,7 @@ internal sealed class Utbetalingslinjer(
         internal companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minByOrNull { it.fom }?.fom
             fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxByOrNull { it.tom }?.tom
-            fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumBy { it.sats }
+            fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumOf { it.sats }
         }
     }
 }

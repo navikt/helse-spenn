@@ -85,7 +85,7 @@ class OppdragDto(
             status.mapNotNull { this[it] }.flatten().summer(block)
         }
 
-        private fun totalbeløp(liste: List<OppdragDto>) = liste.sumBy { it.totalbeløp }
+        private fun totalbeløp(liste: List<OppdragDto>) = liste.sumOf { it.totalbeløp }
     }
 
     internal fun sendOppdrag(

@@ -82,6 +82,6 @@ internal class DataSourceBuilder(env: Map<String, String>) : Database {
     private enum class Role {
         Admin, User, ReadOnly;
 
-        override fun toString() = name.toLowerCase()
+        override fun toString() = name.lowercase()
     }
 }

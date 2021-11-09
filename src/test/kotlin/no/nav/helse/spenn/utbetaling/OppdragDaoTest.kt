@@ -386,6 +386,7 @@ internal class OppdragDaoTest {
         } ?: fail { "Fant ikke oppdrag med avstemmingsnøkkel $avstemmingsnøkkel" }
 
     @BeforeAll
+    @Suppress("UNUSED_PARAMETER")
     internal fun setupAll(@TempDir postgresPath: Path) {
         postgres = PostgreSQLContainer<Nothing>("postgres:13").also { it.start() }
 
