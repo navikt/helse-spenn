@@ -109,6 +109,16 @@ internal class SimuleringerTest {
         assertTrue(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
 
+    @Test
+    fun `løser simuleringsbehov for utbetaling til bruker`() {
+        resultat(SimuleringStatus.OK)
+        rapid.sendTestMessage(simuleringbehovBruker())
+        assertEquals(1, inspektør.size)
+        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals("OK", inspektør.løsning(0, "Simulering").path("status").asText())
+        assertFalse(inspektør.løsning(0, "Simulering").path("simulering").isNull)
+    }
+
 
     private fun resultat(status: SimuleringStatus) = SimuleringResult(
         status = status,
@@ -122,6 +132,53 @@ internal class SimuleringerTest {
         ) else null
     ).also {
         resultat = it
+    }
+
+    private fun simuleringbehovBruker(
+        utbetalingslinjer: List<Map<String, Any>> = listOf(
+            mapOf(
+                "satstype" to "DAG",
+                "sats" to 1000,
+                "fom" to "2020-04-20",
+                "tom" to "2020-05-20",
+                "grad" to 100
+            )
+        )
+    ): String {
+        return jacksonObjectMapper().writeValueAsString(
+            mapOf(
+                "@event_name" to "behov",
+                "@behov" to listOf("Simulering"),
+                "@id" to BEHOV,
+                "organisasjonsnummer" to ORGNR,
+                "fødselsnummer" to PERSON,
+                "Simulering" to mapOf(
+                    "mottaker" to PERSON,
+                    "maksdato" to "2020-04-20",
+                    "saksbehandler" to "Spleis",
+                    "fagområde" to "SP",
+                    "fagsystemId" to "ref",
+                    "endringskode" to "NY",
+                    "sjekksum" to -873852214,
+                    "linjer" to utbetalingslinjer.map {
+                        mapOf(
+                            "fom" to it["fom"],
+                            "tom" to it["tom"],
+                            "sats" to it["sats"],
+                            "satstype" to it["satstype"],
+                            "grad" to it["grad"],
+                            "delytelseId" to 1,
+                            "refDelytelseId" to null,
+                            "refFagsystemId" to null,
+                            "endringskode" to "NY",
+                            "klassekode" to "SPATORD",
+                            "datoStatusFom" to null,
+                            "statuskode" to null
+                        )
+                    }
+                )
+            )
+        )
     }
 
     private fun simuleringbehov(
