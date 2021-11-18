@@ -15,10 +15,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 internal class AvstemmingTest {
     private companion object {
         private const val FAGOMRÅDE_REFUSJON = "SPREF"
+        private const val FAGOMRÅDE_BRUKERUTBETALING = "SP"
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
         private const val UTBETALINGSREF = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
@@ -27,6 +29,7 @@ internal class AvstemmingTest {
         private const val SEND_QUEUE = "avstemmingskø"
         private const val BELØP = 1000
         private val OPPRETTET = LocalDateTime.now()
+        private val UTBETALING_ID = UUID.randomUUID()
 
         private val mandag = 1.januar.atStartOfDay()
         private val tirsdag = mandag.plusDays(1)
@@ -59,6 +62,9 @@ internal class AvstemmingTest {
             OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, fredag, AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
             OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, lørdag, AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
             OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, søndag, FEIL, BELØP, kvittering(OK))
+        ),
+        FAGOMRÅDE_BRUKERUTBETALING to listOf(
+            OppdragDto(AVSTEMMINGSNØKKEL + 8, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
         )
     )
 
@@ -66,20 +72,30 @@ internal class AvstemmingTest {
     fun avstem() {
         val dagen = LocalDate.now()
         val avstemmingsperiodeForDagen = Avstemmingsnøkkel.periode(dagen)
-        val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag.getValue(FAGOMRÅDE_REFUSJON))
+        val avstemmingsperiodeRefusjon = OppdragDto.avstemmingsperiode(oppdrag.getValue(FAGOMRÅDE_REFUSJON))
+        val avstemmingsperiodeBrukerutbetaling = OppdragDto.avstemmingsperiode(oppdrag.getValue(FAGOMRÅDE_BRUKERUTBETALING))
         every { dao.hentOppdragForAvstemming(avstemmingsperiodeForDagen.endInclusive) } returns oppdrag
         avstemming.avstemTilOgMed(dagen)
-        assertEquals(3, connection.inspektør.antall())
+        assertEquals(6, connection.inspektør.antall())
         verify(exactly = 1) {
             avstemmingDao.nyAvstemming(
                 any(),
                 FAGOMRÅDE_REFUSJON,
-                avstemmingsperiode.endInclusive,
+                avstemmingsperiodeRefusjon.endInclusive,
                 oppdrag.getValue(FAGOMRÅDE_REFUSJON).size
             )
         }
-        verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(FAGOMRÅDE_REFUSJON, avstemmingsperiode.endInclusive) }
-        verify(exactly = 1) { producer.send(any()) }
+        verify(exactly = 1) {
+            avstemmingDao.nyAvstemming(
+                any(),
+                FAGOMRÅDE_BRUKERUTBETALING,
+                avstemmingsperiodeBrukerutbetaling.endInclusive,
+                oppdrag.getValue(FAGOMRÅDE_BRUKERUTBETALING).size
+            )
+        }
+        verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(FAGOMRÅDE_REFUSJON, avstemmingsperiodeRefusjon.endInclusive) }
+        verify(exactly = 1) { dao.oppdaterAvstemteOppdrag(FAGOMRÅDE_BRUKERUTBETALING, avstemmingsperiodeBrukerutbetaling.endInclusive) }
+        verify(exactly = 2) { producer.send(any()) }
     }
 
     @Test

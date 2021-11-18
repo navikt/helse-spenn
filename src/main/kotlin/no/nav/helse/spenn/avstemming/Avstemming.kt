@@ -25,20 +25,25 @@ internal class Avstemming(
     }
 
     fun avstemTilOgMed(dagen: LocalDate) {
-        val id = UUID.randomUUID()
         val avstemteFagområder = mutableListOf<Map<String, Any>>()
         val fagområder = oppdragDao.hentOppdragForAvstemming(Avstemmingsnøkkel.tilOgMed(dagen))
+
+        if (fagområder.isEmpty()) {
+            kafkaProducer.send(ProducerRecord(rapidTopic, avstemmingevent(UUID.randomUUID(), dagen, 0, emptyList()).toJson().also {
+                log.info("sender $it")
+            }))
+            return
+        }
+
         fagområder.forEach { (fagområde, oppdrag) ->
+            val id = UUID.randomUUID()
             log.info("Starter avstemming id=$id fagområde=$fagområde frem til og med $dagen")
             avstemOppdrag(id, fagområde, oppdrag, avstemteFagområder)
             log.info("Avstemming id=$id fagområde=$fagområde frem til og med $dagen er ferdig")
+            kafkaProducer.send(ProducerRecord(rapidTopic, avstemmingevent(id, dagen, fagområder.map { it.value.size }.sum(), avstemteFagområder).toJson().also {
+                log.info("sender $it")
+            }))
         }
-
-        kafkaProducer.send(
-            ProducerRecord(rapidTopic,
-                avstemmingevent(id, dagen, fagområder.map { it.value.size }.sum(), avstemteFagområder)
-                    .toJson().also { log.info("sender $it") })
-        )
     }
 
     private fun avstemOppdrag(
@@ -68,7 +73,7 @@ internal class Avstemming(
         id: UUID,
         dagen: LocalDate,
         antallOppdrag: Int,
-        avstemteFagområder: MutableList<Map<String, Any>>
+        avstemteFagområder: List<Map<String, Any>>
     ) = JsonMessage.newMessage(
         mapOf(
             "@event_name" to "avstemming",
