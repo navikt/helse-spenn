@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDateTime
+import java.util.*
 
 internal class OppdragDtoTest {
     private companion object {
@@ -17,6 +18,7 @@ internal class OppdragDtoTest {
         private const val SAKSBEHANDLER = "Navn Navnesen"
         private const val BELØP = 1000
         private val OPPRETTET = LocalDateTime.now()
+        private val UTBETALING_ID = UUID.randomUUID()
 
         private const val AKSEPTERT_UTEN_FEIL = "00"
         private const val AKSEPTERT_MED_FEIL = "04"
@@ -27,6 +29,7 @@ internal class OppdragDtoTest {
 
     private val oppdrag = listOf(
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL,
             PERSON,
             UTBETALINGSREF,
@@ -36,6 +39,7 @@ internal class OppdragDtoTest {
             null
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 1,
             PERSON,
             UTBETALINGSREF,
@@ -45,6 +49,7 @@ internal class OppdragDtoTest {
             kvittering(AKSEPTERT_UTEN_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 2,
             PERSON,
             UTBETALINGSREF,
@@ -54,6 +59,7 @@ internal class OppdragDtoTest {
             kvittering(AKSEPTERT_UTEN_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 3,
             PERSON,
             UTBETALINGSREF,
@@ -63,6 +69,7 @@ internal class OppdragDtoTest {
             kvittering(AKSEPTERT_MED_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 4,
             PERSON,
             UTBETALINGSREF,
@@ -72,6 +79,7 @@ internal class OppdragDtoTest {
             kvittering(AVVIST_FUNKSJONELLE_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 5,
             PERSON,
             UTBETALINGSREF,
@@ -81,6 +89,7 @@ internal class OppdragDtoTest {
             kvittering(AVVIST_FUNKSJONELLE_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 6,
             PERSON,
             UTBETALINGSREF,
@@ -90,6 +99,7 @@ internal class OppdragDtoTest {
             kvittering(AVVIST_TEKNISK_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 7,
             PERSON,
             UTBETALINGSREF,
@@ -132,6 +142,7 @@ internal class OppdragDtoTest {
         OppdragDto.totaldata(
             listOf(
                 OppdragDto(
+                    UTBETALING_ID,
                     AVSTEMMINGSNØKKEL,
                     PERSON,
                     UTBETALINGSREF,

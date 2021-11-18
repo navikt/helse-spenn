@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
+import java.util.*
 import javax.xml.datatype.XMLGregorianCalendar
 
 internal class OppdragBuilderTest {
@@ -25,8 +26,8 @@ internal class OppdragBuilderTest {
         private const val SAKSBEHANDLER = "Spenn"
         private val NÅ = Instant.now()
         private val MAKSDATO = LocalDate.now()
-        private val AVSTEMMINGSNØKKEL =
-            Avstemmingsnøkkel.opprett(NÅ)
+        private val AVSTEMMINGSNØKKEL = Avstemmingsnøkkel.opprett(NÅ)
+        private val UTBETALING_ID = UUID.randomUUID()
 
         private fun XMLGregorianCalendar.toLocalDate() = toGregorianCalendar()
             .toZonedDateTime()
@@ -175,6 +176,7 @@ internal class OppdragBuilderTest {
 
     private fun oppdragRefusjon(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
+            UTBETALING_ID,
             Utbetalingslinjer.RefusjonTilArbeidsgiver(
                 PERSON, ORGNR, FAGSYSTEMID, endringskode,
                 SAKSBEHANDLER, MAKSDATO
@@ -187,6 +189,7 @@ internal class OppdragBuilderTest {
 
     private fun oppdragBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
         val builder = OppdragBuilder(
+            UTBETALING_ID,
             Utbetalingslinjer.UtbetalingTilBruker(
                 PERSON, PERSON, ORGNR, FAGSYSTEMID, endringskode,
                 SAKSBEHANDLER, MAKSDATO

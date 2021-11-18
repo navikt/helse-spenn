@@ -7,8 +7,6 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
-import no.nav.helse.spenn.utbetaling.Oppdragstatus.AKSEPTERT
-import no.nav.helse.spenn.utbetaling.Oppdragstatus.OVERFØRT
 
 internal class OppdragDao(private val dataSource: DataSource) {
 
@@ -55,7 +53,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
+                    "SELECT avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
                             "WHERE avstemt = FALSE AND (? <= avstemmingsnokkel AND avstemmingsnokkel <= ?)",
                     avstemmingsperiode.start, avstemmingsperiode.endInclusive
                 ).map { it.toOppdragDto() }.asList
@@ -66,7 +64,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
+                    "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
                             "WHERE avstemt = FALSE AND avstemmingsnokkel <= ?",
                     avstemmingsnøkkelTom
                 ).map { it.string("fagomrade") to it.toOppdragDto() }.asList
@@ -96,6 +94,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
 
     internal fun nyttOppdrag(
         fagområde: String,
+        utbetalingId: UUID,
         avstemmingsnøkkel: Long,
         fødselsnummer: String,
         organisasjonsnummer: String,
@@ -111,6 +110,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             avstemmingsnøkkel,
             fødselsnummer,
             organisasjonsnummer,
+            utbetalingId,
             mottaker,
             tidspunkt,
             fagsystemId,
@@ -118,7 +118,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             totalbeløp,
             originalJson
         )
-        return OppdragDto(avstemmingsnøkkel, fødselsnummer, fagsystemId, tidspunkt, status, totalbeløp, null)
+        return OppdragDto(utbetalingId, avstemmingsnøkkel, fødselsnummer, fagsystemId, tidspunkt, status, totalbeløp, null)
     }
 
 
@@ -127,6 +127,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         avstemmingsnøkkel: Long,
         fødselsnummer: String,
         organisasjonsnummer: String,
+        utbetalingId: UUID,
         mottaker: String,
         tidspunkt: LocalDateTime,
         fagsystemId: String,
@@ -137,12 +138,13 @@ internal class OppdragDao(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "INSERT INTO oppdrag (avstemmingsnokkel, fagomrade, fnr, orgnr, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json)",
+                    "INSERT INTO oppdrag (avstemmingsnokkel, fagomrade, fnr, orgnr, utbetaling_id, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json)",
                     avstemmingsnøkkel,
                     fagområde,
                     fødselsnummer,
                     organisasjonsnummer,
+                    utbetalingId,
                     mottaker,
                     tidspunkt,
                     fagsystemId,
@@ -175,6 +177,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
     companion object {
         fun Row.toOppdragDto() =
             OppdragDto(
+                utbetalingId = UUID.fromString(string("utbetaling_id")),
                 avstemmingsnøkkel = long("avstemmingsnokkel"),
                 fødselsnummer = string("fnr"),
                 fagsystemId = string("fagsystem_id"),

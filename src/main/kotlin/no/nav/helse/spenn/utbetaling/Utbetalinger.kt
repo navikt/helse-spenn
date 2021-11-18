@@ -91,6 +91,7 @@ internal class Utbetalinger(
                 )
             } else {
                 val oppdragDto = oppdragDao.nyttOppdrag(
+                    utbetalingId = utbetalingId,
                     fagområde = packet["Utbetaling.fagområde"].asText(),
                     avstemmingsnøkkel = avstemmingsnøkkel,
                     fødselsnummer = fødselsnummer,

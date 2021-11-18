@@ -14,6 +14,7 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.*
 import javax.sql.DataSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -27,6 +28,7 @@ internal class OppdragDaoTest {
         private const val BELØP = Integer.MAX_VALUE
         private const val BEHOV = "{}"
         private val AVSTEMMINGSNØKKEL = System.currentTimeMillis()
+        private val UTBETALING_ID = UUID.randomUUID()
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss")
     }
 
@@ -44,6 +46,7 @@ internal class OppdragDaoTest {
                 avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
                 fødselsnummer = PERSON,
                 organisasjonsnummer = ORGNR,
+                utbetalingId = UTBETALING_ID,
                 mottaker = ORGNR,
                 tidspunkt = tidspunkt,
                 fagsystemId = FAGSYSTEMID,
@@ -78,6 +81,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = AVSTEMMINGSNØKKEL,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt,
             fagsystemId = FAGSYSTEMID,
@@ -116,6 +120,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første - 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.minusDays(1),
             fagsystemId = FAGSYSTEMID,
@@ -128,6 +133,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt,
             fagsystemId = FAGSYSTEMID,
@@ -140,6 +146,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(1),
             fagsystemId = FAGSYSTEMID,
@@ -152,6 +159,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første + 2,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(2),
             fagsystemId = FAGSYSTEMID,
@@ -165,6 +173,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = siste,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(3),
             fagsystemId = FAGSYSTEMID,
@@ -177,6 +186,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = siste + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(4),
             fagsystemId = FAGSYSTEMID,
@@ -213,6 +223,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første - 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.minusDays(1),
             fagsystemId = FAGSYSTEMID,
@@ -225,6 +236,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt,
             fagsystemId = FAGSYSTEMID,
@@ -237,6 +249,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(1),
             fagsystemId = FAGSYSTEMID,
@@ -249,6 +262,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første + 2,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(2),
             fagsystemId = FAGSYSTEMID,
@@ -262,6 +276,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = siste,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(3),
             fagsystemId = FAGSYSTEMID,
@@ -274,6 +289,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = siste + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(4),
             fagsystemId = FAGSYSTEMID,
@@ -299,6 +315,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt,
             fagsystemId = FAGSYSTEMID,
@@ -311,6 +328,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første + 1,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(1),
             fagsystemId = FAGSYSTEMID,
@@ -323,6 +341,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = første + 2,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt.plusDays(2),
             fagsystemId = FAGSYSTEMID,
@@ -345,6 +364,7 @@ internal class OppdragDaoTest {
             avstemmingsnøkkel = avstemmingsnøkkel,
             fødselsnummer = PERSON,
             organisasjonsnummer = ORGNR,
+            utbetalingId = UTBETALING_ID,
             mottaker = ORGNR,
             tidspunkt = tidspunkt,
             fagsystemId = FAGSYSTEMID,

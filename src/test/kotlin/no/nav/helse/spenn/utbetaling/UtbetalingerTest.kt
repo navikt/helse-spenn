@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
+import java.util.*
 
 internal class UtbetalingerTest {
     companion object {
@@ -52,6 +53,7 @@ internal class UtbetalingerTest {
         every {
             dao.nyttOppdrag(
                 any(),
+                any(),
                 capture(avstemmingsnøkkel),
                 any(),
                 any(),
@@ -64,6 +66,7 @@ internal class UtbetalingerTest {
             )
         } answers {
             OppdragDto(
+                behov.utbetalingId,
                 avstemmingsnøkkel.captured,
                 behov.fnr,
                 FAGSYSTEMID,
@@ -95,6 +98,7 @@ internal class UtbetalingerTest {
         every {
             dao.nyttOppdrag(
                 any(),
+                any(),
                 capture(avstemmingsnøkkel),
                 any(),
                 any(),
@@ -107,6 +111,7 @@ internal class UtbetalingerTest {
             )
         } answers {
             OppdragDto(
+                utbetalingsbehov.utbetalingId,
                 avstemmingsnøkkel.captured,
                 behov.fnr,
                 behov.fagsystemId,
@@ -149,6 +154,7 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
+                any(),
                 any()
             )
         }
@@ -158,6 +164,7 @@ internal class UtbetalingerTest {
     fun `utbetalingsbehov med exception`() {
         every {
             dao.nyttOppdrag(
+                any(),
                 any(),
                 any(),
                 any(),
@@ -191,6 +198,7 @@ internal class UtbetalingerTest {
             .asLong()
         verify(exactly = 1) {
             dao.nyttOppdrag(
+                utbetalingId = utbetalingsbehov.utbetalingId,
                 fagområde = "SPREF",
                 avstemmingsnøkkel = avstemmingsnøkkel,
                 fødselsnummer = utbetalingsbehov.fnr,

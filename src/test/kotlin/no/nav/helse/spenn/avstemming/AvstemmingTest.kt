@@ -29,7 +29,6 @@ internal class AvstemmingTest {
         private const val SEND_QUEUE = "avstemmingskø"
         private const val BELØP = 1000
         private val OPPRETTET = LocalDateTime.now()
-        private val UTBETALING_ID = UUID.randomUUID()
 
         private val mandag = 1.januar.atStartOfDay()
         private val tirsdag = mandag.plusDays(1)
@@ -54,17 +53,17 @@ internal class AvstemmingTest {
 
     private val oppdrag = mapOf(
         FAGOMRÅDE_REFUSJON to listOf(
-            OppdragDto(AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, OVERFØRT, BELØP, null),
-            OppdragDto(AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, tirsdag, AKSEPTERT, BELØP, kvittering(OK)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, onsdag, AKSEPTERT_MED_FEIL, BELØP, kvittering(OK_MED_VARSEL)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, torsdag, AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, fredag, AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, lørdag, AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
-            OppdragDto(AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, søndag, FEIL, BELØP, kvittering(OK))
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL, PERSON, UTBETALINGSREF, OPPRETTET, OVERFØRT, BELØP, null),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 1, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 2, PERSON, UTBETALINGSREF, tirsdag, AKSEPTERT, BELØP, kvittering(OK)),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 3, PERSON, UTBETALINGSREF, onsdag, AKSEPTERT_MED_FEIL, BELØP, kvittering(OK_MED_VARSEL)),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 4, PERSON, UTBETALINGSREF, torsdag, AVVIST, BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 5, PERSON, UTBETALINGSREF, fredag, AVVIST, -BELØP, kvittering(AVVIST_FUNKSJONELLE_FEIL)),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 6, PERSON, UTBETALINGSREF, lørdag, AVVIST, -BELØP, kvittering(AVVIST_TEKNISK_FEIL)),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 7, PERSON, UTBETALINGSREF, søndag, FEIL, BELØP, kvittering(OK))
         ),
         FAGOMRÅDE_BRUKERUTBETALING to listOf(
-            OppdragDto(AVSTEMMINGSNØKKEL + 8, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
+            OppdragDto(UUID.randomUUID(), AVSTEMMINGSNØKKEL + 8, PERSON, UTBETALINGSREF, mandag, AKSEPTERT, BELØP, kvittering(OK)),
         )
     )
 

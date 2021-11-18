@@ -10,6 +10,7 @@ import java.util.*
 import javax.xml.datatype.DatatypeFactory
 
 internal class OppdragBuilder(
+    private val utbetalingId: UUID,
     private val utbetalingslinjer: Utbetalingslinjer,
     private val avstemmingsnøkkel: Long,
     tidspunkt: Instant = Instant.now()
@@ -81,6 +82,7 @@ internal class OppdragBuilder(
         kodeStatusLinje = utbetalingslinje.statuskode?.let { TkodeStatusLinje.valueOf(it) }
         datoStatusFom = utbetalingslinje.datoStatusFom?.asXmlGregorianCalendar()
         sats = utbetalingslinje.sats.toBigDecimal().abs()
+        henvisning = "$utbetalingId"
         fradragTillegg = if(utbetalingslinje.sats >= 0) TfradragTillegg.T else TfradragTillegg.F
         typeSats = utbetalingslinje.satstype
         saksbehId = utbetalingslinjer.saksbehandler

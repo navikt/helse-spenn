@@ -26,11 +26,14 @@ internal class AvstemmingBuilderTest {
         private const val AVVIST_FUNKSJONELLE_FEIL = "08"
         private const val AVVIST_TEKNISK_FEIL = "12"
         private const val UGYLDIG_FEILKODE = "??"
+
+        private val UTBETALING_ID = UUID.randomUUID()
     }
 
     private val id = UUID.randomUUID()
     private val oppdrag = listOf(
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL,
             PERSON,
             UTBETALINGSREF,
@@ -40,6 +43,7 @@ internal class AvstemmingBuilderTest {
             null
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 1,
             PERSON,
             UTBETALINGSREF,
@@ -49,6 +53,7 @@ internal class AvstemmingBuilderTest {
             kvittering(AKSEPTERT_UTEN_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 2,
             PERSON,
             UTBETALINGSREF,
@@ -58,6 +63,7 @@ internal class AvstemmingBuilderTest {
             kvittering(AKSEPTERT_UTEN_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 3,
             PERSON,
             UTBETALINGSREF,
@@ -67,6 +73,7 @@ internal class AvstemmingBuilderTest {
             kvittering(AKSEPTERT_MED_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 4,
             PERSON,
             UTBETALINGSREF,
@@ -76,6 +83,7 @@ internal class AvstemmingBuilderTest {
             kvittering(AVVIST_FUNKSJONELLE_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 5,
             PERSON,
             UTBETALINGSREF,
@@ -85,6 +93,7 @@ internal class AvstemmingBuilderTest {
             kvittering(AVVIST_FUNKSJONELLE_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 6,
             PERSON,
             UTBETALINGSREF,
@@ -94,6 +103,7 @@ internal class AvstemmingBuilderTest {
             kvittering(AVVIST_TEKNISK_FEIL)
         ),
         OppdragDto(
+            UTBETALING_ID,
             AVSTEMMINGSNØKKEL + 7,
             PERSON,
             UTBETALINGSREF,

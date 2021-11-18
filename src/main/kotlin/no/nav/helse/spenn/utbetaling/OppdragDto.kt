@@ -7,8 +7,10 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class OppdragDto(
+    private val utbetalingId: UUID,
     private val avstemmingsnøkkel: Long,
     private val fødselsnummer: String,
     private val fagsystemId: String,
@@ -94,7 +96,7 @@ class OppdragDto(
         nå: Instant,
         tilOppdrag: UtKø
     ) {
-        val oppdrag = OppdragBuilder(utbetalingslinjer, avstemmingsnøkkel, nå).build()
+        val oppdrag = OppdragBuilder(utbetalingId, utbetalingslinjer, avstemmingsnøkkel, nå).build()
 
         val oppdragXml = OppdragXml.marshal(oppdrag)
         tilOppdrag.send(oppdragXml)
