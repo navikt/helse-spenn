@@ -106,7 +106,7 @@ internal class AvstemmingTest {
         assertEquals(0, connection.inspektør.antall())
         verify(exactly = 0) { avstemmingDao.nyAvstemming(any(), any(), any(), any()) }
         verify(exactly = 0) { dao.oppdaterAvstemteOppdrag(any(), any()) }
-        verify(exactly = 1) { producer.send(any()) }
+        verify(exactly = 0) { producer.send(any()) }
     }
 
     @BeforeEach

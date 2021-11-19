@@ -25,32 +25,21 @@ internal class Avstemming(
     }
 
     fun avstemTilOgMed(dagen: LocalDate) {
-        val avstemteFagområder = mutableListOf<Map<String, Any>>()
         val fagområder = oppdragDao.hentOppdragForAvstemming(Avstemmingsnøkkel.tilOgMed(dagen))
-
-        if (fagområder.isEmpty()) {
-            kafkaProducer.send(ProducerRecord(rapidTopic, avstemmingevent(UUID.randomUUID(), dagen, 0, emptyList()).toJson().also {
-                log.info("sender $it")
-            }))
-            return
-        }
-
+        if (fagområder.isEmpty()) return
         fagområder.forEach { (fagområde, oppdrag) ->
             val id = UUID.randomUUID()
             log.info("Starter avstemming id=$id fagområde=$fagområde frem til og med $dagen")
-            avstemOppdrag(id, fagområde, oppdrag, avstemteFagområder)
+            avstemOppdrag(id, dagen, fagområde, oppdrag)
             log.info("Avstemming id=$id fagområde=$fagområde frem til og med $dagen er ferdig")
-            kafkaProducer.send(ProducerRecord(rapidTopic, avstemmingevent(id, dagen, fagområder.map { it.value.size }.sum(), avstemteFagområder).toJson().also {
-                log.info("sender $it")
-            }))
         }
     }
 
     private fun avstemOppdrag(
         id: UUID,
+        dagen: LocalDate,
         fagområde: String,
-        oppdrag: List<OppdragDto>,
-        avstemteFagområder: MutableList<Map<String, Any>>
+        oppdrag: List<OppdragDto>
     ) {
         if (oppdrag.isEmpty()) return log.info("ingenting å avstemme")
         val avstemmingsperiode = OppdragDto.avstemmingsperiode(oppdrag)
@@ -59,29 +48,34 @@ internal class Avstemming(
         log.info("avstemmer nøkkelFom=${avstemmingsperiode.start} nøkkelTom=${avstemmingsperiode.endInclusive}: sender ${meldinger.size} meldinger")
         meldinger.forEach { sendAvstemmingsmelding(it) }
         oppdragDao.oppdaterAvstemteOppdrag(fagområde, avstemmingsperiode.endInclusive)
-        avstemteFagområder.add(
+        val avstemminginfo =
             mapOf(
                 "nøkkel_fom" to avstemmingsperiode.start,
                 "nøkkel_tom" to avstemmingsperiode.endInclusive,
                 "antall_oppdrag" to oppdrag.size,
                 "antall_avstemmingsmeldinger" to meldinger.size
             )
-        )
+
+        kafkaProducer.send(ProducerRecord(rapidTopic, avstemmingevent(id, dagen, fagområde, oppdrag.size, avstemminginfo).toJson().also {
+            log.info("sender $it")
+        }))
     }
 
     private fun avstemmingevent(
         id: UUID,
         dagen: LocalDate,
+        fagområde: String,
         antallOppdrag: Int,
-        avstemteFagområder: List<Map<String, Any>>
+        avstemminginfo: Map<String, Any>
     ) = JsonMessage.newMessage(
         mapOf(
             "@event_name" to "avstemming",
             "@id" to id,
             "@opprettet" to LocalDateTime.now(),
             "dagen" to dagen,
+            "fagområde" to fagområde,
             "antall_oppdrag" to antallOppdrag,
-            "fagområder" to avstemteFagområder
+            "detaljer" to avstemminginfo
         )
     )
 
