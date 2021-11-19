@@ -96,20 +96,6 @@ internal class SimuleringerTest {
     }
 
     @Test
-    fun `løser simuleringsbehov med teknisk feil fra exception`() {
-        every {
-            simuleringService.simulerOppdrag(any())
-        } throws SimulerBeregningFeilUnderBehandling("Helt feil", FeilUnderBehandling())
-
-        resultat(SimuleringStatus.FUNKSJONELL_FEIL)
-        rapid.sendTestMessage(simuleringbehov())
-        assertEquals(1, inspektør.size)
-        assertEquals(BEHOV, inspektør.id(0))
-        assertEquals("TEKNISK_FEIL", inspektør.løsning(0, "Simulering").path("status").asText())
-        assertTrue(inspektør.løsning(0, "Simulering").path("simulering").isNull)
-    }
-
-    @Test
     fun `løser simuleringsbehov for utbetaling til bruker`() {
         resultat(SimuleringStatus.OK)
         rapid.sendTestMessage(simuleringbehovBruker())

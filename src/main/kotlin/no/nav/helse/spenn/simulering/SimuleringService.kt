@@ -32,7 +32,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.warn("Got error while running Simulering, sjekk sikkerLogg for detaljer")
             sikkerLogg.warn("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
-            SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = e.faultInfo.errorMessage)
+            SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = e.faultInfo.errorMessage)
         } catch (e: SOAPFaultException) {
             if (e.cause is WstxEOFException || e.cause is WstxIOException) {
                 throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
