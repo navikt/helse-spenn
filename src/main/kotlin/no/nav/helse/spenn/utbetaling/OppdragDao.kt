@@ -4,6 +4,7 @@ import kotliquery.*
 import kotliquery.action.NullableResultQueryAction
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
+import org.intellij.lang.annotations.Language
 import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
@@ -83,12 +84,10 @@ internal class OppdragDao(private val dataSource: DataSource) {
 
 
 
-    fun finnesFraFør(fnr: String, utbetalingId: UUID): Boolean = using(sessionOf(dataSource)) { session ->
-        val query =
-            """SELECT 1
-                FROM (select fnr, behov ->> 'utbetalingId'as utbetalingId from oppdrag) as sub
-                WHERE sub.fnr = :fnr and sub.utbetalingId = :utbetalingId """
-        session.run(queryOf(query, mapOf("fnr" to fnr, "utbetalingId" to utbetalingId.toString())).exists()) == true
+    fun finnesFraFør(fnr: String, utbetalingId: UUID, fagsystemId: String): Boolean = using(sessionOf(dataSource)) { session ->
+        @Language("PostgreSQL")
+        val query = """SELECT 1 FROM oppdrag WHERE fnr = :fnr and utbetaling_id = :utbetalingId AND fagsystem_id = :fagsystemId"""
+        session.run(queryOf(query, mapOf("fnr" to fnr, "utbetalingId" to utbetalingId, "fagsystemId" to fagsystemId)).exists()) == true
 
     }
 
@@ -155,15 +154,13 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         } == 1
 
-    fun hentOppdrag(fødselsnummer: String, utbetalingId: UUID): OppdragDto = using(sessionOf(dataSource)) { session ->
-        val query =
-            """SELECT *
-                FROM (select *, behov ->> 'utbetalingId' as utbetalingId from oppdrag) as sub
-                WHERE sub.fnr = :fnr and sub.utbetalingId = :utbetalingId """
+    fun hentOppdrag(fødselsnummer: String, utbetalingId: UUID, fagsystemId: String): OppdragDto = using(sessionOf(dataSource)) { session ->
+        @Language("PostgreSQL")
+        val query = """SELECT * FROM oppdrag WHERE fnr = :fnr and utbetaling_id = :utbetalingId AND fagsystem_id = :fagsystemId"""
         session.run(
             queryOf(
                 query,
-                mapOf("fnr" to fødselsnummer, "utbetalingId" to utbetalingId.toString())
+                mapOf("fnr" to fødselsnummer, "utbetalingId" to utbetalingId, "fagsystemId" to fagsystemId)
             ).map { it.toOppdragDto() }.asSingle
         )!!
     }

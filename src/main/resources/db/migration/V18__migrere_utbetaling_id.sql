@@ -1,0 +1,1 @@
+UPDATE oppdrag SET utbetaling_id=(behov ->> 'utbetalingId')::uuid where utbetaling_id='00000000-0000-0000-0000-000000000000' and behov ->> 'utbetalingId' is not null;

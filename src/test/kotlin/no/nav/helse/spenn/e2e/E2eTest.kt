@@ -38,16 +38,14 @@ class E2eTest {
         }
     }
 
-
     @Test
-    fun `utbetalinger på samme fnr og med samme utbetalingsid sendes ikke på nytt til oppdrag etter overført`() {
+    fun `utbetalinger på samme fnr, utbetalingsid og fagsystemId sendes ikke på nytt til oppdrag etter overført`() {
         val utbetaling1 = utbetalingsbehov.fagsystemId("en").utbetalingId(randomUUID())
-        val utbetalingKopi = utbetaling1.fagsystemId("to")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
             val løsning1 = parseOkLøsning(rapid.inspektør.message(0))
 
-            rapid.sendTestMessage(utbetalingKopi.json())
+            rapid.sendTestMessage(utbetaling1.json())
 
             assertEquals(1, database.hentAlleOppdrag().size)
             assertEquals(1, this.oppdrag.meldinger.size)
@@ -62,10 +60,34 @@ class E2eTest {
         }
     }
 
+
+    @Test
+    fun `utbetalinger på samme fnr og utbetalingsid, men ulik fagsystemId`() {
+        val utbetaling1 = utbetalingsbehov.fagsystemId("en").utbetalingId(randomUUID())
+        val utbetalingKopi = utbetaling1.fagsystemId("to")
+        e2eTest {
+            rapid.sendTestMessage(utbetaling1.json())
+            val løsning1 = parseOkLøsning(rapid.inspektør.message(0))
+
+            rapid.sendTestMessage(utbetalingKopi.json())
+
+            assertEquals(2, database.hentAlleOppdrag().size)
+            assertEquals(2, this.oppdrag.meldinger.size)
+            assertEquals(2, rapid.inspektør.size)
+
+            assertEquals(0, sikkerLoggMeldinger().filter { it.startsWith("Motatt duplikat") }.size)
+
+            val løsningKopi = parseOkLøsning(rapid.inspektør.message(1))
+            assertNotEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
+            assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
+            assertEquals("OVERFØRT", løsningKopi.status)
+        }
+    }
+
     @Test
     fun `utbetalinger på samme fnr og med samme utbetalingsid sender oppdrag på nytt hvis det feilet tidligere`() {
         val utbetaling1 = utbetalingsbehov.fagsystemId("en").utbetalingId(randomUUID())
-        val utbetalingKopi = utbetaling1.fagsystemId("to")
+        val utbetalingKopi = utbetaling1.fagsystemId("en")
         e2eTest {
             rapid.sendTestMessage(utbetaling1.json())
             val løsning1 = parseOkLøsning(rapid.inspektør.message(0))

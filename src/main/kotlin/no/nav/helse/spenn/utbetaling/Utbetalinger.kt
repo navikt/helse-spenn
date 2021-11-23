@@ -75,10 +75,10 @@ internal class Utbetalinger(
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
 
         try {
-            if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId)) {
-                log.info("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for dette fnr")
-                sikkerLogg.info("Motatt duplikat. Ubetalingsid $utbetalingId finnes allerede for $fødselsnummer")
-                val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId)
+            if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId, fagsystemId)) {
+                log.info("Motatt duplikat. UbetalingsId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for dette fnr")
+                sikkerLogg.info("Motatt duplikat. UbetalingsId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for $fødselsnummer")
+                val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId, fagsystemId)
                 //Hvis mottatt - send gammel xml på nytt
                 if (gammeltOppdrag.kanSendesPåNytt()) {
                     //Her lager vi en blander vi nye utbetalingslinjer og gammelt oppdrag.
