@@ -4,7 +4,7 @@ val cxfVersion = "3.3.7"
 val testcontainersVersion = "1.16.2"
 
 plugins {
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.0"
 }
 
 repositories {
@@ -13,13 +13,13 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:1.a77261b")
+    implementation("com.github.navikt:rapids-and-rivers:2022.02.08-20.42.8e24a34a2ecd")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
-    implementation("org.flywaydb:flyway-core:7.5.4")
-    implementation("com.zaxxer:HikariCP:4.0.2")
-    implementation("no.nav:vault-jdbc:1.3.7")
-    implementation("com.github.seratch:kotliquery:1.3.1")
+    implementation("org.flywaydb:flyway-core:8.0.2")
+    implementation("com.zaxxer:HikariCP:5.0.0")
+    implementation("no.nav:vault-jdbc:1.3.9")
+    implementation("com.github.seratch:kotliquery:1.6.0")
     implementation ("io.prometheus:simpleclient_pushgateway:0.9.0")
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.2.1.0")
@@ -71,10 +71,10 @@ configure<SourceSetContainer> {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = "17"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = "17"
     }
 
     named<Jar>("jar") {
@@ -104,6 +104,6 @@ tasks {
     }
 
     withType<Wrapper> {
-        gradleVersion = "7.1.1"
+        gradleVersion = "7.4"
     }
 }

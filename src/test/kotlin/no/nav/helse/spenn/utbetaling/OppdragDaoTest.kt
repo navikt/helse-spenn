@@ -72,7 +72,7 @@ internal class OppdragDaoTest {
 
     @Test
     fun `oppdatere oppdrag`() {
-        val tidspunkt = LocalDateTime.now()
+        val tidspunkt = LocalDateTime.now().minusHours(4)
         val beskrivelse = "en beskrivelse"
         val feilkode = "08"
         val melding = "original xml-melding"
@@ -101,7 +101,7 @@ internal class OppdragDaoTest {
             assertEquals(PERSON, it.fnr)
             assertEquals(ORGNR, it.mottaker)
             assertEquals(tidspunkt.toEpochSecond(ZoneOffset.UTC), it.opprettet.toEpochSecond(ZoneOffset.UTC))
-            assertTrue(it.endret != null && it.endret > tidspunkt)
+            assertTrue(it.endret != null && it.endret > tidspunkt) { "${it.endret} er ikke større enn $tidspunkt" }
             assertEquals(FAGSYSTEMID, it.fagsystemId)
             assertEquals(Oppdragstatus.AKSEPTERT.name, it.status)
             assertEquals(BELØP, it.totalbeløp)
@@ -416,6 +416,7 @@ internal class OppdragDaoTest {
             password = postgres.password
             maximumPoolSize = 3
             minimumIdle = 1
+            initializationFailTimeout = 10000
             idleTimeout = 10001
             connectionTimeout = 1000
             maxLifetime = 30001

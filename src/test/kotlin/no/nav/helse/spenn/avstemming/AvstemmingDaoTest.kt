@@ -74,6 +74,7 @@ internal class AvstemmingDaoTest {
             maximumPoolSize = 3
             minimumIdle = 1
             idleTimeout = 10001
+            initializationFailTimeout = 5000
             connectionTimeout = 1000
             maxLifetime = 30001
         })
