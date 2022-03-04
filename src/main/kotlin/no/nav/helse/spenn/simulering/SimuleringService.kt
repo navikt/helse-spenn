@@ -11,6 +11,7 @@ import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.slf4j.LoggerFactory
+import java.math.RoundingMode
 import java.net.SocketException
 import java.time.LocalDate
 import javax.net.ssl.SSLException
@@ -84,7 +85,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             uforegrad = detaljer.uforeGrad.intValueExact(),
             antallSats = detaljer.antallSats.intValueExact(),
             typeSats = detaljer.typeSats.trim(),
-            sats = detaljer.sats.intValueExact(),
+            sats = detaljer.sats.setScale(0, RoundingMode.UP).intValueExact(),
             belop = detaljer.belop.intValueExact(),
             konto = detaljer.kontoStreng.trim(),
             tilbakeforing = detaljer.isTilbakeforing,
