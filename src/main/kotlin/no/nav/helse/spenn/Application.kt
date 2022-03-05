@@ -67,7 +67,6 @@ fun rapidApp(
 ) {
     val dataSource = database.getDataSource()
     val oppdragDao = OppdragDao(dataSource)
-    val log = LoggerFactory.getLogger(RapidsConnection::class.java)
 
     rapid.apply {
         Simuleringer(this, simuleringService)
@@ -87,23 +86,6 @@ fun rapidApp(
             override fun onStartup(rapidsConnection: RapidsConnection) {
                 database.migrate()
                 kø.start()
-
-                val objectMapper = jacksonObjectMapper()
-                    .registerModule(JavaTimeModule())
-                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                oppdragDao.hentBorkedOppdrag()?.also { (json, borkedOppdrag) ->
-                    val packet = objectMapper.readTree(json)
-
-                    val utbetalingslinjer = UtbetalingslinjerMapper(
-                        packet["fødselsnummer"].asText(),
-                        packet["organisasjonsnummer"].asText()
-                    )
-                        .fraBehov(packet["Utbetaling"])
-                    log.info("Rekjører et feriepengeoppdrag")
-                    borkedOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, Instant.now(), kø.sendSession())
-                    log.info("Rekjøring av feriepengeoppdrag er utført")
-                }
             }
 
             override fun onShutdown(rapidsConnection: RapidsConnection) {
