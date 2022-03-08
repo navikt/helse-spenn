@@ -45,7 +45,7 @@ data class Detaljer(
     val konto: String,
     val belop: Int,
     val tilbakeforing: Boolean,
-    val sats: Int,
+    val sats: Double,
     val typeSats: String,
     val antallSats: Int,
     val uforegrad: Int,

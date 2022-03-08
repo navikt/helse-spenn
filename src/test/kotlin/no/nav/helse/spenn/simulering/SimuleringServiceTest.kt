@@ -68,7 +68,7 @@ internal class SimuleringServiceTest {
                                         konto = "kontoStreng",
                                         belop = 3200,
                                         tilbakeforing = true,
-                                        sats = 1,
+                                        sats = 1.0,
                                         typeSats = "typeSats",
                                         antallSats = 2,
                                         uforegrad = 400,
@@ -95,7 +95,7 @@ internal class SimuleringServiceTest {
             sats = BigDecimal.valueOf(1.5)
         )
         val result = simuleringService.simulerOppdrag(SimulerBeregningRequest())
-        assertEquals(2, result.simulering?.periodeList?.first()?.utbetaling?.first()?.detaljer?.first()?.sats)
+        assertEquals(1.5, result.simulering?.periodeList?.first()?.utbetaling?.first()?.detaljer?.first()?.sats)
     }
 
     @Test
@@ -104,7 +104,7 @@ internal class SimuleringServiceTest {
             sats = BigDecimal.valueOf(1)
         )
         val result = simuleringService.simulerOppdrag(SimulerBeregningRequest())
-        assertEquals(1, result.simulering?.periodeList?.first()?.utbetaling?.first()?.detaljer?.first()?.sats)
+        assertEquals(1.0, result.simulering?.periodeList?.first()?.utbetaling?.first()?.detaljer?.first()?.sats)
     }
 
     @Test

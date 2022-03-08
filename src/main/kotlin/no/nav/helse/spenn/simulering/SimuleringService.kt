@@ -85,7 +85,9 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             uforegrad = detaljer.uforeGrad.intValueExact(),
             antallSats = detaljer.antallSats.intValueExact(),
             typeSats = detaljer.typeSats.trim(),
-            sats = detaljer.sats.setScale(0, RoundingMode.UP).intValueExact(),
+            sats = detaljer.sats.toDouble().also {
+                if ((it - it.toInt()) > 0.1) sikkerLogg.info("sats er desimaltall")
+            },
             belop = detaljer.belop.intValueExact(),
             konto = detaljer.kontoStreng.trim(),
             tilbakeforing = detaljer.isTilbakeforing,
