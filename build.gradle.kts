@@ -4,7 +4,7 @@ val cxfVersion = "3.3.7"
 val testcontainersVersion = "1.16.2"
 
 plugins {
-    kotlin("jvm") version "1.6.0"
+    kotlin("jvm") version "1.6.10"
 }
 
 repositories {
@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:2022.02.08-20.42.8e24a34a2ecd")
+    implementation("com.github.navikt:rapids-and-rivers:2022.03.25-09.17.0628678a7192")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
     implementation("org.flywaydb:flyway-core:8.0.2")
