@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.util.*
 
 internal class SimuleringerTest {
 
@@ -46,7 +47,7 @@ internal class SimuleringerTest {
         resultat(SimuleringStatus.OK)
         rapid.sendTestMessage(simuleringbehov())
         assertEquals(1, inspektør.size)
-        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals(BEHOV, inspektør.behovId(0))
         assertEquals("OK", inspektør.løsning(0, "Simulering").path("status").asText())
         assertFalse(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
@@ -64,7 +65,7 @@ internal class SimuleringerTest {
         )
         rapid.sendTestMessage(simuleringbehov(utbetalingslinjer))
         assertEquals(1, inspektør.size)
-        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals(BEHOV, inspektør.behovId(0))
         assertEquals("OK", inspektør.løsning(0, "Simulering").path("status").asText())
         assertFalse(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
@@ -80,7 +81,7 @@ internal class SimuleringerTest {
         resultat(SimuleringStatus.FUNKSJONELL_FEIL)
         rapid.sendTestMessage(simuleringbehov())
         assertEquals(1, inspektør.size)
-        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals(BEHOV, inspektør.behovId(0))
         assertEquals("FUNKSJONELL_FEIL", inspektør.løsning(0, "Simulering").path("status").asText())
         assertTrue(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
@@ -90,7 +91,7 @@ internal class SimuleringerTest {
         resultat(SimuleringStatus.TEKNISK_FEIL)
         rapid.sendTestMessage(simuleringbehov())
         assertEquals(1, inspektør.size)
-        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals(BEHOV, inspektør.behovId(0))
         assertEquals("TEKNISK_FEIL", inspektør.løsning(0, "Simulering").path("status").asText())
         assertTrue(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
@@ -100,7 +101,7 @@ internal class SimuleringerTest {
         resultat(SimuleringStatus.OK)
         rapid.sendTestMessage(simuleringbehovBruker())
         assertEquals(1, inspektør.size)
-        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals(BEHOV, inspektør.behovId(0))
         assertEquals("OK", inspektør.løsning(0, "Simulering").path("status").asText())
         assertFalse(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
@@ -135,7 +136,8 @@ internal class SimuleringerTest {
             mapOf(
                 "@event_name" to "behov",
                 "@behov" to listOf("Simulering"),
-                "@id" to BEHOV,
+                "@id" to UUID.randomUUID(),
+                "@behovId" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
                 "fødselsnummer" to PERSON,
                 "Simulering" to mapOf(
@@ -182,7 +184,8 @@ internal class SimuleringerTest {
             mapOf(
                 "@event_name" to "behov",
                 "@behov" to listOf("Simulering"),
-                "@id" to BEHOV,
+                "@id" to UUID.randomUUID(),
+                "@behovId" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
                 "fødselsnummer" to PERSON,
                 "Simulering" to mapOf(

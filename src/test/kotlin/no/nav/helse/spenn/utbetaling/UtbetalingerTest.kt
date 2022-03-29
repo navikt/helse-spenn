@@ -180,14 +180,14 @@ internal class UtbetalingerTest {
         rapid.sendTestMessage(utbetalingsbehov.json())
         assertEquals(1, inspektør.size)
         assertEquals(0, connection.inspektør.antall())
-        assertEquals(BEHOV, inspektør.id(0))
+        assertEquals(BEHOV, inspektør.behovId(0))
         inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
     }
 
     private fun assertOverført(indeks: Int, antallOverforinger: Int = 1) {
-        assertEquals(BEHOV, inspektør.id(indeks))
+        assertEquals(BEHOV, inspektør.behovId(indeks))
         inspektør.løsning(indeks, "Utbetaling") {
             assertEquals(Oppdragstatus.OVERFØRT.name, it.path("status").asText())
             assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }

@@ -16,7 +16,8 @@ data class Utbetalingsbehov(
         return mapOf(
             "@event_name" to "behov",
             "@behov" to listOf("Utbetaling"),
-            "@id" to UtbetalingerTest.BEHOV,
+            "@id" to UUID.randomUUID(),
+            "@behovId" to UtbetalingerTest.BEHOV,
             "organisasjonsnummer" to UtbetalingerTest.ORGNR,
             "fødselsnummer" to fnr,
             "utbetalingId" to utbetalingId.toString(),
