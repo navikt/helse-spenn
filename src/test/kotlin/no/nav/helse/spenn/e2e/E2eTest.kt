@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.e2e
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.spenn.e2e.E2eTestApp.Companion.e2eTest
 import no.nav.helse.spenn.e2e.Kvittering.Companion.kvittering
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
@@ -11,7 +12,9 @@ class E2eTest {
     @Test
     fun `happy path`() {
         e2eTest {
-            rapid.sendTestMessage(utbetalingsbehov.json())
+            val behov = utbetalingsbehov.json()
+            val behovMeldingId = jacksonObjectMapper().readTree(behov).path("@id").asText()
+            rapid.sendTestMessage(behov)
 
             assertEquals(1, database.hentAlleOppdrag().size)
             assertEquals(1, this.oppdrag.meldinger.size)
@@ -29,12 +32,22 @@ class E2eTest {
                     .akseptert()
                     .toXml()
             )
-            assertEquals(3, rapid.inspektør.size)
+            assertEquals(4, rapid.inspektør.size)
             assertEquals("oppdrag_kvittering", rapid.inspektør.message(1)["@event_name"].asText())
 
             val status = rapid.inspektør.message(2)
             assertEquals("transaksjon_status", status["@event_name"].asText())
             assertEquals("AKSEPTERT", status["status"].asText())
+
+            val finalLøsning = rapid.inspektør.message(3)
+            assertEquals("behov", finalLøsning["@event_name"].asText())
+            assertEquals("AKSEPTERT", finalLøsning["@løsning"].path("Utbetaling").path("status").asText())
+
+            assertEquals(behovMeldingId, rapid.inspektør.field(0, "@forårsaket_av").path("id").asText())
+            assertNotEquals(behovMeldingId, rapid.inspektør.field(0, "@id").asText())
+            assertEquals(behovMeldingId, rapid.inspektør.field(2, "@forårsaket_av").path("id").asText())
+            assertEquals(rapid.inspektør.field(2, "@id").asText(), rapid.inspektør.field(3, "@forårsaket_av").path("id").asText())
+            assertNotEquals(behovMeldingId, rapid.inspektør.field(3, "@id").asText())
         }
     }
 

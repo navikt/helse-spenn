@@ -6,6 +6,8 @@ import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.clearMocks
 import io.mockk.mockk
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.rapidApp
@@ -13,8 +15,8 @@ import no.nav.helse.spenn.simulering.SimuleringService
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
-class E2eTestApp(
-    var rapid: TestRapid = TestRapid(),
+internal class E2eTestApp(
+    var rapid: RepublishableTestRapid = RepublishableTestRapid(),
     val simuleringService: SimuleringService = mockk(),
     val oppdrag: TestKø = TestKø(),
     val database: TestDatabase = TestDatabase(),
@@ -32,7 +34,7 @@ class E2eTestApp(
 
     private fun reset() {
         database.resetDatabase()
-        rapid = TestRapid()
+        rapid = RepublishableTestRapid()
         clearMocks(simuleringService)
         oppdrag.reset()
         listAppender = ListAppender()
@@ -88,4 +90,34 @@ class E2eTestApp(
         )
     }
 
+    internal class RepublishableTestRapid(private val rapid: TestRapid = TestRapid()) : RapidsConnection(), RapidsConnection.StatusListener, RapidsConnection.MessageListener {
+        val inspektør get() = rapid.inspektør
+
+        init {
+            rapid.register(this as StatusListener)
+            rapid.register(this as MessageListener)
+        }
+
+        override fun onMessage(message: String, context: MessageContext) = notifyMessage(message, context)
+        override fun onNotReady(rapidsConnection: RapidsConnection) = notifyNotReady()
+        override fun onReady(rapidsConnection: RapidsConnection) = notifyReady()
+        override fun onShutdown(rapidsConnection: RapidsConnection) = notifyShutdown()
+        override fun onStartup(rapidsConnection: RapidsConnection) = notifyStartup()
+
+        fun sendTestMessage(message: String) = rapid.sendTestMessage(message)
+
+        override fun publish(message: String) {
+            rapid.publish(message)
+            rapid.sendTestMessage(message)
+        }
+
+        override fun publish(key: String, message: String) {
+            rapid.publish(key, message)
+            rapid.sendTestMessage(message)
+        }
+
+        override fun rapidName() = rapid.rapidName()
+        override fun start() = rapid.start()
+        override fun stop() = rapid.start()
+    }
 }

@@ -3,6 +3,8 @@ package no.nav.helse.spenn.utbetaling
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
+import java.util.*
 
 internal class Transaksjoner(
     rapidsConnection: RapidsConnection,
@@ -37,6 +39,8 @@ internal class Transaksjoner(
         log.info("oppdrag med avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
 
         oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.also {
+            it["@id"] = UUID.randomUUID()
+            it["@opprettet"] = LocalDateTime.now()
             sikkerLogg.info(
                 "oppdrag med avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +
                         "fødselsnummer=$fødselsnummer status=$status tidspunkt=$tidspunkt for behov=${it.toJson()}"
