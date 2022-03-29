@@ -14,6 +14,7 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.TestConnection
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -59,7 +60,7 @@ internal class TransaksjonerTest {
         assertEquals(1, inspektør.size)
         assertEquals("behov", rapid.inspektør.field(0, "@event_name").asText())
         assertEquals(listOf("Utbetaling"), rapid.inspektør.field(0, "@behov").map(JsonNode::asText))
-        assertEquals(BEHOV_ID, rapid.inspektør.field(0, "@id").asText())
+        assertNotEquals(BEHOV_ID, rapid.inspektør.field(0, "@id").asText())
         assertEquals(ORGNR, rapid.inspektør.field(0, "organisasjonsnummer").asText())
         assertEquals(PERSON, rapid.inspektør.field(0, "fødselsnummer").asText())
         assertEquals(SAKSBEHANDLER, rapid.inspektør.field(0, "saksbehandler").asText())
