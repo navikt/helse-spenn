@@ -117,9 +117,9 @@ class E2eTest {
 
             assertEquals(1, database.hentAlleOppdrag().size)
             assertEquals(2, this.oppdrag.meldinger.size)
-            assertEquals(4, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
+            assertEquals(5, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
 
-            val løsningKopi = parseOkLøsning(rapid.inspektør.message(3))
+            val løsningKopi = parseOkLøsning(rapid.inspektør.message(4))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertNotEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
             assertEquals("OVERFØRT", løsningKopi.status)
