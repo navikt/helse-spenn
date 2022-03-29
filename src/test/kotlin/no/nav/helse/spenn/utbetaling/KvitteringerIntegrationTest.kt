@@ -84,6 +84,9 @@ internal class KvitteringerIntegrationTest {
         every {
             dao.oppdaterOppdrag(any(), any(), any(), any(), any(), any())
         } returns true
+        every {
+            dao.hentBehovForOppdrag(any())
+        } returns null
     }
 
     @AfterEach

@@ -4,6 +4,7 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.Jms
 import no.nav.helse.spenn.TestConnection
@@ -81,19 +82,24 @@ internal class KvitteringerTest {
     }
 
     private fun håndter(status: Oppdragstatus, alvorlighetsgrad: String) {
+        val behov = JsonMessage.newNeed(listOf("Utbetaling"))
         every {
             dao.oppdaterOppdrag(any(), any(), any(), any(), any(), any())
         } returns true
+        every {
+            dao.hentBehovForOppdrag(any())
+        } returns behov
 
         val kvittering = Kvittering(alvorlighetsgrad=alvorlighetsgrad).toXml()
         connection.sendMessage(kvittering)
-        assertKvittering(status, alvorlighetsgrad, kvittering)
+        assertKvittering(status, alvorlighetsgrad, kvittering, behov.id)
     }
 
-    private fun assertKvittering(status: Oppdragstatus, alvorlighetsgrad: String, melding: String) {
+    private fun assertKvittering(status: Oppdragstatus, alvorlighetsgrad: String, melding: String, behovId: UUID) {
         assertEquals(2, rapid.inspektør.size)
         assertEquals("oppdrag_kvittering", rapid.inspektør.field(0, "@event_name").asText())
         assertEquals("transaksjon_status", rapid.inspektør.field(1, "@event_name").asText())
+        assertEquals(behovId.toString(), rapid.inspektør.message(1).path("@forårsaket_av").path("id").asText())
         assertEquals(kvittering.fødselsnummer, rapid.inspektør.field(1, "fødselsnummer").asText())
         assertEquals(kvittering.avstemmingsnøkkel, rapid.inspektør.field(1, "avstemmingsnøkkel").asLong())
         assertEquals(kvittering.fagsystemId, rapid.inspektør.field(1, "fagsystemId").asText())

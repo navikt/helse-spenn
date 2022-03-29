@@ -69,19 +69,23 @@ internal class Kvitteringer(
                     "feilkode=$feilkode status=$status beskrivelse=$beskrivelse"
         )
 
-        rapidsConnection.publish(fødselsnummer, JsonMessage.newMessage(
-            mapOf(
-                "@event_name" to "transaksjon_status",
-                "@id" to UUID.randomUUID(),
-                "@opprettet" to LocalDateTime.now(),
-                "fødselsnummer" to fødselsnummer,
-                "avstemmingsnøkkel" to avstemmingsnøkkel,
-                "fagsystemId" to fagsystemId,
-                "status" to status,
-                "feilkode_oppdrag" to feilkode,
-                "beskrivelse" to beskrivelse,
-                "originalXml" to xmlMessage
-            )
-        ).toJson().also { sikkerLogg.info("sender transaksjon status=$it") })
+        rapidsConnection.publish(fødselsnummer, JsonMessage.newMessage(mutableMapOf<String, Any>(
+            "@event_name" to "transaksjon_status",
+            "@id" to UUID.randomUUID(),
+            "@opprettet" to LocalDateTime.now(),
+            "fødselsnummer" to fødselsnummer,
+            "avstemmingsnøkkel" to avstemmingsnøkkel,
+            "fagsystemId" to fagsystemId,
+            "status" to status,
+            "feilkode_oppdrag" to feilkode,
+            "beskrivelse" to beskrivelse,
+            "originalXml" to xmlMessage
+        ).apply {
+            compute("@forårsaket_av") { _, _ ->
+                oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.let {
+                    mapOf("id" to it.id)
+                }
+            }
+        }).toJson().also { sikkerLogg.info("sender transaksjon status=$it") })
     }
 }
