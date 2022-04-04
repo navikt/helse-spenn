@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:2022.03.30-21.22.dbaa41649bd3")
+    implementation("com.github.navikt:rapids-and-rivers:2022.04.04-22.16.0611abb2a604")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
     implementation("org.flywaydb:flyway-core:8.0.2")

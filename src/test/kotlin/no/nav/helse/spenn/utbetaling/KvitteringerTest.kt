@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.rapids_rivers.toUUID
 import no.nav.helse.spenn.Jms
 import no.nav.helse.spenn.TestConnection
 import no.nav.helse.spenn.e2e.Kvittering
@@ -92,7 +93,7 @@ internal class KvitteringerTest {
 
         val kvittering = Kvittering(alvorlighetsgrad=alvorlighetsgrad).toXml()
         connection.sendMessage(kvittering)
-        assertKvittering(status, alvorlighetsgrad, kvittering, behov.id)
+        assertKvittering(status, alvorlighetsgrad, kvittering, behov.id.toUUID())
     }
 
     private fun assertKvittering(status: Oppdragstatus, alvorlighetsgrad: String, melding: String, behovId: UUID) {
