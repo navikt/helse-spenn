@@ -1,4 +1,8 @@
-val mainClass = "no.nav.helse.opprydding.ApplicationKt"
+val mainClass = "no.nav.helse.opprydding.AppKt"
+
+dependencies {
+    testImplementation(project(":spenn-selve"))
+}
 
 tasks {
     named<Jar>("jar") {

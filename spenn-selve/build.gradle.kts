@@ -5,10 +5,6 @@ val cxfVersion = "3.3.7"
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
-    implementation("org.flywaydb:flyway-core:8.0.2")
-    implementation("com.zaxxer:HikariCP:5.0.0")
-    implementation("no.nav:vault-jdbc:1.3.9")
-    implementation("com.github.seratch:kotliquery:1.6.0")
     implementation ("io.prometheus:simpleclient_pushgateway:0.9.0")
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.2.1.0")

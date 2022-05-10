@@ -18,6 +18,11 @@ allprojects {
     dependencies {
         implementation("com.github.navikt:rapids-and-rivers:2022.05.09-12.50.569dc0a4e492")
 
+        implementation("org.flywaydb:flyway-core:8.0.2")
+        implementation("com.zaxxer:HikariCP:5.0.0")
+        implementation("no.nav:vault-jdbc:1.3.9")
+        implementation("com.github.seratch:kotliquery:1.6.0")
+
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")

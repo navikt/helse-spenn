@@ -1,0 +1,4 @@
+FROM navikt/java:17
+
+COPY spenn-opprydding-dev/build/libs/*.jar ./
+
