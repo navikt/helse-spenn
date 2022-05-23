@@ -31,7 +31,7 @@ internal class AvstemmingBuilderTest {
     }
 
     private val id = UUID.randomUUID()
-    private val oppdrag = listOf(
+    private val avstemmingsoppdrag = listOf(
         OppdragDto(
             UTBETALING_ID,
             AVSTEMMINGSNØKKEL,
@@ -113,7 +113,7 @@ internal class AvstemmingBuilderTest {
             kvittering(AKSEPTERT_UTEN_FEIL)
         )
     )
-    private val detaljer = OppdragDto.detaljer(oppdrag)
+    private val detaljer = OppdragDto.detaljer(avstemmingsoppdrag)
 
     private lateinit var builder: AvstemmingBuilder
 
@@ -122,7 +122,7 @@ internal class AvstemmingBuilderTest {
         builder = AvstemmingBuilder(
             id,
             "SPREF",
-            oppdrag,
+            avstemmingsoppdrag,
             DETALJER_PER_AVSTEMMINGMELDING
         )
     }
@@ -138,8 +138,32 @@ internal class AvstemmingBuilderTest {
         }
     }
 
-    private fun assertFørsteAvstemmingdataData(avstemmingsdata: Avstemmingsdata) {
-        assertAvstemmingdataData(DETALJER_PER_AVSTEMMINGMELDING, avstemmingsdata)
+    @Test
+    fun `avstemming med negativt totalbeløp`() {
+        val oppdrag = listOf(
+            OppdragDto(
+                UTBETALING_ID,
+                AVSTEMMINGSNØKKEL,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET.plusDays(4),
+                Oppdragstatus.AVVIST,
+                -BELØP,
+                kvittering(AVVIST_FUNKSJONELLE_FEIL)
+            )
+        )
+        val oppdragsdetaljer = OppdragDto.detaljer(oppdrag)
+        builder = AvstemmingBuilder(id, "SPREF", oppdrag, DETALJER_PER_AVSTEMMINGMELDING)
+        builder.build().also {
+            assertEquals(3, it.size)
+            assertAvstemmingdata(AksjonType.START, it.first(), AVSTEMMINGSNØKKEL, AVSTEMMINGSNØKKEL)
+            assertFørsteAvstemmingdataData(it[1], oppdrag, AVSTEMMINGSNØKKEL, AVSTEMMINGSNØKKEL, 1)
+            assertAvstemmingdata(AksjonType.AVSL, it.last(), AVSTEMMINGSNØKKEL, AVSTEMMINGSNØKKEL)
+        }
+    }
+
+    private fun assertFørsteAvstemmingdataData(avstemmingsdata: Avstemmingsdata, oppdrag: List<OppdragDto> = avstemmingsoppdrag, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 7, antallAvstemmingsdetaljer: Int = DETALJER_PER_AVSTEMMINGMELDING) {
+        assertAvstemmingdataData(antallAvstemmingsdetaljer, avstemmingsdata, nøkkelFom, nøkkelTom)
         OppdragDto.totaldata(oppdrag).also {
             assertEquals(it.totalAntall, avstemmingsdata.total.totalAntall)
             assertEquals(it.totalBelop, avstemmingsdata.total.totalBelop)
@@ -163,22 +187,22 @@ internal class AvstemmingBuilderTest {
         assertNotNull(avstemmingsdata.periode.datoAvstemtTom)
     }
 
-    private fun assertPåfølgendeAvstemmingdataData(antall: Int, avstemmingsdata: Avstemmingsdata) {
-        assertAvstemmingdataData(antall, avstemmingsdata)
+    private fun assertPåfølgendeAvstemmingdataData(antall: Int, avstemmingsdata: Avstemmingsdata, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 7) {
+        assertAvstemmingdataData(antall, avstemmingsdata, nøkkelFom, nøkkelTom)
         assertNull(avstemmingsdata.total)
         assertNull(avstemmingsdata.grunnlag)
         assertNull(avstemmingsdata.periode)
     }
 
-    private fun assertAvstemmingdataData(antall: Int, avstemmingsdata: Avstemmingsdata) {
-        assertAvstemmingdata(AksjonType.DATA, avstemmingsdata)
+    private fun assertAvstemmingdataData(antall: Int, avstemmingsdata: Avstemmingsdata, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 7) {
+        assertAvstemmingdata(AksjonType.DATA, avstemmingsdata, nøkkelFom, nøkkelTom)
         assertEquals(antall, avstemmingsdata.detalj.size)
     }
 
-    private fun assertAvstemmingdata(aksjonstype: AksjonType, avstemmingsdata: Avstemmingsdata) {
+    private fun assertAvstemmingdata(aksjonstype: AksjonType, avstemmingsdata: Avstemmingsdata, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 7) {
         assertEquals(aksjonstype, avstemmingsdata.aksjon.aksjonType)
-        assertEquals("$AVSTEMMINGSNØKKEL", avstemmingsdata.aksjon.nokkelFom)
-        assertEquals("${AVSTEMMINGSNØKKEL + 7}", avstemmingsdata.aksjon.nokkelTom)
+        assertEquals("$nøkkelFom", avstemmingsdata.aksjon.nokkelFom)
+        assertEquals("$nøkkelTom", avstemmingsdata.aksjon.nokkelTom)
         assertNotNull(avstemmingsdata.aksjon.avleverendeAvstemmingId)
     }
 

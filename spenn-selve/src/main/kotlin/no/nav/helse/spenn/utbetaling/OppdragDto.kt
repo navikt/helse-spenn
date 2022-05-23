@@ -8,6 +8,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.math.absoluteValue
 
 class OppdragDto(
     private val utbetalingId: UUID,
@@ -77,7 +78,7 @@ class OppdragDto(
 
         private fun List<OppdragDto>.summer(block: (Int, BigDecimal, Fortegn) -> Unit) {
             totalbeløp(this)
-                .also { block(size, it.toBigDecimal(), if (it >= 0) Fortegn.T else Fortegn.F) }
+                .also { block(size, it.absoluteValue.toBigDecimal(), if (it >= 0) Fortegn.T else Fortegn.F) }
         }
 
         private fun Map<Oppdragstatus, List<OppdragDto>>.summer(

@@ -154,7 +154,7 @@ internal class OppdragDtoTest {
             )
         ).also {
             assertEquals(1, it.totalAntall)
-            assertEquals((-BELØP).toBigDecimal(), it.totalBelop)
+            assertEquals(BELØP.toBigDecimal(), it.totalBelop)
             assertEquals(Fortegn.F, it.fortegn)
         }
     }
@@ -169,7 +169,7 @@ internal class OppdragDtoTest {
             it.varselBelop = BELØP.toBigDecimal()
             it.varselFortegn = Fortegn.T
             it.avvistAntall = 3
-            it.avvistBelop = (-BELØP).toBigDecimal()
+            it.avvistBelop = BELØP.toBigDecimal()
             it.avvistFortegn = Fortegn.F
             it.manglerAntall = 2
             it.manglerBelop = (2 * BELØP).toBigDecimal()
