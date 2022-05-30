@@ -33,7 +33,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
         } catch (e: SimulerBeregningFeilUnderBehandling) {
             log.warn("Got error while running Simulering, sjekk sikkerLogg for detaljer")
             sikkerLogg.warn("Simulering feilet med feilmelding=${e.faultInfo.errorMessage}", e)
-            SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = e.faultInfo.errorMessage)
+            oversettExceptionTilNoeBrukbart(e)
         } catch (e: SOAPFaultException) {
             if (e.cause is WstxEOFException || e.cause is WstxIOException) {
                 throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
@@ -45,6 +45,11 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             }
             throw e
         }
+    }
+
+    private fun oversettExceptionTilNoeBrukbart(ex: SimulerBeregningFeilUnderBehandling): SimuleringResult {
+        if (ex.faultInfo.errorMessage.contains("Feil ved les på enhetsregister")) return SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = ex.faultInfo.errorMessage)
+        return SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = ex.faultInfo.errorMessage)
     }
 
     private val Throwable.rootCause: Throwable
