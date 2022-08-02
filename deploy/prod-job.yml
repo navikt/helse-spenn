@@ -9,7 +9,7 @@ spec:
   schedule: "0 7 * * *"
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 43200
+      ttlSecondsAfterFinished: 259200
       backoffLimit: 1
       template:
         metadata:
