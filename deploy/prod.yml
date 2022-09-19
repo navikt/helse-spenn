@@ -62,7 +62,7 @@ spec:
     - name: VAULT_MOUNTPATH
       value: postgresql/prod-fss/
     - name: MQ_HOSTNAME
-      value: a01apvl269.adeo.no
+      value: mpls02.adeo.no
     - name: MQ_CHANNEL
       value: P_SPENN
     - name: MQ_PORT
