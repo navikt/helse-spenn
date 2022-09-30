@@ -11,7 +11,7 @@ dependencies {
 
     implementation("com.sun.xml.bind:jaxb-core:4.0.1")
     implementation("com.sun.xml.bind:jaxb-impl:4.0.1")
-    implementation("com.sun.xml.messaging.saaj:saaj-impl:2.0.1")
+    implementation("com.sun.xml.messaging.saaj:saaj-impl:1.5.2")
     implementation("javax.activation:activation:1.1.1")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("javax.jws:javax.jws-api:1.1")
