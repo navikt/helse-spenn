@@ -68,7 +68,7 @@ class E2eTest {
 
             val løsningKopi = parseOkLøsning(rapid.inspektør.message(1))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
-            assertEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
+            assertEquals(løsning1.overføringstidspunkt?.withNano(0), løsningKopi.overføringstidspunkt?.withNano(0))
             assertEquals("OVERFØRT", løsningKopi.status)
         }
     }
@@ -121,7 +121,7 @@ class E2eTest {
 
             val løsningKopi = parseOkLøsning(rapid.inspektør.message(4))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
-            assertEquals(løsning1.overføringstidspunkt, løsningKopi.overføringstidspunkt)
+            assertEquals(løsning1.overføringstidspunkt?.withNano(0), løsningKopi.overføringstidspunkt?.withNano(0))
             assertEquals("OVERFØRT", løsningKopi.status)
         }
     }
