@@ -1,8 +1,8 @@
-val junitJupiterVersion = "5.7.1"
-val testcontainersVersion = "1.16.2"
+val junitJupiterVersion = "5.9.1"
+val testcontainersVersion = "1.17.4"
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.7.20"
 }
 
 allprojects {
@@ -16,12 +16,11 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        implementation("com.github.navikt:rapids-and-rivers:2022.05.09-12.50.569dc0a4e492")
+        implementation("com.github.navikt:rapids-and-rivers:2022092314391663936769.9d5d33074875")
 
         implementation("org.flywaydb:flyway-core:8.0.2")
-        implementation("com.zaxxer:HikariCP:5.0.0")
-        implementation("no.nav:vault-jdbc:1.3.9")
-        implementation("com.github.seratch:kotliquery:1.6.0")
+        implementation("no.nav:vault-jdbc:1.3.10") // hikari og postgres kommer med på kjøpet
+        implementation("com.github.seratch:kotliquery:1.9.0")
 
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
