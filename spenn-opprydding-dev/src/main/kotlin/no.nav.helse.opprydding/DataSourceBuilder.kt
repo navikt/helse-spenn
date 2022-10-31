@@ -16,12 +16,20 @@ internal class DataSourceBuilder(env: Map<String, String>) {
     // username and password is only needed when vault is not enabled,
     // since we rotate credentials automatically when vault is enabled
     private val hikariConfig = HikariConfig().apply {
-        jdbcUrl = env["DATABASE_JDBC_URL"] ?: String.format(
-            "jdbc:postgresql://%s:%s/%s%s",
-            requireNotNull(env["DATABASE_HOST"] ?: env["DATABASE_SPENN_OPPRYDDING_HOST"]) { "database host must be set if jdbc url is not provided" },
-            requireNotNull(env["DATABASE_PORT"] ?: env["DATABASE_SPENN_OPPRYDDING_PORT"]) { "database port must be set if jdbc url is not provided" },
-            requireNotNull(databaseName) { "database name must be set if jdbc url is not provided" },
-            (env["DATABASE_USERNAME"] ?: env["DATABASE_SPENN_OPPRYDDING_USERNAME"])?.let { "?user=$it" } ?: "")
+        jdbcUrl = env["DATABASE_JDBC_URL"]
+            ?: String.format(
+                "jdbc:postgresql:///%s?%s&%s",
+                databaseName,
+                "cloudSqlInstance=${env["GCP_TEAM_PROJECT_ID"]}:${env["DATABASE_REGION"]}:${env["DATABASE_INSTANCE"]}",
+                "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
+            ).takeIf { env.containsKey("DATABASE_SPENN_OPPRYDDING_USERNAME") }
+            ?: String.format(
+                "jdbc:postgresql://%s:%s/%s%s",
+                requireNotNull(env["DATABASE_HOST"] ?: env["DATABASE_SPENN_OPPRYDDING_HOST"]) { "database host must be set if jdbc url is not provided" },
+                requireNotNull(env["DATABASE_PORT"] ?: env["DATABASE_SPENN_OPPRYDDING_PORT"]) { "database port must be set if jdbc url is not provided" },
+                requireNotNull(databaseName) { "database name must be set if jdbc url is not provided" },
+                (env["DATABASE_USERNAME"] ?: env["DATABASE_SPENN_OPPRYDDING_USERNAME"])?.let { "?user=$it" } ?: ""
+            )
 
         (env["DATABASE_USERNAME"] ?: env["DATABASE_SPENN_OPPRYDDING_USERNAME"])?.let { this.username = it }
         (env["DATABASE_PASSWORD"] ?: env["DATABASE_SPENN_OPPRYDDING_PASSWORD"])?.let { this.password = it }
