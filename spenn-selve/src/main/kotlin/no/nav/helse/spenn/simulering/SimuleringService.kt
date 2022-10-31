@@ -49,6 +49,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
 
     private fun oversettExceptionTilNoeBrukbart(ex: SimulerBeregningFeilUnderBehandling): SimuleringResult {
         if (ex.faultInfo?.errorMessage?.contains("Feil ved les på enhetsregister") == true) return SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = ex.faultInfo.errorMessage)
+        if (ex.faultInfo?.errorMessage?.contains("Feil ved les på kontoregister") == true) return SimuleringResult(status = SimuleringStatus.TEKNISK_FEIL, feilmelding = ex.faultInfo.errorMessage)
         return SimuleringResult(status = SimuleringStatus.FUNKSJONELL_FEIL, feilmelding = ex.faultInfo.errorMessage)
     }
 
