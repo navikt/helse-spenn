@@ -31,8 +31,8 @@ fun main() {
 
 private fun rapidApp(env: Map<String, String>) {
     val dataSourceBuilder = DataSourceBuilder(env)
-    val serviceAccountUserName = "/var/run/secrets/nais.io/service_user/username".readFile()
-    val serviceAccountPassword = "/var/run/secrets/nais.io/service_user/password".readFile()
+    val serviceAccountUserName = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
+    val serviceAccountPassword = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
 
     val simuleringConfig = SimuleringConfig(
         simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),

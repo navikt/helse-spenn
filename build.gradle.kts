@@ -22,6 +22,8 @@ allprojects {
         implementation("no.nav:vault-jdbc:1.3.10") // hikari og postgres kommer med på kjøpet
         implementation("com.github.seratch:kotliquery:1.9.0")
 
+        implementation("com.google.cloud.sql:postgres-socket-factory:1.7.0")
+
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")

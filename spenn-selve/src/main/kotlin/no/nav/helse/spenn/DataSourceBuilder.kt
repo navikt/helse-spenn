@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
+import java.time.Duration
 import javax.sql.DataSource
 
 interface Database {
@@ -13,7 +14,7 @@ interface Database {
 
 // Understands how to create a data source from environment variables
 internal class DataSourceBuilder(env: Map<String, String>) : Database {
-    private val databaseName = env["DATABASE_NAME"]
+    private val databaseName = env["DATABASE_NAME"] ?: env["DATABASE_DATABASE"] // DATABASE_DATABASE is gcp variant
 
     private val vaultMountPath = env["VAULT_MOUNTPATH"]
     private val shouldGetCredentialsFromVault = vaultMountPath != null
@@ -32,10 +33,9 @@ internal class DataSourceBuilder(env: Map<String, String>) : Database {
         env["DATABASE_PASSWORD"]?.let { this.password = it }
 
         maximumPoolSize = 3
-        minimumIdle = 1
-        idleTimeout = 10001
-        connectionTimeout = 1000
-        maxLifetime = 30001
+        connectionTimeout = Duration.ofSeconds(30).toMillis()
+        maxLifetime = Duration.ofMinutes(30).toMillis()
+        initializationFailTimeout = Duration.ofMinutes(1).toMillis()
     }
 
     init {

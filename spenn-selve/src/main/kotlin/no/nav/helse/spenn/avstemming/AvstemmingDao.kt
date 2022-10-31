@@ -14,7 +14,7 @@ internal class AvstemmingDao(private val dataSource: DataSource) {
         avstemmingsnøkkelTom: Long,
         antallOppdrag: Int
     ) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     "INSERT INTO avstemming (id, fagomrade, avstemmingsnokkel_tom, antall_avstemte_oppdrag) " +

@@ -3,11 +3,12 @@ package no.nav.helse.opprydding
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
+import java.time.Duration
 import javax.sql.DataSource
 
 // Understands how to create a data source from environment variables
 internal class DataSourceBuilder(env: Map<String, String>) {
-    private val databaseName = env["DATABASE_NAME"]
+    private val databaseName = env["DATABASE_NAME"] ?: env["DATABASE_DATABASE"]
 
     private val vaultMountPath = env["VAULT_MOUNTPATH"]
     private val shouldGetCredentialsFromVault = vaultMountPath != null
@@ -26,10 +27,9 @@ internal class DataSourceBuilder(env: Map<String, String>) {
         env["DATABASE_PASSWORD"]?.let { this.password = it }
 
         maximumPoolSize = 3
-        minimumIdle = 1
-        idleTimeout = 10001
-        connectionTimeout = 1000
-        maxLifetime = 30001
+        connectionTimeout = Duration.ofSeconds(30).toMillis()
+        maxLifetime = Duration.ofMinutes(30).toMillis()
+        initializationFailTimeout = Duration.ofMinutes(1).toMillis()
     }
 
     init {

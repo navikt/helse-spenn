@@ -19,7 +19,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         feilkode: String,
         xmlMessage: String
     ) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     "UPDATE oppdrag SET endret = now(), status = ?, beskrivelse = ?, feilkode_oppdrag = ?, oppdrag_response = ? " +
@@ -34,7 +34,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         fagsystemId: String,
         status: Oppdragstatus
     ) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     "UPDATE oppdrag SET endret = now(), status = ? WHERE avstemmingsnokkel = ? AND fagsystem_id = ?",
@@ -44,14 +44,14 @@ internal class OppdragDao(private val dataSource: DataSource) {
         } == 1
 
     fun hentBehovForOppdrag(avstemmingsnøkkel: Long) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(queryOf("SELECT behov FROM oppdrag WHERE avstemmingsnokkel = ?", avstemmingsnøkkel).map {
                 JsonMessage(it.string("behov"), MessageProblems("{}"))
             }.asSingle)
         }
 
     fun hentOppdragForAvstemming(avstemmingsperiode: ClosedRange<Long>) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     "SELECT avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
@@ -62,7 +62,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         }
 
     fun hentOppdragForAvstemming(avstemmingsnøkkelTom: Long) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
@@ -73,7 +73,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         }.groupBy({ it.first }) { it.second }
 
     fun oppdaterAvstemteOppdrag(fagområde: String, avstemmingsnøkkelTom: Long) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = ? AND avstemt = FALSE AND avstemmingsnokkel <= ?",
@@ -84,7 +84,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
 
 
 
-    fun finnesFraFør(fnr: String, utbetalingId: UUID, fagsystemId: String): Boolean = using(sessionOf(dataSource)) { session ->
+    fun finnesFraFør(fnr: String, utbetalingId: UUID, fagsystemId: String): Boolean = sessionOf(dataSource).use { session ->
         @Language("PostgreSQL")
         val query = """SELECT 1 FROM oppdrag WHERE fnr = :fnr and utbetaling_id = :utbetalingId AND fagsystem_id = :fagsystemId"""
         session.run(queryOf(query, mapOf("fnr" to fnr, "utbetalingId" to utbetalingId, "fagsystemId" to fagsystemId)).exists()) == true
@@ -134,7 +134,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
         totalbeløp: Int,
         originalJson: String
     ) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     "INSERT INTO oppdrag (avstemmingsnokkel, fagomrade, fnr, orgnr, utbetaling_id, mottaker, opprettet, fagsystem_id, totalbelop, status, behov) " +
@@ -154,7 +154,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         } == 1
 
-    fun hentOppdrag(fødselsnummer: String, utbetalingId: UUID, fagsystemId: String): OppdragDto = using(sessionOf(dataSource)) { session ->
+    fun hentOppdrag(fødselsnummer: String, utbetalingId: UUID, fagsystemId: String): OppdragDto = sessionOf(dataSource).use { session ->
         @Language("PostgreSQL")
         val query = """SELECT * FROM oppdrag WHERE fnr = :fnr and utbetaling_id = :utbetalingId AND fagsystem_id = :fagsystemId"""
         session.run(
