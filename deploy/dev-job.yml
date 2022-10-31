@@ -1,138 +1,58 @@
-apiVersion: batch/v1beta1
-kind: CronJob
+apiVersion: nais.io/v1
+kind: Naisjob
 metadata:
   labels:
     team: tbd
   name: spenn-avstemming
   namespace: tbd
 spec:
+  image: {{image}}
   schedule: "0 7 * * *"
-  jobTemplate:
-    spec:
-      ttlSecondsAfterFinished: 43200
-      backoffLimit: 1
-      template:
-        metadata:
-          labels:
-            team: tbd
-        spec:
-          containers:
-            - name: spenn-avstemming
-              image: {{image}}
-              resources:
-                requests:
-                  memory: 256Mi
-                  cpu: 100m
-                limits:
-                  memory: 4096Mi
-                  cpu: 2000m
-              volumeMounts:
-                - mountPath: /var/run/secrets/nais.io/vault
-                  name: vault-secrets
-                  subPath: subpath/var/run/secrets/nais.io/vault
-                - mountPath: /var/run/secrets/nais.io/service_user
-                  name: vault-secrets
-                  subPath: subpath/var/run/secrets/nais.io/service_user
-                - mountPath: /var/run/secrets/nais.io/kafka
-                  name: kafka-credentials
-                  readOnly: true
-              envFrom:
-                - secretRef:
-                    name: spenn
-              env:
-                - name: VAULT_TOKEN_PATH
-                  value: /var/run/secrets/nais.io/vault/vault_token
-                - name: CRON_JOB_MODE
-                  value: "true"
-                - name: KAFKA_RAPID_TOPIC
-                  value: tbd.rapid.v1
-                - name: DATABASE_HOST
-                  value: b27dbvl007.preprod.local
-                - name: DATABASE_PORT
-                  value: "5432"
-                - name: DATABASE_NAME
-                  value: helse-spenn-oppdrag
-                - name: VAULT_MOUNTPATH
-                  value: postgresql/preprod-fss/
-                - name: MQ_HOSTNAME
-                  value: b27apvl220.preprod.local
-                - name: MQ_CHANNEL
-                  value: Q1_SPENN
-                - name: MQ_PORT
-                  value: "1413"
-                - name: MQ_QUEUE_MANAGER
-                  value: MQLS02
-                - name: MQ_OPPDRAG_AUTHENTICATION
-                  value: "true"
-                - name: AVSTEMMING_QUEUE_SEND
-                  # Setter target client = 1 for bakoverkompabilitet med stormaskin
-                  value: queue:///QA.Q1_234.OB29_AVSTEMMING_XML?targetClient=1
-                - name: KAFKA_BROKERS
-                  valueFrom:
-                    secretKeyRef:
-                      key: KAFKA_BROKERS
-                      name: kafka-spenn-avstemming-nav-dev-54a6fb8c
-                - name: KAFKA_CREDSTORE_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      key: KAFKA_CREDSTORE_PASSWORD
-                      name: kafka-spenn-avstemming-nav-dev-54a6fb8c
-                - name: KAFKA_KEYSTORE_PATH
-                  value: /var/run/secrets/nais.io/kafka/client.keystore.p12
-                - name: KAFKA_TRUSTSTORE_PATH
-                  value: /var/run/secrets/nais.io/kafka/client.truststore.jks
-          imagePullSecrets:
-            - name: gpr-credentials
-          initContainers:
-            - name: vks-init
-              image: navikt/vault-sidekick:v0.3.10-d122b16
-              resources:
-                requests:
-                  memory: "64Mi"
-                  cpu: "100m"
-                limits:
-                  memory: "128Mi"
-                  cpu: "1000m"
-              volumeMounts:
-                - mountPath: /var/run/secrets/nais.io/vault
-                  name: vault-secrets
-                  subPath: subpath/var/run/secrets/nais.io/vault
-                - mountPath: /var/run/secrets/nais.io/service_user
-                  name: vault-secrets
-                  subPath: subpath/var/run/secrets/nais.io/service_user
-              args:
-                - -v=10
-                - -logtostderr
-                - -vault=https://vault.adeo.no
-                - -one-shot
-                - -save-token=/var/run/secrets/nais.io/vault/vault_token
-                - -cn=secret:serviceuser/data/dev/srvspenn:dir=/var/run/secrets/nais.io/service_user,fmt=flatten,retries=1
-              env:
-                - name: VAULT_AUTH_METHOD
-                  value: kubernetes
-                - name: VAULT_SIDEKICK_ROLE
-                  value: spenn-avstemming
-                - name: VAULT_K8S_LOGIN_PATH
-                  value: auth/kubernetes/preprod/fss/login
-          serviceAccount: podcreator
-          serviceAccountName: podcreator
-          volumes:
-            - name: vault-secrets
-              emptyDir:
-                medium: Memory
-            - name: kafka-credentials
-              secret:
-                defaultMode: 420
-                items:
-                  - key: KAFKA_CERTIFICATE
-                    path: kafka.crt
-                  - key: KAFKA_PRIVATE_KEY
-                    path: kafka.key
-                  - key: KAFKA_CA
-                    path: ca.crt
-                  - key: client.keystore.p12
-                    path: client.keystore.p12
-                  - key: client.truststore.jks
-                    path: client.truststore.jks
-                secretName: kafka-spenn-avstemming-nav-dev-54a6fb8c
-          restartPolicy: Never
+  kafka:
+    pool: nav-dev
+  ttlSecondsAfterFinished: 43200
+  backoffLimit: 1
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 4096Mi
+      cpu: 2000m
+  gcp:
+    permissions:
+      - resource:
+          apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+          kind: Project
+          name: tbd-dev-7ff9
+        role: roles/cloudsql.client
+  envFrom:
+    - secret: google-sql-spenn-spenn-spenn-avstemming-bc3e42cd
+    - secret: spenn
+  accessPolicy:
+    outbound:
+      rules:
+        - application: prometheus
+          namespace: nais
+  env:
+  - name: CRON_JOB_MODE
+    value: "true"
+  - name: KAFKA_RAPID_TOPIC
+    value: tbd.rapid.v1
+  - name: DATABASE_REGION
+    value: "europe-north1"
+  - name: DATABASE_INSTANCE
+    value: "spenn"
+  - name: MQ_HOSTNAME
+    value: b27apvl220.preprod.local
+  - name: MQ_CHANNEL
+    value: Q1_SPENN
+  - name: MQ_PORT
+    value: "1413"
+  - name: MQ_QUEUE_MANAGER
+    value: MQLS02
+  - name: MQ_OPPDRAG_AUTHENTICATION
+    value: "true"
+  - name: AVSTEMMING_QUEUE_SEND
+    # Setter target client = 1 for bakoverkompabilitet med stormaskin
+    value: queue:///QA.Q1_234.OB29_AVSTEMMING_XML?targetClient=1

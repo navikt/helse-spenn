@@ -30,14 +30,20 @@ spec:
     requests:
       cpu: 1000m
       memory: 256Mi
-  vault:
-    enabled: true
-    paths:
-      - mountPath: /var/run/secrets/nais.io/service_user
-        kvPath: /serviceuser/data/dev/srvspenn
-  webproxy: true
   kafka:
     pool: nav-dev
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_14
+        diskAutoresize: true
+        pointInTimeRecovery: true
+        name: spenn
+        databases:
+          - name: spenn
+            envVarPrefix: DATABASE
+            users:
+              - name: spenn-avstemming
+              - name: spenn-opprydding
   secureLogs:
     enabled: true
   envFrom:
@@ -51,14 +57,6 @@ spec:
       value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
     - name: SIMULERING_SERVICE_URL
       value: https://cics-q1.adeo.no/oppdrag/simulerFpServiceWSBinding
-    - name: DATABASE_HOST
-      value: b27dbvl007.preprod.local
-    - name: DATABASE_PORT
-      value: "5432"
-    - name: DATABASE_NAME
-      value: helse-spenn-oppdrag
-    - name: VAULT_MOUNTPATH
-      value: postgresql/preprod-fss/
     - name: MQ_HOSTNAME
       value: b27apvl220.preprod.local
     - name: MQ_CHANNEL
