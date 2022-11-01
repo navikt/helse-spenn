@@ -34,8 +34,7 @@ private fun rapidApp(env: Map<String, String>) {
     val serviceAccountUserName = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
     val serviceAccountPassword = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
 
-    val simuleringDisabled = env["SIMULERING_DISABLED"]?.lowercase() === "true"
-
+    val simuleringDisabled = env["SIMULERING_DISABLED"]?.lowercase() == "true"
     val simuleringService =  if (!simuleringDisabled) {
         val simuleringConfig = SimuleringConfig(
             simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
