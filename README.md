@@ -8,7 +8,7 @@ Lese utbetalingsbehov og simuleringsbehov og håndterer kommunikasjon videre mot
 
 ### Avstemming
 
-Avstemming kjører som en Cronjob i Kubernetes:
+Avstemming kjører som en CronJob (via NaisJob) i Kubernetes:
 
 ```
 % k get cronjobs -n tbd                
@@ -16,14 +16,13 @@ NAME               SCHEDULE    SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 spenn-avstemming   0 7 * * *   False     0        <none>          22m
 ```
 
-For å teste en cronjob (for å slippe å vente til schedule slår inn), så kan man lage en `Job` basert på cronjob:
+### Simulering
 
-``` 
-% k create job -n tbd --from=cronjob/spenn-avstemming spenn-avstemming
-% k get pods -n tbd
-NAME               READY   STATUS     RESTARTS   AGE
-avstemming-8jrkm   0/1     Init:0/1   0          6s
-```
+Kjører som `spenn-simulering` i FSS
+
+### Utbetaling
+
+Kjører som `spenn` i GCP.
 
 ## Henvendelser
 
