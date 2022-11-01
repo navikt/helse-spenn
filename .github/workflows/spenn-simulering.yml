@@ -1,14 +1,11 @@
-name: Spenn-opprydding-dev
+name: Spenn-simulering
 
 on:
   push:
     paths-ignore:
-      - 'spenn-selve/**'
-      - '.github/workflows/spenn-selve.yml'
-      - 'deploy/dev.yml'
-      - 'deploy/prod.yml'
-      - 'deploy/dev-job.yml'
-      - 'deploy/prod-job.yml'
+      - 'spenn-opprydding-dev/**'
+      - '.github/workflows/spenn-opprydding-dev.yml'
+      - 'deploy/dev-opprydding.yml'
     branches:
       - master
 
@@ -20,7 +17,7 @@ jobs:
       - name: create docker tag
         run: echo "TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
     outputs:
-      image: ghcr.io/${{ github.repository }}/spenn-opprydding-dev:${{ env.TAG }}
+      image: ghcr.io/${{ github.repository }}/spenn-simulering:${{ env.TAG }}
 
   build:
     name: build docker image
@@ -32,9 +29,9 @@ jobs:
         with:
           java-version: '17.x'
       - name: test and build
-        run: ./gradlew :spenn-opprydding-dev:test :spenn-opprydding-dev:build
+        run: ./gradlew :spenn-simulering:test :spenn-simulering:build
       - name: build docker image
-        run: docker build spenn-opprydding-dev -f Dockerfile . --pull -t ${{ needs.set_version.outputs.image }}
+        run: docker build spenn-simulering -f Dockerfile --pull -t ${{ needs.set_version.outputs.image }}
       - name: push docker image
         run: |
           docker login --username "$GITHUB_REPOSITORY" -p ${{ secrets.GITHUB_TOKEN }} ghcr.io
@@ -50,18 +47,5 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --project-name=spenn-opprydding-dev --org=tbd-ty7 --fail-on=all --configuration-matching='^runtimeClasspath'
+          args: --project-name=spenn-simulering --org=tbd-ty7 --fail-on=all --configuration-matching='^runtimeClasspath'
           command: monitor
-
-  deployDev:
-    name: deploy to dev
-    needs: [set_version, build, snyk]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: dev-gcp
-          RESOURCE: deploy/dev-opprydding.yml
-          IMAGE: ${{ needs.set_version.outputs.image }}
