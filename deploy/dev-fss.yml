@@ -1,0 +1,76 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    team: tbd
+  name: spenn
+  namespace: tbd
+spec:
+  image: {{image}}
+  port: 8080
+  strategy:
+    type: Recreate
+  liveness:
+    initialDelay: 5
+    path: /isalive
+  readiness:
+    initialDelay: 5
+    path: /isready
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    cpuThresholdPercentage: 90
+    max: 1
+    min: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 512Mi
+    requests:
+      cpu: 1000m
+      memory: 256Mi
+  vault:
+    enabled: true
+    paths:
+      - mountPath: /var/run/secrets/nais.io/service_user
+        kvPath: /serviceuser/data/dev/srvspenn
+  webproxy: true
+  kafka:
+    pool: nav-dev
+  secureLogs:
+    enabled: true
+  envFrom:
+    - secret: spenn
+  env:
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: tbd-spenn-v1
+    - name: KAFKA_RAPID_TOPIC
+      value: tbd.rapid.v1
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
+    - name: SIMULERING_SERVICE_URL
+      value: https://cics-q1.adeo.no/oppdrag/simulerFpServiceWSBinding
+    - name: DATABASE_HOST
+      value: b27dbvl007.preprod.local
+    - name: DATABASE_PORT
+      value: "5432"
+    - name: DATABASE_NAME
+      value: helse-spenn-oppdrag
+    - name: VAULT_MOUNTPATH
+      value: postgresql/preprod-fss/
+    - name: MQ_HOSTNAME
+      value: b27apvl220.preprod.local
+    - name: MQ_CHANNEL
+      value: Q1_SPENN
+    - name: MQ_PORT
+      value: "1413"
+    - name: MQ_QUEUE_MANAGER
+      value: MQLS02
+    - name: OPPDRAG_QUEUE_SEND
+      value: QA.Q1_231.OB04_OPPDRAG_XML
+    - name: OPPDRAG_QUEUE_MOTTAK
+      value: QA.Q1_SPENN.OPPDRAG_SP_XML_KVITT
+    - name: MQ_OPPDRAG_AUTHENTICATION
+      value: "true"
+
