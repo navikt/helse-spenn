@@ -21,8 +21,8 @@ spec:
     path: /metrics
   replicas:
     cpuThresholdPercentage: 75
-    max: 1
-    min: 2
+    max: 2
+    min: 1
   resources:
     limits:
       cpu: 2000m

@@ -34,15 +34,18 @@ private fun rapidApp(env: Map<String, String>) {
     val serviceAccountUserName = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
     val serviceAccountPassword = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
 
-    val simuleringConfig = SimuleringConfig(
-        simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
-        stsSoapUrl = env.getValue("SECURITYTOKENSERVICE_URL"),
-        username = serviceAccountUserName,
-        password = serviceAccountPassword,
-        disableCNCheck = true
-    )
+    val clusterName = env["NAIS_CLUSTER_NAME"]
 
-    val simuleringService = SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
+    val simuleringService =  if (clusterName == null || clusterName in setOf("prod-fss", "prod-gcp")) {
+        val simuleringConfig = SimuleringConfig(
+            simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
+            stsSoapUrl = env.getValue("SECURITYTOKENSERVICE_URL"),
+            username = serviceAccountUserName,
+            password = serviceAccountPassword,
+            disableCNCheck = true
+        )
+        SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
+    } else null
 
     val jmsConnection: Connection = mqConnection(env, serviceAccountUserName, serviceAccountPassword)
 
@@ -61,7 +64,7 @@ private fun rapidApp(env: Map<String, String>) {
 
 fun rapidApp(
     rapid: RapidsConnection,
-    simuleringService: SimuleringService,
+    simuleringService: SimuleringService?,
     kø: Kø,
     database: Database
 ) {
@@ -69,7 +72,9 @@ fun rapidApp(
     val oppdragDao = OppdragDao(dataSource)
 
     rapid.apply {
-        Simuleringer(this, simuleringService)
+        if (simuleringService != null) {
+            Simuleringer(this, simuleringService)
+        }
         Utbetalinger(
             this,
             oppdragDao,
