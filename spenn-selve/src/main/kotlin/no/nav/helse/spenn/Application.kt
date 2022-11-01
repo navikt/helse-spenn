@@ -34,9 +34,9 @@ private fun rapidApp(env: Map<String, String>) {
     val serviceAccountUserName = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
     val serviceAccountPassword = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
 
-    val clusterName = env["NAIS_CLUSTER_NAME"]
+    val simuleringDisabled = env["SIMULERING_DISABLED"]?.lowercase() === "true"
 
-    val simuleringService =  if (clusterName == null || clusterName in setOf("prod-fss", "prod-gcp")) {
+    val simuleringService =  if (!simuleringDisabled) {
         val simuleringConfig = SimuleringConfig(
             simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
             stsSoapUrl = env.getValue("SECURITYTOKENSERVICE_URL"),
