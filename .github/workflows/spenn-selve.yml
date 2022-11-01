@@ -60,8 +60,8 @@ jobs:
       - uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: dev-gcp
-          RESOURCE: deploy/dev.yml,deploy/dev-job.yml
+          CLUSTER: dev-fss
+          RESOURCE: deploy/dev-fss.yml
           IMAGE: ${{ needs.set_version.outputs.image }}
 
   deployProd:
