@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.simulering
 
+import jakarta.xml.ws.WebServiceFeature
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
 import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12

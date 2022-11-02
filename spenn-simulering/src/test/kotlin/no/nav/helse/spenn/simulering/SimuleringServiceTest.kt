@@ -11,6 +11,7 @@ import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
 import no.nav.system.os.tjenester.simulerfpservice.feil.FeilUnderBehandling
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
+import org.apache.cxf.bus.extension.ExtensionManagerBus
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -21,6 +22,21 @@ import java.time.LocalDate
 internal class SimuleringServiceTest {
     private val simulerFpService = mockk<SimulerFpService>()
     private val simuleringService = SimuleringService(simulerFpService)
+
+    @Test
+    fun `kan opprette klient`() {
+        val simuleringConfig = SimuleringConfig(
+            simuleringServiceUrl = "https://liksom.com",
+            stsSoapUrl = "https://token.net",
+            username = "foo",
+            password = "bar",
+            disableCNCheck = true
+        )
+
+        assertDoesNotThrow {
+            SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
+        }
+    }
 
     @Test
     fun `tom simuleringsrespons`() {

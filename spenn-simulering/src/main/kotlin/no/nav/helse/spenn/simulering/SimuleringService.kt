@@ -2,6 +2,8 @@ package no.nav.helse.spenn.simulering
 
 import com.ctc.wstx.exc.WstxEOFException
 import com.ctc.wstx.exc.WstxIOException
+import jakarta.xml.ws.WebServiceException
+import jakarta.xml.ws.soap.SOAPFaultException
 import no.nav.helse.spenn.UtenforÅpningstidException
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerBeregningFeilUnderBehandling
 import no.nav.system.os.eksponering.simulerfpservicewsbinding.SimulerFpService
@@ -11,12 +13,9 @@ import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.slf4j.LoggerFactory
-import java.math.RoundingMode
 import java.net.SocketException
 import java.time.LocalDate
 import javax.net.ssl.SSLException
-import javax.xml.ws.WebServiceException
-import javax.xml.ws.soap.SOAPFaultException
 
 class SimuleringService(private val simulerFpService: SimulerFpService) {
 
