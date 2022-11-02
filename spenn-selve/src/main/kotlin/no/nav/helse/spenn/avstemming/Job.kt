@@ -17,7 +17,7 @@ import java.time.Duration
 import java.time.LocalDate
 
 
-private val avstemmingsTid = Gauge.build("avstemming", "tidpusnkt for siste vellykkede avstemming").register()
+private val avstemmingsTid = Gauge.build("no/nav/virksomhet/tjenester/avstemming", "tidpusnkt for siste vellykkede avstemming").register()
 
 private fun datasource(env: Map<String, String>): HikariDataSource {
     val prefix = "DATABASE_SPENN_AVSTEMMING"

@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
 import no.nav.helse.spenn.Utbetalingslinjer
-import no.trygdeetaten.skjema.oppdrag.*
+import no.nav.trygdeetaten.skjema.oppdrag.*
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

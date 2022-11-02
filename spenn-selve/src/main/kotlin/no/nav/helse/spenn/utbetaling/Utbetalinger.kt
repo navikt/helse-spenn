@@ -5,7 +5,7 @@ import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.UtKø
 import no.nav.helse.spenn.UtbetalingslinjerMapper
-import no.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
+import no.nav.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId

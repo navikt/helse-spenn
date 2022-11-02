@@ -1,12 +1,12 @@
 package no.nav.helse.spenn.avstemming
 
 
+import jakarta.xml.bind.JAXBContext
+import jakarta.xml.bind.JAXBElement
+import jakarta.xml.bind.Marshaller
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import java.io.StringReader
 import java.io.StringWriter
-import javax.xml.bind.JAXBContext
-import javax.xml.bind.JAXBElement
-import javax.xml.bind.Marshaller
 import javax.xml.namespace.QName
 import javax.xml.stream.XMLInputFactory
 import javax.xml.transform.stream.StreamSource

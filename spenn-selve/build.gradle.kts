@@ -9,11 +9,8 @@ dependencies {
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.3.0.1")
 
-    implementation("com.sun.xml.bind:jaxb-core:4.0.1")
-    implementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-
-    implementation("com.github.navikt.tjenestespesifikasjoner:avstemming-v1-tjenestespesifikasjon:$tjenestespesifikasjonVersion")
-    implementation("com.github.navikt.tjenestespesifikasjoner:nav-virksomhet-oppdragsbehandling-v1-meldingsdefinisjon:$tjenestespesifikasjonVersion")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
+    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
 
     testImplementation("io.mockk:mockk:1.12.0")
     testImplementation("org.apache.activemq:apache-artemis:2.17.0") {
@@ -21,6 +18,9 @@ dependencies {
             https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
         */
         exclude("org.apache.activemq", "artemis-jms-client-all")
+        exclude("javax.xml.bind", "jaxb-api")
+        exclude("com.sun.xml.bind", "jaxb-impl")
+        exclude("com.sun.xml.bind", "jaxb-jxc")
     }
 }
 

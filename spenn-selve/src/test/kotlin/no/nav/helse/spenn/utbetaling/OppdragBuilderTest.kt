@@ -3,8 +3,8 @@ package no.nav.helse.spenn.utbetaling
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.helse.spenn.januar
-import no.trygdeetaten.skjema.oppdrag.Oppdrag
-import no.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
+import no.nav.trygdeetaten.skjema.oppdrag.Oppdrag
+import no.nav.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant
