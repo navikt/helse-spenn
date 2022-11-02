@@ -1,26 +1,16 @@
 package no.nav.helse.spenn
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.wmq.WMQConstants
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.avstemming.avstemmingJob
-import no.nav.helse.spenn.simulering.SimuleringConfig
-import no.nav.helse.spenn.simulering.SimuleringService
-import no.nav.helse.spenn.simulering.Simuleringer
 import no.nav.helse.spenn.utbetaling.Kvitteringer
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.Transaksjoner
 import no.nav.helse.spenn.utbetaling.Utbetalinger
-import org.apache.cxf.bus.extension.ExtensionManagerBus
-import org.slf4j.LoggerFactory
 import java.io.File
-import java.time.Instant
 import javax.jms.Connection
 
 fun main() {
@@ -31,20 +21,8 @@ fun main() {
 
 private fun rapidApp(env: Map<String, String>) {
     val dataSourceBuilder = DataSourceBuilder(env)
-    val serviceAccountUserName = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
-    val serviceAccountPassword = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
-
-    val simuleringDisabled = env["SIMULERING_DISABLED"]?.lowercase() == "true"
-    val simuleringService =  if (!simuleringDisabled) {
-        val simuleringConfig = SimuleringConfig(
-            simuleringServiceUrl = env.getValue("SIMULERING_SERVICE_URL"),
-            stsSoapUrl = env.getValue("SECURITYTOKENSERVICE_URL"),
-            username = serviceAccountUserName,
-            password = serviceAccountPassword,
-            disableCNCheck = true
-        )
-        SimuleringService(simuleringConfig.wrapWithSTSSimulerFpService(ExtensionManagerBus()))
-    } else null
+    val serviceAccountUserName = env.getValue("SERVICEUSER_NAME")
+    val serviceAccountPassword = env.getValue("SERVICEUSER_PASSWORD")
 
     val jmsConnection: Connection = mqConnection(env, serviceAccountUserName, serviceAccountPassword)
 
@@ -57,13 +35,12 @@ private fun rapidApp(env: Map<String, String>) {
         svarFraOppdragQueue
     )
     val rapid: RapidsConnection = RapidApplication.create(env)
-    rapidApp(rapid, simuleringService, jms, dataSourceBuilder)
+    rapidApp(rapid, jms, dataSourceBuilder)
     rapid.start()
 }
 
 fun rapidApp(
     rapid: RapidsConnection,
-    simuleringService: SimuleringService?,
     kø: Kø,
     database: Database
 ) {
@@ -71,9 +48,6 @@ fun rapidApp(
     val oppdragDao = OppdragDao(dataSource)
 
     rapid.apply {
-        if (simuleringService != null) {
-            Simuleringer(this, simuleringService)
-        }
         Utbetalinger(
             this,
             oppdragDao,

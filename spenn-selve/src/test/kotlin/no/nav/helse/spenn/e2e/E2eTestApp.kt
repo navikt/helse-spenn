@@ -5,19 +5,16 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.clearMocks
-import io.mockk.mockk
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.rapidApp
-import no.nav.helse.spenn.simulering.SimuleringService
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 internal class E2eTestApp(
     var rapid: RepublishableTestRapid = RepublishableTestRapid(),
-    val simuleringService: SimuleringService = mockk(),
     val oppdrag: TestKø = TestKø(),
     val database: TestDatabase = TestDatabase(),
     var listAppender: ListAppender<ILoggingEvent> = ListAppender()
@@ -28,14 +25,13 @@ internal class E2eTestApp(
         listAppender.start()
         sikkerLogg.addAppender(listAppender)
         database.migrate()
-        rapidApp(rapid, simuleringService, oppdrag, database)
+        rapidApp(rapid, oppdrag, database)
         rapid.start()
     }
 
     private fun reset() {
         database.resetDatabase()
         rapid = RepublishableTestRapid()
-        clearMocks(simuleringService)
         oppdrag.reset()
         listAppender = ListAppender()
     }

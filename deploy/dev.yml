@@ -49,8 +49,6 @@ spec:
   envFrom:
     - secret: spenn
   env:
-    - name: SIMULERING_DISABLED
-      value: "true"
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-v1
     - name: KAFKA_RAPID_TOPIC
