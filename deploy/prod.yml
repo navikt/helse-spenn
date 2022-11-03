@@ -30,14 +30,20 @@ spec:
     requests:
       cpu: 1000m
       memory: 256Mi
-  vault:
-    enabled: true
-    paths:
-      - mountPath: /var/run/secrets/nais.io/service_user
-        kvPath: /serviceuser/data/prod/srvspenn
-  webproxy: true
   kafka:
     pool: nav-prod
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_14
+        diskAutoresize: true
+        pointInTimeRecovery: true
+        name: spenn
+        databases:
+          - name: spenn
+            envVarPrefix: DATABASE
+            users:
+              - name: spenn-avstemming
+              - name: spenn-opprydding
   secureLogs:
     enabled: true
   envFrom:
@@ -49,14 +55,6 @@ spec:
       value: tbd.rapid.v1
     - name: KAFKA_RESET_POLICY
       value: none
-    - name: DATABASE_HOST
-      value: fsspgdb.adeo.no
-    - name: DATABASE_PORT
-      value: "5432"
-    - name: DATABASE_NAME
-      value: helse-spenn-oppdrag
-    - name: VAULT_MOUNTPATH
-      value: postgresql/prod-fss/
     - name: MQ_HOSTNAME
       value: mpls02.adeo.no
     - name: MQ_CHANNEL
