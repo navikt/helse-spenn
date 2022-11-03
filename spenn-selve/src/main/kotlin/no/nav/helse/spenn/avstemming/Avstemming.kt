@@ -69,7 +69,7 @@ internal class Avstemming(
         avstemminginfo: Map<String, Any>
     ) = JsonMessage.newMessage(
         mapOf(
-            "@event_name" to "no/nav/virksomhet/tjenester/avstemming",
+            "@event_name" to "avstemming",
             "@id" to id,
             "@opprettet" to LocalDateTime.now(),
             "dagen" to dagen,
