@@ -82,6 +82,7 @@ internal class AvstemmingDaoTest {
         flyway = Flyway
             .configure()
             .dataSource(dataSource)
+            .cleanDisabled(false)
             .load()
 
         avstemmingDao = AvstemmingDao(dataSource)

@@ -1,5 +1,4 @@
 val mainClass = "no.nav.helse.spenn.ApplicationKt"
-val tjenestespesifikasjonVersion = "1.4201aa"
 val cxfVersion = "4.0.0-SNAPSHOT"
 
 dependencies {

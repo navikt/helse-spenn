@@ -16,23 +16,12 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        implementation("com.github.navikt:rapids-and-rivers:2022092314391663936769.9d5d33074875")
-
-        implementation("org.flywaydb:flyway-core:8.0.2")
-        implementation("no.nav:vault-jdbc:1.3.10") // hikari og postgres kommer med på kjøpet
-        implementation("com.github.seratch:kotliquery:1.9.0")
-
-        implementation("com.google.cloud.sql:postgres-socket-factory:1.7.0")
+        implementation("com.github.navikt:rapids-and-rivers:2022110411121667556720.8a951a765583")
 
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
-
-        testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
-        testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
-        testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
     }
-
 }
 
 subprojects {

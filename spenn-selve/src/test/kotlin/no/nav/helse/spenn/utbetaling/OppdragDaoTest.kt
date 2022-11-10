@@ -424,6 +424,7 @@ internal class OppdragDaoTest {
 
         flyway = Flyway
             .configure()
+            .cleanDisabled(false)
             .dataSource(dataSource)
             .load()
 
