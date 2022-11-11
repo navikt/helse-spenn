@@ -6,7 +6,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.postgresql:postgresql:42.5.0")
     implementation("com.github.seratch:kotliquery:1.9.0")
-
+    implementation("com.google.cloud.sql:postgres-socket-factory:1.7.2") // spenn-avstemming
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 
     implementation ("io.prometheus:simpleclient_pushgateway:0.16.0")
