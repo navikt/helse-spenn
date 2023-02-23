@@ -1,5 +1,5 @@
 val mainClass = "no.nav.helse.spenn.ApplicationKt"
-val cxfVersion = "4.0.0-SNAPSHOT"
+val cxfVersion = "4.0.0"
 
 dependencies {
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
@@ -9,23 +9,14 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion") {
-        // så lenge vi er avhengig av cxf 4.0.0-SNAPSHOT
-        exclude("org.opensaml", "opensaml-saml-impl")
-        exclude("org.opensaml", "opensaml-xacml-impl")
-        exclude("org.opensaml", "opensaml-xacml-saml-impl")
-    }
-
-    // så lenge vi er avhengig av cxf 4.0.0-SNAPSHOT
-    implementation("org.opensaml:opensaml-saml-impl:4.0.1")
-    implementation("org.opensaml:opensaml-xacml-impl:4.0.1")
-    implementation("org.opensaml:opensaml-xacml-saml-impl:4.0.1")
-
+    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
     testImplementation("io.mockk:mockk:1.12.0")
 }
 
 repositories {
-    maven("https://repository.apache.org/snapshots/") // så lenge vi er avhengig av cxf 4.0.0-SNAPSHOT
+    // org.apache.cxf:cxf-rt-ws-security:4.0.0 er avhengig av opensaml-xacml-saml-impl:4.2.0
+    // som i skrivende stund ikke er tilgjengelig på maven central, men i shibboleth
+    maven("https://build.shibboleth.net/nexus/content/repositories/releases/") // så lenge vi er avhengig av cxf 4.0.0-SNAPSHOT
 }
 
 tasks {
