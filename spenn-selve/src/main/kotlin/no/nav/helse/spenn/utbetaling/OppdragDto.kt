@@ -105,7 +105,7 @@ class OppdragDto(
         dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
     }
 
-    internal fun kanSendesPåNytt() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST)
+    internal fun kanSendesPåNytt() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST, Oppdragstatus.FEIL)
 
 
     internal fun somLøsning() =
