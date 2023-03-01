@@ -75,6 +75,8 @@ internal class Simuleringer(
                 )
             }
         } catch (err: UtenforÅpningstidException) {
+            log.info("Oppdrag/UR virker å være stengt ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
+            sikkerLogg.info("Oppdrag/UR virker å være stengt ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
             packet["@løsning"] = mapOf(
                 "Simulering" to mapOf(
                     "status" to SimuleringStatus.OPPDRAG_UR_ER_STENGT,
