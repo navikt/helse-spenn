@@ -14,6 +14,7 @@ import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.S
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.slf4j.LoggerFactory
 import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.time.LocalDate
 import javax.net.ssl.SSLException
 
@@ -39,7 +40,7 @@ class SimuleringService(private val simulerFpService: SimulerFpService) {
             }
             throw e
         } catch (e: WebServiceException) {
-            if (e.cause is SSLException || e.rootCause is SocketException) {
+            if (e.cause is SSLException || e.rootCause is SocketException || e.rootCause is SocketTimeoutException) {
                 throw UtenforÅpningstidException("Oppdrag/UR er stengt", e)
             }
             throw e
