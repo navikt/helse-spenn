@@ -32,6 +32,12 @@ spec:
     - secret: spenn
   accessPolicy:
     outbound:
+      external:
+        - host: mpls02.adeo.no
+          ports:
+            - name: mq
+              port: 1414
+              protocol: tcp
       rules:
         - application: prometheus
           namespace: nais

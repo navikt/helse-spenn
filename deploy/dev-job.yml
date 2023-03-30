@@ -32,6 +32,12 @@ spec:
     - secret: spenn
   accessPolicy:
     outbound:
+      external:
+        - host: b27apvl220.preprod.local
+          ports:
+            - name: mq
+              port: 1413
+              protocol: tcp
       rules:
         - application: prometheus
           namespace: nais

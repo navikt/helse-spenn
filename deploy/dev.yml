@@ -44,6 +44,14 @@ spec:
             users:
               - name: spenn-avstemming
               - name: spenn-opprydding
+  accessPolicy:
+    outbound:
+      external:
+        - host: b27apvl220.preprod.local
+          ports:
+            - name: mq
+              port: 1413
+              protocol: tcp
   secureLogs:
     enabled: true
   envFrom:

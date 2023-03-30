@@ -45,6 +45,14 @@ spec:
             users:
               - name: spenn-avstemming
               - name: spenn-opprydding
+  accessPolicy:
+    outbound:
+      external:
+      - host: mpls02.adeo.no
+        ports:
+          - name: mq
+            port: 1414
+            protocol: tcp
   secureLogs:
     enabled: true
   envFrom:
