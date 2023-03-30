@@ -51,7 +51,7 @@ spec:
           ports:
             - name: mq
               port: 1413
-              protocol: tcp
+              protocol: TCP
   secureLogs:
     enabled: true
   envFrom:
