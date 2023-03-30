@@ -3,6 +3,7 @@ kind: Naisjob
 metadata:
   labels:
     team: tbd
+    db: spenn
   name: spenn-avstemming
   namespace: tbd
 spec:

@@ -3,6 +3,7 @@ kind: Application
 metadata:
   labels:
     team: tbd
+    db: spenn
   name: spenn-opprydding-dev
   namespace: tbd
 spec:
