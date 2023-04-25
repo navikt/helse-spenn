@@ -1,5 +1,6 @@
 package no.nav.helse.spenn.utbetaling
 
+import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
@@ -17,6 +18,7 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
                 it.demandValue("@event_name", "oppdrag_utbetaling")
                 it.demandKey("kvittering")
                 it.requireKey("@id", "aktørId", "fødselsnummer", "organisasjonsnummer", "utbetalingId", "fagsystemId")
+                it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.requireKey("kvittering.status", "kvittering.beskrivelse")
                 it.requireAny("kvittering.status", listOf("OVERFØRT", "FEIL"))
                 it.interestedIn("kvittering.feilmelding", "kvittering.xmlmelding")
@@ -42,6 +44,20 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
             keyValue("fødselsnummer", fødselsnummer)
         )
         oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
-        // TODO: svare ut behovet med status=OVERFØRT ?
+
+        oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)
+            ?.apply {
+                packet["@løsning"] = mapOf(
+                    "Utbetaling" to mapOf(
+                        "status" to status,
+                        "beskrivelse" to status.beskrivelse(),
+                        "overføringstidspunkt" to packet["@opprettet"].asText(),
+                        "avstemmingsnøkkel" to avstemmingsnøkkel
+                    )
+                )
+            }
+            ?.also { behovMedLøsning ->
+                context.publish(behovMedLøsning.toJson())
+            }
     }
 }
