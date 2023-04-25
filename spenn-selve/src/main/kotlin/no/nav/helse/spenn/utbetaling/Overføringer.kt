@@ -37,10 +37,11 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
         val beskrivelse = packet["kvittering.beskrivelse"].asText()
         val status = Oppdragstatus.valueOf(packet["kvittering.status"].asText())
 
-        log.info("utbetaling $utbetalingId fagsystemId=$fagsystemId status=$status $beskrivelse")
-        sikkerLogg.info("utbetaling $utbetalingId fagsystemId=$fagsystemId status=$status $beskrivelse",
+        log.info("oppdaterer status for utbetaling $utbetalingId fagsystemId=$fagsystemId status=$status $beskrivelse")
+        sikkerLogg.info("oppdaterer status for utbetaling $utbetalingId fagsystemId=$fagsystemId status=$status $beskrivelse",
             keyValue("fødselsnummer", fødselsnummer)
         )
         oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
+        // TODO: svare ut behovet med status=OVERFØRT ?
     }
 }

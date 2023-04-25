@@ -83,37 +83,7 @@ internal class Utbetalinger(
                 //Hvis mottatt - send gammel xml på nytt
                 if (gammeltOppdrag.kanSendesPåNytt()) {
                     if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") {
-                        context.publish(JsonMessage.newMessage("oppdrag_utbetaling", mutableMapOf(
-                            "fødselsnummer" to fødselsnummer,
-                            "organisasjonsnummer" to organisasjonsnummer,
-                            "saksbehandler" to packet["Utbetaling.saksbehandler"],
-                            "avstemmingsnøkkel" to avstemmingsnøkkel,
-                            "mottaker" to mottaker,
-                            "fagsystemId" to fagsystemId,
-                            "utbetalingId" to utbetalingId,
-                            "fagområde" to packet["Utbetaling.fagområde"].asText(),
-                            "endringskode" to packet["Utbetaling.endringskode"].asText(),
-                            "linjer" to packet["Utbetaling.linjer"].forEach { linje ->
-                                mutableMapOf<String, Any>(
-                                    "fom" to linje.path("fom").asText(),
-                                    "tom" to linje.path("tom").asText(),
-                                    "endringskode" to linje.path("endringskode").asText(),
-                                    "sats" to linje.path("sats").asInt(),
-                                    "delytelseId" to linje.path("delytelseId").asInt(),
-                                    "satstype" to linje.path("satstype").asText(),
-                                    "klassekode" to linje.path("klassekode").asText()
-                                ).apply {
-                                    compute("grad") { _, _ -> linje.path("grad").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
-                                    compute("statuskode") { _, _ -> linje.path("statuskode").takeUnless(JsonNode::isMissingOrNull)?.asText() }
-                                    compute("datoStatusFom") { _, _ -> linje.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asText() }
-                                    compute("refDelytelseId") { _, _ -> linje.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
-                                    compute("refFagsystemId") { _, _ -> linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText() }
-                                }
-                            }
-
-                        ).apply {
-                            compute("aktørId") { _, _ -> packet["aktørId"].asText() }
-                        }).toJson())
+                        sendOppdrag(context, fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, avstemmingsnøkkel, mottaker, packet)
                     } else {
                         //Her lager vi en blander vi nye utbetalingslinjer og gammelt oppdrag.
                         // Behov-json i basen kan være på et gammelt format og da kan vi ikke parse.
@@ -138,7 +108,11 @@ internal class Utbetalinger(
                     totalbeløp = utbetalingslinjer.totalbeløp(),
                     originalJson = packet.toJson()
                 )
-                oppdragDto.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
+                if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") {
+                    sendOppdrag(context, fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, avstemmingsnøkkel, mottaker, packet)
+                } else {
+                    oppdragDto.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
+                }
                 packet["@løsning"] = mapOf(
                     "Utbetaling" to oppdragDto.somLøsning()
                 )
@@ -157,5 +131,39 @@ internal class Utbetalinger(
         } finally {
             context.publish(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
         }
+    }
+
+    private fun sendOppdrag(context: MessageContext, fødselsnummer: String, organisasjonsnummer: String, utbetalingId: UUID, fagsystemId: String, avstemmingsnøkkel: Long, mottaker: String, packet: JsonMessage) {
+        context.publish(JsonMessage.newMessage("oppdrag_utbetaling", mutableMapOf(
+            "fødselsnummer" to fødselsnummer,
+            "organisasjonsnummer" to organisasjonsnummer,
+            "saksbehandler" to packet["Utbetaling.saksbehandler"],
+            "avstemmingsnøkkel" to avstemmingsnøkkel,
+            "mottaker" to mottaker,
+            "fagsystemId" to fagsystemId,
+            "utbetalingId" to utbetalingId,
+            "fagområde" to packet["Utbetaling.fagområde"].asText(),
+            "endringskode" to packet["Utbetaling.endringskode"].asText(),
+            "linjer" to packet["Utbetaling.linjer"].forEach { linje ->
+                mutableMapOf<String, Any>(
+                    "fom" to linje.path("fom").asText(),
+                    "tom" to linje.path("tom").asText(),
+                    "endringskode" to linje.path("endringskode").asText(),
+                    "sats" to linje.path("sats").asInt(),
+                    "delytelseId" to linje.path("delytelseId").asInt(),
+                    "satstype" to linje.path("satstype").asText(),
+                    "klassekode" to linje.path("klassekode").asText()
+                ).apply {
+                    compute("grad") { _, _ -> linje.path("grad").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
+                    compute("statuskode") { _, _ -> linje.path("statuskode").takeUnless(JsonNode::isMissingOrNull)?.asText() }
+                    compute("datoStatusFom") { _, _ -> linje.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asText() }
+                    compute("refDelytelseId") { _, _ -> linje.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
+                    compute("refFagsystemId") { _, _ -> linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText() }
+                }
+            }
+
+        ).apply {
+            compute("aktørId") { _, _ -> packet["aktørId"].asText() }
+        }).toJson())
     }
 }
