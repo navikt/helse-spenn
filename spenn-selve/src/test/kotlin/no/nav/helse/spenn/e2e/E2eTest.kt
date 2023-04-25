@@ -64,7 +64,7 @@ class E2eTest {
             assertEquals(1, this.oppdrag.meldinger.size)
             assertEquals(2, rapid.inspektør.size)
 
-            assertEquals(1, sikkerLoggMeldinger().filter { it.startsWith("Motatt duplikat") }.size)
+            assertEquals(1, sikkerLoggMeldinger().filter { it.startsWith("Mottatt duplikat") }.size)
 
             val løsningKopi = parseOkLøsning(rapid.inspektør.message(1))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)

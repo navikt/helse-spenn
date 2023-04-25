@@ -77,8 +77,8 @@ internal class Utbetalinger(
 
         try {
             if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId, fagsystemId)) {
-                log.info("Motatt duplikat. UbetalingsId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for dette fnr")
-                sikkerLogg.info("Motatt duplikat. UbetalingsId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for $fødselsnummer")
+                log.info("Mottatt duplikat. UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for dette fnr")
+                sikkerLogg.info("Mottatt duplikat. UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for $fødselsnummer:\n${packet.toJson()}")
                 val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId, fagsystemId)
                 //Hvis mottatt - send gammel xml på nytt
                 if (gammeltOppdrag.kanSendesPåNytt()) {

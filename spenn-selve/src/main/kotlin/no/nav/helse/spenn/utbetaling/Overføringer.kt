@@ -56,7 +56,7 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
 
         oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)
             ?.apply {
-                packet["@løsning"] = mapOf(
+                this["@løsning"] = mapOf(
                     "Utbetaling" to mapOf(
                         "status" to status,
                         "beskrivelse" to status.beskrivelse(),
