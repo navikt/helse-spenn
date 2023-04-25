@@ -144,7 +144,7 @@ internal class Utbetalinger(
             "utbetalingId" to utbetalingId,
             "fagområde" to packet["Utbetaling.fagområde"].asText(),
             "endringskode" to packet["Utbetaling.endringskode"].asText(),
-            "linjer" to packet["Utbetaling.linjer"].forEach { linje ->
+            "linjer" to packet["Utbetaling.linjer"].map { linje ->
                 mutableMapOf<String, Any>(
                     "fom" to linje.path("fom").asText(),
                     "tom" to linje.path("tom").asText(),
