@@ -29,6 +29,7 @@ internal class Utbetalinger(
                 it.demandAll("@behov", listOf("Utbetaling"))
                 it.rejectKey("@løsning")
                 it.requireKey("@id", "fødselsnummer", "organisasjonsnummer")
+                it.interestedIn("aktørId")
                 it.interestedIn("Utbetaling.maksdato", JsonNode::asLocalDate)
                 it.requireKey(
                     "Utbetaling",
@@ -81,10 +82,44 @@ internal class Utbetalinger(
                 val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId, fagsystemId)
                 //Hvis mottatt - send gammel xml på nytt
                 if (gammeltOppdrag.kanSendesPåNytt()) {
-                    //Her lager vi en blander vi nye utbetalingslinjer og gammelt oppdrag.
-                    // Behov-json i basen kan være på et gammelt format og da kan vi ikke parse.
-                    // Det er opp til avsender å alltid sende samme oppdrag for samme utbetalingsid
-                    gammeltOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
+                    if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") {
+                        context.publish(JsonMessage.newMessage("oppdrag_utbetaling", mutableMapOf(
+                            "fødselsnummer" to fødselsnummer,
+                            "organisasjonsnummer" to organisasjonsnummer,
+                            "saksbehandler" to packet["Utbetaling.saksbehandler"],
+                            "avstemmingsnøkkel" to avstemmingsnøkkel,
+                            "mottaker" to mottaker,
+                            "fagsystemId" to fagsystemId,
+                            "utbetalingId" to utbetalingId,
+                            "fagområde" to packet["Utbetaling.fagområde"].asText(),
+                            "endringskode" to packet["Utbetaling.endringskode"].asText(),
+                            "linjer" to packet["Utbetaling.linjer"].forEach { linje ->
+                                mutableMapOf<String, Any>(
+                                    "fom" to linje.path("fom").asText(),
+                                    "tom" to linje.path("tom").asText(),
+                                    "endringskode" to linje.path("endringskode").asText(),
+                                    "sats" to linje.path("sats").asInt(),
+                                    "delytelseId" to linje.path("delytelseId").asInt(),
+                                    "satstype" to linje.path("satstype").asText(),
+                                    "klassekode" to linje.path("klassekode").asText()
+                                ).apply {
+                                    compute("grad") { _, _ -> linje.path("grad").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
+                                    compute("statuskode") { _, _ -> linje.path("statuskode").takeUnless(JsonNode::isMissingOrNull)?.asText() }
+                                    compute("datoStatusFom") { _, _ -> linje.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asText() }
+                                    compute("refDelytelseId") { _, _ -> linje.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
+                                    compute("refFagsystemId") { _, _ -> linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText() }
+                                }
+                            }
+
+                        ).apply {
+                            compute("aktørId") { _, _ -> packet["aktørId"].asText() }
+                        }).toJson())
+                    } else {
+                        //Her lager vi en blander vi nye utbetalingslinjer og gammelt oppdrag.
+                        // Behov-json i basen kan være på et gammelt format og da kan vi ikke parse.
+                        // Det er opp til avsender å alltid sende samme oppdrag for samme utbetalingsid
+                        gammeltOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
+                    }
                 }
                 packet["@løsning"] = mapOf(
                     "Utbetaling" to gammeltOppdrag.somLøsning()

@@ -6,8 +6,9 @@ import com.ibm.msg.client.wmq.WMQConstants
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.avstemming.avstemmingJob
-import no.nav.helse.spenn.utbetaling.Kvitteringer
+import no.nav.helse.spenn.utbetaling.*
 import no.nav.helse.spenn.utbetaling.OppdragDao
+import no.nav.helse.spenn.utbetaling.Overføringer
 import no.nav.helse.spenn.utbetaling.Transaksjoner
 import no.nav.helse.spenn.utbetaling.Utbetalinger
 import java.io.File
@@ -48,11 +49,8 @@ fun rapidApp(
     val oppdragDao = OppdragDao(dataSource)
 
     rapid.apply {
-        Utbetalinger(
-            this,
-            oppdragDao,
-            kø.sendSession()
-        )
+        Utbetalinger(this, oppdragDao, kø.sendSession())
+        Overføringer(this, oppdragDao)
         Transaksjoner(this, oppdragDao)
     }.apply {
         register(object : RapidsConnection.StatusListener {
