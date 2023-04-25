@@ -38,6 +38,10 @@ internal class Transaksjoner(
         val tidspunkt = packet["@opprettet"].asLocalDateTime()
         log.info("oppdrag med avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
 
+        check(oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status, packet["beskrivelse"].asText(), packet["feilkode_oppdrag"].asText(), packet["originalXml"].asText())) {
+            "Klarte ikke å oppdatere oppdrag i databasen!"
+        }
+
         oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.also {
             it["@id"] = UUID.randomUUID()
             it["@opprettet"] = LocalDateTime.now()

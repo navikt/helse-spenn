@@ -55,6 +55,7 @@ internal class TransaksjonerTest {
     @Test
     fun `løser utbetalingsbehov`() {
         val behov = utbetalingsbehov()
+        every { dao.oppdaterOppdrag(AVSTEMMINGSNØKKEL, FAGSYSTEMID, Oppdragstatus.AKSEPTERT, "Foo", "00", any()) } returns true
         every { dao.hentBehovForOppdrag(any()) } returns JsonMessage(behov, MessageProblems(behov))
         rapid.sendTestMessage(tranaksjonStatus())
         assertEquals(1, inspektør.size)
