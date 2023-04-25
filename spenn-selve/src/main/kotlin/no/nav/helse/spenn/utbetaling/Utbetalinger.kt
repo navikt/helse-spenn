@@ -83,6 +83,7 @@ internal class Utbetalinger(
                 //Hvis mottatt - send gammel xml på nytt
                 if (gammeltOppdrag.kanSendesPåNytt()) {
                     if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") {
+                        oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, Oppdragstatus.MOTTATT)
                         sendOppdrag(context, fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, avstemmingsnøkkel, mottaker, packet)
                     } else {
                         //Her lager vi en blander vi nye utbetalingslinjer og gammelt oppdrag.

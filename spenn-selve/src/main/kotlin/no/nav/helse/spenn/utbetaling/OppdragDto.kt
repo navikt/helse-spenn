@@ -106,6 +106,7 @@ class OppdragDto(
     }
 
     internal fun kanSendesPåNytt() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST, Oppdragstatus.FEIL)
+    internal fun erKvittert() = status != Oppdragstatus.MOTTATT
 
 
     internal fun somLøsning() =
