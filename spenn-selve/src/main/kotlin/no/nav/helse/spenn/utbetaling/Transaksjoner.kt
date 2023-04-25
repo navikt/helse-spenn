@@ -38,8 +38,10 @@ internal class Transaksjoner(
         val tidspunkt = packet["@opprettet"].asLocalDateTime()
         log.info("oppdrag med avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
 
-        check(oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status, packet["beskrivelse"].asText(), packet["feilkode_oppdrag"].asText(), packet["originalXml"].asText())) {
-            "Klarte ikke å oppdatere oppdrag i databasen!"
+        if (!oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status, packet["beskrivelse"].asText(), packet["feilkode_oppdrag"].asText(), packet["originalXml"].asText())) {
+            log.error("Klarte ikke å oppdatere oppdrag i databasen! fagsystemId=$fagsystemId status=$status")
+            sikkerLogg.error("Klarte ikke å oppdatere oppdrag i databasen! fagsystemId=$fagsystemId fødselsnummer=$fødselsnummer status=$status :\n${packet.toJson()}")
+            return
         }
 
         oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.also {
