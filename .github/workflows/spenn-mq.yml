@@ -1,11 +1,8 @@
-name: Spenn-simulering
+name: Spenn-mq
 
 on:
   push:
-    paths-ignore:
-      - 'spenn-opprydding-dev/**'
-      - '.github/workflows/spenn-opprydding-dev.yml'
-      - 'deploy/dev-opprydding.yml'
+    paths:
       - 'spenn-mq/**'
       - '.github/workflows/spenn-mq.yml'
       - 'deploy/dev-mq.yml'
@@ -21,7 +18,7 @@ jobs:
       - name: create docker tag
         run: echo "TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
     outputs:
-      image: ghcr.io/${{ github.repository }}/spenn-simulering:${{ env.TAG }}
+      image: ghcr.io/${{ github.repository }}/spenn-mq:${{ env.TAG }}
 
   build:
     name: build docker image
@@ -33,36 +30,36 @@ jobs:
         with:
           java-version: '17.x'
       - name: test and build
-        run: ./gradlew :spenn-simulering:test :spenn-simulering:build
+        run: ./gradlew :spenn-mq:test :spenn-mq:build
       - name: build docker image
-        run: docker build spenn-simulering -f Dockerfile --pull -t ${{ needs.set_version.outputs.image }}
+        run: docker build spenn-mq -f Dockerfile --pull -t ${{ needs.set_version.outputs.image }}
       - name: push docker image
         run: |
           docker login --username "$GITHUB_REPOSITORY" -p ${{ secrets.GITHUB_TOKEN }} ghcr.io
           docker push ${{ needs.set_version.outputs.image }}
 
-  snyk:
-    name: check vulnerabilities
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Gradle vulnerability check
-        uses: snyk/actions/gradle@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --project-name=spenn-simulering --org=tbd-ty7 --fail-on=all --configuration-matching='^runtimeClasspath'
-          command: monitor
-
   deployDev:
     name: deploy to dev
-    needs: [ set_version, build, snyk ]
+    needs: [set_version, build, snyk]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: dev-fss
-          RESOURCE: deploy/dev-simulering.yml
+          CLUSTER: dev-gcp
+          RESOURCE: deploy/dev-mq.yml
           IMAGE: ${{ needs.set_version.outputs.image }}
+
+#  deployProd:
+#    name: deploy to prod
+#    needs: [set_version, deployDev]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - uses: nais/deploy/actions/deploy@v1
+#        env:
+#          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+#          CLUSTER: prod-gcp
+#          RESOURCE: deploy/prod-mq.yml
+#          IMAGE: ${{ needs.set_version.outputs.image }}

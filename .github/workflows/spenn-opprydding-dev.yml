@@ -9,6 +9,10 @@ on:
       - 'deploy/prod.yml'
       - 'deploy/dev-job.yml'
       - 'deploy/prod-job.yml'
+      - 'spenn-mq/**'
+      - '.github/workflows/spenn-mq.yml'
+      - 'deploy/dev-mq.yml'
+      - 'deploy/prod-mq.yml'
     branches:
       - master
 

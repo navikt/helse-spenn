@@ -6,6 +6,10 @@ on:
       - 'spenn-opprydding-dev/**'
       - '.github/workflows/spenn-opprydding-dev.yml'
       - 'deploy/dev-opprydding.yml'
+      - 'spenn-mq/**'
+      - '.github/workflows/spenn-mq.yml'
+      - 'deploy/dev-mq.yml'
+      - 'deploy/prod-mq.yml'
     branches:
       - master
 
