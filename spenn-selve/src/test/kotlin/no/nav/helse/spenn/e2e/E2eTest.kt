@@ -1,11 +1,14 @@
 package no.nav.helse.spenn.e2e
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.spenn.e2e.E2eTestApp.Companion.e2eTest
 import no.nav.helse.spenn.e2e.Kvittering.Companion.kvittering
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
+import java.util.*
 import java.util.UUID.randomUUID
 
 class E2eTest {
@@ -25,29 +28,26 @@ class E2eTest {
             val løsning = parseOkLøsning(rapid.inspektør.message(0))
             val avstemming = løsning.avstemmingsnøkkel
 
-            oppdrag.meldingFraOppdrag(
-                kvittering
-                    .fagsystemId(utbetalingsbehov.fagsystemId)
-                    .avstemmingsnøkkel(avstemming)
-                    .akseptert()
-                    .toXml()
-            )
-            assertEquals(4, rapid.inspektør.size)
-            assertEquals("oppdrag_kvittering", rapid.inspektør.message(1)["@event_name"].asText())
+            val transaksjonId = UUID.randomUUID()
+            rapid.sendTestMessage(JsonMessage.newMessage("transaksjon_status", mapOf<String, Any>(
+                "@id" to transaksjonId,
+                "fødselsnummer" to utbetalingsbehov.fnr,
+                "avstemmingsnøkkel" to avstemming,
+                "fagsystemId" to utbetalingsbehov.fagsystemId,
+                "status" to "AKSEPTERT",
+                "feilkode_oppdrag" to "00",
+                "beskrivelse" to "Akseptert uten problemer",
+                "originalXml" to ""
+            )).toJson())
 
-            val status = rapid.inspektør.message(2)
-            assertEquals("transaksjon_status", status["@event_name"].asText())
-            assertEquals("AKSEPTERT", status["status"].asText())
-
-            val finalLøsning = rapid.inspektør.message(3)
+            assertEquals(2, rapid.inspektør.size)
+            val finalLøsning = rapid.inspektør.message(1)
             assertEquals("behov", finalLøsning["@event_name"].asText())
             assertEquals("AKSEPTERT", finalLøsning["@løsning"].path("Utbetaling").path("status").asText())
 
             assertEquals(behovMeldingId, rapid.inspektør.field(0, "@forårsaket_av").path("id").asText())
             assertNotEquals(behovMeldingId, rapid.inspektør.field(0, "@id").asText())
-            assertEquals(behovMeldingId, rapid.inspektør.field(2, "@forårsaket_av").path("id").asText())
-            assertEquals(rapid.inspektør.field(2, "@id").asText(), rapid.inspektør.field(3, "@forårsaket_av").path("id").asText())
-            assertNotEquals(behovMeldingId, rapid.inspektør.field(3, "@id").asText())
+            assertEquals(transaksjonId.toString(), rapid.inspektør.field(1, "@forårsaket_av").path("id").asText())
         }
     }
 
@@ -105,21 +105,23 @@ class E2eTest {
             rapid.sendTestMessage(utbetaling1.json())
             val løsning1 = parseOkLøsning(rapid.inspektør.message(0))
 
-            oppdrag.meldingFraOppdrag(
-                kvittering
-                    .fagsystemId(utbetaling1.fagsystemId)
-                    .avstemmingsnøkkel(løsning1.avstemmingsnøkkel)
-                    .funksjonellFeil()
-                    .toXml()
-            )
+            rapid.sendTestMessage(JsonMessage.newMessage("transaksjon_status", mapOf<String, Any>(
+                "fødselsnummer" to utbetaling1.fnr,
+                "avstemmingsnøkkel" to løsning1.avstemmingsnøkkel,
+                "fagsystemId" to utbetaling1.fagsystemId,
+                "status" to "AVVIST",
+                "feilkode_oppdrag" to "08",
+                "beskrivelse" to "Oppdraget ble avvist",
+                "originalXml" to """<?xml version="1.0" encoding="utf-8"?><ns2:oppdrag xmlns:ns2="http://www.trygdeetaten.no/skjema/oppdrag"></ns2:oppdrag>"""
+            )).toJson())
 
             rapid.sendTestMessage(utbetalingKopi.json())
 
             assertEquals(1, database.hentAlleOppdrag().size)
             assertEquals(2, this.oppdrag.meldinger.size)
-            assertEquals(5, rapid.inspektør.size) //behov, transaksjonsstatus, kvittering, nytt behov
+            assertEquals(3, rapid.inspektør.size) //behov, løsning på behov, nytt behov
 
-            val løsningKopi = parseOkLøsning(rapid.inspektør.message(4))
+            val løsningKopi = parseOkLøsning(rapid.inspektør.message(2))
             assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)
             assertEquals(løsning1.overføringstidspunkt?.withNano(0), løsningKopi.overføringstidspunkt?.withNano(0))
             assertEquals("OVERFØRT", løsningKopi.status)

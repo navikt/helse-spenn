@@ -53,9 +53,6 @@ fun rapidApp(
             oppdragDao,
             kø.sendSession()
         )
-        if (System.getenv("NAIS_CLUSTER_NAME") != "dev-gcp") {
-            Kvitteringer(this, kø, oppdragDao)
-        }
         Transaksjoner(this, oppdragDao)
     }.apply {
         register(object : RapidsConnection.StatusListener {
