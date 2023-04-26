@@ -1,10 +1,9 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
-import no.nav.helse.spenn.UtKø
-import no.nav.helse.spenn.UtbetalingslinjerMapper
 import no.nav.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -13,8 +12,7 @@ import java.util.*
 
 internal class Utbetalinger(
     rapidsConnection: RapidsConnection,
-    private val oppdragDao: OppdragDao,
-    private val tilOppdrag: UtKø
+    private val oppdragDao: OppdragDao
 ) : River.PacketListener {
 
     private companion object {
@@ -65,10 +63,7 @@ internal class Utbetalinger(
         val mottaker = packet["Utbetaling.mottaker"].asText()
         val fagsystemId = packet["Utbetaling.fagsystemId"].asText().trim()
         val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())
-        val utbetalingslinjer =
-            UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
-                .fraBehov(packet["Utbetaling"])
-        if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
+        if (packet["Utbetaling.linjer"].isEmpty) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
         val nå = Instant.now()
         val tidspunkt = nå
             .atZone(ZoneId.systemDefault())
@@ -76,66 +71,62 @@ internal class Utbetalinger(
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
 
         try {
-            if (oppdragDao.finnesFraFør(fødselsnummer, utbetalingId, fagsystemId)) {
+            val oppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId, fagsystemId) ?: oppdragDao.nyttOppdrag(
+                utbetalingId = utbetalingId,
+                fagområde = packet["Utbetaling.fagområde"].asText(),
+                avstemmingsnøkkel = avstemmingsnøkkel,
+                fødselsnummer = fødselsnummer,
+                organisasjonsnummer = organisasjonsnummer,
+                mottaker = mottaker,
+                tidspunkt = tidspunkt,
+                fagsystemId = fagsystemId,
+                status = Oppdragstatus.MOTTATT,
+                totalbeløp = packet["Utbetaling.linjer"].sumOf { it.path("sats").asInt() },
+                originalJson = packet.toJson()
+            )
+
+            if (oppdragDto.erKvittert()) {
                 log.info("Mottatt duplikat. UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for dette fnr")
                 sikkerLogg.info("Mottatt duplikat. UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId finnes allerede for $fødselsnummer:\n${packet.toJson()}")
-                val gammeltOppdrag: OppdragDto = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId, fagsystemId)
+
                 //Hvis mottatt - send gammel xml på nytt
-                if (gammeltOppdrag.kanSendesPåNytt()) {
-                    if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") {
-                        oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, Oppdragstatus.MOTTATT)
-                        sendOppdrag(context, fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, avstemmingsnøkkel, mottaker, packet)
-                    } else {
-                        //Her lager vi en blander vi nye utbetalingslinjer og gammelt oppdrag.
-                        // Behov-json i basen kan være på et gammelt format og da kan vi ikke parse.
-                        // Det er opp til avsender å alltid sende samme oppdrag for samme utbetalingsid
-                        gammeltOppdrag.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
-                    }
+                if (!oppdragDto.kanSendesPåNytt()) {
+                    packet["@løsning"] = mapOf("Utbetaling" to oppdragDto.somLøsning())
+                    return context.publish(packet.toJson().also {
+                        sikkerLogg.info("sender gammel løsning på utbetaling=$it")
+                    })
                 }
-                packet["@løsning"] = mapOf(
-                    "Utbetaling" to gammeltOppdrag.somLøsning()
-                )
-            } else {
-                val oppdragDto = oppdragDao.nyttOppdrag(
-                    utbetalingId = utbetalingId,
-                    fagområde = packet["Utbetaling.fagområde"].asText(),
-                    avstemmingsnøkkel = avstemmingsnøkkel,
-                    fødselsnummer = fødselsnummer,
-                    organisasjonsnummer = organisasjonsnummer,
-                    mottaker = mottaker,
-                    tidspunkt = tidspunkt,
-                    fagsystemId = fagsystemId,
-                    status = Oppdragstatus.MOTTATT,
-                    totalbeløp = utbetalingslinjer.totalbeløp(),
-                    originalJson = packet.toJson()
-                )
-                if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") {
-                    sendOppdrag(context, fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, avstemmingsnøkkel, mottaker, packet)
-                } else {
-                    oppdragDto.sendOppdrag(oppdragDao, utbetalingslinjer, nå, tilOppdrag)
-                }
-                packet["@løsning"] = mapOf(
-                    "Utbetaling" to oppdragDto.somLøsning()
-                )
+
+                log.info("sender eksisterende oppdrag på nytt, UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId")
+                sikkerLogg.info("sender eksisterende oppdrag på nytt, UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId:\n${packet.toJson()}")
+
+                oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, Oppdragstatus.MOTTATT)
             }
+
+            packet["@løsning"] = mapOf(
+                "Utbetaling" to mapOf(
+                    "status" to Oppdragstatus.MOTTATT,
+                    "beskrivelse" to Oppdragstatus.MOTTATT.beskrivelse(),
+                    "avstemmingsnøkkel" to avstemmingsnøkkel
+                )
+            )
+            context.publish(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
+            context.publish(lagOppdragsmelding(fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, avstemmingsnøkkel, mottaker, packet).toJson())
         } catch (err: Exception) {
             log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)
+            sikkerLogg.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err, keyValue("fødselsnummer", fødselsnummer))
             packet["@løsning"] = mapOf(
                 "Utbetaling" to mapOf(
                     "status" to Oppdragstatus.FEIL,
-                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag pga. teknisk feil"
+                    "beskrivelse" to "Kunne ikke opprette nytt Oppdrag pga. teknisk feil: ${err.message}"
                 )
             )
-
-            // kast exception videre oppover; dersom MQ er nede ønsker vi at spenn skal restarte
-            if (err is MQErNede) throw err
-        } finally {
             context.publish(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
         }
     }
 
-    private fun sendOppdrag(context: MessageContext, fødselsnummer: String, organisasjonsnummer: String, utbetalingId: UUID, fagsystemId: String, avstemmingsnøkkel: Long, mottaker: String, packet: JsonMessage) {
-        context.publish(JsonMessage.newMessage("oppdrag_utbetaling", mutableMapOf(
+    private fun lagOppdragsmelding(fødselsnummer: String, organisasjonsnummer: String, utbetalingId: UUID, fagsystemId: String, avstemmingsnøkkel: Long, mottaker: String, packet: JsonMessage): JsonMessage {
+        return JsonMessage.newMessage("oppdrag_utbetaling", mutableMapOf(
             "fødselsnummer" to fødselsnummer,
             "organisasjonsnummer" to organisasjonsnummer,
             "saksbehandler" to packet["Utbetaling.saksbehandler"],
@@ -162,9 +153,8 @@ internal class Utbetalinger(
                     compute("refFagsystemId") { _, _ -> linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText() }
                 }
             }
-
         ).apply {
             compute("aktørId") { _, _ -> packet["aktørId"].asText() }
-        }).toJson())
+        })
     }
 }

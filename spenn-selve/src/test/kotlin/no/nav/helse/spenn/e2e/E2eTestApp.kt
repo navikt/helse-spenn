@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
-import io.mockk.clearMocks
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.asLocalDateTime
@@ -15,7 +14,6 @@ import java.time.LocalDateTime
 
 internal class E2eTestApp(
     var rapid: RepublishableTestRapid = RepublishableTestRapid(),
-    val oppdrag: TestKø = TestKø(),
     val database: TestDatabase = TestDatabase(),
     var listAppender: ListAppender<ILoggingEvent> = ListAppender()
 ) {
@@ -25,24 +23,30 @@ internal class E2eTestApp(
         listAppender.start()
         sikkerLogg.addAppender(listAppender)
         database.migrate()
-        rapidApp(rapid, oppdrag, database)
+        rapidApp(rapid, database)
         rapid.start()
     }
 
     private fun reset() {
         database.resetDatabase()
         rapid = RepublishableTestRapid()
-        oppdrag.reset()
         listAppender = ListAppender()
     }
 
 
+    fun parseMottattLøsning(behovsvar: JsonNode): MottattLøsning {
+        val løsning = behovsvar.path("@løsning").path("Utbetaling")
+        return MottattLøsning(
+            status = løsning.path("status").asText(),
+            avstemmingsnøkkel = løsning.path("avstemmingsnøkkel").asLong()
+        )
+    }
     fun parseOkLøsning(behovsvar: JsonNode): OkLøsning {
-        val løsning = behovsvar["@løsning"]["Utbetaling"]
+        val løsning = behovsvar.path("@løsning").path("Utbetaling")
         return OkLøsning(
-            status = løsning["status"].asText(),
-            overføringstidspunkt = løsning["overføringstidspunkt"].asLocalDateTime(),
-            avstemmingsnøkkel = løsning["avstemmingsnøkkel"].asLong()
+            status = løsning.path("status").asText(),
+            overføringstidspunkt = løsning.path("overføringstidspunkt").asLocalDateTime(),
+            avstemmingsnøkkel = løsning.path("avstemmingsnøkkel").asLong()
         )
     }
 
@@ -51,15 +55,15 @@ internal class E2eTestApp(
 
 
     fun parseFeilLøsning(behovsvar: JsonNode): FeilLøsning = FeilLøsning(
-        status = behovsvar["@løsning"]["Utbetaling"]["status"].asText(),
-        beskrivelse = behovsvar["@løsning"]["Utbetaling"]["beskrivelse"].asText(),
+        status = behovsvar.path("@løsning").path("Utbetaling").path("status").asText(),
+        beskrivelse = behovsvar.path("@løsning").path("Utbetaling").path("beskrivelse").asText(),
     )
 
 
     fun erLøsningOverført(index: Int): Boolean {
         val behovsvar = rapid.inspektør.message(index)
-        val løsning = behovsvar["@løsning"]["Utbetaling"]
-        return løsning["status"].asText() == "OVERFØRT"
+        val løsning = behovsvar.path("@løsning").path("Utbetaling")
+        return løsning.path("status").asText() == "OVERFØRT"
     }
 
 
@@ -73,6 +77,11 @@ internal class E2eTestApp(
                 testEnv.reset()
             }
         }
+
+        data class MottattLøsning(
+            val status: String,
+            val avstemmingsnøkkel: Long
+        )
 
         data class OkLøsning(
             val status: String,

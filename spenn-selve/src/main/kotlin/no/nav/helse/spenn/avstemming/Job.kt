@@ -1,11 +1,11 @@
 package no.nav.helse.spenn.avstemming
 
+import com.ibm.mq.jms.MQConnectionFactory
+import com.ibm.msg.client.jms.JmsConstants
+import com.ibm.msg.client.wmq.WMQConstants
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.helse.spenn.DataSourceBuilder
 import no.nav.helse.spenn.JmsUtSesjon
-import no.nav.helse.spenn.mqConnection
-import no.nav.helse.spenn.readFile
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringSerializer
@@ -40,16 +40,23 @@ private fun datasource(env: Map<String, String>): HikariDataSource {
     return HikariDataSource(hikariConfig)
 }
 
+private fun mqConnection(env: Map<String, String>, mqUserName: String, mqPassword: String) =
+    MQConnectionFactory().apply {
+        hostName = env.getValue("MQ_HOSTNAME")
+        port = env.getValue("MQ_PORT").toInt()
+        channel = env.getValue("MQ_CHANNEL")
+        queueManager = env.getValue("MQ_QUEUE_MANAGER")
+        transportType = WMQConstants.WMQ_CM_CLIENT
+        setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
+    }.createConnection(mqUserName, mqPassword)
+
 internal fun avstemmingJob(env: Map<String, String>) {
     val log = LoggerFactory.getLogger("no.nav.helse.Spenn")
     Thread.setDefaultUncaughtExceptionHandler { _, throwable -> log.error(throwable.message, throwable) }
 
-    val serviceAccountUserName = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
-    val serviceAccountPassword = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
-    val dataSource = if (env.containsKey("DATABASE_SPENN_AVSTEMMING_DATABASE"))
-        datasource(env)
-    else
-        DataSourceBuilder(env).getDataSource()
+    val serviceAccountUserName = env.getValue("SERVICEUSER_NAME")
+    val serviceAccountPassword = env.getValue("SERVICEUSER_PASSWORD")
+    val dataSource = datasource(env)
 
     val kafkaConfig = KafkaConfig(
         bootstrapServers = env.getValue("KAFKA_BROKERS"),

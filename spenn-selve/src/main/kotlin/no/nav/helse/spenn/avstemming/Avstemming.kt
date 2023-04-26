@@ -81,6 +81,6 @@ internal class Avstemming(
 
     private fun sendAvstemmingsmelding(melding: Avstemmingsdata) {
         val xmlMelding = AvstemmingdataXml.marshal(melding)
-        tilAvstemming.sendNoErrorHandling(xmlMelding)
+        tilAvstemming.send(xmlMelding)
     }
 }

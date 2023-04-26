@@ -2,9 +2,7 @@ package no.nav.helse.spenn.utbetaling
 
 import io.mockk.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.spenn.Jms
 import no.nav.helse.spenn.RapidInspektør
-import no.nav.helse.spenn.TestConnection
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import no.nav.helse.spenn.e2e.Utbetalingslinje.Companion.utbetalingslinje
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -12,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
-import java.util.*
 
 internal class UtbetalingerTest {
     companion object {
@@ -22,27 +19,17 @@ internal class UtbetalingerTest {
         const val FAGSYSTEMID = "838069327ea2"
         const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
         const val SAKSBEHANDLER = "Navn Navnesen"
-        const val SEND_QUEUE = "utbetalingQueue"
-        const val REPLY_TO_QUEUE = "statusQueue"
     }
 
     private val dao = mockk<OppdragDao>()
-    private val connection = TestConnection()
     private val rapid = TestRapid().apply {
-        Utbetalinger(
-            this, dao, Jms(
-                connection,
-                SEND_QUEUE,
-                REPLY_TO_QUEUE
-            ).sendSession()
-        )
+        Utbetalinger(this, dao)
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
     fun clear() {
         clearAllMocks()
-        connection.reset()
         rapid.reset()
     }
 
@@ -50,6 +37,9 @@ internal class UtbetalingerTest {
     fun `løser utbetalingsbehov`() {
         val avstemmingsnøkkel = CapturingSlot<Long>()
         val behov = utbetalingsbehov
+        every {
+            dao.hentOppdrag(any(), any(), any())
+        } returns null
         every {
             dao.nyttOppdrag(
                 any(),
@@ -79,10 +69,10 @@ internal class UtbetalingerTest {
         every { dao.oppdaterOppdrag(any(), behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
         every { dao.finnesFraFør(behov.fnr, behov.utbetalingId, behov.fagsystemId) } returns false
         rapid.sendTestMessage(behov.json())
-        assertEquals(1, inspektør.size)
-        assertEquals(1, connection.inspektør.antall())
-        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
-        assertOverført(0)
+        assertEquals(2, inspektør.size)
+        assertMottatt(0)
+        val utbetalingsmelding = rapid.inspektør.message(1)
+        assertEquals("oppdrag_utbetaling", utbetalingsmelding.path("@event_name").asText())
     }
 
     @Test
@@ -94,6 +84,10 @@ internal class UtbetalingerTest {
                 .grad(null)
                 .satstype("ENG")
         )
+
+        every {
+            dao.hentOppdrag(any(), any(), any())
+        } returns null
 
         every {
             dao.nyttOppdrag(
@@ -125,15 +119,10 @@ internal class UtbetalingerTest {
         every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
 
         rapid.sendTestMessage(behov.json())
-        assertEquals(1, inspektør.size)
-        assertEquals(1, connection.inspektør.antall())
-        val body = connection.inspektør.melding(0).getBody(String::class.java)
-        val unmarshalled = OppdragXml.unmarshal(body, false)
-        assertEquals(0, unmarshalled.oppdrag110.oppdragsLinje150[0].grad170.size)
-        assertEquals("ENG", unmarshalled.oppdrag110.oppdragsLinje150[0].typeSats)
-
-        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
-        assertOverført(0)
+        assertEquals(2, inspektør.size)
+        assertMottatt(0)
+        val utbetalingsmelding = rapid.inspektør.message(1)
+        assertEquals("oppdrag_utbetaling", utbetalingsmelding.path("@event_name").asText())
     }
 
 
@@ -142,7 +131,6 @@ internal class UtbetalingerTest {
         val behov = utbetalingsbehov.linjer()
         rapid.sendTestMessage(behov.json())
         assertEquals(0, inspektør.size)
-        assertEquals(0, connection.inspektør.antall())
         verify(exactly = 0) {
             dao.nyttOppdrag(
                 any(),
@@ -179,19 +167,17 @@ internal class UtbetalingerTest {
         } throws RuntimeException()
         rapid.sendTestMessage(utbetalingsbehov.json())
         assertEquals(1, inspektør.size)
-        assertEquals(0, connection.inspektør.antall())
         assertEquals(BEHOV, inspektør.behovId(0))
         inspektør.løsning(0, "Utbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
     }
 
-    private fun assertOverført(indeks: Int, antallOverforinger: Int = 1) {
+    private fun assertMottatt(indeks: Int) {
         assertEquals(BEHOV, inspektør.behovId(indeks))
         inspektør.løsning(indeks, "Utbetaling") {
-            assertEquals(Oppdragstatus.OVERFØRT.name, it.path("status").asText())
+            assertEquals(Oppdragstatus.MOTTATT.name, it.path("status").asText())
             assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }
-            assertDoesNotThrow { LocalDateTime.parse(it.path("overføringstidspunkt").asText()) }
         }
         val avstemmingsnøkkel = inspektør.løsning(indeks, "Utbetaling")
             .path("avstemmingsnøkkel")
@@ -209,13 +195,6 @@ internal class UtbetalingerTest {
                 status = Oppdragstatus.MOTTATT,
                 totalbeløp = BELØP,
                 originalJson = any()
-            )
-        }
-        verify(exactly = antallOverforinger) {
-            dao.oppdaterOppdrag(
-                avstemmingsnøkkel,
-                FAGSYSTEMID,
-                Oppdragstatus.OVERFØRT
             )
         }
     }

@@ -18,15 +18,6 @@ dependencies {
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("io.mockk:mockk:1.12.0")
-    testImplementation("org.apache.activemq:apache-artemis:2.17.0") {
-        /* this is a shaded jar that creates conflicts on classpath, see:
-            https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
-        */
-        exclude("org.apache.activemq", "artemis-jms-client-all")
-        exclude("javax.xml.bind", "jaxb-api")
-        exclude("com.sun.xml.bind", "jaxb-impl")
-        exclude("com.sun.xml.bind", "jaxb-jxc")
-    }
 }
 
 tasks {

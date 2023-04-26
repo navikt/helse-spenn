@@ -39,7 +39,7 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
         val beskrivelse = packet["kvittering.beskrivelse"].asText()
         val status = Oppdragstatus.valueOf(packet["kvittering.status"].asText())
 
-        val oppdrag = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId, fagsystemId)
+        val oppdrag = oppdragDao.hentOppdrag(fødselsnummer, utbetalingId, fagsystemId) ?: return sikkerLogg.error("oppdrag finnes ikke for utbetalingId=$utbetalingId fagsystemId=$fagsystemId")
         if (oppdrag.erKvittert()) {
             log.info("oppdaterer ikke status for utbetaling $utbetalingId fagsystemId=$fagsystemId status=$status $beskrivelse")
             sikkerLogg.info("oppdaterer ikke status for utbetaling $utbetalingId fagsystemId=$fagsystemId status=$status $beskrivelse",

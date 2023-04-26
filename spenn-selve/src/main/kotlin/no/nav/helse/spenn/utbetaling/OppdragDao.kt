@@ -154,7 +154,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             )
         } == 1
 
-    fun hentOppdrag(fødselsnummer: String, utbetalingId: UUID, fagsystemId: String): OppdragDto = sessionOf(dataSource).use { session ->
+    fun hentOppdrag(fødselsnummer: String, utbetalingId: UUID, fagsystemId: String): OppdragDto? = sessionOf(dataSource).use { session ->
         @Language("PostgreSQL")
         val query = """SELECT * FROM oppdrag WHERE fnr = :fnr and utbetaling_id = :utbetalingId AND fagsystem_id = :fagsystemId"""
         session.run(
@@ -162,7 +162,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
                 query,
                 mapOf("fnr" to fødselsnummer, "utbetalingId" to utbetalingId, "fagsystemId" to fagsystemId)
             ).map { it.toOppdragDto() }.asSingle
-        )!!
+        )
     }
 
     companion object {

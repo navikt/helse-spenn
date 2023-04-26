@@ -1,10 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
-import no.nav.helse.spenn.UtKø
-import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.*
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -89,20 +86,6 @@ class OppdragDto(
         }
 
         private fun totalbeløp(liste: List<OppdragDto>) = liste.sumOf { it.totalbeløp }
-    }
-
-    internal fun sendOppdrag(
-        dao: OppdragDao,
-        utbetalingslinjer: Utbetalingslinjer,
-        nå: Instant,
-        tilOppdrag: UtKø
-    ) {
-        val oppdrag = OppdragBuilder(utbetalingId, utbetalingslinjer, avstemmingsnøkkel, nå).build()
-
-        val oppdragXml = OppdragXml.marshal(oppdrag)
-        tilOppdrag.send(oppdragXml)
-        status = Oppdragstatus.OVERFØRT
-        dao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
     }
 
     internal fun kanSendesPåNytt() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST, Oppdragstatus.FEIL)

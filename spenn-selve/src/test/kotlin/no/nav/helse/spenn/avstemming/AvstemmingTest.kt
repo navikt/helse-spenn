@@ -113,7 +113,7 @@ internal class AvstemmingTest {
     fun clear() {
         clearAllMocks()
         connection.reset()
-        avstemming = Avstemming(Jms(connection, SEND_QUEUE).sendSession(), producer, "rapidTopic", dao, avstemmingDao)
+        avstemming = Avstemming(JmsUtSesjon(connection, SEND_QUEUE), producer, "rapidTopic", dao, avstemmingDao)
     }
 
     private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
