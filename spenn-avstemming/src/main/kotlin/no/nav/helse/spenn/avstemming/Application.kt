@@ -22,9 +22,8 @@ private fun rapidApp(env: Map<String, String>) {
 }
 
 fun rapidApp(rapid: RapidsConnection, database: Database, avstemmingkø: UtKø) {
-    val dataSource = database.getDataSource()
-    val oppdragDao = OppdragDao(dataSource)
-    val avstemmingDao = AvstemmingDao(dataSource)
+    val oppdragDao = OppdragDao(database::getDataSource)
+    val avstemmingDao = AvstemmingDao(database::getDataSource)
 
     rapid.apply {
         Avstemminger(this, oppdragDao, avstemmingDao, avstemmingkø)

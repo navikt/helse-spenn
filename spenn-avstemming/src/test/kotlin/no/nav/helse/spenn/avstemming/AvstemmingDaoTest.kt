@@ -85,7 +85,7 @@ internal class AvstemmingDaoTest {
             .cleanDisabled(false)
             .load()
 
-        avstemmingDao = AvstemmingDao(dataSource)
+        avstemmingDao = AvstemmingDao(::dataSource)
     }
 
     @AfterAll
