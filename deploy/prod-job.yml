@@ -4,7 +4,7 @@ metadata:
   labels:
     team: tbd
     db: spenn
-  name: spenn-avstemming
+  name: spenn-avstemming-cronjob
   namespace: tbd
 spec:
   image: {{image}}
