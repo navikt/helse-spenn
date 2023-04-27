@@ -4,12 +4,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
-import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import kotliquery.using
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.avstemming.Database
 import no.nav.helse.spenn.avstemming.Oppdragstatus
@@ -18,8 +14,9 @@ import no.nav.helse.spenn.avstemming.rapidApp
 import org.flywaydb.core.Flyway
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,8 +29,11 @@ class E2ETest {
     }
     private val testRapid = TestRapid()
     private val mapper = jacksonObjectMapper()
+    private val mqmeldinger = mutableListOf<String>()
     private val utkø = object : UtKø {
-        override fun send(messageString: String) {}
+        override fun send(messageString: String) {
+            mqmeldinger.add(messageString)
+        }
     }
 
     init {
@@ -42,6 +42,7 @@ class E2ETest {
 
     @AfterEach
     fun after() {
+        mqmeldinger.clear()
         testRapid.reset()
         database.resetDatabase()
     }
@@ -90,6 +91,7 @@ class E2ETest {
         assertEquals(0, testRapid.inspektør.size)
         testRapid.sendTestMessage(utførAvstemming(opprettet.toLocalDate()))
         assertEquals(0, testRapid.inspektør.size)
+        assertEquals(0, mqmeldinger.size)
 
         testRapid.sendTestMessage(oppdragutbetaling.medKvittering("OVERFØRT"))
         testRapid.sendTestMessage(transaksjonStatus(avstemmingsnøkkel, fødselsnummer, fagsystemId, "00", "AKSEPTERT", null, null, "xml"))
@@ -97,11 +99,16 @@ class E2ETest {
         assertEquals(0, testRapid.inspektør.size)
         testRapid.sendTestMessage(utførAvstemming(opprettet.toLocalDate()))
         assertEquals(1, testRapid.inspektør.size)
+        assertEquals(3, mqmeldinger.size)
         val avstemming = testRapid.inspektør.message(0)
 
         assertEquals("avstemming", avstemming.path("@event_name").asText())
         assertEquals("SPREF", avstemming.path("fagområde").asText())
         assertEquals(1, avstemming.path("detaljer").path("antall_oppdrag").asInt())
+
+        testRapid.sendTestMessage(utførAvstemming(opprettet.toLocalDate()))
+        assertEquals(1, testRapid.inspektør.size) { "skal ikke avstemme allerede avstemte oppdrag" }
+        assertEquals(3, mqmeldinger.size)
     }
 
     @Language("JSON")
