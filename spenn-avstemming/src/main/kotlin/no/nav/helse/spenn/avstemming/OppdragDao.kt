@@ -34,7 +34,7 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
         @Language("PostgreSQL")
         val query =
             "INSERT INTO oppdrag (avstemmingsnokkel, utbetaling_id, fagsystem_id, fagomrade, fnr, mottaker, totalbelop, opprettet) VALUES(?, ?, ?, CAST(? AS fagomrade), ?, ?, ?, ?);"
-        session.run(queryOf(query, avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet).asExecute)
+        session.run(queryOf(query, avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet).asUpdate) == 1
     }
 
     fun oppdragOverført(avstemmingsnøkkel: Long) = sessionOf(dataSource()).use { session ->
