@@ -43,7 +43,8 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
         val fagsystemId = requireNotNull(oppdrag.oppdrag110.fagsystemId)
         val fødselsnummer = requireNotNull(oppdrag.oppdrag110.oppdragGjelderId)
         val feilkode = requireNotNull(oppdrag.mmel.alvorlighetsgrad)
-        val meldingFraOppdrag = oppdrag.mmel.beskrMelding
+        val meldingFraOppdrag: String? = oppdrag.mmel.beskrMelding
+        val kodemelding: String? = oppdrag.mmel.kodeMelding
         val (status, beskrivelse) = when (feilkode) {
             "00" -> Oppdragstatus.AKSEPTERT to (meldingFraOppdrag ?: "Oppdraget ble akseptert uten feil")
             "04" -> Oppdragstatus.AKSEPTERT_MED_FEIL to (meldingFraOppdrag
@@ -58,7 +59,7 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
                     "feilkode=$feilkode status=$status beskrivelse=$beskrivelse"
         )
 
-        rapidsConnection.publish(fødselsnummer, JsonMessage.newMessage(mapOf<String, Any>(
+        rapidsConnection.publish(fødselsnummer, JsonMessage.newMessage(mutableMapOf<String, Any>(
             "@event_name" to "transaksjon_status",
             "@id" to UUID.randomUUID(),
             "@opprettet" to LocalDateTime.now(),
@@ -69,6 +70,9 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
             "feilkode_oppdrag" to feilkode,
             "beskrivelse" to beskrivelse,
             "originalXml" to xmlMessage
-        )).toJson().also { sikkerLogg.info("sender transaksjon status=$it") })
+        ).apply {
+            compute("kodemelding") { _, _ -> kodemelding }
+            compute("beskrivendemelding") { _, _ -> meldingFraOppdrag }
+        }).toJson().also { sikkerLogg.info("sender transaksjon status=$it") })
     }
 }
