@@ -88,8 +88,8 @@ data class Kvittering(
     val fødselsnummer: String = "12345678911",
     val saksbehandler: String = "Navn Navnesen",
     val orgnr: String = "123456789",
-
-    ) {
+    val utbetalingId: UUID = UUID.randomUUID()
+) {
     fun fagsystemId(it: String) = copy(fagsystemId=it)
     fun avstemmingsnøkkel(it: Long) = copy(avstemmingsnøkkel=it)
     fun akseptert() = copy(alvorlighetsgrad=AKSEPTERT_UTEN_FEIL)
@@ -132,6 +132,7 @@ data class Kvittering(
                 <typeSats>DAG</typeSats>
                 <brukKjoreplan>N</brukKjoreplan>
                 <saksbehId>$saksbehandler</saksbehId>
+                <henvisning>$utbetalingId</henvisning>
                 <refusjonsinfo-156>
                     <maksDato>2020-09-20+02:00</maksDato>
                     <refunderesId>$orgnr</refunderesId>

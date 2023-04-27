@@ -129,6 +129,7 @@ internal class KvitteringerIntegrationTest {
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
             <saksbehId>$SAKSBEHANDLER</saksbehId>
+            <henvisning>b995be7e-783d-46e0-94da-d71d6a25db42</henvisning>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
                 <refunderesId>$ORGNR</refunderesId>
@@ -153,6 +154,7 @@ internal class KvitteringerIntegrationTest {
             <typeSats>DAG</typeSats>
             <brukKjoreplan>N</brukKjoreplan>
             <saksbehId>$SAKSBEHANDLER</saksbehId>
+            <henvisning>b995be7e-783d-46e0-94da-d71d6a25db42</henvisning>
             <refusjonsinfo-156>
                 <maksDato>2020-09-20+02:00</maksDato>
                 <refunderesId>$ORGNR</refunderesId>

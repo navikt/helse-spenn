@@ -42,6 +42,7 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
         val avstemmingsnøkkel = requireNotNull(oppdrag.oppdrag110.avstemming115.nokkelAvstemming).toLong()
         val fagsystemId = requireNotNull(oppdrag.oppdrag110.fagsystemId)
         val fødselsnummer = requireNotNull(oppdrag.oppdrag110.oppdragGjelderId)
+        val utbetalingId = UUID.fromString(requireNotNull(oppdrag.oppdrag110.oppdragsLinje150.first().henvisning))
         val feilkode = requireNotNull(oppdrag.mmel.alvorlighetsgrad)
         val meldingFraOppdrag: String? = oppdrag.mmel.beskrMelding
         val kodemelding: String? = oppdrag.mmel.kodeMelding
@@ -64,6 +65,7 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
             "@id" to UUID.randomUUID(),
             "@opprettet" to LocalDateTime.now(),
             "fødselsnummer" to fødselsnummer,
+            "utbetalingId" to utbetalingId,
             "avstemmingsnøkkel" to avstemmingsnøkkel,
             "fagsystemId" to fagsystemId,
             "status" to status,
