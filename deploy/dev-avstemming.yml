@@ -1,0 +1,52 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    team: tbd
+  name: spenn-avstemming
+  namespace: tbd
+spec:
+  image: {{image}}
+  port: 8080
+  strategy:
+    type: Recreate
+  liveness:
+    initialDelay: 5
+    path: /isalive
+  readiness:
+    initialDelay: 5
+    path: /isready
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    cpuThresholdPercentage: 90
+    max: 1
+    min: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 512Mi
+    requests:
+      cpu: 1000m
+      memory: 256Mi
+  kafka:
+    pool: nav-dev
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_14
+        diskAutoresize: true
+        pointInTimeRecovery: true
+        name: spenn-avstemming
+        databases:
+          - name: spenn-avstemming
+            envVarPrefix: DATABASE
+  secureLogs:
+    enabled: true
+  env:
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: tbd-spenn-avstemming-v1
+    - name: KAFKA_RAPID_TOPIC
+      value: tbd.rapid.v1
+    - name: KAFKA_RESET_POLICY
+      value: latest
