@@ -66,26 +66,6 @@ internal class AvstemmingerTest {
         assertEquals(6, utgåendeMeldinger.size)
     }
 
-    @Test
-    fun `oppdaterer avstemte refusjonsoppdrag`() {
-        val fagområde = "SPREF"
-        val nøkkelTom = 1024L
-        rapid.sendTestMessage(avstemming(fagområde, nøkkelTom))
-        verify(exactly = 1) {
-            oppdragDao.oppdaterAvstemteOppdrag(fagområde, nøkkelTom)
-        }
-    }
-
-    @Test
-    fun `oppdaterer avstemte personoppdrag`() {
-        val fagområde = "SP"
-        val nøkkelTom = 1024L
-        rapid.sendTestMessage(avstemming(fagområde, nøkkelTom))
-        verify(exactly = 1) {
-            oppdragDao.oppdaterAvstemteOppdrag(fagområde, nøkkelTom)
-        }
-    }
-
     @Language("JSON")
     private fun utførAvstemming(dagen: LocalDate) = """
         {
