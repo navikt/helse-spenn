@@ -21,14 +21,16 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.testcontainers.containers.PostgreSQLContainer
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
 
 class E2ETest {
-
+    private companion object {
+        private val database = TestDatabase()
+    }
     private val testRapid = TestRapid()
-    private val database = TestDatabase()
     private val mapper = jacksonObjectMapper()
     private val utkø = object : UtKø {
         override fun send(messageString: String) {}
@@ -68,6 +70,49 @@ class E2ETest {
         assertEquals(1, database.antallOppdrag())
         assertEquals(Oppdragstatus.AKSEPTERT, database.status(avstemmingsnøkkel))
     }
+
+    @Test
+    fun `avstemmer oppdrag`() {
+        val avstemmingsnøkkel = 1024L
+        val utbetalingId = UUID.randomUUID()
+        val fagsystemId = "asdfg"
+        val fagområde = "SPREF"
+        val fødselsnummer = "fnr"
+        val mottaker = "mottaker"
+        val totalbeløp = 5000
+        val opprettet = LocalDateTime.now()
+
+        val oppdragutbetaling = oppdragutbetaling(avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)
+        testRapid.sendTestMessage(oppdragutbetaling)
+        assertEquals(1, database.antallOppdrag())
+        assertNull(database.status(avstemmingsnøkkel))
+
+        assertEquals(0, testRapid.inspektør.size)
+        testRapid.sendTestMessage(utførAvstemming(opprettet.toLocalDate()))
+        assertEquals(0, testRapid.inspektør.size)
+
+        testRapid.sendTestMessage(oppdragutbetaling.medKvittering("OVERFØRT"))
+        testRapid.sendTestMessage(transaksjonStatus(avstemmingsnøkkel, fødselsnummer, fagsystemId, "00", "AKSEPTERT", null, null, "xml"))
+
+        assertEquals(0, testRapid.inspektør.size)
+        testRapid.sendTestMessage(utførAvstemming(opprettet.toLocalDate()))
+        assertEquals(1, testRapid.inspektør.size)
+        val avstemming = testRapid.inspektør.message(0)
+
+        assertEquals("avstemming", avstemming.path("@event_name").asText())
+        assertEquals("SPREF", avstemming.path("fagområde").asText())
+        assertEquals(1, avstemming.path("detaljer").path("antall_oppdrag").asInt())
+    }
+
+    @Language("JSON")
+    private fun utførAvstemming(dagen: LocalDate) = """
+        {
+          "@event_name": "utfør_avstemming",
+          "@id": "${UUID.randomUUID()}",
+          "@opprettet": "${LocalDateTime.now()}",
+          "dagen": "$dagen"
+        }
+    """
 
     @Language("JSON")
     private fun oppdragutbetaling(avstemmingsnøkkel: Long, utbetalingId: UUID, fagsystemId: String, fagområde: String, fødselsnummer: String, mottaker: String, totalbeløp: Int, opprettet: LocalDateTime) = """
@@ -127,6 +172,7 @@ class E2ETest {
             jdbcUrl = postgres.jdbcUrl
             username = postgres.username
             password = postgres.password
+            initializationFailTimeout = 10_000L
         }
 
         private var actualDataSource: DataSource? = null

@@ -10,14 +10,14 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
     fun hentOppdragForAvstemming(avstemmingsnøkkelTom: Long) =
         sessionOf(dataSource()).use { session ->
             @Language("PostgreSQL")
-            val query = "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, oppdragkvittering FROM oppdrag WHERE avstemt = FALSE AND avstemmingsnokkel <= ?"
+            val query = "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, alvorlighetsgrad,kodemelding,beskrivendemelding, oppdragkvittering FROM oppdrag WHERE avstemt = FALSE AND avstemmingsnokkel <= ? AND status IS NOT NULL;"
             session.run(queryOf(query, avstemmingsnøkkelTom).map { it.string("fagomrade") to it.tilOppdragDto() }.asList)
         }.groupBy({ it.first }) { it.second }
 
     fun oppdaterAvstemteOppdrag(fagområde: String, avstemmingsnøkkelTom: Long) =
         sessionOf(dataSource()).use { session ->
             @Language("PostgreSQL")
-            val query = "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = ? AND avstemt = FALSE AND avstemmingsnokkel <= ?"
+            val query = "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = CAST(? AS fagomrade) AND avstemt = FALSE AND avstemmingsnokkel <= ?"
             session.run(queryOf(query, fagområde, avstemmingsnøkkelTom).asUpdate)
         }
 
