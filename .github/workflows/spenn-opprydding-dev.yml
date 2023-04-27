@@ -2,17 +2,11 @@ name: Spenn-opprydding-dev
 
 on:
   push:
-    paths-ignore:
-      - 'spenn-selve/**'
-      - '.github/workflows/spenn-selve.yml'
-      - 'deploy/dev.yml'
-      - 'deploy/prod.yml'
-      - 'deploy/dev-job.yml'
-      - 'deploy/prod-job.yml'
-      - 'spenn-mq/**'
-      - '.github/workflows/spenn-mq.yml'
-      - 'deploy/dev-mq.yml'
-      - 'deploy/prod-mq.yml'
+    paths:
+      - 'spenn-opprydding-dev/**'
+      - '.github/workflows/spenn-opprydding-dev.yml'
+      - 'deploy/dev-opprydding.yml'
+      - 'build.gradle.kts'
     branches:
       - master
 

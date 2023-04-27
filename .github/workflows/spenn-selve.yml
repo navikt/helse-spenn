@@ -2,14 +2,14 @@ name: Spenn-selve
 
 on:
   push:
-    paths-ignore:
-      - 'spenn-opprydding-dev/**'
-      - '.github/workflows/spenn-opprydding-dev.yml'
-      - 'deploy/dev-opprydding.yml'
-      - 'spenn-mq/**'
-      - '.github/workflows/spenn-mq.yml'
-      - 'deploy/dev-mq.yml'
-      - 'deploy/prod-mq.yml'
+    paths:
+      - 'spenn-selve/**'
+      - '.github/workflows/spenn-selve.yml'
+      - 'deploy/dev.yml'
+      - 'deploy/dev-job.yml'
+      - 'deploy/prod.yml'
+      - 'deploy/prod-job.yml'
+      - 'build.gradle.kts'
     branches:
       - master
 

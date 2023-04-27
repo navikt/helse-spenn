@@ -2,14 +2,12 @@ name: Spenn-simulering
 
 on:
   push:
-    paths-ignore:
-      - 'spenn-opprydding-dev/**'
-      - '.github/workflows/spenn-opprydding-dev.yml'
-      - 'deploy/dev-opprydding.yml'
-      - 'spenn-mq/**'
-      - '.github/workflows/spenn-mq.yml'
-      - 'deploy/dev-mq.yml'
-      - 'deploy/prod-mq.yml'
+    paths:
+      - 'spenn-simulering/**'
+      - '.github/workflows/spenn-simulering.yml'
+      - 'deploy/dev-simulering.yml'
+      - 'deploy/prod-simulering.yml'
+      - 'build.gradle.kts'
     branches:
       - master
 
