@@ -136,6 +136,7 @@ internal class Utbetalinger(
             "utbetalingId" to utbetalingId,
             "fagområde" to packet["Utbetaling.fagområde"].asText(),
             "endringskode" to packet["Utbetaling.endringskode"].asText(),
+            "totalbeløp" to packet["Utbetaling.linjer"].sumOf { it.path("sats").asInt() },
             "linjer" to packet["Utbetaling.linjer"].map { linje ->
                 mutableMapOf<String, Any>(
                     "fom" to linje.path("fom").asText(),
