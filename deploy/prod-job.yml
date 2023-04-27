@@ -3,7 +3,6 @@ kind: Naisjob
 metadata:
   labels:
     team: tbd
-    db: spenn
   name: spenn-avstemming-cronjob
   namespace: tbd
 spec:
@@ -20,44 +19,6 @@ spec:
     limits:
       memory: 4096Mi
       cpu: 2000m
-  gcp:
-    permissions:
-      - resource:
-          apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
-          kind: Project
-          name: tbd-prod-eacd
-        role: roles/cloudsql.client
-  envFrom:
-    - secret: google-sql-spenn-spenn-spenn-avstemming-bc3e42cd
-    - secret: spenn
-  accessPolicy:
-    outbound:
-      external:
-        - host: mpls02.adeo.no
-          ports:
-            - name: mq
-              port: 1414
-              protocol: TCP
-      rules:
-        - application: prometheus
-          namespace: nais
   env:
-    - name: CRON_JOB_MODE
-      value: "true"
     - name: KAFKA_RAPID_TOPIC
       value: tbd.rapid.v1
-    - name: DATABASE_REGION
-      value: "europe-north1"
-    - name: DATABASE_INSTANCE
-      value: "spenn"
-    - name: MQ_HOSTNAME
-      value: mpls02.adeo.no
-    - name: MQ_CHANNEL
-      value: P_SPENN
-    - name: MQ_PORT
-      value: "1414"
-    - name: MQ_QUEUE_MANAGER
-      value: MPLS02
-    - name: AVSTEMMING_QUEUE_SEND
-      # Setter target client = 1 for bakoverkompabilitet med stormaskin
-      value: queue:///QA.P234.OB29_AVSTEMMING_XML?targetClient=1
