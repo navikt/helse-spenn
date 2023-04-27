@@ -7,6 +7,7 @@ import no.nav.helse.spenn.Avstemmingsnøkkel
 import no.nav.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
@@ -111,7 +112,7 @@ internal class Utbetalinger(
                 )
             )
             context.publish(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
-            context.publish(lagOppdragsmelding(fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, avstemmingsnøkkel, mottaker, packet).toJson())
+            context.publish(lagOppdragsmelding(fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, tidspunkt, avstemmingsnøkkel, mottaker, packet).toJson())
         } catch (err: Exception) {
             log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)
             sikkerLogg.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err, keyValue("fødselsnummer", fødselsnummer))
@@ -125,11 +126,12 @@ internal class Utbetalinger(
         }
     }
 
-    private fun lagOppdragsmelding(fødselsnummer: String, organisasjonsnummer: String, utbetalingId: UUID, fagsystemId: String, avstemmingsnøkkel: Long, mottaker: String, packet: JsonMessage): JsonMessage {
+    private fun lagOppdragsmelding(fødselsnummer: String, organisasjonsnummer: String, utbetalingId: UUID, fagsystemId: String, tidspunkt: LocalDateTime, avstemmingsnøkkel: Long, mottaker: String, packet: JsonMessage): JsonMessage {
         return JsonMessage.newMessage("oppdrag_utbetaling", mutableMapOf(
             "fødselsnummer" to fødselsnummer,
             "organisasjonsnummer" to organisasjonsnummer,
             "saksbehandler" to packet["Utbetaling.saksbehandler"],
+            "opprettet" to tidspunkt,
             "avstemmingsnøkkel" to avstemmingsnøkkel,
             "mottaker" to mottaker,
             "fagsystemId" to fagsystemId,
