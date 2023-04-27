@@ -17,7 +17,7 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
     fun oppdaterAvstemteOppdrag(fagområde: String, avstemmingsnøkkelTom: Long) =
         sessionOf(dataSource()).use { session ->
             @Language("PostgreSQL")
-            val query = "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = CAST(? AS fagomrade) AND avstemt = FALSE AND avstemmingsnokkel <= ?"
+            val query = "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = CAST(? AS fagomrade) AND status IS NOT NULL AND avstemt = FALSE AND avstemmingsnokkel <= ?"
             session.run(queryOf(query, fagområde, avstemmingsnøkkelTom).asUpdate)
         }
 

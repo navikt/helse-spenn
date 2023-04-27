@@ -26,15 +26,6 @@ internal class Avstemminger(
                 it.require("dagen", JsonNode::asLocalDate)
             }
         }.register(UtførAvstemming(oppdragDao, avstemmingDao, tilAvstemming))
-        River(rapidsConnection).apply {
-            validate {
-                it.demandValue("@event_name", "avstemming")
-                it.require("@opprettet", JsonNode::asLocalDateTime)
-                it.requireAny("fagområde", listOf("SPREF", "SP"))
-                it.requireKey("detaljer.nøkkel_tom")
-                it.requireKey("detaljer.antall_oppdrag")
-            }
-        }.register(UtførteAvstemminger(oppdragDao))
     }
 
     private class UtførAvstemming(
@@ -117,21 +108,6 @@ internal class Avstemminger(
         private fun sendAvstemmingsmelding(melding: Avstemmingsdata) {
             val xmlMelding = AvstemmingdataXml.marshal(melding)
             utkø.send(xmlMelding)
-        }
-    }
-
-    private class UtførteAvstemminger(private val oppdragDao: OppdragDao) : River.PacketListener {
-        override fun onError(problems: MessageProblems, context: MessageContext) {
-            logger
-                .offentligError("Forstod ikke avstemming (se sikkerlogg for detaljer)")
-                .privatError("Forstod ikke avstemming:\n${problems.toExtendedReport()}")
-        }
-
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
-            val avstemmingsnøkkelTom = packet["detaljer.nøkkel_tom"].asLong()
-            val fagområde = packet["fagområde"].asText()
-            logger.info("markerer ${packet["detaljer.antall_oppdrag"].asText()} oppdrag for fagområde $fagområde til og med avstemmingsnøkkel=$avstemmingsnøkkelTom som avstemte")
-            oppdragDao.oppdaterAvstemteOppdrag(fagområde, avstemmingsnøkkelTom)
         }
     }
 }

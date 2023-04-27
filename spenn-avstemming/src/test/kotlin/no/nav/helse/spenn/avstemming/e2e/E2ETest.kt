@@ -6,6 +6,8 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.avstemming.Database
 import no.nav.helse.spenn.avstemming.Oppdragstatus
@@ -14,9 +16,9 @@ import no.nav.helse.spenn.avstemming.rapidApp
 import org.flywaydb.core.Flyway
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -27,7 +29,7 @@ class E2ETest {
     private companion object {
         private val database = TestDatabase()
     }
-    private val testRapid = TestRapid()
+    private val testRapid = RepublishableTestRapid()
     private val mapper = jacksonObjectMapper()
     private val mqmeldinger = mutableListOf<String>()
     private val utkø = object : UtKø {
@@ -75,6 +77,7 @@ class E2ETest {
     @Test
     fun `avstemmer oppdrag`() {
         val avstemmingsnøkkel = 1024L
+        val avstemmingsnøkkel2 = 1023L
         val utbetalingId = UUID.randomUUID()
         val fagsystemId = "asdfg"
         val fagområde = "SPREF"
@@ -87,6 +90,9 @@ class E2ETest {
         testRapid.sendTestMessage(oppdragutbetaling)
         assertEquals(1, database.antallOppdrag())
         assertNull(database.status(avstemmingsnøkkel))
+
+        testRapid.sendTestMessage(oppdragutbetaling(avstemmingsnøkkel2, UUID.randomUUID(), "annen fagsystemId", fagområde, fødselsnummer, mottaker, totalbeløp, opprettet))
+        assertEquals(2, database.antallOppdrag())
 
         assertEquals(0, testRapid.inspektør.size)
         testRapid.sendTestMessage(utførAvstemming(opprettet.toLocalDate()))
@@ -109,6 +115,9 @@ class E2ETest {
         testRapid.sendTestMessage(utførAvstemming(opprettet.toLocalDate()))
         assertEquals(1, testRapid.inspektør.size) { "skal ikke avstemme allerede avstemte oppdrag" }
         assertEquals(3, mqmeldinger.size)
+
+        assertTrue(database.avstemt(avstemmingsnøkkel))
+        assertFalse(database.avstemt(avstemmingsnøkkel2))
     }
 
     @Language("JSON")
@@ -212,5 +221,41 @@ class E2ETest {
         fun status(avstemmingsnøkkel: Long) = sessionOf(getDataSource()).use {
             it.run(queryOf("SELECT status FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.stringOrNull("status")?.let { Oppdragstatus.valueOf(it) } }.asSingle)
         }
+
+        fun avstemt(avstemmingsnøkkel: Long) = sessionOf(getDataSource()).use {
+            it.run(queryOf("SELECT avstemt FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.boolean(1) }.asSingle)
+        } ?: fail { "forventer å finne oppdrag" }
+    }
+
+    internal class RepublishableTestRapid(private val rapid: TestRapid = TestRapid()) : RapidsConnection(), RapidsConnection.StatusListener, RapidsConnection.MessageListener {
+        val inspektør get() = rapid.inspektør
+
+        init {
+            rapid.register(this as StatusListener)
+            rapid.register(this as MessageListener)
+        }
+
+        fun reset() = rapid.reset()
+        override fun onMessage(message: String, context: MessageContext) = notifyMessage(message, context)
+        override fun onNotReady(rapidsConnection: RapidsConnection) = notifyNotReady()
+        override fun onReady(rapidsConnection: RapidsConnection) = notifyReady()
+        override fun onShutdown(rapidsConnection: RapidsConnection) = notifyShutdown()
+        override fun onStartup(rapidsConnection: RapidsConnection) = notifyStartup()
+
+        fun sendTestMessage(message: String) = notifyMessage(message, this)
+
+        override fun publish(message: String) {
+            rapid.publish(message)
+            rapid.sendTestMessage(message)
+        }
+
+        override fun publish(key: String, message: String) {
+            rapid.publish(key, message)
+            rapid.sendTestMessage(message)
+        }
+
+        override fun rapidName() = rapid.rapidName()
+        override fun start() = rapid.start()
+        override fun stop() = rapid.start()
     }
 }
