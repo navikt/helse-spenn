@@ -2,7 +2,6 @@ package no.nav.helse.spenn
 
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.spenn.avstemming.avstemmingJob
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.Overføringer
 import no.nav.helse.spenn.utbetaling.Transaksjoner
@@ -10,7 +9,6 @@ import no.nav.helse.spenn.utbetaling.Utbetalinger
 
 fun main() {
     val env = System.getenv()
-    if ("true" == env["CRON_JOB_MODE"]?.lowercase()) return avstemmingJob(env)
     rapidApp(env)
 }
 

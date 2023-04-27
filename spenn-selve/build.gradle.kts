@@ -6,15 +6,6 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.postgresql:postgresql:42.5.0")
     implementation("com.github.seratch:kotliquery:1.9.0")
-    implementation("com.google.cloud.sql:postgres-socket-factory:1.7.2") // spenn-avstemming
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
-
-    implementation ("io.prometheus:simpleclient_pushgateway:0.16.0")
-
-    implementation("com.ibm.mq:com.ibm.mq.allclient:9.3.0.1")
-
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
-    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("io.mockk:mockk:1.12.0")
@@ -38,13 +29,5 @@ tasks {
                     it.copyTo(file)
             }
         }
-    }
-}
-
-configure<SourceSetContainer> {
-    named("main") {
-        java.srcDir("src/main/java")
-        java.srcDir("$buildDir/generated-sources/xsd2java")
-        java.srcDir("$buildDir/generated-sources/wsdl2java")
     }
 }

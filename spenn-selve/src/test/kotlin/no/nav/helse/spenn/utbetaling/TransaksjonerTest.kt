@@ -12,7 +12,6 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
-import no.nav.helse.spenn.TestConnection
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
@@ -39,7 +38,6 @@ internal class TransaksjonerTest {
     }
 
     private val dao = mockk<OppdragDao>()
-    private val connection = TestConnection()
     private val rapid = TestRapid().apply {
         Transaksjoner(this, dao)
     }
@@ -48,7 +46,6 @@ internal class TransaksjonerTest {
     @BeforeEach
     fun clear() {
         clearAllMocks()
-        connection.reset()
         rapid.reset()
     }
 

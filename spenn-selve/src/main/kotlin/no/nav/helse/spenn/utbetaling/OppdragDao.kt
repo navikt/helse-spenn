@@ -50,39 +50,6 @@ internal class OppdragDao(private val dataSource: DataSource) {
             }.asSingle)
         }
 
-    fun hentOppdragForAvstemming(avstemmingsperiode: ClosedRange<Long>) =
-        sessionOf(dataSource).use { session ->
-            session.run(
-                queryOf(
-                    "SELECT avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
-                            "WHERE avstemt = FALSE AND (? <= avstemmingsnokkel AND avstemmingsnokkel <= ?)",
-                    avstemmingsperiode.start, avstemmingsperiode.endInclusive
-                ).map { it.toOppdragDto() }.asList
-            )
-        }
-
-    fun hentOppdragForAvstemming(avstemmingsnøkkelTom: Long) =
-        sessionOf(dataSource).use { session ->
-            session.run(
-                queryOf(
-                    "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, oppdrag_response FROM oppdrag " +
-                            "WHERE avstemt = FALSE AND avstemmingsnokkel <= ?",
-                    avstemmingsnøkkelTom
-                ).map { it.string("fagomrade") to it.toOppdragDto() }.asList
-            )
-        }.groupBy({ it.first }) { it.second }
-
-    fun oppdaterAvstemteOppdrag(fagområde: String, avstemmingsnøkkelTom: Long) =
-        sessionOf(dataSource).use { session ->
-            session.run(
-                queryOf(
-                    "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = ? AND avstemt = FALSE AND avstemmingsnokkel <= ?",
-                    fagområde, avstemmingsnøkkelTom
-                ).asUpdate
-            )
-        }
-
-
 
     fun finnesFraFør(fnr: String, utbetalingId: UUID, fagsystemId: String): Boolean = sessionOf(dataSource).use { session ->
         @Language("PostgreSQL")
@@ -117,7 +84,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
             totalbeløp,
             originalJson
         )
-        return OppdragDto(utbetalingId, avstemmingsnøkkel, fødselsnummer, fagsystemId, tidspunkt, status, totalbeløp, null)
+        return OppdragDto(avstemmingsnøkkel, tidspunkt, status)
     }
 
 
@@ -168,14 +135,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
     companion object {
         fun Row.toOppdragDto() =
             OppdragDto(
-                utbetalingId = UUID.fromString(string("utbetaling_id")),
                 avstemmingsnøkkel = long("avstemmingsnokkel"),
-                fødselsnummer = string("fnr"),
-                fagsystemId = string("fagsystem_id"),
                 opprettet = localDateTime("opprettet"),
-                status = Oppdragstatus.valueOf(string("status")),
-                totalbeløp = int("totalbelop"),
-                oppdragXml = stringOrNull("oppdrag_response")
+                status = Oppdragstatus.valueOf(string("status"))
             )
     }
 }

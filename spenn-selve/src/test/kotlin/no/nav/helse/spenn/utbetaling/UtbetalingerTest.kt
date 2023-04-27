@@ -56,14 +56,9 @@ internal class UtbetalingerTest {
             )
         } answers {
             OppdragDto(
-                behov.utbetalingId,
                 avstemmingsnøkkel.captured,
-                behov.fnr,
-                FAGSYSTEMID,
                 LocalDateTime.now(),
-                Oppdragstatus.MOTTATT,
-                BELØP,
-                null
+                Oppdragstatus.MOTTATT
             )
         }
         every { dao.oppdaterOppdrag(any(), behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
@@ -105,14 +100,9 @@ internal class UtbetalingerTest {
             )
         } answers {
             OppdragDto(
-                utbetalingsbehov.utbetalingId,
                 avstemmingsnøkkel.captured,
-                behov.fnr,
-                behov.fagsystemId,
                 LocalDateTime.now(),
-                Oppdragstatus.MOTTATT,
-                behov.linjer[0].sats,
-                null
+                Oppdragstatus.MOTTATT
             )
         }
         every { dao.finnesFraFør(utbetalingsbehov.fnr, utbetalingsbehov.utbetalingId, utbetalingsbehov.fagsystemId) } returns false

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
-import no.nav.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.LocalDateTime
@@ -46,7 +45,7 @@ internal class Utbetalinger(
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                     requireAny("satstype", listOf("DAG", "ENG"))
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
-                    interestedIn("statuskode") { value -> TkodeStatusLinje.valueOf(value.asText()) }
+                    interestedIn("statuskode") { value -> check(value.asText() in setOf("OPPH")) }
                     interestedIn("grad")
                 }
             }

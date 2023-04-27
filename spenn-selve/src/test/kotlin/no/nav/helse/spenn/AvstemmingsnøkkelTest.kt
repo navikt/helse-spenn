@@ -28,15 +28,13 @@ internal class AvstemmingsnøkkelTest {
             .atZone(ZoneId.systemDefault())
             .toInstant()
 
-        val periode = Avstemmingsnøkkel.periode(idag)
+        val idagStart = Avstemmingsnøkkel.opprett(idag.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
         val avstemmingsnøkkelIgår = Avstemmingsnøkkel.opprett(igår)
         val avstemmingsnøkkelImorgen = Avstemmingsnøkkel.opprett(imorgen)
-        assertTrue(avstemmingsnøkkel in periode)
-        assertFalse(avstemmingsnøkkelIgår in periode)
-        assertTrue(avstemmingsnøkkelIgår < periode.start)
-        assertFalse(avstemmingsnøkkelImorgen in periode)
-        assertTrue(avstemmingsnøkkelImorgen > periode.endInclusive)
+        assertTrue(avstemmingsnøkkel >= idagStart)
+        assertTrue(avstemmingsnøkkelIgår < idagStart)
+        assertTrue(avstemmingsnøkkelImorgen > idagStart)
     }
 
     @Test
@@ -51,7 +49,7 @@ internal class AvstemmingsnøkkelTest {
             .toInstant()
             .minusNanos(1)
 
-        val periode = Avstemmingsnøkkel.periode(idag)
+        val periode = Avstemmingsnøkkel.opprett(idagStart)..Avstemmingsnøkkel.opprett(idagSlutt)
         val avstemmingsnøkkelIdagStart = Avstemmingsnøkkel.opprett(idagStart)
         val avstemmingsnøkkelIdagSlutt = Avstemmingsnøkkel.opprett(idagSlutt)
         assertTrue(avstemmingsnøkkelIdagStart in periode)
