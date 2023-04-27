@@ -19,7 +19,7 @@ internal class Utbetalinger(
                 it.demandValue("@event_name", "oppdrag_utbetaling")
                 it.rejectKey("kvittering")
                 it.requireKey("@id", "aktørId", "utbetalingId", "fagsystemId")
-                it.requireKey("fødselsnummer", "mottaker", "avstemmingsnøkkel", "fagområde", "tidspunkt", "totalbeløp")
+                it.requireKey("fødselsnummer", "mottaker", "avstemmingsnøkkel", "fagområde", "opprettet", "totalbeløp")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
             }
         }.register(this)
@@ -39,7 +39,7 @@ internal class Utbetalinger(
         val fødselsnummer = packet["fødselsnummer"].asText()
         val mottaker = packet["mottaker"].asText()
         val totalbeløp = packet["totalbeløp"].asInt()
-        val opprettet = packet["tidspunkt"].asLocalDateTime()
+        val opprettet = packet["opprettet"].asLocalDateTime()
 
         val pakkelogg = logger.fellesKontekst(mapOf(
             "meldingsreferanseId" to packet["@id"].asText(),

@@ -83,7 +83,7 @@ internal class UtbetalingerTest {
       "fagsystemId": "$fagsystemId",
       "fagområde": "$fagområde",
       "mottaker": "$mottaker",
-      "tidspunkt": "$opprettet",
+      "opprettet": "$opprettet",
       "avstemmingsnøkkel": $avstemmingsnøkkel,
       "totalbeløp": $totalbeløp
     }
@@ -102,7 +102,7 @@ internal class UtbetalingerTest {
       "fagsystemId": "$fagsystemId",
       "fagområde": "$fagområde",
       "mottaker": "$mottaker",
-      "tidspunkt": "$opprettet",
+      "opprettet": "$opprettet",
       "avstemmingsnøkkel": $avstemmingsnøkkel,
       "totalbeløp": $totalbeløp,
       "kvittering": {
