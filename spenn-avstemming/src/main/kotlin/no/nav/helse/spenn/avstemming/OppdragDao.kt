@@ -7,8 +7,6 @@ import java.util.*
 import javax.sql.DataSource
 
 internal class OppdragDao(private val dataSource: DataSource) {
-    ;
-
     fun hentOppdragForAvstemming(avstemmingsnøkkelTom: Long) =
         sessionOf(dataSource).use { session ->
             @Language("PostgreSQL")
