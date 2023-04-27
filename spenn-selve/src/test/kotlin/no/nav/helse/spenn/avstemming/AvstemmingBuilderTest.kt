@@ -133,7 +133,7 @@ internal class AvstemmingBuilderTest {
             assertEquals(4, it.size)
             assertAvstemmingdata(AksjonType.START, it.first())
             assertFørsteAvstemmingdataData(it[1])
-            assertPåfølgendeAvstemmingdataData(detaljer.size - DETALJER_PER_AVSTEMMINGMELDING, it[1])
+            assertPåfølgendeAvstemmingdataData(detaljer.size - DETALJER_PER_AVSTEMMINGMELDING, it[2])
             assertAvstemmingdata(AksjonType.AVSL, it.last())
         }
     }
