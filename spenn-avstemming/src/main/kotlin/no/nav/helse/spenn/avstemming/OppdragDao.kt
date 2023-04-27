@@ -40,7 +40,7 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
     fun oppdragOverført(avstemmingsnøkkel: Long) = sessionOf(dataSource()).use { session ->
         @Language("PostgreSQL")
         val query = "UPDATE oppdrag SET endret=now(),status=CAST(? AS oppdragstatus) WHERE avstemmingsnokkel = ? AND status IS NULL;"
-        session.run(queryOf(query, Oppdragstatus.MANGELFULL, avstemmingsnøkkel).asUpdate) == 1
+        session.run(queryOf(query, Oppdragstatus.MANGELFULL.name, avstemmingsnøkkel).asUpdate) == 1
     }
 
     fun medKvittering(
@@ -54,7 +54,7 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
         @Language("PostgreSQL")
         val query =
             "UPDATE oppdrag SET endret=now(),status=CAST(? AS oppdragstatus),alvorlighetsgrad=?,kodemelding=?,beskrivendemelding=?,oppdragkvittering=? WHERE avstemt=FALSE AND avstemmingsnokkel=?;"
-        session.run(queryOf(query, oppdragstatus, alvorlighetsgrad, kodemelding, beskrivendemelding, oppdragkvittering, avstemmingsnøkkel).asUpdate) == 1
+        session.run(queryOf(query, oppdragstatus.name, alvorlighetsgrad, kodemelding, beskrivendemelding, oppdragkvittering, avstemmingsnøkkel).asUpdate) == 1
     }
 
     private companion object {
