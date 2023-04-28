@@ -16,10 +16,8 @@ import java.time.LocalDateTime
 import java.util.*
 
 internal class KvitteringerTest {
-    companion object {
+    private companion object {
         const val MOTTAK_QUEUE = "statusQueue"
-
-
     }
 
     private val connection = TestConnection()
@@ -36,42 +34,27 @@ internal class KvitteringerTest {
 
     @Test
     fun `akseptert uten feil`() {
-        håndter(
-            Oppdragstatus.AKSEPTERT,
-            AKSEPTERT_UTEN_FEIL
-        )
+        håndter(Oppdragstatus.AKSEPTERT, AKSEPTERT_UTEN_FEIL)
     }
 
     @Test
     fun `akseptert med feil`() {
-        håndter(
-            Oppdragstatus.AKSEPTERT_MED_FEIL,
-            AKSEPTERT_MED_FEIL
-        )
+        håndter(Oppdragstatus.AKSEPTERT_MED_FEIL, AKSEPTERT_MED_FEIL)
     }
 
     @Test
     fun `avvist med funksjonelle feil`() {
-        håndter(
-            Oppdragstatus.AVVIST,
-            AVVIST_FUNKSJONELLE_FEIL
-        )
+        håndter(Oppdragstatus.AVVIST, AVVIST_FUNKSJONELLE_FEIL)
     }
 
     @Test
     fun `avvist med teknisk feil`() {
-        håndter(
-            Oppdragstatus.FEIL,
-            AVVIST_TEKNISK_FEIL
-        )
+        håndter(Oppdragstatus.AVVIST, AVVIST_TEKNISK_FEIL)
     }
 
     @Test
     fun `feil i forståelse av melding`() {
-        håndter(
-            Oppdragstatus.FEIL,
-            UGYLDIG_FEILKODE
-        )
+        håndter(Oppdragstatus.FEIL, UGYLDIG_FEILKODE)
     }
 
     private fun håndter(status: Oppdragstatus, alvorlighetsgrad: String) {

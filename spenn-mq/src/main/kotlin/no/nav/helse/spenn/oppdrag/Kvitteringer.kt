@@ -51,7 +51,7 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
             "04" -> Oppdragstatus.AKSEPTERT_MED_FEIL to (meldingFraOppdrag
                 ?: "Oppdraget ble akseptert, men noe er feil")
             "08" -> Oppdragstatus.AVVIST to (meldingFraOppdrag ?: "Oppdraget ble avvist")
-            "12" -> Oppdragstatus.FEIL to "Teknisk feil fra oppdrag, forsøk utbetaling på nytt"
+            "12" -> Oppdragstatus.AVVIST to "Teknisk feil fra oppdrag, OS har angivelig forsøkt et par ganger og til slutt avvist"
             else -> Oppdragstatus.FEIL to "Spenn forstår ikke responsen fra Oppdrag. Fikk ukjent kode: $feilkode"
         }
 

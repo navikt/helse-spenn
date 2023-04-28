@@ -12,14 +12,12 @@ internal class Transaksjoner(
         private val logger = Logg.ny(Transaksjoner::class)
     }
 
-    private enum class Alvorlighetskode { AKSEPTERT, AKSEPTERT_MED_FEIL, AVVIST, FEIL };
-
     init {
         River(rapidsConnection).apply {
             validate {
                 it.demandValue("@event_name", "transaksjon_status")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
-                it.requireKey("@id", "fødselsnummer", "fagsystemId")
+                it.requireKey("@id", "fødselsnummer", "fagsystemId", "utbetalingId")
                 it.requireKey("avstemmingsnøkkel", "feilkode_oppdrag", "originalXml")
                 it.requireAny("status", listOf("AKSEPTERT", "AKSEPTERT_MED_FEIL", "AVVIST", "FEIL"))
                 it.interestedIn("kodemelding", "beskrivendemelding")
@@ -35,23 +33,24 @@ internal class Transaksjoner(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
-        val alvorlighetskode = Alvorlighetskode.valueOf(packet["status"].asText())
-
         val pakkelogg = logger.fellesKontekst(mapOf(
             "meldingsreferanseId" to packet["@id"].asText(),
+            "utbetalingId" to packet["utbetalingId"].asText(),
             "fagsystemId" to packet["fagsystemId"].asText()
         ))
 
-        val oppdragstatus = when (alvorlighetskode) {
-            Alvorlighetskode.FEIL, Alvorlighetskode.AVVIST -> Oppdragstatus.AVVIST
-            Alvorlighetskode.AKSEPTERT_MED_FEIL -> Oppdragstatus.AKSEPTERT_MED_VARSEL
-            else -> Oppdragstatus.AKSEPTERT
+        val alvorlighetsgrad = packet["feilkode_oppdrag"].asText()
+        val oppdragstatus = when (alvorlighetsgrad) {
+            "00" -> Oppdragstatus.AKSEPTERT
+            "04" -> Oppdragstatus.AKSEPTERT_MED_VARSEL
+            "08", "12" -> Oppdragstatus.AVVIST
+            else -> error("ukjent alvorlighetsgrad: $alvorlighetsgrad")
         }
 
         if (oppdragDao.medKvittering(
                 avstemmingsnøkkel,
                 oppdragstatus,
-                packet["feilkode_oppdrag"].asText(),
+                alvorlighetsgrad,
                 packet["kodemelding"].takeIf(JsonNode::isTextual)?.asText(),
                 packet["beskrivendemelding"].takeIf(JsonNode::isTextual)?.asText(),
                 packet["originalXml"].asText()
