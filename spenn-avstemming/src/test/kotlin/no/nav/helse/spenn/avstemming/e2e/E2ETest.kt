@@ -173,6 +173,7 @@ class E2ETest {
           "@opprettet": "${LocalDateTime.now()}",
           "fødselsnummer": "$fødselsnummer",
           "avstemmingsnøkkel": $avstemmingsnøkkel,
+          "utbetalingId": "${UUID.randomUUID()}",
           "fagsystemId": "$fagsystemId",
           "feilkode_oppdrag": "$alvorlighetsgrad",
           "status": "$status",
