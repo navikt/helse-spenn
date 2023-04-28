@@ -46,12 +46,18 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
         val feilkode = requireNotNull(oppdrag.mmel.alvorlighetsgrad)
         val meldingFraOppdrag: String? = oppdrag.mmel.beskrMelding
         val kodemelding: String? = oppdrag.mmel.kodeMelding
+        /*
+            08 er feil i valideringen, f.eks. at vi sender med feil verdi i klassekode, grad m.m. og det må rettes opp hos før oppdraget kan sendes på nytt. Skal avstemmes som AVVIST
+            12 er en teknisk feil som f.eks. at OS ikke får kontakt med PDL, ereg o.l. og kan forsøke å resendes fra oss. Skal avstemmes som AVVIST.
+
+            i praksis vil 08 bety at oppdraget som sendes fra spleis er feil, og må forkastes/lages på nytt, derfor tolket vi AVVIST (08) som "a hard no"
+         */
         val (status, beskrivelse) = when (feilkode) {
             "00" -> Oppdragstatus.AKSEPTERT to (meldingFraOppdrag ?: "Oppdraget ble akseptert uten feil")
             "04" -> Oppdragstatus.AKSEPTERT_MED_FEIL to (meldingFraOppdrag
                 ?: "Oppdraget ble akseptert, men noe er feil")
             "08" -> Oppdragstatus.AVVIST to (meldingFraOppdrag ?: "Oppdraget ble avvist")
-            "12" -> Oppdragstatus.AVVIST to "Teknisk feil fra oppdrag, OS har angivelig forsøkt et par ganger og til slutt avvist"
+            "12" -> Oppdragstatus.FEIL to "Teknisk feil fra oppdrag, OS har angivelig forsøkt et par ganger og til slutt avvist. Forsøk på nytt"
             else -> Oppdragstatus.FEIL to "Spenn forstår ikke responsen fra Oppdrag. Fikk ukjent kode: $feilkode"
         }
 

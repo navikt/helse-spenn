@@ -49,7 +49,7 @@ internal class KvitteringerTest {
 
     @Test
     fun `avvist med teknisk feil`() {
-        håndter(Oppdragstatus.AVVIST, AVVIST_TEKNISK_FEIL)
+        håndter(Oppdragstatus.FEIL, AVVIST_TEKNISK_FEIL)
     }
 
     @Test
