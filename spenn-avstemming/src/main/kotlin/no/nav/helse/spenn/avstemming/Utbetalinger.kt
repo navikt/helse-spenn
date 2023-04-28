@@ -41,12 +41,12 @@ internal class Utbetalinger(
         val totalbeløp = packet["totalbeløp"].asInt()
         val opprettet = packet["opprettet"].asLocalDateTime()
 
-        val pakkelogg = logger.fellesKontekst(mapOf(
-            "meldingsreferanseId" to packet["@id"].asText(),
-            "aktørId" to packet["aktørId"].asText(),
-            "utbetalingId" to "$utbetalingId",
-            "fagsystemId" to fagsystemId
-        ))
+        val pakkelogg = logger
+            .åpent("meldingsreferanseId", packet["@id"].asText())
+            .åpent("aktørId", packet["aktørId"].asText())
+            .åpent("utbetalingId", "$utbetalingId")
+            .åpent("fagsystemId", fagsystemId)
+            .privat("fødselsnummer", fødselsnummer)
         if (oppdragDao.nyttOppdrag(avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)) {
             pakkelogg.info("opprettet oppdrag med avstemmingsnøkkel $avstemmingsnøkkel")
         } else {

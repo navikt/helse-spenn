@@ -33,11 +33,11 @@ internal class Transaksjoner(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
-        val pakkelogg = logger.fellesKontekst(mapOf(
-            "meldingsreferanseId" to packet["@id"].asText(),
-            "utbetalingId" to packet["utbetalingId"].asText(),
-            "fagsystemId" to packet["fagsystemId"].asText()
-        ))
+        val pakkelogg = logger
+            .åpent("meldingsreferanseId", packet["@id"].asText())
+            .åpent("utbetalingId", packet["utbetalingId"].asText())
+            .åpent("fagsystemId", packet["fagsystemId"].asText())
+            .privat("fødselsnummer", packet["fødselsnummer"].asText())
 
         val alvorlighetsgrad = packet["feilkode_oppdrag"].asText()
         val oppdragstatus = when (alvorlighetsgrad) {

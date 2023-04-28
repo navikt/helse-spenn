@@ -12,7 +12,7 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
             validate {
                 it.demandValue("@event_name", "oppdrag_utbetaling")
                 it.demandKey("kvittering")
-                it.requireKey("@id", "aktørId", "utbetalingId", "fagsystemId")
+                it.requireKey("@id", "aktørId", "fødselsnummer", "utbetalingId", "fagsystemId")
                 it.requireKey("avstemmingsnøkkel")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
                 it.requireAny("kvittering.status", listOf("OVERFØRT", "FEIL"))
@@ -27,12 +27,13 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        val pakkelogg = logger.fellesKontekst(mapOf(
-            "meldingsreferanseId" to packet["@id"].asText(),
-            "aktørId" to packet["aktørId"].asText(),
-            "utbetalingId" to packet["utbetalingId"].asText(),
-            "fagsystemId" to packet["fagsystemId"].asText()
-        ))
+        val pakkelogg = logger
+            .åpent("meldingsreferanseId", packet["@id"].asText())
+            .åpent("aktørId", packet["aktørId"].asText())
+            .åpent("utbetalingId", packet["utbetalingId"].asText())
+            .åpent("fagsystemId", packet["fagsystemId"].asText())
+            .privat("fødselsnummer", packet["fødselsnummer"].asText())
+
         if (packet["kvittering.status"].asText() != "OVERFØRT") {
             pakkelogg.info("ignorerer kvittering pga. status er ${packet["kvittering.status"].asText()}")
             return
