@@ -58,8 +58,8 @@ internal class Transaksjoner(
             pakkelogg.info("oppdrag med avstemmingsnøkkel $avstemmingsnøkkel er oppdatert med status=$oppdragstatus")
         } else {
             pakkelogg
-                .offentligError("oppdrag med avstemmingsnøkkel $avstemmingsnøkkel finnes ikke, eller er allerede avstemt?")
-                .privatError("oppdrag med avstemmingsnøkkel $avstemmingsnøkkel for fnr=${packet["fødselsnummer"].asText()} finnes ikke, eller er allerede avstemt?")
+                .offentligError("oppdrag med avstemmingsnøkkel $avstemmingsnøkkel finnes ikke")
+                .privatError("oppdrag med avstemmingsnøkkel $avstemmingsnøkkel for fnr=${packet["fødselsnummer"].asText()} finnes ikke")
         }
 
     }

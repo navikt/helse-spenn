@@ -53,7 +53,7 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
     ) = sessionOf(dataSource()).use { session ->
         @Language("PostgreSQL")
         val query =
-            "UPDATE oppdrag SET endret=now(),status=CAST(? AS oppdragstatus),alvorlighetsgrad=?,kodemelding=?,beskrivendemelding=?,oppdragkvittering=? WHERE avstemt=FALSE AND avstemmingsnokkel=?;"
+            "UPDATE oppdrag SET endret=now(),status=CAST(? AS oppdragstatus),alvorlighetsgrad=?,kodemelding=?,beskrivendemelding=?,oppdragkvittering=?,avstemt=false WHERE avstemmingsnokkel=?;"
         session.run(queryOf(query, oppdragstatus.name, alvorlighetsgrad, kodemelding, beskrivendemelding, oppdragkvittering, avstemmingsnøkkel).asUpdate) == 1
     }
 
