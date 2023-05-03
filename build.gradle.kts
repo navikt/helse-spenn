@@ -2,7 +2,7 @@ val junitJupiterVersion = "5.9.1"
 val testcontainersVersion = "1.17.4"
 
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.8.21"
 }
 
 allprojects {
@@ -16,7 +16,7 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        implementation("com.github.navikt:rapids-and-rivers:2022110411121667556720.8a951a765583")
+        implementation("com.github.navikt:rapids-and-rivers:2023050308441683096263.f5a276d7bd28")
 
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")

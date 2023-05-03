@@ -27,7 +27,7 @@ internal class Avstemminger(
         River(rapidsConnection).apply {
             validate {
                 it.demandValue("@event_name", "hel_time")
-                it.demandValue("time", "9")
+                it.demandValue("time", 9)
                 it.require("dagen", JsonNode::asLocalDate)
             }
         }.register(AvstemmingBegivenhet())
