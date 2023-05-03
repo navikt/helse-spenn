@@ -42,7 +42,6 @@ spec:
           - name: spenn
             envVarPrefix: DATABASE
             users:
-              - name: spenn-avstemming
               - name: spenn-opprydding
   secureLogs:
     enabled: true
