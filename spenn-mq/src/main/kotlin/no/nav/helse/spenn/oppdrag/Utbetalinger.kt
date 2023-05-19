@@ -75,7 +75,7 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
                         tom = linje["tom"].asLocalDate(),
                         sats = linje["sats"].asInt(),
                         satstype = linje["satstype"].asText(),
-                        grad = linje["grad"].takeUnless(JsonNode::isMissingOrNull)?.asInt(),
+                        grad = linje["grad"]?.takeUnless(JsonNode::isMissingOrNull)?.asInt(),
                         refDelytelseId = linje.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
                         refFagsystemId = linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText()?.trim(),
                         datoStatusFom = linje.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asLocalDate(),
