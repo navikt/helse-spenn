@@ -7,6 +7,7 @@ on:
       - '.github/workflows/spenn-avstemming.yml'
       - 'deploy/dev-avstemming.yml'
       - 'deploy/prod-avstemming.yml'
+      - 'Dockerfile'
     branches:
       - master
 
