@@ -88,12 +88,7 @@ internal class OppdragDaoTest {
             totalbeløp = BELØP,
             originalJson = BEHOV,
         )
-        assertTrue(
-            oppdragDao.oppdaterOppdrag(
-                AVSTEMMINGSNØKKEL,
-                FAGSYSTEMID, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding
-            )
-        )
+        assertTrue(oppdragDao.oppdaterOppdrag(UTBETALING_ID, FAGSYSTEMID, Oppdragstatus.AKSEPTERT, beskrivelse, feilkode, melding))
 
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)

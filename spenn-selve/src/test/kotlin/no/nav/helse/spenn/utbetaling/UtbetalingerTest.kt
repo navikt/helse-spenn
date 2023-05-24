@@ -61,7 +61,7 @@ internal class UtbetalingerTest {
                 Oppdragstatus.MOTTATT
             )
         }
-        every { dao.oppdaterOppdrag(any(), behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
+        every { dao.oppdaterOppdrag(any(), behov.utbetalingId, behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
         every { dao.finnesFraFør(behov.fnr, behov.utbetalingId, behov.fagsystemId) } returns false
         rapid.sendTestMessage(behov.json())
         assertEquals(2, inspektør.size)
@@ -106,7 +106,7 @@ internal class UtbetalingerTest {
             )
         }
         every { dao.finnesFraFør(utbetalingsbehov.fnr, utbetalingsbehov.utbetalingId, utbetalingsbehov.fagsystemId) } returns false
-        every { dao.oppdaterOppdrag(any(), FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
+        every { dao.oppdaterOppdrag(any(), behov.utbetalingId, FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
 
         rapid.sendTestMessage(behov.json())
         assertEquals(2, inspektør.size)

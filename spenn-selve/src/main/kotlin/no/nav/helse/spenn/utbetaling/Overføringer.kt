@@ -52,9 +52,9 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
         sikkerLogg.info("oppdaterer status for utbetaling $utbetalingId fagsystemId=$fagsystemId status=$status $beskrivelse",
             keyValue("fødselsnummer", fødselsnummer)
         )
-        oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status)
+        oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, utbetalingId, fagsystemId, status)
 
-        oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)
+        oppdragDao.hentBehovForOppdrag(utbetalingId, fagsystemId)
             ?.apply {
                 this["@løsning"] = mapOf(
                     "Utbetaling" to mapOf(

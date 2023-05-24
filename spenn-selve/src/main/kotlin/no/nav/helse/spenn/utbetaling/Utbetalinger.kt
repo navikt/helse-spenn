@@ -100,7 +100,7 @@ internal class Utbetalinger(
                 log.info("sender eksisterende oppdrag på nytt, UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId")
                 sikkerLogg.info("sender eksisterende oppdrag på nytt, UtbetalingId=$utbetalingId, fagsystemId=$fagsystemId:\n${packet.toJson()}")
 
-                oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, Oppdragstatus.MOTTATT)
+                oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, utbetalingId, fagsystemId, Oppdragstatus.MOTTATT)
             }
 
             packet["@løsning"] = mapOf(

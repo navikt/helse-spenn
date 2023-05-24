@@ -12,7 +12,7 @@ import javax.sql.DataSource
 internal class OppdragDao(private val dataSource: DataSource) {
 
     fun oppdaterOppdrag(
-        avstemmingsnøkkel: Long,
+        utbetalingId: UUID,
         fagsystemId: String,
         status: Oppdragstatus,
         beskrivelse: String,
@@ -23,29 +23,30 @@ internal class OppdragDao(private val dataSource: DataSource) {
             session.run(
                 queryOf(
                     "UPDATE oppdrag SET endret = now(), status = ?, beskrivelse = ?, feilkode_oppdrag = ?, oppdrag_response = ? " +
-                            "WHERE avstemmingsnokkel = ? AND fagsystem_id = ?",
-                    status.name, beskrivelse, feilkode, xmlMessage, avstemmingsnøkkel, fagsystemId
+                            "WHERE utbetaling_id = ? AND fagsystem_id = ?",
+                    status.name, beskrivelse, feilkode, xmlMessage, utbetalingId, fagsystemId
                 ).asUpdate
             )
         } == 1
 
     fun oppdaterOppdrag(
         avstemmingsnøkkel: Long,
+        utbetalingId: UUID,
         fagsystemId: String,
         status: Oppdragstatus
     ) =
         sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
-                    "UPDATE oppdrag SET endret = now(), status = ? WHERE avstemmingsnokkel = ? AND fagsystem_id = ?",
-                    status.name, avstemmingsnøkkel, fagsystemId
+                    "UPDATE oppdrag SET endret = now(), avstemmingsnokkel=?, status = ? WHERE utbetaling_id = ? AND fagsystem_id = ?",
+                    avstemmingsnøkkel, status.name, utbetalingId, fagsystemId
                 ).asUpdate
             )
         } == 1
 
-    fun hentBehovForOppdrag(avstemmingsnøkkel: Long) =
+    fun hentBehovForOppdrag(utbetalingId: UUID, fagsystemId: String) =
         sessionOf(dataSource).use { session ->
-            session.run(queryOf("SELECT behov FROM oppdrag WHERE avstemmingsnokkel = ?", avstemmingsnøkkel).map {
+            session.run(queryOf("SELECT behov FROM oppdrag WHERE utbetaling_id = ? AND fagsystem_id = ?", utbetalingId, fagsystemId).map {
                 JsonMessage(it.string("behov"), MessageProblems("{}"))
             }.asSingle)
         }

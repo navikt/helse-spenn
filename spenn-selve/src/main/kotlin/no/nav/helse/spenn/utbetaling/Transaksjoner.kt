@@ -22,7 +22,7 @@ internal class Transaksjoner(
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate {
                 it.requireKey(
-                    "@id", "fødselsnummer", "fagsystemId",
+                    "@id", "fødselsnummer", "fagsystemId", "utbetalingId",
                     "avstemmingsnøkkel", "feilkode_oppdrag", "beskrivelse", "originalXml"
                 )
             }
@@ -33,22 +33,24 @@ internal class Transaksjoner(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val fødselsnummer = packet["fødselsnummer"].asText()
         val fagsystemId = packet["fagsystemId"].asText()
+        val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
         val status = Oppdragstatus.valueOf(packet["status"].asText())
         val tidspunkt = packet["@opprettet"].asLocalDateTime()
-        log.info("oppdrag med avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
+        log.info("oppdrag med utbetalingId=$utbetalingId avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
+        sikkerLogg.info("oppdrag med utbetalingId=$utbetalingId avstemmingsnøkkel=${avstemmingsnøkkel} status=${status} tidspunkt=$tidspunkt")
 
-        if (!oppdragDao.oppdaterOppdrag(avstemmingsnøkkel, fagsystemId, status, packet["beskrivelse"].asText(), packet["feilkode_oppdrag"].asText(), packet["originalXml"].asText())) {
-            log.error("Klarte ikke å oppdatere oppdrag i databasen! fagsystemId=$fagsystemId status=$status")
-            sikkerLogg.error("Klarte ikke å oppdatere oppdrag i databasen! fagsystemId=$fagsystemId fødselsnummer=$fødselsnummer status=$status :\n${packet.toJson()}")
+        if (!oppdragDao.oppdaterOppdrag(utbetalingId, fagsystemId, status, packet["beskrivelse"].asText(), packet["feilkode_oppdrag"].asText(), packet["originalXml"].asText())) {
+            log.error("Klarte ikke å oppdatere oppdrag i databasen! utbetalingId=$utbetalingId fagsystemId=$fagsystemId status=$status")
+            sikkerLogg.error("Klarte ikke å oppdatere oppdrag i databasen! utbetalingId=$utbetalingId fagsystemId=$fagsystemId fødselsnummer=$fødselsnummer status=$status :\n${packet.toJson()}")
             return
         }
 
-        oppdragDao.hentBehovForOppdrag(avstemmingsnøkkel)?.also {
+        oppdragDao.hentBehovForOppdrag(utbetalingId, fagsystemId)?.also {
             it["@id"] = UUID.randomUUID()
             it["@opprettet"] = LocalDateTime.now()
             sikkerLogg.info(
-                "oppdrag med avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +
+                "oppdrag med utbetalingId=$utbetalingId avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +
                         "fødselsnummer=$fødselsnummer status=$status tidspunkt=$tidspunkt for behov=${it.toJson()}"
             )
 

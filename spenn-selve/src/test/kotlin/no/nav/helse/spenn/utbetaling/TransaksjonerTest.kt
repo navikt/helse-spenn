@@ -17,12 +17,14 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
+import java.util.*
 
 internal class TransaksjonerTest {
     private companion object {
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
         private const val BELØP = 1000
+        private val UTBETALING_ID = UUID.fromString("4978e3b6-cea9-468e-accd-3e5e818d569c")
         private const val FAGSYSTEMID = "838069327ea2"
         private const val SAKSBEHANDLER = "Navn Navnesen"
         private const val BEHOV_ID = "12c1f3de-c880-41bb-b82a-f339d9f796fc"
@@ -52,8 +54,8 @@ internal class TransaksjonerTest {
     @Test
     fun `løser utbetalingsbehov`() {
         val behov = utbetalingsbehov()
-        every { dao.oppdaterOppdrag(AVSTEMMINGSNØKKEL, FAGSYSTEMID, Oppdragstatus.AKSEPTERT, "Foo", "00", any()) } returns true
-        every { dao.hentBehovForOppdrag(any()) } returns JsonMessage(behov, MessageProblems(behov))
+        every { dao.oppdaterOppdrag(UTBETALING_ID, FAGSYSTEMID, Oppdragstatus.AKSEPTERT, "Foo", "00", any()) } returns true
+        every { dao.hentBehovForOppdrag(any(), any()) } returns JsonMessage(behov, MessageProblems(behov))
         rapid.sendTestMessage(tranaksjonStatus())
         assertEquals(1, inspektør.size)
         assertEquals("behov", rapid.inspektør.field(0, "@event_name").asText())
@@ -82,6 +84,7 @@ internal class TransaksjonerTest {
                 "fødselsnummer" to PERSON,
                 "saksbehandler" to SAKSBEHANDLER,
                 "maksdato" to "2020-04-20",
+                "utbetalingId" to UTBETALING_ID,
                 "fagsystemId" to FAGSYSTEMID,
                 "forlengelse" to false,
                 "utbetalingslinjer" to listOf(
@@ -105,6 +108,7 @@ internal class TransaksjonerTest {
                 "fødselsnummer" to PERSON,
                 "avstemmingsnøkkel" to AVSTEMMINGSNØKKEL,
                 "fagsystemId" to FAGSYSTEMID,
+                "utbetalingId" to UTBETALING_ID,
                 "status" to STATUS,
                 "feilkode_oppdrag" to "00",
                 "beskrivelse" to BESKRIVELSE,
