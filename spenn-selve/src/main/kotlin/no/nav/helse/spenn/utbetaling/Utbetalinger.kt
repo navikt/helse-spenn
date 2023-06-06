@@ -6,6 +6,7 @@ import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import org.slf4j.LoggerFactory
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -63,6 +64,7 @@ internal class Utbetalinger(
         val mottaker = packet["Utbetaling.mottaker"].asText()
         val fagsystemId = packet["Utbetaling.fagsystemId"].asText().trim()
         val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())
+        val maksdato = packet["Utbetaling.maksdato"].asOptionalLocalDate()
         if (packet["Utbetaling.linjer"].isEmpty) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
         val nå = Instant.now()
         val tidspunkt = nå
@@ -111,7 +113,7 @@ internal class Utbetalinger(
                 )
             )
             context.publish(packet.toJson().also { sikkerLogg.info("sender løsning på utbetaling=$it") })
-            context.publish(lagOppdragsmelding(fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, tidspunkt, avstemmingsnøkkel, mottaker, packet).toJson())
+            context.publish(lagOppdragsmelding(fødselsnummer, organisasjonsnummer, utbetalingId, fagsystemId, tidspunkt, avstemmingsnøkkel, mottaker, maksdato, packet).toJson())
         } catch (err: Exception) {
             log.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err)
             sikkerLogg.error("Teknisk feil ved utbetaling for behov id=${packet["@id"].asText()}: ${err.message}", err, keyValue("fødselsnummer", fødselsnummer))
@@ -125,7 +127,7 @@ internal class Utbetalinger(
         }
     }
 
-    private fun lagOppdragsmelding(fødselsnummer: String, organisasjonsnummer: String, utbetalingId: UUID, fagsystemId: String, tidspunkt: LocalDateTime, avstemmingsnøkkel: Long, mottaker: String, packet: JsonMessage): JsonMessage {
+    private fun lagOppdragsmelding(fødselsnummer: String, organisasjonsnummer: String, utbetalingId: UUID, fagsystemId: String, tidspunkt: LocalDateTime, avstemmingsnøkkel: Long, mottaker: String, maksdato: LocalDate?, packet: JsonMessage): JsonMessage {
         return JsonMessage.newMessage("oppdrag_utbetaling", mutableMapOf(
             "fødselsnummer" to fødselsnummer,
             "organisasjonsnummer" to organisasjonsnummer,
@@ -156,6 +158,7 @@ internal class Utbetalinger(
                 }
             }
         ).apply {
+            compute("maksdato") { _, _ -> maksdato }
             compute("aktørId") { _, _ -> packet["aktørId"].asText() }
         })
     }

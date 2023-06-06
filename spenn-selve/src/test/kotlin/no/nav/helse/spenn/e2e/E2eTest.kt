@@ -30,6 +30,7 @@ class E2eTest {
                 "status" to "OVERFØRT",
                 "beskrivelse" to "Overført til OS!"
             )))
+            assertTrue(oppdragutbetaling.hasNonNull("maksdato"))
             rapid.sendTestMessage(oppdragutbetaling.toString())
 
             assertTrue(erLøsningOverført(2))

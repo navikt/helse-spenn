@@ -5,8 +5,7 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import no.nav.helse.spenn.e2e.Utbetalingslinje.Companion.utbetalingslinje
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -68,6 +67,7 @@ internal class UtbetalingerTest {
         assertMottatt(0)
         val utbetalingsmelding = rapid.inspektør.message(1)
         assertEquals("oppdrag_utbetaling", utbetalingsmelding.path("@event_name").asText())
+        assertTrue(utbetalingsmelding.hasNonNull("maksdato"))
     }
 
     @Test
