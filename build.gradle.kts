@@ -1,8 +1,8 @@
-val junitJupiterVersion = "5.9.1"
-val testcontainersVersion = "1.17.4"
+val junitJupiterVersion = "5.10.0"
+val testcontainersVersion = "1.19.0"
 
 plugins {
-    kotlin("jvm") version "1.8.21"
+    kotlin("jvm") version "1.9.10"
 }
 
 allprojects {
@@ -16,7 +16,7 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        implementation("com.github.navikt:rapids-and-rivers:2023050308441683096263.f5a276d7bd28")
+        implementation("com.github.navikt:rapids-and-rivers:2023093008351696055717.ffdec6aede3d")
 
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
@@ -41,7 +41,7 @@ subprojects {
         }
 
         withType<Wrapper> {
-            gradleVersion = "7.4"
+            gradleVersion = "8.3"
         }
     }
 }

@@ -31,9 +31,8 @@ tasks {
 
         doLast {
             configurations.runtimeClasspath.get().forEach {
-                val file = File("$buildDir/libs/${it.name}")
-                if (!file.exists())
-                    it.copyTo(file)
+                val file = File("${layout.buildDirectory.get()}/libs/${it.name}")
+                if (!file.exists()) it.copyTo(file)
             }
         }
     }
@@ -42,7 +41,7 @@ tasks {
 configure<SourceSetContainer> {
     named("main") {
         java.srcDir("src/main/java")
-        java.srcDir("$buildDir/generated-sources/xsd2java")
-        java.srcDir("$buildDir/generated-sources/wsdl2java")
+        java.srcDir("${layout.buildDirectory.get()}/generated-sources/xsd2java")
+        java.srcDir("${layout.buildDirectory.get()}/generated-sources/wsdl2java")
     }
 }

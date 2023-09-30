@@ -1,11 +1,11 @@
 val mainClass = "no.nav.helse.opprydding.AppKt"
-val testcontainersVersion = "1.17.4"
+val testcontainersVersion = "1.19.0"
 
 dependencies {
 
     implementation("com.google.cloud.sql:postgres-socket-factory:1.7.2")
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.5.0")
+    implementation("org.postgresql:postgresql:42.6.0")
     implementation("com.github.seratch:kotliquery:1.9.0")
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
@@ -25,9 +25,8 @@ tasks {
 
         doLast {
             configurations.runtimeClasspath.get().forEach {
-                val file = File("$buildDir/libs/${it.name}")
-                if (!file.exists())
-                    it.copyTo(file)
+                val file = File("${layout.buildDirectory.get()}/libs/${it.name}")
+                if (!file.exists()) it.copyTo(file)
             }
         }
     }
