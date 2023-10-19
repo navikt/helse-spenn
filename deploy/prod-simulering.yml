@@ -20,12 +20,12 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    cpuThresholdPercentage: 75
-    max: 4
-    min: 2
+    cpuThresholdPercentage: 50
+    max: 12
+    min: 4
   resources:
     limits:
-      memory: 512Mi
+      memory: 1024Mi
     requests:
       cpu: 100m
       memory: 256Mi
