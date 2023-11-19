@@ -20,14 +20,18 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    cpuThresholdPercentage: 75
-    max: 3
+    max: 6
     min: 2
+    scalingStrategy:
+      kafka:
+        topic: tbd.rapid.v1
+        consumerGroup: tbd-spenn-v1
+        threshold: 200
   resources:
     limits:
       memory: 1024Mi
     requests:
-      cpu: 1000m
+      cpu: 100m
       memory: 256Mi
   kafka:
     pool: nav-prod

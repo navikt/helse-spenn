@@ -20,9 +20,13 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    cpuThresholdPercentage: 50
     max: 12
-    min: 4
+    min: 2
+    scalingStrategy:
+      kafka:
+        topic: tbd.rapid.v1
+        consumerGroup: tbd-spenn-simulering-v1
+        threshold: 200
   resources:
     limits:
       memory: 1024Mi
