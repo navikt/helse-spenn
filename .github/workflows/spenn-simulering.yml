@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: '21.x'
-          cache: 'gradle''
+          cache: 'gradle'
       - name: test and build
         run: ./gradlew :spenn-simulering:test :spenn-simulering:build
         env:
