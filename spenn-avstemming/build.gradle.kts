@@ -13,7 +13,7 @@ dependencies {
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("io.mockk:mockk:1.13.9")
 }
 
 tasks {
