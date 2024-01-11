@@ -28,7 +28,7 @@ spec:
       memory: 512Mi
     requests:
       cpu: 50m
-      memory: 256Mi
+      memory: 64Mi
   kafka:
     pool: nav-dev
   gcp:
