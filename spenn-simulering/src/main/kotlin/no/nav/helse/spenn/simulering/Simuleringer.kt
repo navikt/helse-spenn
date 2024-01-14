@@ -10,7 +10,8 @@ import org.slf4j.MDC
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,
-    private val simuleringService: SimuleringService
+    private val simuleringService: SimuleringService,
+    private val simuleringV2Service: SimuleringV2Service
 ) : River.PacketListener {
 
     private companion object {
@@ -65,7 +66,9 @@ internal class Simuleringer(
         if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
         try {
-            simuleringService.simulerOppdrag(SimuleringRequestBuilder(utbetalingslinjer).build()).also { result ->
+            val simulerRequest = SimuleringRequestBuilder(utbetalingslinjer).build()
+            simuleringV2Service.simulerOppdrag(simulerRequest)
+            simuleringService.simulerOppdrag(simulerRequest).also { result ->
                 packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to result.status,

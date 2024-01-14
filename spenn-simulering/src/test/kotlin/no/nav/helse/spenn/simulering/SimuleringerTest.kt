@@ -31,7 +31,7 @@ internal class SimuleringerTest {
     }
 
     private val rapid = TestRapid().apply {
-        Simuleringer(this, simuleringService)
+        Simuleringer(this, simuleringService, mockk(relaxed = true))
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 

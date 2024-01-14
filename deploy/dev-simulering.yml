@@ -46,4 +46,6 @@ spec:
       value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
     - name: SIMULERING_SERVICE_URL
       value: https://cics-q1.adeo.no/oppdrag/simulerFpServiceWSBinding
+    - name: GANDALF_BASE_URL
+      value: https://security-token-service.nais.preprod.local
 

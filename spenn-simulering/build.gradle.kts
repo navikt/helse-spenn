@@ -1,15 +1,20 @@
 val mainClass = "no.nav.helse.spenn.ApplicationKt"
 val cxfVersion = "4.0.0"
+val tbdLibsVersion = "2024.01.14-10.01-dff616a3"
 
 dependencies {
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
     implementation("jakarta.xml.ws:jakarta.xml.ws-api:4.0.0")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
 
+    implementation("com.github.navikt.tbd-libs:minimal-soap-client:$tbdLibsVersion")
+
     implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
+
+    testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:1.13.9")
 }
 

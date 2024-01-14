@@ -50,4 +50,6 @@ spec:
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: SIMULERING_SERVICE_URL
       value: https://wasapp.adeo.no/cics/services/simulerFpServiceWSBinding
+    - name: GANDALF_BASE_URL
+      value: https://security-token-service.nais.adeo.no
 
