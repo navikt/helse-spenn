@@ -67,8 +67,16 @@ internal class Simuleringer(
 
         try {
             val simulerRequest = SimuleringRequestBuilder(utbetalingslinjer).build()
-            simuleringV2Service.simulerOppdrag(simulerRequest)
-            simuleringService.simulerOppdrag(simulerRequest).also { result ->
+            val simuleringResultV2 = simuleringV2Service.simulerOppdrag(simulerRequest)
+            val simuleringResultV1 = simuleringService.simulerOppdrag(simulerRequest)
+
+            if (simuleringResultV1 == simuleringResultV2) {
+                sikkerLogg.info("simuleringResultV1 og simuleringResultV2 er helt like")
+            } else {
+                sikkerLogg.info("simuleringResultV1 og simuleringResultV2 er ulike")
+            }
+
+            simuleringResultV1.also { result ->
                 packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to result.status,

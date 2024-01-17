@@ -11,9 +11,16 @@ import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
 import com.github.navikt.tbd_libs.soap.SoaptjenesteException
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
+import io.ktor.utils.io.errors.*
+import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
+import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaaDetaljer
+import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
+import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
+import java.net.SocketException
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class SimuleringV2Service(
@@ -28,39 +35,57 @@ class SimuleringV2Service(
         private val jsonMapper = jacksonObjectMapper().registerModules(JavaTimeModule())
     }
 
-    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest) {
+    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         val requestBody = buildXmlRequestBody(simulerRequest)
         sikkerLogg.info("SimuleringV2 request:\n$requestBody")
         try {
             val responseBody = soapClient.doSoapAction("http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt/simulerFpService/simulerBeregningRequest", requestBody, assertionStrategy)
-            tolkRespons(responseBody)
+            return tolkRespons(responseBody)
+        } catch (err: IOException) {
+            return SimuleringResult(
+                status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
+                feilmelding = "Oppdrag/UR er stengt"
+            )
         } catch (err: Exception) {
             sikkerLogg.info("Feil ved simuleringV2: {}", err.message, err)
+            return SimuleringResult(
+                status = SimuleringStatus.TEKNISK_FEIL,
+                feilmelding = err.message
+            )
         }
     }
 
-    private fun tolkRespons(responseBody: String) {
-        try {
+    private fun tolkRespons(responseBody: String): SimuleringResult {
+        return try {
             val result = deserializeSoapBody<JsonNode>(mapper, responseBody)
             sikkerLogg.info("Simuleringsrespons fra oppdrag:\n${result.toPrettyString()}")
+            mapResponseToResultat(result.path("simulerBeregningResponse").path("response").path("simulering"))
         } catch (err: SoaptjenesteException) {
-            håndterFault(err)
+            return håndterFault(err)
         }
     }
 
-    private fun håndterFault(err: SoaptjenesteException) {
+    private fun håndterFault(err: SoaptjenesteException): SimuleringResult {
         val detalje = err.detalje ?: return håndterGenerellFault(err)
-        tolkOppdragFault(err, detalje)
+        return tolkOppdragFault(err, detalje)
     }
 
-    private fun håndterGenerellFault(err: SoaptjenesteException) {
+    private fun håndterGenerellFault(err: SoaptjenesteException): SimuleringResult {
         sikkerLogg.info("SOAP FAULT: ${err.message}")
+        return SimuleringResult(
+            status = SimuleringStatus.FUNKSJONELL_FEIL,
+            feilmelding = err.message
+        )
     }
 
-    private fun tolkOppdragFault(fault: SoaptjenesteException, detalje: String) {
+    private fun tolkOppdragFault(fault: SoaptjenesteException, detalje: String): SimuleringResult {
         val node = tolkDetaljeSomJson(detalje) ?: return håndterGenerellFault(fault)
         val (feiltype, oppdragFault) = tolkJsonSomOppdragFault(node) ?: return håndterGenerellFault(fault)
         sikkerLogg.info("Feil fra OS: {}:\nMelding: {}\nKilde: {}\nRotårsak: {}\nTidspunkt: {}", feiltype, oppdragFault.melding, oppdragFault.kilde, oppdragFault.rotårsak, oppdragFault.tidspunkt)
+        return SimuleringResult(
+            status = SimuleringStatus.FUNKSJONELL_FEIL,
+            feilmelding = oppdragFault.melding
+        )
     }
 
     private fun tolkDetaljeSomJson(detalje: String): ObjectNode? {
@@ -82,6 +107,49 @@ class SimuleringV2Service(
             return null
         }
     }
+
+    private fun mapResponseToResultat(simulering: JsonNode) = SimuleringResult(
+        status = SimuleringStatus.OK,
+        simulering = Simulering(
+            gjelderId = simulering.path("gjelderId").asText(),
+            gjelderNavn = simulering.path("gjelderNavn").asText().trim(),
+            datoBeregnet = LocalDate.parse(simulering.path("datoBeregnet").asText()),
+            totalBelop = simulering.path("belop").asInt(),
+            periodeList = simulering.path("beregningsPeriode").map { mapBeregningsPeriode(it) }
+        )
+    )
+
+    private fun mapBeregningsPeriode(periode: JsonNode) =
+        SimulertPeriode(
+            fom = LocalDate.parse(periode.path("periodeFom").asText()),
+            tom = LocalDate.parse(periode.path("periodeTom").asText()),
+            utbetaling = periode.path("beregningStoppnivaa").map { mapBeregningStoppNivaa(it) }
+        )
+
+    private fun mapBeregningStoppNivaa(stoppNivaa: JsonNode) =
+        Utbetaling(fagSystemId = stoppNivaa.path("fagsystemId").asText().trim(),
+            utbetalesTilNavn = stoppNivaa.path("utbetalesTilNavn").asText().trim(),
+            utbetalesTilId = stoppNivaa.path("utbetalesTilId").asText().removePrefix("00"),
+            forfall = LocalDate.parse(stoppNivaa.path("forfall").asText()),
+            feilkonto = stoppNivaa.path("feilkonto").asBoolean(),
+            detaljer = stoppNivaa.path("beregningStoppnivaaDetaljer").map { mapDetaljer(it) })
+
+    private fun mapDetaljer(detaljer: JsonNode) =
+        Detaljer(
+            faktiskFom = LocalDate.parse(detaljer.path("faktiskFom").asText()),
+            faktiskTom = LocalDate.parse(detaljer.path("faktiskTom").asText()),
+            uforegrad = detaljer.path("uforeGrad").asInt(),
+            antallSats = detaljer.path("antallSats").asInt(),
+            typeSats = detaljer.path("typeSats").asText().trim(),
+            sats = detaljer.path("sats").asDouble(),
+            belop = detaljer.path("belop").asInt(),
+            konto = detaljer.path("kontoStreng").asText().trim(),
+            tilbakeforing = detaljer.path("tilbakeforing").asBoolean(),
+            klassekode = detaljer.path("klassekode").asText().trim(),
+            klassekodeBeskrivelse = detaljer.path("klasseKodeBeskrivelse").asText().trim(),
+            utbetalingsType = detaljer.path("typeKlasse").asText(),
+            refunderesOrgNr = detaljer.path("refunderesOrgNr").asText().removePrefix("00")
+        )
 
     private data class Oppdragfault(
         @JsonProperty("errorMessage")
