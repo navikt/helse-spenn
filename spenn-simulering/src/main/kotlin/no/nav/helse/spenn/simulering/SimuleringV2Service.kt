@@ -101,7 +101,10 @@ class SimuleringV2Service(
     private fun tolkJsonSomOppdragFault(node: ObjectNode): Pair<String, Oppdragfault>? {
         val feiltype = node.fieldNames().next()
         try {
-            return feiltype to jsonMapper.convertValue<Oppdragfault>(node.path(feiltype))
+            return feiltype to when (feiltype) {
+                "CICSFault" -> Oppdragfault(node.path(feiltype).asText(), "", "", LocalDateTime.now())
+                else -> jsonMapper.convertValue<Oppdragfault>(node.path(feiltype))
+            }
         } catch (err: Exception) {
             sikkerLogg.info("Kunne ikke oversette til oppdrag fault. feiltype={}, innhold={} fordi {}", feiltype, node.path(feiltype).toPrettyString(), err.message, err)
             return null

@@ -6,6 +6,7 @@ import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdrag
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -22,7 +23,7 @@ internal class SimuleringRequestBuilderTest {
         private const val DAGSATS = 1000
         private const val GRAD = 100
         private const val SAKSBEHANDLER = "Spenn"
-        private val MAKSDATO = LocalDate.MAX
+        private val MAKSDATO = LocalDate.EPOCH
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     }
 
@@ -67,6 +68,29 @@ internal class SimuleringRequestBuilderTest {
         assertOppdrag(simuleringRequest.request.oppdrag, ENDRINGSKODE_ENDRET)
         assertArbeidsgiverlinje(simuleringRequest.request.oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
         assertArbeidsgiverlinje(simuleringRequest.request.oppdrag, 1, "2", ENDRINGSKODE_NY, 15.januar, 31.januar)
+    }
+
+    @Test
+    fun `maksdato som localdate max`() {
+        val simuleringRequest = simuleringRequestRefusjon(ENDRINGSKODE_ENDRET, maksdato = LocalDate.MAX) {
+            linje(
+                Utbetalingslinjer.Utbetalingslinje(
+                    1,
+                    ENDRINGSKODE_NY,
+                    "SPREFAG-IOP",
+                    1.januar,
+                    14.januar,
+                    DAGSATS,
+                    GRAD,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "DAG"
+                )
+            )
+        }
+        assertNull(simuleringRequest.request.oppdrag.oppdragslinje.single().refusjonsInfo.maksDato)
     }
 
 
@@ -172,12 +196,13 @@ internal class SimuleringRequestBuilderTest {
 
     private fun simuleringRequestRefusjon(
         endringskode: String,
+        maksdato: LocalDate = MAKSDATO,
         block: Utbetalingslinjer.() -> Unit
     ): SimulerBeregningRequest {
         val builder = SimuleringRequestBuilder(
             Utbetalingslinjer.RefusjonTilArbeidsgiver(
                 PERSON, ORGNR, FAGSYSTEMID,
-                endringskode, SAKSBEHANDLER, MAKSDATO
+                endringskode, SAKSBEHANDLER, maksdato
             ).apply(block)
         )
         return builder.build()
