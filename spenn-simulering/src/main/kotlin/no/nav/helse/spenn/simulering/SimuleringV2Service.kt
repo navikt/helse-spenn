@@ -13,6 +13,7 @@ import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
 import com.github.navikt.tbd_libs.soap.SoaptjenesteException
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import io.ktor.utils.io.errors.*
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
 import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaaDetaljer
 import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
@@ -114,7 +115,7 @@ class SimuleringV2Service(
 
     private fun mapResponseToResultat(simulering: JsonNode) = SimuleringResult(
         status = SimuleringStatus.OK,
-        simulering = Simulering(
+        simulering = if (simulering.isMissingOrNull()) null else Simulering(
             gjelderId = simulering.path("gjelderId").asText(),
             gjelderNavn = simulering.path("gjelderNavn").asText().trim(),
             datoBeregnet = LocalDate.parse(simulering.path("datoBeregnet").asText()),
