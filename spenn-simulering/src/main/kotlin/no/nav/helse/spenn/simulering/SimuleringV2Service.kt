@@ -2,6 +2,7 @@ package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -118,24 +119,30 @@ class SimuleringV2Service(
             gjelderNavn = simulering.path("gjelderNavn").asText().trim(),
             datoBeregnet = LocalDate.parse(simulering.path("datoBeregnet").asText()),
             totalBelop = simulering.path("belop").asInt(),
-            periodeList = simulering.path("beregningsPeriode").map { mapBeregningsPeriode(it) }
+            periodeList = simulering.path("beregningsPeriode").asArray().map { mapBeregningsPeriode(it) }
         )
     )
+
+    private fun JsonNode.asArray() = when (this) {
+        is ArrayNode -> this
+        else -> jsonMapper.createArrayNode().add(this)
+    }
 
     private fun mapBeregningsPeriode(periode: JsonNode) =
         SimulertPeriode(
             fom = LocalDate.parse(periode.path("periodeFom").asText()),
             tom = LocalDate.parse(periode.path("periodeTom").asText()),
-            utbetaling = periode.path("beregningStoppnivaa").map { mapBeregningStoppNivaa(it) }
+            utbetaling = periode.path("beregningStoppnivaa").asArray().map { mapBeregningStoppNivaa(it) }
         )
 
     private fun mapBeregningStoppNivaa(stoppNivaa: JsonNode) =
-        Utbetaling(fagSystemId = stoppNivaa.path("fagsystemId").asText().trim(),
+        Utbetaling(
+            fagSystemId = stoppNivaa.path("fagsystemId").asText().trim(),
             utbetalesTilNavn = stoppNivaa.path("utbetalesTilNavn").asText().trim(),
             utbetalesTilId = stoppNivaa.path("utbetalesTilId").asText().removePrefix("00"),
             forfall = LocalDate.parse(stoppNivaa.path("forfall").asText()),
             feilkonto = stoppNivaa.path("feilkonto").asBoolean(),
-            detaljer = stoppNivaa.path("beregningStoppnivaaDetaljer").map { mapDetaljer(it) })
+            detaljer = stoppNivaa.path("beregningStoppnivaaDetaljer").asArray().map { mapDetaljer(it) })
 
     private fun mapDetaljer(detaljer: JsonNode) =
         Detaljer(
