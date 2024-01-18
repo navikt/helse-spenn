@@ -10,6 +10,7 @@ import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.helse.spenn.januar
 import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.net.http.HttpClient
@@ -51,7 +52,29 @@ class SimuleringV2ServiceTest {
         val simulerRequest = simuleringRequest()
 
         val (_, simuleringClient) = mockClient(xmlResponse(xml))
-        simuleringClient.simulerOppdrag(simulerRequest)
+        val result = simuleringClient.simulerOppdrag(simulerRequest)
+        assertEquals(SimuleringStatus.FUNKSJONELL_FEIL, result.status)
+    }
+
+    @Test
+    fun `håndterer cicsfeil fra OS`() {
+        @Language("XML")
+        val xml = """<S:Fault xmlns="">
+    <faultcode>SOAP-ENV:Server</faultcode>
+    <faultstring>Conversion from SOAP failed</faultstring>
+    <detail>
+        <CICSFault xmlns="http://www.ibm.com/software/htp/cics/WSFault">RUTINE1 17/01/2024 08:55:44 CICS01
+            ERR01 1337 XML to data transformation failed. A conversion error (OUTPUT_OVERFLOW) occurred when
+            converting field maksDato for WEBSERVICE simulerFpServiceWSBinding.
+        </CICSFault>
+    </detail>
+</S:Fault>"""
+
+        val simulerRequest = simuleringRequest()
+
+        val (_, simuleringClient) = mockClient(xmlResponse(xml))
+        val result = simuleringClient.simulerOppdrag(simulerRequest)
+        assertEquals(SimuleringStatus.TEKNISK_FEIL, result.status)
     }
 
     private fun simuleringRequest() =

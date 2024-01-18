@@ -82,12 +82,7 @@ class SimuleringV2Service(
 
     private fun tolkOppdragFault(fault: SoaptjenesteException, detalje: String): SimuleringResult {
         val node = tolkDetaljeSomJson(detalje) ?: return håndterGenerellFault(fault)
-        val (feiltype, oppdragFault) = tolkJsonSomOppdragFault(node) ?: return håndterGenerellFault(fault)
-        sikkerLogg.info("Feil fra OS: {}:\nMelding: {}\nKilde: {}\nRotårsak: {}\nTidspunkt: {}", feiltype, oppdragFault.melding, oppdragFault.kilde, oppdragFault.rotårsak, oppdragFault.tidspunkt)
-        return SimuleringResult(
-            status = SimuleringStatus.FUNKSJONELL_FEIL,
-            feilmelding = oppdragFault.melding
-        )
+        return tolkJsonSomOppdragFault(node) ?: return håndterGenerellFault(fault)
     }
 
     private fun tolkDetaljeSomJson(detalje: String): ObjectNode? {
@@ -100,17 +95,35 @@ class SimuleringV2Service(
         return node
     }
 
-    private fun tolkJsonSomOppdragFault(node: ObjectNode): Pair<String, Oppdragfault>? {
+    private fun tolkJsonSomOppdragFault(node: ObjectNode): SimuleringResult? {
         val feiltype = node.fieldNames().next()
+        val fault = node.path(feiltype)
         try {
-            return feiltype to when (feiltype) {
-                "CICSFault" -> Oppdragfault(node.path(feiltype).asText(), "", "", LocalDateTime.now())
-                else -> jsonMapper.convertValue<Oppdragfault>(node.path(feiltype))
+            return when (feiltype) {
+                "CICSFault" -> håndterCicsFault(fault)
+                else -> håndterOppdragFault(feiltype, fault)
             }
         } catch (err: Exception) {
-            sikkerLogg.info("Kunne ikke oversette til oppdrag fault. feiltype={}, innhold={} fordi {}", feiltype, node.path(feiltype).toPrettyString(), err.message, err)
+            sikkerLogg.info("Kunne ikke oversette til oppdrag fault. feiltype={}, innhold={} fordi {}", feiltype, fault.toPrettyString(), err.message, err)
             return null
         }
+    }
+
+    private fun håndterOppdragFault(feiltype: String, fault: JsonNode): SimuleringResult {
+        val oppdragFault = jsonMapper.convertValue<Oppdragfault>(fault)
+        sikkerLogg.info("Feil fra OS: {}:\nMelding: {}\nKilde: {}\nRotårsak: {}\nTidspunkt: {}", feiltype, oppdragFault.melding, oppdragFault.kilde, oppdragFault.rotårsak, oppdragFault.tidspunkt)
+        return SimuleringResult(
+            status = SimuleringStatus.FUNKSJONELL_FEIL,
+            feilmelding = oppdragFault.melding
+        )
+    }
+    private fun håndterCicsFault(fault: JsonNode): SimuleringResult {
+        Oppdragfault(fault.asText(), "", "", LocalDateTime.now())
+        sikkerLogg.info("Teknisk feil fra OS: {}", fault.asText())
+        return SimuleringResult(
+            status = SimuleringStatus.TEKNISK_FEIL,
+            feilmelding = fault.asText()
+        )
     }
 
     private fun mapResponseToResultat(simulering: JsonNode) = SimuleringResult(
