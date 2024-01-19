@@ -1,0 +1,63 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    team: tbd
+  name: spenn-simulering
+  namespace: tbd
+spec:
+  image: {{image}}
+  port: 8080
+  strategy:
+    type: RollingUpdate
+  liveness:
+    initialDelay: 5
+    path: /isalive
+  readiness:
+    initialDelay: 5
+    path: /isready
+  prometheus:
+    enabled: true
+    path: /metrics
+  azure:
+    application:
+      enabled: true
+  replicas:
+    max: 12
+    min: 2
+    scalingStrategy:
+      kafka:
+        topic: tbd.rapid.v1
+        consumerGroup: tbd-spenn-simulering-v1
+        threshold: 200
+  resources:
+    limits:
+      memory: 1024Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  kafka:
+    pool: nav-prod
+  secureLogs:
+    enabled: true
+  envFrom:
+    - secret: spenn
+  accessPolicy:
+    outbound:
+      external:
+        - host: ws-proxy.prod-fss-pub.nais.io
+      rules:
+        - application: ws-proxy
+          cluster: prod-fss
+  env:
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: tbd-spenn-simulering-v1
+    - name: KAFKA_RAPID_TOPIC
+      value: tbd.rapid.v1
+    - name: WS_PROXY_SCOPE
+      value: api://prod-fss.tbd.ws-proxy/.default
+    - name: SIMULERING_SERVICE_URL
+      value: https://ws-proxy.dev-fss-pub.nais.io/cics/cics/services/simulerFpServiceWSBinding
+    - name: GANDALF_BASE_URL
+      value: https://ws-proxy.prod-fss-pub.nais.io/gandalf
+

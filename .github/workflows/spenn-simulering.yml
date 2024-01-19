@@ -65,3 +65,9 @@ jobs:
           CLUSTER: prod-fss
           RESOURCE: deploy/prod-simulering.yml
           IMAGE: ${{ needs.build.outputs.image }}
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-gcp
+          RESOURCE: deploy/prod-gcp-simulering.yml
+          IMAGE: ${{ needs.build.outputs.image }}
