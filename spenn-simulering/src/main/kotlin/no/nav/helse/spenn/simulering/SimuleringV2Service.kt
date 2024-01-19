@@ -138,8 +138,8 @@ class SimuleringV2Service(
     )
 
     private fun JsonNode.asArray() = when (this) {
-        is ArrayNode -> this
-        else -> jsonMapper.createArrayNode().add(this)
+        is ObjectNode -> jsonMapper.createArrayNode().add(this)
+        else -> this
     }
 
     private fun mapBeregningsPeriode(periode: JsonNode) =

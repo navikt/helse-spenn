@@ -34,6 +34,28 @@ class SimuleringV2ServiceTest {
     }
 
     @Test
+    fun `håndterer ok simulering med ingen resultat`() {
+        @Language("XML")
+        val xml = """<simulerBeregningResponse xmlns="http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt">
+    <response xmlns="">
+        <simulering>
+            <gjelderId>12345678911</gjelderId>
+            <gjelderNavn>NORMAL MUFFINS</gjelderNavn>
+            <datoBeregnet>2018-01-17</datoBeregnet>
+            <kodeFaggruppe>KORTTID</kodeFaggruppe>
+            <belop>0.00</belop>
+        </simulering>
+    </response>
+</simulerBeregningResponse>"""
+
+        val simulerRequest = simuleringRequest()
+
+        val (_, simuleringClient) = mockClient(xmlResponse(xml))
+        val result = simuleringClient.simulerOppdrag(simulerRequest)
+        assertEquals(SimuleringStatus.OK, result.status)
+    }
+
+    @Test
     fun `håndterer feil fra OS`() {
         @Language("XML")
         val xml = """<S:Fault xmlns="">
