@@ -19,6 +19,9 @@ spec:
   prometheus:
     enabled: true
     path: /metrics
+  azure:
+    application:
+      enabled: true
   replicas:
     cpuThresholdPercentage: 75
     max: 2
