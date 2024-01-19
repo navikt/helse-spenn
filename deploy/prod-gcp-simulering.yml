@@ -57,7 +57,7 @@ spec:
     - name: WS_PROXY_SCOPE
       value: api://prod-fss.tbd.ws-proxy/.default
     - name: SIMULERING_SERVICE_URL
-      value: https://ws-proxy.dev-fss-pub.nais.io/cics/cics/services/simulerFpServiceWSBinding
+      value: https://ws-proxy.prod-fss-pub.nais.io/cics/cics/services/simulerFpServiceWSBinding
     - name: GANDALF_BASE_URL
       value: https://ws-proxy.prod-fss-pub.nais.io/gandalf
 
