@@ -1,5 +1,6 @@
 package no.nav.helse.spenn
 
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
@@ -18,8 +19,13 @@ fun main() {
 }
 
 private fun rapidApp(env: Map<String, String>) {
-    val serviceAccountUserName = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
-    val serviceAccountPassword = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
+    val serviceAccountUserName = env.getValue("SERVICEUSER_NAME")
+    val serviceAccountPassword = env.getValue("SERVICEUSER_PASSWORD")
+
+    val azureClient = createAzureTokenClientFromEnvironment(env)
+    val proxyAuthorization = env["WS_PROXY_SCOPE"]?.let { scope ->
+        { "Bearer ${azureClient.bearerToken(scope).token}" }
+    }
 
     val httpClient = HttpClient.newHttpClient()
     val simuleringClient = SimuleringV2Service(
@@ -28,10 +34,12 @@ private fun rapidApp(env: Map<String, String>) {
             tokenProvider = InMemoryStsClient(
                 MinimalStsClient(
                     baseUrl = URI(env.getValue("GANDALF_BASE_URL")),
-                    httpClient = httpClient
+                    httpClient = httpClient,
+                    proxyAuthorization = proxyAuthorization
                 )
             ),
-            httpClient = httpClient
+            httpClient = httpClient,
+            proxyAuthorization = proxyAuthorization
         ),
         samlStrategy(serviceAccountUserName, serviceAccountPassword)
     )

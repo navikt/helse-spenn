@@ -1,7 +1,8 @@
 val mainClass = "no.nav.helse.spenn.ApplicationKt"
-val tbdLibsVersion = "2024.01.14-10.01-dff616a3"
+val tbdLibsVersion = "2024.01.19-14.15-4080c4c8"
 
 dependencies {
+    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     implementation("com.github.navikt.tbd-libs:minimal-soap-client:$tbdLibsVersion")
 
     testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
