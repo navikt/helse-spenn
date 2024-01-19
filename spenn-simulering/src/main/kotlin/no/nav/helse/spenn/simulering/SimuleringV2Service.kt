@@ -37,6 +37,7 @@ class SimuleringV2Service(
             val responseBody = soapClient.doSoapAction("http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt/simulerFpService/simulerBeregningRequest", requestBody, assertionStrategy)
             return tolkRespons(responseBody)
         } catch (err: IOException) {
+            sikkerLogg.info("Antar at OS er nede / stengt: {}", err.message, err)
             return SimuleringResult(
                 status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
                 feilmelding = "Oppdrag/UR er stengt"
