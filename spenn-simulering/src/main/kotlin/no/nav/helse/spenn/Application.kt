@@ -9,7 +9,6 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.simulering.SimuleringV2Service
 import no.nav.helse.spenn.simulering.Simuleringer
-import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 
@@ -23,8 +22,8 @@ private fun rapidApp(env: Map<String, String>) {
     val serviceAccountPassword = env.getValue("SERVICEUSER_PASSWORD")
 
     val azureClient = createAzureTokenClientFromEnvironment(env)
-    val proxyAuthorization = env["WS_PROXY_SCOPE"]?.let { scope ->
-        { "Bearer ${azureClient.bearerToken(scope).token}" }
+    val proxyAuthorization = {
+        "Bearer ${azureClient.bearerToken(env.getValue("WS_PROXY_SCOPE")).token}"
     }
 
     val httpClient = HttpClient.newHttpClient()
@@ -54,5 +53,3 @@ fun rapidApp(rapid: RapidsConnection, simuleringV2Service: SimuleringV2Service) 
         Simuleringer(this, simuleringV2Service)
     }
 }
-
-fun String.readFile() = File(this).readText(Charsets.UTF_8)
