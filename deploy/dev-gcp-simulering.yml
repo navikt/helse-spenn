@@ -41,9 +41,9 @@ spec:
   envFrom:
     - secret: spenn
   accessPolicy:
-    external:
-      - host: ws-proxy.dev-fss-pub.nais.io
     outbound:
+      external:
+        - host: ws-proxy.dev-fss-pub.nais.io
       rules:
         - application: ws-proxy
           cluster: dev-fss
