@@ -3,14 +3,11 @@ package no.nav.helse.spenn.simulering
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.spenn.UtbetalingslinjerMapper
-import no.nav.helse.spenn.UtenforÅpningstidException
-import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,
-    private val simuleringService: SimuleringService,
     private val simuleringV2Service: SimuleringV2Service
 ) : River.PacketListener {
 
@@ -67,48 +64,20 @@ internal class Simuleringer(
 
         try {
             val simulerRequest = SimuleringRequestBuilder(utbetalingslinjer).build()
-            val simuleringResultV2 = simuleringV2Service.simulerOppdrag(simulerRequest)
-            val simuleringResultV1 = simuleringService.simulerOppdrag(simulerRequest)
-
-            if (simuleringResultV1 == simuleringResultV2) {
-                sikkerLogg.info("simuleringResultV1 og simuleringResultV2 er helt like")
-            } else {
-                sikkerLogg.info("simuleringResultV1 og simuleringResultV2 er ulike")
-            }
-
-            simuleringResultV1.also { result ->
-                packet["@løsning"] = mapOf(
-                    "Simulering" to mapOf(
-                        "status" to result.status,
-                        "feilmelding" to result.feilmelding,
-                        "simulering" to result.simulering
-                    )
-                )
-            }
-        } catch (err: UtenforÅpningstidException) {
-            log.info("Oppdrag/UR virker å være stengt ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
-            sikkerLogg.info("Oppdrag/UR virker å være stengt ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
+            val result = simuleringV2Service.simulerOppdrag(simulerRequest)
             packet["@løsning"] = mapOf(
                 "Simulering" to mapOf(
-                    "status" to SimuleringStatus.OPPDRAG_UR_ER_STENGT,
-                    "feilmelding" to "Oppdrag/UR er stengt",
-                    "simulering" to null
+                    "status" to result.status,
+                    "feilmelding" to result.feilmelding,
+                    "simulering" to result.simulering
                 )
             )
-        } catch (err: Exception) {
-            log.warn("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
-            sikkerLogg.warn("Teknisk feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
-            packet["@løsning"] = mapOf(
-                "Simulering" to mapOf(
-                    "status" to SimuleringStatus.TEKNISK_FEIL,
-                    "feilmelding" to "Fikk teknisk feil ved simulering",
-                    "simulering" to null
-                )
-            )
-        } finally {
             context.publish(packet.toJson().also {
                 sikkerLogg.info("svarer behov=${packet["@id"].asText()} med $it")
             })
+        } catch (err: Exception) {
+            log.warn("Ukjent feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
+            sikkerLogg.warn("Ukjent feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
         }
     }
 

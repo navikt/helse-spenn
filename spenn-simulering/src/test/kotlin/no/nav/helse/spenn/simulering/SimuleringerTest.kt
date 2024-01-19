@@ -20,7 +20,7 @@ internal class SimuleringerTest {
     }
 
     private lateinit var resultat: SimuleringResult
-    private val simuleringService = mockk<SimuleringService>()
+    private val simuleringService = mockk<SimuleringV2Service>()
 
     init {
         every {
@@ -31,7 +31,7 @@ internal class SimuleringerTest {
     }
 
     private val rapid = TestRapid().apply {
-        Simuleringer(this, simuleringService, mockk(relaxed = true))
+        Simuleringer(this, simuleringService)
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 

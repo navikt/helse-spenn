@@ -1,21 +1,19 @@
 package no.nav.helse.spenn.simulering
 
+import com.github.navikt.tbd_libs.mock.MockHttpResponse
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SamlToken
 import com.github.navikt.tbd_libs.soap.SamlTokenProvider
-import com.github.navikt.tbd_libs.mock.MockHttpResponse
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.helse.spenn.januar
-import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.net.http.HttpClient
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 class SimuleringV2ServiceTest {
 
@@ -30,7 +28,6 @@ class SimuleringV2ServiceTest {
         private const val GRAD = 100
         private const val SAKSBEHANDLER = "Spenn"
         private val MAKSDATO = LocalDate.MAX
-        private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     }
 
     @Test

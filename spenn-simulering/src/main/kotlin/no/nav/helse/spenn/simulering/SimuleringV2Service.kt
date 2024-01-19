@@ -2,7 +2,6 @@ package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -14,14 +13,8 @@ import com.github.navikt.tbd_libs.soap.SoaptjenesteException
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import io.ktor.utils.io.errors.*
 import no.nav.helse.rapids_rivers.isMissingOrNull
-import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaa
-import no.nav.system.os.entiteter.beregningskjema.BeregningStoppnivaaDetaljer
-import no.nav.system.os.entiteter.beregningskjema.BeregningsPeriode
-import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
-import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.SimulerBeregningResponse
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
-import java.net.SocketException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -192,25 +185,25 @@ class SimuleringV2Service(
                              xmlns:ns3="http://nav.no/system/os/entiteter/oppdragSkjema">
     <request>
         <simuleringsPeriode>
-            <datoSimulerFom>${request.request.simuleringsPeriode.datoSimulerFom}</datoSimulerFom>
-            <datoSimulerTom>${request.request.simuleringsPeriode.datoSimulerTom}</datoSimulerTom>
+            <datoSimulerFom>${request.simuleringsPeriode.datoSimulerFom}</datoSimulerFom>
+            <datoSimulerTom>${request.simuleringsPeriode.datoSimulerTom}</datoSimulerTom>
         </simuleringsPeriode>
         <oppdrag>
-            <kodeEndring>${request.request.oppdrag.kodeEndring}</kodeEndring>
-            <kodeFagomraade>${request.request.oppdrag.kodeFagomraade}</kodeFagomraade>
-            <fagsystemId>${request.request.oppdrag.fagsystemId}</fagsystemId>
-            <utbetFrekvens>${request.request.oppdrag.utbetFrekvens}</utbetFrekvens>
-            <oppdragGjelderId>${request.request.oppdrag.oppdragGjelderId}</oppdragGjelderId>
-            <datoOppdragGjelderFom>${request.request.oppdrag.datoOppdragGjelderFom}</datoOppdragGjelderFom>
-            <saksbehId>${request.request.oppdrag.saksbehId}</saksbehId>
-            ${request.request.oppdrag.enhet.joinToString(separator = "\n") { enhet ->
+            <kodeEndring>${request.oppdrag.kodeEndring}</kodeEndring>
+            <kodeFagomraade>${request.oppdrag.kodeFagomraade}</kodeFagomraade>
+            <fagsystemId>${request.oppdrag.fagsystemId}</fagsystemId>
+            <utbetFrekvens>${request.oppdrag.utbetFrekvens}</utbetFrekvens>
+            <oppdragGjelderId>${request.oppdrag.oppdragGjelderId}</oppdragGjelderId>
+            <datoOppdragGjelderFom>${request.oppdrag.datoOppdragGjelderFom}</datoOppdragGjelderFom>
+            <saksbehId>${request.oppdrag.saksbehId}</saksbehId>
+            ${request.oppdrag.enhet.joinToString(separator = "\n") { enhet ->
                 """<ns3:enhet>
                     <typeEnhet>${enhet.typeEnhet}</typeEnhet>
                     <enhet>${enhet.enhet}</enhet>
                     <datoEnhetFom>${enhet.datoEnhetFom}</datoEnhetFom>
                 </ns3:enhet>"""    
             }}
-            ${request.request.oppdrag.oppdragslinje.joinToString(separator = "\n") { linje ->
+            ${request.oppdrag.oppdragslinje.joinToString(separator = "\n") { linje ->
                 """<oppdragslinje>
                 <kodeEndringLinje>${linje.kodeEndringLinje}</kodeEndringLinje>
                 <delytelseId>${linje.delytelseId}</delytelseId>

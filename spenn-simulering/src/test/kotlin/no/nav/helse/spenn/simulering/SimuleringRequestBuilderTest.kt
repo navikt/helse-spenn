@@ -2,14 +2,10 @@ package no.nav.helse.spenn.simulering
 
 import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.helse.spenn.januar
-import no.nav.system.os.entiteter.typer.simpletypes.KodeStatusLinje
-import no.nav.system.os.tjenester.simulerfpservice.simulerfpservicegrensesnitt.SimulerBeregningRequest
-import no.nav.system.os.tjenester.simulerfpservice.simulerfpserviceservicetypes.Oppdrag
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 internal class SimuleringRequestBuilderTest {
 
@@ -24,7 +20,6 @@ internal class SimuleringRequestBuilderTest {
         private const val GRAD = 100
         private const val SAKSBEHANDLER = "Spenn"
         private val MAKSDATO = LocalDate.EPOCH
-        private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     }
 
     @Test
@@ -63,11 +58,11 @@ internal class SimuleringRequestBuilderTest {
                 )
             )
         }
-        assertEquals(1.januar.format(tidsstempel), simuleringRequest.request.simuleringsPeriode.datoSimulerFom)
-        assertEquals(31.januar.format(tidsstempel), simuleringRequest.request.simuleringsPeriode.datoSimulerTom)
-        assertOppdrag(simuleringRequest.request.oppdrag, ENDRINGSKODE_ENDRET)
-        assertArbeidsgiverlinje(simuleringRequest.request.oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
-        assertArbeidsgiverlinje(simuleringRequest.request.oppdrag, 1, "2", ENDRINGSKODE_NY, 15.januar, 31.januar)
+        assertEquals(1.januar, simuleringRequest.simuleringsPeriode.datoSimulerFom)
+        assertEquals(31.januar, simuleringRequest.simuleringsPeriode.datoSimulerTom)
+        assertOppdrag(simuleringRequest.oppdrag, ENDRINGSKODE_ENDRET)
+        assertArbeidsgiverlinje(simuleringRequest.oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
+        assertArbeidsgiverlinje(simuleringRequest.oppdrag, 1, "2", ENDRINGSKODE_NY, 15.januar, 31.januar)
     }
 
     @Test
@@ -90,7 +85,7 @@ internal class SimuleringRequestBuilderTest {
                 )
             )
         }
-        assertNull(simuleringRequest.request.oppdrag.oppdragslinje.single().refusjonsInfo.maksDato)
+        assertNull(simuleringRequest.oppdrag.oppdragslinje.single().refusjonsInfo?.maksDato)
     }
 
 
@@ -130,11 +125,11 @@ internal class SimuleringRequestBuilderTest {
                 )
             )
         }
-        assertEquals(1.januar.format(tidsstempel), simuleringRequest.request.simuleringsPeriode.datoSimulerFom)
-        assertEquals(31.januar.format(tidsstempel), simuleringRequest.request.simuleringsPeriode.datoSimulerTom)
-        assertOppdrag(simuleringRequest.request.oppdrag, ENDRINGSKODE_ENDRET)
-        assertBrukerlinje(simuleringRequest.request.oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
-        assertBrukerlinje(simuleringRequest.request.oppdrag, 1, "2", ENDRINGSKODE_NY, 15.januar, 31.januar)
+        assertEquals(1.januar, simuleringRequest.simuleringsPeriode.datoSimulerFom)
+        assertEquals(31.januar, simuleringRequest.simuleringsPeriode.datoSimulerTom)
+        assertOppdrag(simuleringRequest.oppdrag, ENDRINGSKODE_ENDRET)
+        assertBrukerlinje(simuleringRequest.oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
+        assertBrukerlinje(simuleringRequest.oppdrag, 1, "2", ENDRINGSKODE_NY, 15.januar, 31.januar)
     }
 
     @Test
@@ -157,9 +152,9 @@ internal class SimuleringRequestBuilderTest {
                 )
             )
         }
-        assertOppdrag(simuleringRequest.request.oppdrag, ENDRINGSKODE_ENDRET)
+        assertOppdrag(simuleringRequest.oppdrag, ENDRINGSKODE_ENDRET)
         assertArbeidsgiverlinje(
-            simuleringRequest.request.oppdrag,
+            simuleringRequest.oppdrag,
             0,
             "1",
             ENDRINGSKODE_ENDRET,
@@ -181,9 +176,9 @@ internal class SimuleringRequestBuilderTest {
                 )
             )
         }
-        assertOppdrag(simuleringRequest.request.oppdrag, ENDRINGSKODE_ENDRET)
+        assertOppdrag(simuleringRequest.oppdrag, ENDRINGSKODE_ENDRET)
         assertBrukerlinje(
-            simuleringRequest.request.oppdrag,
+            simuleringRequest.oppdrag,
             0,
             "1",
             "ENDR",
@@ -239,8 +234,8 @@ internal class SimuleringRequestBuilderTest {
         statuskode: KodeStatusLinje? = null
     ) {
         assertOppdragslinje(oppdrag, index, delytelseId, endringskode, fom, tom, datoStatusFom, statuskode)
-        assertEquals(MAKSDATO.format(tidsstempel), oppdrag.oppdragslinje[index].refusjonsInfo.maksDato)
-        assertEquals("00$ORGNR", oppdrag.oppdragslinje[index].refusjonsInfo.refunderesId)
+        assertEquals(MAKSDATO, oppdrag.oppdragslinje[index].refusjonsInfo?.maksDato)
+        assertEquals("00$ORGNR", oppdrag.oppdragslinje[index].refusjonsInfo?.refunderesId)
     }
 
     private fun assertBrukerlinje(
@@ -269,11 +264,11 @@ internal class SimuleringRequestBuilderTest {
     ) {
         assertEquals(delytelseId, oppdrag.oppdragslinje[index].delytelseId)
         assertEquals(endringskode, oppdrag.oppdragslinje[index].kodeEndringLinje)
-        assertEquals(DAGSATS.toBigDecimal(), oppdrag.oppdragslinje[index].sats)
-        assertEquals(GRAD.toBigInteger(), oppdrag.oppdragslinje[index].grad.first().grad)
-        assertEquals(fom.format(tidsstempel), oppdrag.oppdragslinje[index].datoVedtakFom)
-        assertEquals(tom.format(tidsstempel), oppdrag.oppdragslinje[index].datoVedtakTom)
-        assertEquals(datoStatusFom?.format(tidsstempel), oppdrag.oppdragslinje[index].datoStatusFom)
+        assertEquals(DAGSATS, oppdrag.oppdragslinje[index].sats)
+        assertEquals(GRAD, oppdrag.oppdragslinje[index].grad.first().grad)
+        assertEquals(fom, oppdrag.oppdragslinje[index].datoVedtakFom)
+        assertEquals(tom, oppdrag.oppdragslinje[index].datoVedtakTom)
+        assertEquals(datoStatusFom, oppdrag.oppdragslinje[index].datoStatusFom)
         assertEquals(statuskode, oppdrag.oppdragslinje[index].kodeStatusLinje)
     }
 }
