@@ -106,34 +106,35 @@ internal class KvitteringerIntegrationTest {
         <fagsystemId>$UTBETALINGSREF</fagsystemId>
         <utbetFrekvens>MND</utbetFrekvens>
         <oppdragGjelderId>$PERSON</oppdragGjelderId>
-        <datoOppdragGjelderFom>1970-01-01+01:00</datoOppdragGjelderFom>
+        <datoOppdragGjelderFom>1970-01-01</datoOppdragGjelderFom>
         <saksbehId>$SAKSBEHANDLER</saksbehId>
         <avstemming-115>
             <kodeKomponent>SP</kodeKomponent>
             <nokkelAvstemming>$AVSTEMMINGSNØKKEL</nokkelAvstemming>
-            <tidspktMelding>2019-09-20-13.31.28.572227</tidspktMelding>
+            <tidspktMelding>2019-09-20T13:31:28.572227</tidspktMelding>
         </avstemming-115>
         <oppdrags-enhet-120>
             <typeEnhet>BOS</typeEnhet>
             <enhet>4151</enhet>
-            <datoEnhetFom>1970-01-01+01:00</datoEnhetFom>
+            <datoEnhetFom>1970-01-01</datoEnhetFom>
         </oppdrags-enhet-120>
         <oppdrags-linje-150>
             <kodeEndringLinje>NY</kodeEndringLinje>
             <delytelseId>1</delytelseId>
             <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
-            <datoVedtakFom>2019-01-01+01:00</datoVedtakFom>
-            <datoVedtakTom>2019-01-12+01:00</datoVedtakTom>
+            <datoVedtakFom>2019-01-01</datoVedtakFom>
+            <datoVedtakTom>2019-01-12</datoVedtakTom>
             <sats>600</sats>
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
+            <henvisning>baa0b3b1-ab50-44bc-9574-a4e5c05dd2b9</henvisning>
             <brukKjoreplan>N</brukKjoreplan>
             <saksbehId>$SAKSBEHANDLER</saksbehId>
             <henvisning>b995be7e-783d-46e0-94da-d71d6a25db42</henvisning>
             <refusjonsinfo-156>
-                <maksDato>2020-09-20+02:00</maksDato>
+                <maksDato>2020-09-20</maksDato>
                 <refunderesId>$ORGNR</refunderesId>
-                <datoFom>2019-01-01+01:00</datoFom>
+                <datoFom>2019-01-01</datoFom>
             </refusjonsinfo-156>
             <grad-170>
                 <typeGrad>UFOR</typeGrad>
@@ -147,18 +148,19 @@ internal class KvitteringerIntegrationTest {
             <kodeEndringLinje>NY</kodeEndringLinje>
             <delytelseId>2</delytelseId>
             <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
-            <datoVedtakFom>2019-02-13+01:00</datoVedtakFom>
-            <datoVedtakTom>2019-02-20+01:00</datoVedtakTom>
+            <datoVedtakFom>2019-02-13</datoVedtakFom>
+            <datoVedtakTom>2019-02-20</datoVedtakTom>
             <sats>600</sats>
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
+            <henvisning>baa0b3b1-ab50-44bc-9574-a4e5c05dd2b9</henvisning>
             <brukKjoreplan>N</brukKjoreplan>
             <saksbehId>$SAKSBEHANDLER</saksbehId>
             <henvisning>b995be7e-783d-46e0-94da-d71d6a25db42</henvisning>
             <refusjonsinfo-156>
-                <maksDato>2020-09-20+02:00</maksDato>
+                <maksDato>2020-09-20</maksDato>
                 <refunderesId>$ORGNR</refunderesId>
-                <datoFom>2019-02-13+01:00</datoFom>
+                <datoFom>2019-02-13</datoFom>
             </refusjonsinfo-156>
             <grad-170>
                 <typeGrad>UFOR</typeGrad>
@@ -172,17 +174,18 @@ internal class KvitteringerIntegrationTest {
             <kodeEndringLinje>NY</kodeEndringLinje>
             <delytelseId>3</delytelseId>
             <kodeKlassifik>SPREFAG-IOP</kodeKlassifik>
-            <datoVedtakFom>2019-03-18+01:00</datoVedtakFom>
-            <datoVedtakTom>2019-04-12+02:00</datoVedtakTom>
+            <datoVedtakFom>2019-03-18</datoVedtakFom>
+            <datoVedtakTom>2019-04-12</datoVedtakTom>
             <sats>1000</sats>
             <fradragTillegg>T</fradragTillegg>
             <typeSats>DAG</typeSats>
+            <henvisning>baa0b3b1-ab50-44bc-9574-a4e5c05dd2b9</henvisning>
             <brukKjoreplan>N</brukKjoreplan>
             <saksbehId>$SAKSBEHANDLER</saksbehId>
             <refusjonsinfo-156>
-                <maksDato>2020-09-20+02:00</maksDato>
+                <maksDato>2020-09-20</maksDato>
                 <refunderesId>$ORGNR</refunderesId>
-                <datoFom>2019-03-18+01:00</datoFom>
+                <datoFom>2019-03-18</datoFom>
             </refusjonsinfo-156>
             <grad-170>
                 <typeGrad>UFOR</typeGrad>

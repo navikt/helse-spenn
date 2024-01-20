@@ -46,9 +46,9 @@ internal class UtbetalingerTest {
         assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
         val body = connection.inspektør.melding(0).getBody(String::class.java)
-        val unmarshalled = OppdragXml.unmarshal(body, false)
+        val unmarshalled = OppdragXml.unmarshal(body)
         assertEquals(0, unmarshalled.oppdrag110.oppdragsLinje150[0].grad170.size)
-        assertEquals("ENG", unmarshalled.oppdrag110.oppdragsLinje150[0].typeSats)
+        assertEquals(SatstypeDto.ENG, unmarshalled.oppdrag110.oppdragsLinje150[0].typeSats)
 
         assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
         assertOverført(0)

@@ -1,52 +1,36 @@
 package no.nav.helse.spenn.oppdrag
 
-import jakarta.xml.bind.JAXBContext
-import jakarta.xml.bind.JAXBElement
-import jakarta.xml.bind.Marshaller
-import no.nav.trygdeetaten.skjema.oppdrag.Oppdrag
-import java.io.StringReader
-import java.io.StringWriter
-import javax.xml.namespace.QName
-import javax.xml.stream.XMLInputFactory
-import javax.xml.transform.stream.StreamSource
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
 object OppdragXml {
-    private val jaxbContext = JAXBContext.newInstance(Oppdrag::class.java)
-    private val unmarshaller = jaxbContext.createUnmarshaller()
-    private val marshaller = jaxbContext.createMarshaller().apply {
-        setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-    }
+    private val xmlMapper = XmlMapper.builder()
+        .addModules(kotlinModule())
+        .addModules(JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+        // gjør slik at jackson ikke serialiserer null-felter som tomme xml-felter, dvs. unngå `<mmel />` hvis `mmel` egentlig er null
+        .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+        .build()
 
-    private val xmlInputFactory = XMLInputFactory.newInstance().apply {
-        setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
-        setProperty(XMLInputFactory.SUPPORT_DTD, false)
-    }
-
-    fun marshal(oppdrag: Oppdrag): String {
-        return StringWriter().use {
-            marshaller.marshal(JAXBElement(QName("", "Oppdrag"), Oppdrag::class.java, oppdrag), it)
-            it.toString()
-        }
+    fun marshal(oppdrag: OppdragDto): String {
+        return xmlMapper.writeValueAsString(oppdrag)
     }
 
     fun normalizeXml(oppdragXML: String) =
-        oppdragXML
-            .replace("<oppdrag xmlns=", "<ns2:oppdrag xmlns:ns2=", ignoreCase = true)
-            .replace("</Oppdrag>", "</ns2:oppdrag>", ignoreCase = true)
+        oppdragXML.replace("</Oppdrag>", "</oppdrag>")
 
 
-    fun unmarshal(oppdragXML: String, normalize: Boolean = true): Oppdrag {
-        return oppdragXML
-            .let { if (normalize) normalizeXml(it) else it }
-            .let { StringReader(it) }
-            .use {
-                xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
-                xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)
-                unmarshaller.unmarshal(
-                    xmlInputFactory.createXMLStreamReader(StreamSource(it)),
-                    Oppdrag::class.java
-                ).value
-            }
+    fun unmarshal(oppdragXML: String): OppdragDto {
+        return xmlMapper.readValue<OppdragDto>(oppdragXML)
     }
 
 }

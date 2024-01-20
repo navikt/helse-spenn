@@ -2,7 +2,6 @@ package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
-import no.nav.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
@@ -22,15 +21,15 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
                 it.interestedIn("aktørId", "maksdato")
                 it.requireKey("saksbehandler", "avstemmingsnøkkel", "mottaker", "fagsystemId", "utbetalingId")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
-                it.requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
+                it.require("endringskode") { value -> EndringskodeDto.valueOf(value.asText()) }
                 it.requireArray("linjer") {
                     requireKey("sats", "delytelseId", "klassekode")
                     require("fom", JsonNode::asLocalDate)
                     require("tom", JsonNode::asLocalDate)
-                    requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
-                    requireAny("satstype", listOf("DAG", "ENG"))
+                    require("endringskode") { value -> EndringskodeDto.valueOf(value.asText()) }
+                    require("satstype") { value -> SatstypeDto.valueOf(value.asText()) }
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
-                    interestedIn("statuskode") { value -> TkodeStatusLinje.valueOf(value.asText()) }
+                    interestedIn("statuskode") { value -> StatuskodeLinjeDto.valueOf(value.asText()) }
                     interestedIn("grad")
                 }
             }

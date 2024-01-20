@@ -2,6 +2,7 @@ package no.nav.helse.spenn.oppdrag
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.spenn.oppdrag.AlvorlighetsgradDto.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
@@ -39,11 +40,11 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
         ).toJson().also { sikkerLogg.info("sender oppdrag_kvittering:\n$it") })
 
         val oppdrag = OppdragXml.unmarshal(xmlMessage)
-        val avstemmingsnøkkel = requireNotNull(oppdrag.oppdrag110.avstemming115.nokkelAvstemming).toLong()
-        val fagsystemId = requireNotNull(oppdrag.oppdrag110.fagsystemId)
-        val fødselsnummer = requireNotNull(oppdrag.oppdrag110.oppdragGjelderId)
-        val utbetalingId = UUID.fromString(requireNotNull(oppdrag.oppdrag110.oppdragsLinje150.first().henvisning))
-        val feilkode = requireNotNull(oppdrag.mmel.alvorlighetsgrad)
+        val avstemmingsnøkkel = oppdrag.oppdrag110.avstemming115.nokkelAvstemming
+        val fagsystemId = oppdrag.oppdrag110.fagsystemId
+        val fødselsnummer = oppdrag.oppdrag110.oppdragGjelderId
+        val utbetalingId = UUID.fromString(oppdrag.oppdrag110.oppdragsLinje150.first().henvisning)
+        val feilkode = requireNotNull(oppdrag.mmel).alvorlighetsgrad
         val meldingFraOppdrag: String? = oppdrag.mmel.beskrMelding
         val kodemelding: String? = oppdrag.mmel.kodeMelding
         /*
@@ -53,12 +54,12 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
             i praksis vil 08 bety at oppdraget som sendes fra spleis er feil, og må forkastes/lages på nytt, derfor tolket vi AVVIST (08) som "a hard no"
          */
         val (status, beskrivelse) = when (feilkode) {
-            "00" -> Oppdragstatus.AKSEPTERT to (meldingFraOppdrag ?: "Oppdraget ble akseptert uten feil")
-            "04" -> Oppdragstatus.AKSEPTERT_MED_FEIL to (meldingFraOppdrag
+            AKSEPTERT -> Oppdragstatus.AKSEPTERT to (meldingFraOppdrag ?: "Oppdraget ble akseptert uten feil")
+            AKSEPTERT_MED_FEIL -> Oppdragstatus.AKSEPTERT_MED_FEIL to (meldingFraOppdrag
                 ?: "Oppdraget ble akseptert, men noe er feil")
-            "08" -> Oppdragstatus.AVVIST to (meldingFraOppdrag ?: "Oppdraget ble avvist")
-            "12" -> Oppdragstatus.FEIL to "Teknisk feil fra oppdrag, OS har angivelig forsøkt et par ganger og til slutt avvist. Forsøk på nytt"
-            else -> Oppdragstatus.FEIL to "Spenn forstår ikke responsen fra Oppdrag. Fikk ukjent kode: $feilkode"
+            AVVIST -> Oppdragstatus.AVVIST to (meldingFraOppdrag ?: "Oppdraget ble avvist")
+            FEIL -> Oppdragstatus.FEIL to "Teknisk feil fra oppdrag, OS har angivelig forsøkt et par ganger og til slutt avvist. Forsøk på nytt"
+            UKJENT -> Oppdragstatus.FEIL to "Spenn forstår ikke responsen fra Oppdrag. Fikk ukjent kode: $feilkode"
         }
 
         sikkerLogg.info(

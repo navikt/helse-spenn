@@ -1,10 +1,11 @@
 val mainClass = "no.nav.helse.spenn.oppdrag.ApplicationKt"
 
+val jacksonVersion = "2.16.1"
+
+
 dependencies {
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.3.2.0")
-
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
-    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
+    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
     testImplementation("io.mockk:mockk:1.12.0")
     testImplementation("org.apache.activemq:apache-artemis:2.17.0") {

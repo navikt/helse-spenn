@@ -1,14 +1,11 @@
 package no.nav.helse.spenn.oppdrag
 
 import no.nav.helse.spenn.januar
-import no.nav.trygdeetaten.skjema.oppdrag.Oppdrag
-import no.nav.trygdeetaten.skjema.oppdrag.TkodeStatusLinje
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
-import javax.xml.datatype.XMLGregorianCalendar
 
 internal class OppdragBuilderTest {
 
@@ -22,14 +19,10 @@ internal class OppdragBuilderTest {
         private const val DAGSATS = 1000
         private const val GRAD = 100
         private const val SAKSBEHANDLER = "Spenn"
-        private val NÅ = Instant.now()
+        private val NÅ = LocalDateTime.now()
         private val MAKSDATO = LocalDate.now()
         private val AVSTEMMINGSNØKKEL = 1024L
         private val UTBETALING_ID = UUID.randomUUID()
-
-        private fun XMLGregorianCalendar.toLocalDate() = toGregorianCalendar()
-            .toZonedDateTime()
-            .toLocalDate()
     }
 
     @Test
@@ -69,8 +62,8 @@ internal class OppdragBuilderTest {
             )
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
-        assertArbeidsgiverlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
-        assertArbeidsgiverlinje(oppdrag, 1, "2", ENDRINGSKODE_NY, 15.januar, 31.januar)
+        assertArbeidsgiverlinje(oppdrag, 0, 1, ENDRINGSKODE_NY, 1.januar, 14.januar)
+        assertArbeidsgiverlinje(oppdrag, 1, 2, ENDRINGSKODE_NY, 15.januar, 31.januar)
     }
 
     @Test
@@ -110,8 +103,8 @@ internal class OppdragBuilderTest {
             )
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_UENDRET)
-        assertBrukerlinje(oppdrag, 0, "1", ENDRINGSKODE_NY, 1.januar, 14.januar)
-        assertBrukerlinje(oppdrag, 1, "2", ENDRINGSKODE_NY, 15.januar, 31.januar)
+        assertBrukerlinje(oppdrag, 0, 1, ENDRINGSKODE_NY, 1.januar, 14.januar)
+        assertBrukerlinje(oppdrag, 1, 2, ENDRINGSKODE_NY, 15.januar, 31.januar)
     }
 
     @Test
@@ -138,12 +131,12 @@ internal class OppdragBuilderTest {
         assertArbeidsgiverlinje(
             oppdrag,
             0,
-            "1",
+            1,
             ENDRINGSKODE_ENDRET,
             1.januar,
             31.januar,
             1.januar,
-            TkodeStatusLinje.OPPH
+            StatuskodeLinjeDto.OPPH
         )
     }
 
@@ -168,11 +161,11 @@ internal class OppdragBuilderTest {
             )
         }
         assertOppdrag(oppdrag, ENDRINGSKODE_ENDRET)
-        assertBrukerlinje(oppdrag, 0, "1", ENDRINGSKODE_ENDRET, 1.januar, 31.januar, 1.januar, TkodeStatusLinje.OPPH)
+        assertBrukerlinje(oppdrag, 0, 1, ENDRINGSKODE_ENDRET, 1.januar, 31.januar, 1.januar, StatuskodeLinjeDto.OPPH)
     }
 
 
-    private fun oppdragRefusjon(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
+    private fun oppdragRefusjon(endringskode: String, block: Utbetalingslinjer.() -> Unit): OppdragDto {
         val builder = OppdragBuilder(
             UTBETALING_ID,
             Utbetalingslinjer.RefusjonTilArbeidsgiver(PERSON, ORGNR, FAGSYSTEMID, endringskode, SAKSBEHANDLER, MAKSDATO).apply(block),
@@ -182,7 +175,7 @@ internal class OppdragBuilderTest {
         return builder.build()
     }
 
-    private fun oppdragBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): Oppdrag {
+    private fun oppdragBruker(endringskode: String, block: Utbetalingslinjer.() -> Unit): OppdragDto {
         val builder = OppdragBuilder(
             UTBETALING_ID,
             Utbetalingslinjer.UtbetalingTilBruker(PERSON, PERSON, FAGSYSTEMID, endringskode, SAKSBEHANDLER, MAKSDATO).apply(block),
@@ -192,61 +185,61 @@ internal class OppdragBuilderTest {
         return builder.build()
     }
 
-    private fun assertOppdrag(oppdrag: Oppdrag, endringskode: String) {
+    private fun assertOppdrag(oppdrag: OppdragDto, endringskode: String) {
         assertEquals(PERSON, oppdrag.oppdrag110.oppdragGjelderId)
         assertEquals(SAKSBEHANDLER, oppdrag.oppdrag110.saksbehId)
         assertEquals(FAGSYSTEMID, oppdrag.oppdrag110.fagsystemId)
-        assertEquals(AVSTEMMINGSNØKKEL.toString(), oppdrag.oppdrag110.avstemming115.nokkelAvstemming)
-        assertEquals(endringskode, oppdrag.oppdrag110.kodeEndring)
+        assertEquals(AVSTEMMINGSNØKKEL, oppdrag.oppdrag110.avstemming115.nokkelAvstemming)
+        assertEquals(endringskode, oppdrag.oppdrag110.kodeEndring.name)
     }
 
     private fun assertArbeidsgiverlinje(
-        oppdrag: Oppdrag,
+        oppdrag: OppdragDto,
         index: Int,
-        delytelseId: String,
+        delytelseId: Int,
         endringskode: String,
         fom: LocalDate,
         tom: LocalDate,
         datoStatusFom: LocalDate? = null,
-        statuskode: TkodeStatusLinje? = null
+        statuskode: StatuskodeLinjeDto? = null
     ) {
         assertOppdragslinje(oppdrag, index, delytelseId, endringskode, fom, tom, datoStatusFom, statuskode)
-        assertEquals(MAKSDATO, oppdrag.oppdrag110.oppdragsLinje150[index].refusjonsinfo156.maksDato.toLocalDate())
-        assertEquals("00$ORGNR", oppdrag.oppdrag110.oppdragsLinje150[index].refusjonsinfo156.refunderesId)
+        assertEquals(MAKSDATO, oppdrag.oppdrag110.oppdragsLinje150[index].refusjonsinfo156?.maksDato)
+        assertEquals("00$ORGNR", oppdrag.oppdrag110.oppdragsLinje150[index].refusjonsinfo156?.refunderesId)
     }
 
     private fun assertBrukerlinje(
-        oppdrag: Oppdrag,
+        oppdrag: OppdragDto,
         index: Int,
-        delytelseId: String,
+        delytelseId: Int,
         endringskode: String,
         fom: LocalDate,
         tom: LocalDate,
         datoStatusFom: LocalDate? = null,
-        statuskode: TkodeStatusLinje? = null
+        statuskode: StatuskodeLinjeDto? = null
     ) {
         assertOppdragslinje(oppdrag, index, delytelseId, endringskode, fom, tom, datoStatusFom, statuskode)
         assertEquals(PERSON, oppdrag.oppdrag110.oppdragsLinje150[index].utbetalesTilId)
     }
 
     private fun assertOppdragslinje(
-        oppdrag: Oppdrag,
+        oppdrag: OppdragDto,
         index: Int,
-        delytelseId: String,
+        delytelseId: Int,
         endringskode: String,
         fom: LocalDate,
         tom: LocalDate,
         datoStatusFom: LocalDate?,
-        statuskode: TkodeStatusLinje?
+        statuskode: StatuskodeLinjeDto?
     ) {
         assertEquals(delytelseId, oppdrag.oppdrag110.oppdragsLinje150[index].delytelseId)
-        assertEquals(endringskode, oppdrag.oppdrag110.oppdragsLinje150[index].kodeEndringLinje)
-        assertEquals(DAGSATS.toBigDecimal(), oppdrag.oppdrag110.oppdragsLinje150[index].sats)
-        assertEquals(GRAD.toBigInteger(), oppdrag.oppdrag110.oppdragsLinje150[index].grad170.first().grad)
+        assertEquals(endringskode, oppdrag.oppdrag110.oppdragsLinje150[index].kodeEndringLinje.name)
+        assertEquals(DAGSATS, oppdrag.oppdrag110.oppdragsLinje150[index].sats)
+        assertEquals(GRAD, oppdrag.oppdrag110.oppdragsLinje150[index].grad170.first().grad)
         assertEquals(SAKSBEHANDLER, oppdrag.oppdrag110.oppdragsLinje150[index].attestant180.first().attestantId)
-        assertEquals(fom, oppdrag.oppdrag110.oppdragsLinje150[index].datoVedtakFom.toLocalDate())
-        assertEquals(tom, oppdrag.oppdrag110.oppdragsLinje150[index].datoVedtakTom.toLocalDate())
-        assertEquals(datoStatusFom, oppdrag.oppdrag110.oppdragsLinje150[index].datoStatusFom?.toLocalDate())
+        assertEquals(fom, oppdrag.oppdrag110.oppdragsLinje150[index].datoVedtakFom)
+        assertEquals(tom, oppdrag.oppdrag110.oppdragsLinje150[index].datoVedtakTom)
+        assertEquals(datoStatusFom, oppdrag.oppdrag110.oppdragsLinje150[index].datoStatusFom)
         assertEquals(statuskode, oppdrag.oppdrag110.oppdragsLinje150[index].kodeStatusLinje)
     }
 }
