@@ -3,6 +3,7 @@ package no.nav.helse.spenn.oppdrag
 import no.nav.trygdeetaten.skjema.oppdrag.*
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -20,7 +21,9 @@ internal class OppdragBuilder(
         private val datatypeFactory = DatatypeFactory.newInstance()
 
         private fun LocalDate.asXmlGregorianCalendar() =
-            datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(this.atStartOfDay(ZoneId.systemDefault())))
+            if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp")
+                datatypeFactory.newXMLGregorianCalendar(this.toString())
+            else datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(this.atStartOfDay(ZoneId.systemDefault())))
     }
 
     private val linjeStrategy: (Utbetalingslinjer.Utbetalingslinje) -> OppdragsLinje150 = when (utbetalingslinjer) {
@@ -39,7 +42,7 @@ internal class OppdragBuilder(
         datoOppdragGjelderFom = LocalDate.EPOCH.asXmlGregorianCalendar()
         avstemming115 = Avstemming115().apply {
             nokkelAvstemming = "$avstemmingsnøkkel"
-            tidspktMelding = tidsstempel.format(tidspunkt)
+            tidspktMelding = if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") LocalDateTime.ofInstant(tidspunkt, ZoneId.systemDefault()).toString() else tidsstempel.format(tidspunkt)
             kodeKomponent = "SP"
         }
         oppdragsEnhet120.add(OppdragsEnhet120().apply {

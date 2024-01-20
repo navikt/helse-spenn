@@ -16,7 +16,7 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
             try {
                 val body = OppdragXml.normalizeXml(message)
                 try {
-                    sikkerLogg.info("mottok kvittering fra oppdrag body:\n$body")
+                    sikkerLogg.info("mottok kvittering fra oppdrag body:\n$body\n\nUbesudlet: $message")
                     onMessage(body)
                 } catch (err: Exception) {
                     log.error("Feil med mottak av MQ-melding: ${err.message}", err)
