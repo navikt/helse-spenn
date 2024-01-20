@@ -5,7 +5,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.xml.datatype.DatatypeFactory
 
@@ -16,14 +15,9 @@ internal class OppdragBuilder(
     tidspunkt: Instant = Instant.now()
 ) {
     private companion object {
-        private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
-            .withZone(ZoneId.systemDefault())
         private val datatypeFactory = DatatypeFactory.newInstance()
-
         private fun LocalDate.asXmlGregorianCalendar() =
-            if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp")
-                datatypeFactory.newXMLGregorianCalendar(this.toString())
-            else datatypeFactory.newXMLGregorianCalendar(GregorianCalendar.from(this.atStartOfDay(ZoneId.systemDefault())))
+            datatypeFactory.newXMLGregorianCalendar(this.toString())
     }
 
     private val linjeStrategy: (Utbetalingslinjer.Utbetalingslinje) -> OppdragsLinje150 = when (utbetalingslinjer) {
@@ -42,7 +36,7 @@ internal class OppdragBuilder(
         datoOppdragGjelderFom = LocalDate.EPOCH.asXmlGregorianCalendar()
         avstemming115 = Avstemming115().apply {
             nokkelAvstemming = "$avstemmingsnøkkel"
-            tidspktMelding = if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") LocalDateTime.ofInstant(tidspunkt, ZoneId.systemDefault()).toString() else tidsstempel.format(tidspunkt)
+            tidspktMelding = LocalDateTime.ofInstant(tidspunkt, ZoneId.systemDefault()).toString()
             kodeKomponent = "SP"
         }
         oppdragsEnhet120.add(OppdragsEnhet120().apply {
