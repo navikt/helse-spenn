@@ -3,8 +3,8 @@ package no.nav.helse.spenn.oppdrag
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
@@ -77,6 +77,9 @@ internal class OppdragXmlTest {
         )
         val result = OppdragXml.marshal(oppdrag)
         val node = xmlMapper.readTree(result)
+        assertTrue(result.contains("<Oppdrag>")) {
+            "Oppdrag-XML kan ikke inneholde namespace-deklarasjon, f.eks. <Oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\"> fordi da faller OS sammen"
+        }
         assertEquals("1970-01-01", node.path("oppdrag-110").path("datoOppdragGjelderFom").asText())
 
     }
@@ -87,11 +90,24 @@ internal class OppdragXmlTest {
         assertNotNull(OppdragXml.unmarshal(kvittering(AKSEPTERT_MED_FEIL)))
         assertNotNull(OppdragXml.unmarshal(kvittering(AVVIST_FUNKSJONELLE_FEIL)))
         assertNotNull(OppdragXml.unmarshal(kvittering(AVVIST_TEKNISK_FEIL)))
-        assertThrows<JsonParseException> {
-            OppdragXml.unmarshal(rarKvittering(AKSEPTERT_UTEN_FEIL))
-        }
+        assertNotNull(OppdragXml.unmarshal(kvittering(AVVIST_TEKNISK_FEIL)))
+        assertNotNull(OppdragXml.unmarshal(feilmelding()))
+        assertNotNull(OppdragXml.unmarshal(rarKvittering(AKSEPTERT_UTEN_FEIL)))
     }
 
+    @Language("XML")
+    private fun feilmelding() =
+        """<?xml version="1.0" encoding="utf-8"?>
+<oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag">
+    <mmel>
+        <systemId>231-OPPD</systemId>
+        <kodeMelding>B606002F</kodeMelding>
+        <alvorlighetsgrad>08</alvorlighetsgrad>
+        <beskrMelding>Det oppsto en feil ved parsing</beskrMelding>
+        <programId>K231B606</programId>
+        <sectionNavn>CA00-BEHANDLE-FELT</sectionNavn>
+    </mmel>
+    <oppdrag-110></oppdrag-110>""" // <-- Ja: OS svarer med ugyldig XML
     private fun kvittering(alvorlighetsgrad: String) =
         kvittering(
             "<ns2:oppdrag xmlns:ns2=\"http://www.trygdeetaten.no/skjema/oppdrag\">",

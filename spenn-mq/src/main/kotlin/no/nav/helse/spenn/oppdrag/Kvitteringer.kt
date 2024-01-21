@@ -40,10 +40,6 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
         ).toJson().also { sikkerLogg.info("sender oppdrag_kvittering:\n$it") })
 
         val oppdrag = OppdragXml.unmarshal(xmlMessage)
-        val avstemmingsnøkkel = oppdrag.oppdrag110.avstemming115.nokkelAvstemming
-        val fagsystemId = oppdrag.oppdrag110.fagsystemId
-        val fødselsnummer = oppdrag.oppdrag110.oppdragGjelderId
-        val utbetalingId = UUID.fromString(oppdrag.oppdrag110.oppdragsLinje150.first().henvisning)
         val feilkode = requireNotNull(oppdrag.mmel).alvorlighetsgrad
         val meldingFraOppdrag: String? = oppdrag.mmel.beskrMelding
         val kodemelding: String? = oppdrag.mmel.kodeMelding
@@ -61,6 +57,15 @@ internal class Kvitteringer(private val rapidsConnection: RapidsConnection, fraO
             FEIL -> Oppdragstatus.FEIL to "Teknisk feil fra oppdrag, OS har angivelig forsøkt et par ganger og til slutt avvist. Forsøk på nytt"
             UKJENT -> Oppdragstatus.FEIL to "Spenn forstår ikke responsen fra Oppdrag. Fikk ukjent kode: $feilkode"
         }
+
+        checkNotNull(oppdrag.oppdrag110) {
+            "$feilkode - $meldingFraOppdrag\nOppdrag er null\n${oppdrag.mmel}"
+        }
+
+        val avstemmingsnøkkel = oppdrag.oppdrag110.avstemming115.nokkelAvstemming
+        val fagsystemId = oppdrag.oppdrag110.fagsystemId
+        val fødselsnummer = oppdrag.oppdrag110.oppdragGjelderId
+        val utbetalingId = UUID.fromString(oppdrag.oppdrag110.oppdragsLinje150.first().henvisning)
 
         sikkerLogg.info(
             "fødselsnummer=$fødselsnummer avstemmingsnøkkel=$avstemmingsnøkkel fagsystemId=$fagsystemId " +

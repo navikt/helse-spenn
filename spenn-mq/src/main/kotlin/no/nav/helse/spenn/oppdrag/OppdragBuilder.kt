@@ -114,21 +114,38 @@ enum class StatuskodeLinjeDto {
 }
 
 @JsonRootName(value = "Oppdrag")
-data class OppdragDto(
+data class KvitteringDto(
     @JsonProperty(value = "oppdrag-110")
-    val oppdrag110: Oppdrag110Dto,
+    val oppdrag110: Oppdrag110Dto?,
 
     @JsonProperty(value = "mmel")
     val mmel: MmelDto? = null
 )
 
+@JsonRootName(value = "Oppdrag")
+data class OppdragDto(
+    @JsonProperty(value = "oppdrag-110")
+    val oppdrag110: Oppdrag110Dto
+)
+
 data class MmelDto(
     @JsonProperty(value = "alvorlighetsgrad")
     val alvorlighetsgrad: AlvorlighetsgradDto,
+
     @JsonProperty(value = "beskrMelding")
     val beskrMelding: String?,
+
     @JsonProperty(value = "kodeMelding")
-    val kodeMelding: String?
+    val kodeMelding: String?,
+
+    @JsonProperty(value = "systemId")
+    val systemId: String? = null,
+
+    @JsonProperty(value = "programId")
+    val programId: String? = null,
+
+    @JsonProperty(value = "sectionNavn")
+    val sectionNavn: String? = null,
 )
 
 enum class AlvorlighetsgradDto(

@@ -57,6 +57,22 @@ internal class KvitteringerTest {
         håndter(Oppdragstatus.FEIL, UGYLDIG_FEILKODE)
     }
 
+    @Test
+    fun `parsingfeil fra OS`() {
+        connection.sendMessage("""<?xml version="1.0" encoding="utf-8"?>
+<oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag">
+    <mmel>
+        <systemId>231-OPPD</systemId>
+        <kodeMelding>B606002F</kodeMelding>
+        <alvorlighetsgrad>08</alvorlighetsgrad>
+        <beskrMelding>Det oppsto en feil ved parsing</beskrMelding>
+        <programId>K231B606</programId>
+        <sectionNavn>CA00-BEHANDLE-FELT</sectionNavn>
+    </mmel>
+    <oppdrag-110></oppdrag-110>""")
+        assertEquals(1, rapid.inspektør.size)
+    }
+
     private fun håndter(status: Oppdragstatus, alvorlighetsgrad: String) {
         val kvittering = Kvittering(alvorlighetsgrad=alvorlighetsgrad).toXml()
         connection.sendMessage(kvittering)
