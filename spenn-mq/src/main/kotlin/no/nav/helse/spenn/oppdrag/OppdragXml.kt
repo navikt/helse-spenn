@@ -27,7 +27,7 @@ ${xmlMapper.writeValueAsString(oppdrag)}"""
     fun normalizeXml(oppdragXML: String): String {
         val medForventetÅpningstag = medForventetÅpningstag(oppdragXML)
         val medAvslutningstag = medForventetAvslutningstag(medForventetÅpningstag)
-        return utenTomtOppdrag(medAvslutningstag)
+        return medForventetDatoformat(utenTomtOppdrag(medAvslutningstag))
     }
 
     // normaliserer åpningstag til lowercase, dvs. <OPPDRAG, <Oppdrag blir til <oppdrag
@@ -38,6 +38,22 @@ ${xmlMapper.writeValueAsString(oppdrag)}"""
     }
     private fun utenTomtOppdrag(xml: String) =
         xml.replace("<oppdrag-110></oppdrag-110>", "", ignoreCase = true)
+
+    private fun medForventetDatoformat(xml: String): String {
+        return tidspunkter(datoUtenTidssone(xml))
+    }
+
+    private fun tidspunkter(xml: String): String {
+        // fikser tidspunkter, f.eks. 2019-09-20 13.31.28.572227 ==> 2019-09-20T13:31:28.572227
+        val r = """(\d{4}-\d{2}-\d{2}) (\d{1,2})\.(\d{1,2})\.(\d+\.\d+)""".toRegex()
+        return xml.replace(r, "$1T$2:$3:$4")
+    }
+
+    private fun datoUtenTidssone(xml: String): String {
+        // erstatter dato med tidssone, f.eks. 1970-01-01+01:00 ==> 1970-01-01
+        val r = """(\d{4}-\d{2}-\d{2})[+-][0-9:]{4,5}""".toRegex()
+        return xml.replace(r, "$1")
+    }
 
     fun unmarshal(oppdragXML: String): KvitteringDto {
         return xmlMapper.readValue<KvitteringDto>(normalizeXml(oppdragXML))
