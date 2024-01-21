@@ -7,7 +7,11 @@ dependencies {
     implementation("org.postgresql:postgresql:42.6.0")
     implementation("com.github.seratch:kotliquery:1.9.0")
 
-    implementation("com.ibm.mq:com.ibm.mq.allclient:9.3.0.1")
+    implementation("com.ibm.mq:com.ibm.mq.allclient:9.3.4.1") {
+        exclude("com.fasterxml.jackson.core", "jackson-core")
+        exclude("com.fasterxml.jackson.core", "jackson-annotations")
+        exclude("com.fasterxml.jackson.core", "jackson-databind")
+    }
 
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
