@@ -113,7 +113,7 @@ enum class StatuskodeLinjeDto {
     REAK;
 }
 
-@JsonRootName(value = "Oppdrag", namespace = "http://www.trygdeetaten.no/skjema/oppdrag")
+@JsonRootName(value = "Oppdrag")
 data class OppdragDto(
     @JsonProperty(value = "oppdrag-110")
     val oppdrag110: Oppdrag110Dto,
