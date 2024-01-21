@@ -48,9 +48,7 @@ spec:
       external:
         - host: mpls02.adeo.no
           ports:
-            - name: mq
-              port: 1414
-              protocol: TCP
+            - port: 1414
   secureLogs:
     enabled: true
   env:
