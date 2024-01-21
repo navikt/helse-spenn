@@ -22,7 +22,8 @@ object OppdragXml {
         .build()
 
     fun marshal(oppdrag: OppdragDto): String {
-        return xmlMapper.writeValueAsString(oppdrag)
+        return """<?xml version="1.0" encoding="utf-8"?>
+${xmlMapper.writeValueAsString(oppdrag)}"""
     }
 
     fun normalizeXml(oppdragXML: String) =
