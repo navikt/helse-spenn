@@ -244,18 +244,17 @@ data class OppdragsLinje150Dto(
     val saksbehId: String,
     @JsonProperty(value = "brukKjoreplan")
     val brukKjoreplan: String,
+    @JsonProperty(value = "utbetalesTilId")
+    var utbetalesTilId: String? = null,
+    @JsonProperty(value = "refusjonsinfo-156")
+    var refusjonsinfo156: Refusjonsinfo156Dto? = null,
     @JacksonXmlElementWrapper(useWrapping = false)
     @JsonProperty(value = "grad-170")
     val grad170: List<Grad170Dto> = emptyList(),
     @JacksonXmlElementWrapper(useWrapping = false)
     @JsonProperty(value = "attestant-180")
     val attestant180: List<Attestant180Dto>
-) {
-    @JsonProperty(value = "refusjonsinfo-156")
-    var refusjonsinfo156: Refusjonsinfo156Dto? = null
-    @JsonProperty(value = "utbetalesTilId")
-    var utbetalesTilId: String? = null
-}
+)
 
 enum class SatstypeDto {
     ENG, DAG

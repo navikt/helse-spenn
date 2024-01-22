@@ -71,7 +71,9 @@ internal class OppdragXmlTest {
                         attestant180 = listOf(
                             Attestant180Dto("SPEIL")
                         )
-                    )
+                    ).apply {
+                        utbetalesTilId = "12345678911"
+                    }
                 )
             )
         )
@@ -82,6 +84,16 @@ internal class OppdragXmlTest {
         }
         assertEquals("1970-01-01", node.path("oppdrag-110").path("datoOppdragGjelderFom").asText())
 
+        val feltnavn = node.path("oppdrag-110").path("oppdrags-linje-150")
+            .fieldNames()
+            .asSequence()
+            .toList()
+        val posisjonUtbetalesTilId = feltnavn.indexOf("utbetalesTilId")
+        val posisjonGrad = feltnavn.indexOf("grad-170")
+        val posisjonAttestant = feltnavn.indexOf("attestant-180")
+
+        assertTrue(posisjonUtbetalesTilId < posisjonGrad) { "OS er sensitiv på plasseringen til utbetalesTilId-feltet" }
+        assertTrue(posisjonUtbetalesTilId < posisjonAttestant) { "OS er sensitiv på plasseringen til utbetalesTilId-feltet" }
     }
 
     @Test
