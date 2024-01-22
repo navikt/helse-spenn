@@ -220,6 +220,9 @@ class SimuleringV2Service(
                 <typeSats>${linje.typeSats}</typeSats>
                 <brukKjoreplan>${linje.brukKjoreplan}</brukKjoreplan>
                 <saksbehId>${linje.saksbehId}</saksbehId>
+                ${linje.utbetalesTilId?.let {
+                    """<utbetalesTilId>$it</utbetalesTilId>"""
+                } ?: ""}
                 ${linje.grad.joinToString(separator = "\n") { grad ->
                     """<ns3:grad>
                     <typeGrad>${grad.typeGrad}</typeGrad>
@@ -231,7 +234,6 @@ class SimuleringV2Service(
                     <attestantId>${attestant.attestantId}</attestantId>
                 </ns3:attestant>"""
                 }}
-                
                 ${linje.refusjonsInfo?.let { refusjonsInfo ->
                     """<ns3:refusjonsInfo>
                     <refunderesId>${refusjonsInfo.refunderesId}</refunderesId>
@@ -239,11 +241,6 @@ class SimuleringV2Service(
                     <datoFom>${refusjonsInfo.datoFom}</datoFom>
                 </ns3:refusjonsInfo>"""
                 } ?: "" }
-                
-                ${linje.utbetalesTilId?.let { 
-                    """<utbetalesTilId>$it</utbetalesTilId>"""
-                } ?: ""}
-                
             </oppdragslinje>"""
             }}
         </oppdrag>
