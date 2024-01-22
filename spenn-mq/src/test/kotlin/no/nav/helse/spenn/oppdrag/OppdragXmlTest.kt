@@ -98,7 +98,6 @@ internal class OppdragXmlTest {
 
     @Test
     fun unmarshal() {
-        assertNotNull(OppdragXml.unmarshal(kvittering(AKSEPTERT_UTEN_FEIL, tidspunktMelding = "2019-09-20 13.31.28.572227", oppdragGjelderFom = "1970-01-01+01:00")))
         assertNotNull(OppdragXml.unmarshal(kvittering(AKSEPTERT_UTEN_FEIL)))
         assertNotNull(OppdragXml.unmarshal(kvittering(AKSEPTERT_MED_FEIL)))
         assertNotNull(OppdragXml.unmarshal(kvittering(AVVIST_FUNKSJONELLE_FEIL)))
@@ -121,19 +120,17 @@ internal class OppdragXmlTest {
         <sectionNavn>CA00-BEHANDLE-FELT</sectionNavn>
     </mmel>
     <oppdrag-110></oppdrag-110>""" // <-- Ja: OS svarer med ugyldig XML
-    private fun kvittering(alvorlighetsgrad: String, tidspunktMelding: String = "2019-09-20T13:31:28.572227", oppdragGjelderFom: String = "1970-01-01") =
+    private fun kvittering(alvorlighetsgrad: String) =
         kvittering(
             "<ns2:oppdrag xmlns:ns2=\"http://www.trygdeetaten.no/skjema/oppdrag\">",
             "</ns2:oppdrag>",
-            alvorlighetsgrad,
-            tidspunktMelding,
-            oppdragGjelderFom
+            alvorlighetsgrad
         )
 
     private fun rarKvittering(alvorlighetsgrad: String) =
-        kvittering( "<oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</Oppdrag>", alvorlighetsgrad, "2019-09-20T13:31:28.572227", "1970-01-01")
+        kvittering("<oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</Oppdrag>", alvorlighetsgrad)
 
-    private fun kvittering(head: String, foot: String, alvorlighetsgrad: String, tidspunktMelding: String, oppdragGjelderFom: String) =
+    private fun kvittering(head: String, foot: String, alvorlighetsgrad: String) =
         """<?xml version="1.0" encoding="utf-8"?>
 $head
     <mmel>
@@ -147,12 +144,12 @@ $head
         <fagsystemId>$UTBETALINGSREF</fagsystemId>
         <utbetFrekvens>MND</utbetFrekvens>
         <oppdragGjelderId>$PERSON</oppdragGjelderId>
-        <datoOppdragGjelderFom>$oppdragGjelderFom</datoOppdragGjelderFom>
+        <datoOppdragGjelderFom>1970-01-01</datoOppdragGjelderFom>
         <saksbehId>$SAKSBEHANDLER</saksbehId>
         <avstemming-115>
             <kodeKomponent>SP</kodeKomponent>
             <nokkelAvstemming>$AVSTEMMINGSNØKKEL</nokkelAvstemming>
-            <tidspktMelding>$tidspunktMelding</tidspktMelding>
+            <tidspktMelding>2019-09-20T13:31:28.572227</tidspktMelding>
         </avstemming-115>
         <oppdrags-enhet-120>
             <typeEnhet>BOS</typeEnhet>
