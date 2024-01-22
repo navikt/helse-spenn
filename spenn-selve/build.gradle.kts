@@ -1,10 +1,11 @@
 val mainClass = "no.nav.helse.spenn.ApplicationKt"
 val testcontainersVersion = "1.19.0"
-
+val flywayVersion = "10.6.0"
 dependencies {
-    api("org.flywaydb:flyway-core:9.7.0")
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.6.0")
+    api("org.flywaydb:flyway-core:$flywayVersion")
+    api("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("org.postgresql:postgresql:42.7.1")
     implementation("com.github.seratch:kotliquery:1.9.0")
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")

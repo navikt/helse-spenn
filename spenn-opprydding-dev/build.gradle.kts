@@ -1,11 +1,11 @@
 val mainClass = "no.nav.helse.opprydding.AppKt"
-val testcontainersVersion = "1.19.0"
+val testcontainersVersion = "1.19.3"
 
 dependencies {
 
-    implementation("com.google.cloud.sql:postgres-socket-factory:1.7.2")
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("com.google.cloud.sql:postgres-socket-factory:1.15.2")
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("org.postgresql:postgresql:42.7.1")
     implementation("com.github.seratch:kotliquery:1.9.0")
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
