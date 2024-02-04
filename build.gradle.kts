@@ -29,7 +29,7 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        implementation("com.github.navikt:rapids-and-rivers:2024020421571707080262.b74e641fd6dd")
+        implementation("com.github.navikt:rapids-and-rivers:2024020422121707081126.d834a5d05bb2")
 
         testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
