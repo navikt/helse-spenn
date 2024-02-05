@@ -19,6 +19,9 @@ spec:
   prometheus:
     enabled: true
     path: /metrics
+  preStopHook:
+    http:
+      path: /stop
   replicas:
     cpuThresholdPercentage: 90
     max: 1

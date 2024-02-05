@@ -30,6 +30,9 @@ spec:
         topic: tbd.rapid.v1
         consumerGroup: tbd-spenn-simulering-v1
         threshold: 200
+  preStopHook:
+    http:
+      path: /stop
   resources:
     limits:
       memory: 1024Mi

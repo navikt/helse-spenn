@@ -16,6 +16,9 @@ spec:
   readiness:
     initialDelay: 10
     path: /isready
+  preStopHook:
+    http:
+      path: /stop
   prometheus:
     enabled: true
     path: /metrics
