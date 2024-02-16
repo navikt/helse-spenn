@@ -1,4 +1,4 @@
-val junitJupiterVersion = "5.10.0"
+val junitJupiterVersion = "5.10.2"
 val testcontainersVersion = "1.19.0"
 val jvmTarget = 21
 
