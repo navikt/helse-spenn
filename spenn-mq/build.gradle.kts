@@ -11,7 +11,7 @@ dependencies {
     }
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("io.mockk:mockk:1.13.9")
     testImplementation("org.apache.activemq:apache-artemis:2.31.2") {
         /* this is a shaded jar that creates conflicts on classpath, see:
             https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
