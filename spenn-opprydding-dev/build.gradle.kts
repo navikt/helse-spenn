@@ -1,5 +1,5 @@
 val mainClass = "no.nav.helse.opprydding.AppKt"
-val testcontainersVersion = "1.19.3"
+val testcontainersVersion = "1.19.5"
 
 dependencies {
 

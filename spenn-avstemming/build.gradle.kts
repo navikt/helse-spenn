@@ -1,5 +1,5 @@
 val mainClass = "no.nav.helse.spenn.avstemming.ApplicationKt"
-val testcontainersVersion = "1.19.0"
+val testcontainersVersion = "1.19.5"
 val flywayVersion = "10.6.0"
 dependencies {
     api("org.flywaydb:flyway-core:$flywayVersion")
