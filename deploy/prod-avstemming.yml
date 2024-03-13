@@ -54,6 +54,10 @@ spec:
             - port: 1414
   secureLogs:
     enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-avstemming-v1

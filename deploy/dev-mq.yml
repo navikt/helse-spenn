@@ -39,6 +39,10 @@ spec:
             - port: 1413
   secureLogs:
     enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   envFrom:
     - secret: spenn
   env:
