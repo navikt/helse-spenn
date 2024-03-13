@@ -54,7 +54,8 @@ internal class Utbetalinger(
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        sikkerLogg.error("Fikk et Utbetaling-behov vi ikke validerte:\n${problems.toExtendedReport()}")
+        log.error("Forstod ikke behov om Utbetaling (se sikkerlogg for detaljer)")
+        sikkerLogg.error("Forstod ikke behov om Utbetaling:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {

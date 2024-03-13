@@ -18,7 +18,7 @@ internal class Transaksjoner(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("@event_name", "transaksjon_status") }
+            validate { it.demandValue("@event_name", "transaksjon_status") }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate {
                 it.requireKey(
@@ -28,6 +28,11 @@ internal class Transaksjoner(
             }
             validate { it.requireAny("status", Oppdragstatus.values().map(Enum<*>::name)) }
         }.register(this)
+    }
+
+    override fun onError(problems: MessageProblems, context: MessageContext) {
+        log.error("Forstod ikke transaksjon_status (se sikkerlogg for detaljer)")
+        sikkerLogg.error("Forstod ikke transaksjon_status:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
