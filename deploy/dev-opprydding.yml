@@ -43,10 +43,6 @@ spec:
     pool: nav-dev
   secureLogs:
     enabled: true
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-opprydding-dev-v1

@@ -44,10 +44,6 @@ spec:
               - name: spenn-opprydding
   secureLogs:
     enabled: true
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-v1
