@@ -21,6 +21,8 @@ internal sealed class Utbetalingslinjer(
     fun førsteDag() = checkNotNull(Utbetalingslinje.førsteDato(linjer)) { "Ingen oppdragslinjer" }
     fun sisteDag() = checkNotNull(Utbetalingslinje.sisteDato(linjer)) { "Ingen oppdragslinjer" }
     fun totalbeløp() = Utbetalingslinje.totalbeløp(linjer)
+    fun erFeriepenger() = linjer.any { it.klassekode in listOf("SPATFER", "SPREFAGFER-IOP") }
+
 
     override fun iterator() = linjer.toList().listIterator()
 

@@ -85,8 +85,9 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
 
             val oppdrag = OppdragBuilder(utbetalingId, utbetalingslinjer, avstemmingsnøkkel).build()
             val oppdragXml = OppdragXml.marshal(oppdrag)
+            val prioritet = if (utbetalingslinjer.erFeriepenger()) 3 else 4
             try {
-                tilOppdrag.send(oppdragXml)
+                tilOppdrag.send(oppdragXml, prioritet)
                 packet["kvittering"] = mapOf(
                     "status" to Oppdragstatus.OVERFØRT,
                     "beskrivelse" to "Meldingen er videresendt på MQ til Oppdrag",
