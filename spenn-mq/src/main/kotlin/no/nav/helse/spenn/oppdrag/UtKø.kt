@@ -1,5 +1,5 @@
 package no.nav.helse.spenn.oppdrag
 
 interface UtKø {
-    fun send(messageString: String)
+    fun send(messageString: String, priority: Int)
 }
