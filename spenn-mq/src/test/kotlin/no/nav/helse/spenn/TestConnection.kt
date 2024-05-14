@@ -48,10 +48,6 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
             }
             meldinger.add(message)
         }
-
-        override fun getPriority() = 4
-        override fun getDeliveryMode() = 1337
-        override fun getTimeToLive() = 9L
     }
 
     private inner class TestConsumer private constructor(delegate: MessageConsumer) : MessageConsumer by delegate {

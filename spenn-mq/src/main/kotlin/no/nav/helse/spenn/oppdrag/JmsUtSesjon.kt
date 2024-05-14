@@ -36,13 +36,7 @@ class JmsUtSesjon(connection: Connection, sendQueue: String, private val replyTo
             ?.let { MQQueue(it) }
             ?.let { message.jmsReplyTo = it }
 
-        log.info("""
-            our calculated priority: $priority
-            priority: ${producer.priority}
-            deliveryMode: ${producer.deliveryMode}
-            timeToLive: ${producer.timeToLive}
-        """)
-
-        producer.send(message)
+        log.info("Sender melding med prioritet $priority")
+        producer.send(message, 2, priority, 0)
     }
 }
