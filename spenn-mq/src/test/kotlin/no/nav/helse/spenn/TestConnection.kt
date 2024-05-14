@@ -2,6 +2,7 @@ package no.nav.helse.spenn
 
 import io.mockk.mockk
 import javax.jms.*
+import javax.print.attribute.standard.JobPriority
 
 internal class TestConnection private constructor(delegate: Connection) : Connection by delegate {
 
@@ -41,7 +42,7 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
     private inner class TestProducer private constructor(delegate: MessageProducer) : MessageProducer by delegate {
         constructor() : this(mockk())
 
-        override fun send(message: Message) {
+        override fun send(message: Message, deliveryMode: Int, priority: Int, timeToLive: Long) {
             if (kastException) {
                 kastException = false
                 throw RuntimeException("En superalvorlig feil har oppstått!")
