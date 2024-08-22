@@ -13,27 +13,23 @@ import no.nav.helse.spenn.rapidApp
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
-internal class E2eTestApp(
-    var rapid: RepublishableTestRapid = RepublishableTestRapid(),
-    val database: TestDatabase = TestDatabase(),
-    var listAppender: ListAppender<ILoggingEvent> = ListAppender()
-) {
+internal class E2eTestApp {
+    private val listAppender: ListAppender<ILoggingEvent> = ListAppender()
+    val rapid: RepublishableTestRapid = RepublishableTestRapid()
+    private val dataSource = databaseContainer.nyTilkobling()
+    val database = TestDatabase(dataSource.ds)
 
-    private fun start() {
+    init {
         val sikkerLogg = LoggerFactory.getLogger("tjenestekall") as Logger
         listAppender.start()
         sikkerLogg.addAppender(listAppender)
-        database.migrate()
         rapidApp(rapid, database)
         rapid.start()
     }
 
-    private fun reset() {
-        database.resetDatabase()
-        rapid = RepublishableTestRapid()
-        listAppender = ListAppender()
+    fun reset() {
+        databaseContainer.droppTilkobling(dataSource)
     }
-
 
     fun parseMottattLøsning(behovsvar: JsonNode): MottattLøsning {
         val løsning = behovsvar.path("@løsning").path("Utbetaling")
@@ -69,14 +65,8 @@ internal class E2eTestApp(
 
 
     companion object {
-        private val testEnv by lazy { E2eTestApp() }
         fun e2eTest(f: E2eTestApp.() -> Unit) {
-            try {
-                testEnv.start()
-                f(testEnv)
-            } finally {
-                testEnv.reset()
-            }
+            E2eTestApp().apply(f).reset()
         }
 
         data class MottattLøsning(

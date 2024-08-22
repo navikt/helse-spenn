@@ -1,6 +1,6 @@
 val mainClass = "no.nav.helse.spenn.ApplicationKt"
 
-val testcontainersVersion: String by project
+val tbdLibsVersion: String by project
 val flywayVersion: String by project
 val mockkVersion: String by project
 val hikariCPVersion: String by project
@@ -14,7 +14,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
-    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
+    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 }
 

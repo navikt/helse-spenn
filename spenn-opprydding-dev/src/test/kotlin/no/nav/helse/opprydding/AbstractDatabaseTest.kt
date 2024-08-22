@@ -1,73 +1,34 @@
 package no.nav.helse.opprydding
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
+import com.github.navikt.tbd_libs.test_support.CleanupStrategy
+import com.github.navikt.tbd_libs.test_support.DatabaseContainers
+import com.github.navikt.tbd_libs.test_support.TestDataSource
 import kotliquery.TransactionalSession
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import org.flywaydb.core.Flyway
 import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
-import org.testcontainers.containers.PostgreSQLContainer
 import java.util.*
-import javax.sql.DataSource
+
+val databaseContainer = DatabaseContainers.container("spenn-opprydding", CleanupStrategy.tables("oppdrag,avstemming"))
 
 internal abstract class AbstractDatabaseTest {
 
-    protected val personRepository = PersonRepository(dataSource)
+    protected lateinit var personRepository: PersonRepository
+    private lateinit var dataSource: TestDataSource
 
-    protected companion object {
-        private val postgres = PostgreSQLContainer<Nothing>("postgres:14").apply {
-            withReuse(true)
-            withLabel("app-navn", "spenn")
-            start()
-        }
+    @BeforeEach
+    fun setup() {
+        dataSource = databaseContainer.nyTilkobling()
+        personRepository = PersonRepository(dataSource.ds)
+    }
 
-        val dataSource =
-            HikariDataSource(HikariConfig().apply {
-                jdbcUrl = postgres.jdbcUrl
-                username = postgres.username
-                password = postgres.password
-                maximumPoolSize = 5
-                minimumIdle = 1
-                idleTimeout = 500001
-                connectionTimeout = 10000
-                maxLifetime = 600001
-                initializationFailTimeout = 5000
-            })
-
-        private fun createTruncateFunction(dataSource: DataSource) {
-            sessionOf(dataSource).use {
-                @Language("PostgreSQL")
-                val query = """
-            CREATE OR REPLACE FUNCTION truncate_tables() RETURNS void AS $$
-            DECLARE
-            truncate_statement text;
-            BEGIN
-                SELECT 'TRUNCATE ' || string_agg(format('%I.%I', schemaname, tablename), ',') || ' CASCADE'
-                    INTO truncate_statement
-                FROM pg_tables
-                WHERE schemaname='public'
-                AND tablename not in ('flyway_schema_history');
-
-                EXECUTE truncate_statement;
-            END;
-            $$ LANGUAGE plpgsql;
-        """
-                it.run(queryOf(query).asExecute)
-            }
-        }
-
-        init {
-            Flyway.configure()
-                .dataSource(dataSource)
-                .locations("classpath:db/migration")
-                .load()
-                .migrate()
-
-            createTruncateFunction(dataSource)
-        }
+    @AfterEach
+    fun teardown() {
+        // gi tilbake tilkoblingen
+        databaseContainer.droppTilkobling(dataSource)
     }
 
     protected fun assertTabellinnhold(booleanExpressionBlock: (actualTabellCount: Int) -> Boolean) {
@@ -80,7 +41,7 @@ internal abstract class AbstractDatabaseTest {
     }
 
     private fun finnTabeller(): List<String> {
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource.ds).use { session ->
             @Language("PostgreSQL")
             val query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
             session.run(queryOf(query).map { it.string("table_name") }.asList)
@@ -88,22 +49,15 @@ internal abstract class AbstractDatabaseTest {
     }
 
     private fun finnTabellCount(tabellnavn: String): Int {
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource.ds).use { session ->
             @Language("PostgreSQL")
             val query = "SELECT COUNT(1) FROM $tabellnavn"
             session.run(queryOf(query).map { it.int(1) }.asSingle) ?: 0
         }
     }
 
-    @BeforeEach
-    fun resetDatabase() {
-        sessionOf(dataSource).use {
-            it.run(queryOf("SELECT truncate_tables()").asExecute)
-        }
-    }
-
     protected fun opprettPerson(fødselsnummer: String, avstemmingsnøkkel: Int) {
-        sessionOf(dataSource).use { session ->
+        sessionOf(dataSource.ds).use { session ->
             session.transaction { tx ->
                 tx.opprettOppdrag(fødselsnummer, avstemmingsnøkkel)
                 tx.opprettAvstemming(avstemmingsnøkkel)

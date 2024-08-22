@@ -1,5 +1,4 @@
 val junitJupiterVersion = "5.11.0"
-val testcontainersVersion = "1.20.1"
 val mockkVersion = "1.13.12"
 val jacksonVersion = "2.17.2"
 val flywayVersion = "10.17.1"
@@ -51,7 +50,6 @@ subprojects {
     ext.set("postgresSocketFactoryVersion", postgresSocketFactoryVersion)
     ext.set("tbdLibsVersion", tbdLibsVersion)
     ext.set("hikariCPVersion", hikariCPVersion)
-    ext.set("testcontainersVersion", testcontainersVersion)
     ext.set("flywayVersion", flywayVersion)
     ext.set("jacksonVersion", jacksonVersion)
     ext.set("mockkVersion", mockkVersion)

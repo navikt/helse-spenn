@@ -1,5 +1,4 @@
 val mainClass = "no.nav.helse.spenn.avstemming.ApplicationKt"
-val testcontainersVersion: String by project
 val flywayVersion: String by project
 val hikariCPVersion: String by project
 val postgresqlVersion: String by project

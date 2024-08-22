@@ -1,23 +1,16 @@
 package no.nav.helse.spenn.utbetaling
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
+import com.github.navikt.tbd_libs.test_support.TestDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import kotliquery.using
-import org.flywaydb.core.Flyway
+import no.nav.helse.spenn.e2e.databaseContainer
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.io.TempDir
-import org.testcontainers.containers.PostgreSQLContainer
-import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.*
-import javax.sql.DataSource
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class OppdragDaoTest {
     private companion object {
         private const val FAGOMRÅDE_REFUSJON = "SPREF"
@@ -31,10 +24,20 @@ internal class OppdragDaoTest {
         private val UTBETALING_ID = UUID.randomUUID()
     }
 
-    private lateinit var postgres: PostgreSQLContainer<Nothing>
-    private lateinit var dataSource: DataSource
-    private lateinit var flyway: Flyway
+    private lateinit var dataSource: TestDataSource
     private lateinit var oppdragDao: OppdragDao
+
+    @BeforeEach
+    fun setup() {
+        dataSource = databaseContainer.nyTilkobling()
+        oppdragDao = OppdragDao(dataSource.ds)
+    }
+
+    @AfterEach
+    fun teardown() {
+        // gi tilbake tilkoblingen
+        databaseContainer.droppTilkobling(dataSource)
+    }
 
     @Test
     fun `opprette oppdrag`() {
@@ -106,15 +109,16 @@ internal class OppdragDaoTest {
     }
 
     private fun finnOppdrag(avstemmingsnøkkel: Long) =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource.ds).use { session ->
+            @Language("PostgreSQL")
+            val stmt = """
+                |SELECT avstemmingsnokkel, fnr, mottaker, opprettet, endret, fagsystem_id, status, totalbelop, beskrivelse, feilkode_oppdrag, oppdrag_response 
+                |FROM oppdrag
+                |WHERE avstemmingsnokkel = ?
+                |LIMIT 1
+            """.trimMargin()
             session.run(
-                queryOf(
-                    "SELECT avstemmingsnokkel, fnr, mottaker, opprettet, endret, fagsystem_id, status, totalbelop, beskrivelse, feilkode_oppdrag, oppdrag_response " +
-                            "FROM oppdrag " +
-                            "WHERE avstemmingsnokkel = ?" +
-                            "LIMIT 1",
-                    avstemmingsnøkkel
-                ).map {
+                queryOf(stmt, avstemmingsnøkkel).map {
                     TestOppdragDto(
                         avstemmingsnøkkel = it.long("avstemmingsnokkel"),
                         fnr = it.string("fnr"),
@@ -131,43 +135,6 @@ internal class OppdragDaoTest {
                 }.asSingle
             )
         } ?: fail { "Fant ikke oppdrag med avstemmingsnøkkel $avstemmingsnøkkel" }
-
-    @BeforeAll
-    @Suppress("UNUSED_PARAMETER")
-    internal fun setupAll(@TempDir postgresPath: Path) {
-        postgres = PostgreSQLContainer<Nothing>("postgres:13").also { it.start() }
-
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = postgres.jdbcUrl
-            username = postgres.username
-            password = postgres.password
-            maximumPoolSize = 3
-            minimumIdle = 1
-            initializationFailTimeout = 10000
-            idleTimeout = 10001
-            connectionTimeout = 1000
-            maxLifetime = 30001
-        })
-
-        flyway = Flyway
-            .configure()
-            .cleanDisabled(false)
-            .dataSource(dataSource)
-            .load()
-
-        oppdragDao = OppdragDao(dataSource)
-    }
-
-    @AfterAll
-    internal fun tearDown() {
-        postgres.stop()
-    }
-
-    @BeforeEach
-    internal fun setup() {
-        flyway.clean()
-        flyway.migrate()
-    }
 
     private class TestOppdragDto(
         val avstemmingsnøkkel: Long,
