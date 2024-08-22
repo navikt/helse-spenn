@@ -33,6 +33,7 @@ jobs:
         id: docker-build-push
         with:
           team: tbd
+          dockerfile: Dockerfile
           image_suffix: avstemming
           docker_context: spenn-avstemming
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
