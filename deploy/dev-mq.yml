@@ -55,7 +55,7 @@ spec:
     - name: MQ_QUEUE_MANAGER
       value: MQLS02
     - name: OPPDRAG_QUEUE_SEND
-      value: QA.Q1_231.OB04_OPPDRAG_XML
+      value: QA.Q2_231.OB04_OPPDRAG_XML
     - name: OPPDRAG_QUEUE_MOTTAK
       value: QA.Q1_SPENN.OPPDRAG_SP_XML_KVITT
     - name: MQ_OPPDRAG_AUTHENTICATION
