@@ -35,6 +35,7 @@ spec:
     sqlInstances:
       - type: POSTGRES_14
         diskAutoresize: true
+        tier: db-f1-micro
         pointInTimeRecovery: true
         name: spenn-avstemming
         databases:
