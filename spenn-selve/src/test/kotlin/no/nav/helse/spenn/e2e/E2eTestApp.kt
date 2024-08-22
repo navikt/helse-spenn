@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.asLocalDateTime
@@ -103,7 +104,7 @@ internal class E2eTestApp(
             rapid.register(this as MessageListener)
         }
 
-        override fun onMessage(message: String, context: MessageContext) = notifyMessage(message, context)
+        override fun onMessage(message: String, context: MessageContext, metrics: MeterRegistry) = notifyMessage(message, context, metrics)
         override fun onNotReady(rapidsConnection: RapidsConnection) = notifyNotReady()
         override fun onReady(rapidsConnection: RapidsConnection) = notifyReady()
         override fun onShutdown(rapidsConnection: RapidsConnection) = notifyShutdown()

@@ -1,12 +1,17 @@
 val mainClass = "no.nav.helse.spenn.avstemming.ApplicationKt"
-val testcontainersVersion = "1.19.5"
-val flywayVersion = "10.6.0"
+val testcontainersVersion: String by project
+val flywayVersion: String by project
+val hikariCPVersion: String by project
+val postgresqlVersion: String by project
+val kotliqueryVersion: String by project
+val mockkVersion: String by project
+
 dependencies {
     api("org.flywaydb:flyway-core:$flywayVersion")
     api("org.flywaydb:flyway-database-postgresql:$flywayVersion")
-    implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("org.postgresql:postgresql:42.7.2")
-    implementation("com.github.seratch:kotliquery:1.9.0")
+    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.3.5.0") {
         exclude("com.fasterxml.jackson.core", "jackson-core")
@@ -18,7 +23,7 @@ dependencies {
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
-    testImplementation("io.mockk:mockk:1.13.9")
+    testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 tasks {

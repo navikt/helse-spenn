@@ -1,5 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotliquery.*
 import kotliquery.action.NullableResultQueryAction
 import no.nav.helse.rapids_rivers.JsonMessage
@@ -10,7 +12,6 @@ import java.util.*
 import javax.sql.DataSource
 
 internal class OppdragDao(private val dataSource: DataSource) {
-
     fun oppdaterOppdrag(
         utbetalingId: UUID,
         fagsystemId: String,
@@ -47,7 +48,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
     fun hentBehovForOppdrag(utbetalingId: UUID, fagsystemId: String) =
         sessionOf(dataSource).use { session ->
             session.run(queryOf("SELECT behov FROM oppdrag WHERE utbetaling_id = ? AND fagsystem_id = ?", utbetalingId, fagsystemId).map {
-                JsonMessage(it.string("behov"), MessageProblems("{}"))
+                JsonMessage(it.string("behov"), MessageProblems("{}"), metrics)
             }.asSingle)
         }
 
@@ -134,6 +135,7 @@ internal class OppdragDao(private val dataSource: DataSource) {
     }
 
     companion object {
+        private val metrics = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
         fun Row.toOppdragDto() =
             OppdragDto(
                 avstemmingsnøkkel = long("avstemmingsnokkel"),

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.rapids_rivers.MessageContext
@@ -237,13 +239,13 @@ class E2ETest {
         }
 
         fun reset() = rapid.reset()
-        override fun onMessage(message: String, context: MessageContext) = notifyMessage(message, context)
+        override fun onMessage(message: String, context: MessageContext, metrics: MeterRegistry) = notifyMessage(message, context, metrics)
         override fun onNotReady(rapidsConnection: RapidsConnection) = notifyNotReady()
         override fun onReady(rapidsConnection: RapidsConnection) = notifyReady()
         override fun onShutdown(rapidsConnection: RapidsConnection) = notifyShutdown()
         override fun onStartup(rapidsConnection: RapidsConnection) = notifyStartup()
 
-        fun sendTestMessage(message: String) = notifyMessage(message, this)
+        fun sendTestMessage(message: String) = notifyMessage(message, this, SimpleMeterRegistry())
 
         override fun publish(message: String) {
             rapid.publish(message)

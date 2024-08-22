@@ -1,9 +1,18 @@
-val junitJupiterVersion = "5.10.2"
-val testcontainersVersion = "1.19.5"
+val junitJupiterVersion = "5.11.0"
+val testcontainersVersion = "1.20.1"
+val mockkVersion = "1.13.12"
+val jacksonVersion = "2.17.2"
+val flywayVersion = "10.17.1"
+val hikariCPVersion = "5.1.0"
+val tbdLibsVersion = "2024.08.22-09.21-bd982a56"
+val postgresqlVersion = "42.7.3"
+val kotliqueryVersion = "1.9.0"
+val postgresSocketFactoryVersion = "1.20.0"
+
 val jvmTarget = 21
 
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "2.0.10"
 }
 
 allprojects {
@@ -29,7 +38,7 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        implementation("com.github.navikt:rapids-and-rivers:2024020507581707116327.1c34df474331")
+        implementation("com.github.navikt:rapids-and-rivers:2024082209261724311613.5baa691b9e0a")
 
         testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -37,6 +46,16 @@ allprojects {
 }
 
 subprojects {
+    ext.set("postgresqlVersion", postgresqlVersion)
+    ext.set("kotliqueryVersion", kotliqueryVersion)
+    ext.set("postgresSocketFactoryVersion", postgresSocketFactoryVersion)
+    ext.set("tbdLibsVersion", tbdLibsVersion)
+    ext.set("hikariCPVersion", hikariCPVersion)
+    ext.set("testcontainersVersion", testcontainersVersion)
+    ext.set("flywayVersion", flywayVersion)
+    ext.set("jacksonVersion", jacksonVersion)
+    ext.set("mockkVersion", mockkVersion)
+
     tasks {
         java {
             toolchain {

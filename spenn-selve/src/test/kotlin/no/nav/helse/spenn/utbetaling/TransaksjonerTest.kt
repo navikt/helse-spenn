@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -55,7 +56,7 @@ internal class TransaksjonerTest {
     fun `løser utbetalingsbehov`() {
         val behov = utbetalingsbehov()
         every { dao.oppdaterOppdrag(UTBETALING_ID, FAGSYSTEMID, Oppdragstatus.AKSEPTERT, "Foo", "00", any()) } returns true
-        every { dao.hentBehovForOppdrag(any(), any()) } returns JsonMessage(behov, MessageProblems(behov))
+        every { dao.hentBehovForOppdrag(any(), any()) } returns JsonMessage(behov, MessageProblems(behov), SimpleMeterRegistry())
         rapid.sendTestMessage(tranaksjonStatus())
         assertEquals(1, inspektør.size)
         assertEquals("behov", rapid.inspektør.field(0, "@event_name").asText())

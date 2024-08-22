@@ -1,12 +1,16 @@
 val mainClass = "no.nav.helse.opprydding.AppKt"
-val testcontainersVersion = "1.19.5"
+val testcontainersVersion: String by project
+val postgresSocketFactoryVersion: String by project
+val hikariCPVersion: String by project
+val postgresqlVersion: String by project
+val kotliqueryVersion: String by project
 
 dependencies {
 
-    implementation("com.google.cloud.sql:postgres-socket-factory:1.15.2")
-    implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("org.postgresql:postgresql:42.7.2")
-    implementation("com.github.seratch:kotliquery:1.9.0")
+    implementation("com.google.cloud.sql:postgres-socket-factory:$postgresSocketFactoryVersion")
+    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation(project(":spenn-selve"))
