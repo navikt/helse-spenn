@@ -1,10 +1,14 @@
 package no.nav.helse.spenn.avstemming
 
+import com.github.navikt.tbd_libs.test_support.TestDataSource
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import no.nav.helse.spenn.avstemming.e2e.E2ETest.RepublishableTestRapid
+import no.nav.helse.spenn.avstemming.e2e.E2ETest.TestDatabase
+import no.nav.helse.spenn.avstemming.e2e.databaseContainer
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,10 +29,20 @@ internal class AvstemmingDaoTest {
         private const val ANTALL_AVSTEMTE_OPPDRAG = 1
     }
 
-    private lateinit var postgres: PostgreSQLContainer<Nothing>
-    private lateinit var dataSource: DataSource
-    private lateinit var flyway: Flyway
+    private lateinit var dataSource: TestDataSource
     private lateinit var avstemmingDao: AvstemmingDao
+
+    @BeforeEach
+    fun setup() {
+        dataSource = databaseContainer.nyTilkobling()
+        avstemmingDao = AvstemmingDao { dataSource.ds }
+    }
+
+    @AfterEach
+    fun teardown() {
+        // gi tilbake tilkoblingen
+        databaseContainer.droppTilkobling(dataSource)
+    }
 
     @Test
     fun `ny avstemming`() {
@@ -48,7 +62,7 @@ internal class AvstemmingDaoTest {
     }
 
     private fun finnAvstemming() =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource.ds).use { session ->
             session.run(
                 queryOf("SELECT * FROM avstemming LIMIT 1").map {
                     TestAvstemmingDto(
@@ -61,43 +75,6 @@ internal class AvstemmingDaoTest {
                 }.asSingle
             )
         } ?: fail { "Fant ikke noen avstemming" }
-
-    @BeforeAll
-    @Suppress("UNUSED_PARAMETER")
-    internal fun setupAll(@TempDir postgresPath: Path) {
-        postgres = PostgreSQLContainer<Nothing>("postgres:13").also { it.start() }
-
-        dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = postgres.jdbcUrl
-            username = postgres.username
-            password = postgres.password
-            maximumPoolSize = 3
-            minimumIdle = 1
-            idleTimeout = 10001
-            initializationFailTimeout = 5000
-            connectionTimeout = 1000
-            maxLifetime = 30001
-        })
-
-        flyway = Flyway
-            .configure()
-            .dataSource(dataSource)
-            .cleanDisabled(false)
-            .load()
-
-        avstemmingDao = AvstemmingDao(::dataSource)
-    }
-
-    @AfterAll
-    internal fun tearDown() {
-        postgres.stop()
-    }
-
-    @BeforeEach
-    internal fun setup() {
-        flyway.clean()
-        flyway.migrate()
-    }
 
     private class TestAvstemmingDto(
         val id: UUID,

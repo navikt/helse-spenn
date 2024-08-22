@@ -5,6 +5,7 @@ val hikariCPVersion: String by project
 val postgresqlVersion: String by project
 val kotliqueryVersion: String by project
 val mockkVersion: String by project
+val tbdLibsVersion: String by project
 
 dependencies {
     api("org.flywaydb:flyway-core:$flywayVersion")
@@ -22,7 +23,7 @@ dependencies {
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
 
-    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
+    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 }
 

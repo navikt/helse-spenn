@@ -2,8 +2,9 @@ package no.nav.helse.spenn.avstemming.e2e
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
+import com.github.navikt.tbd_libs.test_support.CleanupStrategy
+import com.github.navikt.tbd_libs.test_support.DatabaseContainers
+import com.github.navikt.tbd_libs.test_support.TestDataSource
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotliquery.queryOf
@@ -15,23 +16,20 @@ import no.nav.helse.spenn.avstemming.Database
 import no.nav.helse.spenn.avstemming.Oppdragstatus
 import no.nav.helse.spenn.avstemming.UtKø
 import no.nav.helse.spenn.avstemming.rapidApp
-import org.flywaydb.core.Flyway
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
-import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
-import javax.sql.DataSource
+
+val databaseContainer = DatabaseContainers.container("spenn-avstemming", CleanupStrategy.tables("avstemming,oppdrag"))
 
 class E2ETest {
-    private companion object {
-        private val database = TestDatabase()
-    }
-    private val testRapid = RepublishableTestRapid()
+
     private val mapper = jacksonObjectMapper()
     private val mqmeldinger = mutableListOf<String>()
     private val utkø = object : UtKø {
@@ -40,15 +38,27 @@ class E2ETest {
         }
     }
 
-    init {
+    private lateinit var dataSource: TestDataSource
+    private lateinit var database: TestDatabase
+    private lateinit var testRapid: RepublishableTestRapid
+
+    @BeforeEach
+    fun setup() {
+        testRapid = RepublishableTestRapid()
+        dataSource = databaseContainer.nyTilkobling()
+        database = TestDatabase(dataSource)
         rapidApp(testRapid, database, utkø)
+    }
+
+    @AfterEach
+    fun teardown() {
+        // gi tilbake tilkoblingen
+        databaseContainer.droppTilkobling(dataSource)
     }
 
     @AfterEach
     fun after() {
         mqmeldinger.clear()
-        testRapid.reset()
-        database.resetDatabase()
     }
 
     @Test
@@ -185,47 +195,19 @@ class E2ETest {
         }
     """
 
-    private class TestDatabase : Database {
-        private val postgres = PostgreSQLContainer<Nothing>("postgres:13").also { it.start() }
-        private val hikariConfig = HikariConfig().apply {
-            jdbcUrl = postgres.jdbcUrl
-            username = postgres.username
-            password = postgres.password
-            initializationFailTimeout = 10_000L
-        }
+    private class TestDatabase(private val dataSource: TestDataSource) : Database {
+        override fun getDataSource() = dataSource.ds
+        override fun migrate() {}
 
-        private var actualDataSource: DataSource? = null
-
-        override fun getDataSource(): DataSource {
-            return actualDataSource ?: HikariDataSource(hikariConfig).also {
-                actualDataSource = it
-                migrate()
-            }
-        }
-
-        override fun migrate() {
-            Flyway
-                .configure()
-                .dataSource(getDataSource())
-                .load().also(Flyway::migrate)
-        }
-
-        fun resetDatabase() {
-            sessionOf(getDataSource()).use {
-                it.run(queryOf("TRUNCATE avstemming CASCADE").asExecute)
-                it.run(queryOf("TRUNCATE oppdrag CASCADE").asExecute)
-            }
-        }
-
-        fun antallOppdrag() = sessionOf(getDataSource()).use {
+        fun antallOppdrag() = sessionOf(dataSource.ds).use {
             it.run(queryOf("SELECT COUNT(1) FROM oppdrag").map { it.int(1) }.asSingle)
         } ?: 0
 
-        fun status(avstemmingsnøkkel: Long) = sessionOf(getDataSource()).use {
+        fun status(avstemmingsnøkkel: Long) = sessionOf(dataSource.ds).use {
             it.run(queryOf("SELECT status FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.stringOrNull("status")?.let { Oppdragstatus.valueOf(it) } }.asSingle)
         }
 
-        fun avstemt(avstemmingsnøkkel: Long) = sessionOf(getDataSource()).use {
+        fun avstemt(avstemmingsnøkkel: Long) = sessionOf(dataSource.ds).use {
             it.run(queryOf("SELECT avstemt FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.boolean(1) }.asSingle)
         } ?: fail { "forventer å finne oppdrag" }
     }
