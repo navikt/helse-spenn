@@ -21,6 +21,15 @@ internal class PersonRepository(private val dataSource: DataSource) {
     fun hentSisteOppdrag(fødselsnummer: String): List<Oppdrag> {
         return sessionOf(dataSource).use { session ->
             @Language("PostgreSQL")
+            val stmt = """
+                select fagsystem_id, min(v ->> 'fom') as fom
+                from oppdrag, json_array_elements(behov->'Utbetaling'->'linjer') as v
+                where fnr=?
+                group by fagsystem_id;
+            """.trimIndent()
+            val minsteFomPerOppdrag = session.run(queryOf(stmt, fødselsnummer).map { row -> row.string("fagsystem_id") to row.localDate("fom") }.asList).toMap()
+
+            @Language("PostgreSQL")
             val query = """
                 select o1.fnr,o1.orgnr,o1.utbetaling_id,o1.fagomrade,o1.fagsystem_id,o1.mottaker,
                        cast(o1.behov->'Utbetaling'->'linjer'->-1->>'fom' as date) as nyeste_linje_fom,
@@ -41,6 +50,7 @@ internal class PersonRepository(private val dataSource: DataSource) {
                     fagomrade = row.string("fagomrade"),
                     fagsystemId = row.string("fagsystem_id"),
                     mottaker = row.string("mottaker"),
+                    eldsteFom = minsteFomPerOppdrag[row.string("fagsystem_id")],
                     fom = row.localDate("nyeste_linje_fom"),
                     tom = row.localDate("nyeste_linje_tom"),
                     grad = row.int("nyeste_linje_grad"),
@@ -59,6 +69,7 @@ internal class PersonRepository(private val dataSource: DataSource) {
         val fagomrade: String,
         val fagsystemId: String,
         val mottaker: String,
+        val eldsteFom: LocalDate?,
         val fom: LocalDate,
         val tom: LocalDate,
         val delytelseId: Int,

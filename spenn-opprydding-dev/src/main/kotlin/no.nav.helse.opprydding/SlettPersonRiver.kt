@@ -38,7 +38,7 @@ internal class SlettPersonRiver(
             .map { oppdrag ->
                 lagOppdragsmelding(oppdrag)
             }
-            //.forEach { context.publish(it.toJson()) }
+            .forEach { context.publish(it.toJson()) }
     }
 
     private fun lagOppdragsmelding(oppdrag: PersonRepository.Oppdrag): JsonMessage {
@@ -65,8 +65,7 @@ internal class SlettPersonRiver(
                     "klassekode" to oppdrag.klassekode,
                     "grad" to oppdrag.grad,
                     "statuskode" to "OPPH",
-                    // todo: må finne første dato i vedtaket, ellers svarer os med: "Ikke tillatt å angi status før Vedtak fom" :(
-                    "datoStatusFom" to LocalDate.of(2018, 1, 1)
+                    "datoStatusFom" to (oppdrag.eldsteFom ?: oppdrag.fom)
                 )
             )
         ))
