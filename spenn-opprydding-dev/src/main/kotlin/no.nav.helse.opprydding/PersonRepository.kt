@@ -4,6 +4,8 @@ import kotliquery.TransactionalSession
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
+import java.time.LocalDate
+import java.util.*
 import javax.sql.DataSource
 
 internal class PersonRepository(private val dataSource: DataSource) {
@@ -15,6 +17,55 @@ internal class PersonRepository(private val dataSource: DataSource) {
             }
         }
     }
+
+    fun hentSisteOppdrag(fødselsnummer: String): List<Oppdrag> {
+        return sessionOf(dataSource).use { session ->
+            @Language("PostgreSQL")
+            val query = """
+                select o1.fnr,o1.orgnr,o1.utbetaling_id,o1.fagomrade,o1.fagsystem_id,o1.mottaker,
+                       cast(o1.behov->'Utbetaling'->'linjer'->-1->>'fom' as date) as nyeste_linje_fom,
+                       cast(o1.behov->'Utbetaling'->'linjer'->-1->>'tom'  as date) as nyeste_linje_tom,
+                       cast(o1.behov->'Utbetaling'->'linjer'->-1->>'delytelseId' as int) as nyeste_linje_delytelse_id,
+                       cast(o1.behov->'Utbetaling'->'linjer'->-1->>'grad' as float) as nyeste_linje_grad,
+                       cast(o1.behov->'Utbetaling'->'linjer'->-1->>'sats' as float) as nyeste_linje_sats,
+                       o1.behov->'Utbetaling'->'linjer'->-1->>'klassekode' as nyeste_linje_klassekode
+                from oppdrag o1
+                left join oppdrag o2 on o2.fagsystem_id=o1.fagsystem_id and o2.opprettet > o1.opprettet
+                where o2.fagsystem_id is null and o1.fnr=? and o1.behov->'Utbetaling'->'linjer' is not null;
+            """.trimIndent()
+            session.run(queryOf(query, fødselsnummer).map { row ->
+                Oppdrag(
+                    fnr  = row.string("fnr"),
+                    orgnr = row.string("orgnr"),
+                    utbetalingId = row.uuid("utbetaling_id"),
+                    fagomrade = row.string("fagomrade"),
+                    fagsystemId = row.string("fagsystem_id"),
+                    mottaker = row.string("mottaker"),
+                    fom = row.localDate("nyeste_linje_fom"),
+                    tom = row.localDate("nyeste_linje_tom"),
+                    grad = row.int("nyeste_linje_grad"),
+                    sats = row.int("nyeste_linje_sats"),
+                    delytelseId = row.int("nyeste_linje_delytelse_id"),
+                    klassekode = row.string("nyeste_linje_klassekode"),
+                )
+            }.asList)
+        }
+    }
+
+    data class Oppdrag(
+        val fnr: String,
+        val orgnr: String,
+        val utbetalingId: UUID,
+        val fagomrade: String,
+        val fagsystemId: String,
+        val mottaker: String,
+        val fom: LocalDate,
+        val tom: LocalDate,
+        val delytelseId: Int,
+        val grad: Int,
+        val sats: Int,
+        val klassekode: String
+    )
 
     private fun TransactionalSession.finnAvstemmingsnøkkel(fødselsnummer: String): List<Long> {
         @Language("PostgreSQL")
