@@ -59,7 +59,7 @@ internal class SlettPersonRiver(
                     "fom" to oppdrag.fom,
                     "tom" to oppdrag.tom,
                     "endringskode" to "ENDR",
-                    "sats" to 0,
+                    "sats" to oppdrag.sats,
                     "delytelseId" to oppdrag.delytelseId,
                     "satstype" to "DAG",
                     "klassekode" to oppdrag.klassekode,
