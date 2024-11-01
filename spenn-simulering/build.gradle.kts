@@ -1,8 +1,10 @@
 val mainClass = "no.nav.helse.spenn.ApplicationKt"
+val rapidsAndRiversVersion: String by project
 val tbdLibsVersion: String by project
 val mockkVersion: String by project
 
 dependencies {
+    implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
     implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     implementation("com.github.navikt.tbd-libs:minimal-soap-client:$tbdLibsVersion")
 

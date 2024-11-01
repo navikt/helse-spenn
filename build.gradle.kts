@@ -4,6 +4,7 @@ val jacksonVersion = "2.17.2"
 val flywayVersion = "10.17.1"
 val hikariCPVersion = "5.1.0"
 val tbdLibsVersion = "2024.08.22-09.21-bd982a56"
+val rapidsAndRiversVersion = "2024082209261724311613.5baa691b9e0a"
 val postgresqlVersion = "42.7.3"
 val kotliqueryVersion = "1.9.0"
 val postgresSocketFactoryVersion = "1.20.0"
@@ -37,8 +38,6 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        implementation("com.github.navikt:rapids-and-rivers:2024082209261724311613.5baa691b9e0a")
-
         testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
@@ -48,6 +47,7 @@ subprojects {
     ext.set("postgresqlVersion", postgresqlVersion)
     ext.set("kotliqueryVersion", kotliqueryVersion)
     ext.set("postgresSocketFactoryVersion", postgresSocketFactoryVersion)
+    ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
     ext.set("tbdLibsVersion", tbdLibsVersion)
     ext.set("hikariCPVersion", hikariCPVersion)
     ext.set("flywayVersion", flywayVersion)

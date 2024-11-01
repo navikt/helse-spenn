@@ -1,4 +1,6 @@
 val mainClass = "no.nav.helse.spenn.avstemming.ApplicationKt"
+
+val rapidsAndRiversVersion: String by project
 val flywayVersion: String by project
 val hikariCPVersion: String by project
 val postgresqlVersion: String by project
@@ -7,6 +9,8 @@ val mockkVersion: String by project
 val tbdLibsVersion: String by project
 
 dependencies {
+    implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
+
     api("org.flywaydb:flyway-core:$flywayVersion")
     api("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")

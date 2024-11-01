@@ -1,0 +1,64 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    team: tbd
+  name: spenn-simulering-api
+  namespace: tbd
+spec:
+  image: {{image}}
+  port: 8080
+  strategy:
+    type: RollingUpdate
+  liveness:
+    initialDelay: 5
+    path: /isalive
+  readiness:
+    initialDelay: 5
+    path: /isready
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  prometheus:
+    enabled: true
+    path: /metrics
+  azure:
+    application:
+      enabled: true
+    accessPolicy:
+      inbound:
+        rules:
+          - application: spenn-simulering
+  ingresses:
+    - https://spenn-simulering.ansatt.nav.no
+    - https://spenn-simulering.intern.nav.no
+  replicas:
+    cpuThresholdPercentage: 75
+    max: 12
+    min: 2
+  resources:
+    limits:
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  secureLogs:
+    enabled: true
+  envFrom:
+    - secret: spenn
+  accessPolicy:
+    outbound:
+      external:
+        - host: ws-proxy.prod-fss-pub.nais.io
+      rules:
+        - application: ws-proxy
+          cluster: prod-fss
+  env:
+    - name: WS_PROXY_SCOPE
+      value: api://prod-fss.tbd.ws-proxy/.default
+    - name: SIMULERING_SERVICE_URL
+      value: https://ws-proxy.prod-fss-pub.nais.io/cics/oppdrag/simulerFpServiceWSBinding
+    - name: GANDALF_BASE_URL
+      value: https://ws-proxy.prod-fss-pub.nais.io/gandalf
+

@@ -1,10 +1,13 @@
 val mainClass = "no.nav.helse.spenn.oppdrag.ApplicationKt"
 
+val rapidsAndRiversVersion: String by project
 val jacksonVersion: String by project
 val mockkVersion: String by project
 
 
 dependencies {
+    implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
+
     implementation("com.ibm.mq:com.ibm.mq.allclient:9.4.0.0") {
         exclude("com.fasterxml.jackson.core", "jackson-core")
         exclude("com.fasterxml.jackson.core", "jackson-annotations")
