@@ -117,6 +117,7 @@ internal class Simuleringer(
                     )
                 )
             } catch (err: SimuleringUtilgjengeligException) {
+                sikkerLogg.info("Oppdrag/UR er nede: {}", err.message, err)
                 packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to "OPPDRAG_UR_ER_STENGT",
@@ -125,6 +126,7 @@ internal class Simuleringer(
                     )
                 )
             } catch (err: SimuleringFunksjonellFeilException) {
+                sikkerLogg.info("Feil ved simulering: {}", err.message, err)
                 packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to "FUNKSJONELL_FEIL",
@@ -133,6 +135,7 @@ internal class Simuleringer(
                     )
                 )
             } catch (err: SimuleringException) {
+                sikkerLogg.info("Feil ved simulering: {}", err.message, err)
                 packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to "TEKNISK_FEIL",
@@ -141,6 +144,7 @@ internal class Simuleringer(
                     )
                 )
             } catch (err: Exception) {
+                sikkerLogg.info("Feil ved simulering: {}", err.message, err)
                 packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to "TEKNISK_FEIL",
