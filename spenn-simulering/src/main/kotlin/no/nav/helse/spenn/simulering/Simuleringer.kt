@@ -1,17 +1,19 @@
 package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.spenn.SimuleringClient
+import com.github.navikt.tbd_libs.spenn.SimuleringException
+import com.github.navikt.tbd_libs.spenn.SimuleringFunksjonellFeilException
+import com.github.navikt.tbd_libs.spenn.SimuleringRequest
+import com.github.navikt.tbd_libs.spenn.SimuleringUtilgjengeligException
 import no.nav.helse.rapids_rivers.*
-import no.nav.helse.spenn.simulering.api.SimuleringRequest
-import no.nav.helse.spenn.simulering.api.SimuleringResponse
-import no.nav.helse.spenn.simulering.api.Simuleringtjeneste
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import kotlin.text.get
+import java.util.UUID
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,
-    private val simuleringtjeneste: Simuleringtjeneste
+    private val simuleringClient: SimuleringClient
 ) : River.PacketListener {
 
     private companion object {
@@ -37,7 +39,6 @@ internal class Simuleringer(
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                     requireAny("satstype", listOf("DAG", "ENG"))
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
-                    interestedIn("statuskode") { value -> KodeStatusLinje.valueOf(value.asText()) }
                     interestedIn("grad")
                 }
             }
@@ -49,16 +50,18 @@ internal class Simuleringer(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        val callId = UUID.randomUUID().toString()
         withMDC(
             mapOf(
-                "behovId" to packet["@id"].asText()
+                "behovId" to packet["@id"].asText(),
+                "callId" to callId
             )
         ) {
-            håndter(packet, context)
+            håndter(packet, callId, context)
         }
     }
 
-    private fun håndter(packet: JsonMessage, context: MessageContext) {
+    private fun håndter(packet: JsonMessage, callId: String, context: MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
         if (packet["Simulering.linjer"].isEmpty) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
@@ -103,34 +106,45 @@ internal class Simuleringer(
                 maksdato = packet["Simulering.maksdato"].asLocalDate(),
                 saksbehandler = packet["Simulering.saksbehandler"].asText()
             )
-            val result = simuleringtjeneste.simulerOppdrag(simulerRequest)
 
-            when (result) {
-                is SimuleringResponse.Ok -> packet["@løsning"] = mapOf(
+            try {
+                val result = simuleringClient.hentSimulering(simulerRequest, callId)
+                packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to "OK",
                         "feilmelding" to null,
-                        "simulering" to result.simulering
+                        "simulering" to result
                     )
                 )
-                is SimuleringResponse.FunksjonellFeil -> packet["@løsning"] = mapOf(
-                    "Simulering" to mapOf(
-                        "status" to "FUNKSJONELL_FEIL",
-                        "feilmelding" to result.feilmelding,
-                        "simulering" to null
-                    )
-                )
-                SimuleringResponse.OppdragsystemetErStengt -> packet["@løsning"] = mapOf(
+            } catch (err: SimuleringUtilgjengeligException) {
+                packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to "OPPDRAG_UR_ER_STENGT",
                         "feilmelding" to "Oppdrag/UR er stengt",
                         "simulering" to null
                     )
                 )
-                is SimuleringResponse.TekniskFeil -> packet["@løsning"] = mapOf(
+            } catch (err: SimuleringFunksjonellFeilException) {
+                packet["@løsning"] = mapOf(
+                    "Simulering" to mapOf(
+                        "status" to "FUNKSJONELL_FEIL",
+                        "feilmelding" to err.message,
+                        "simulering" to null
+                    )
+                )
+            } catch (err: SimuleringException) {
+                packet["@løsning"] = mapOf(
                     "Simulering" to mapOf(
                         "status" to "TEKNISK_FEIL",
-                        "feilmelding" to result.feilmelding,
+                        "feilmelding" to err.message,
+                        "simulering" to null
+                    )
+                )
+            } catch (err: Exception) {
+                packet["@løsning"] = mapOf(
+                    "Simulering" to mapOf(
+                        "status" to "TEKNISK_FEIL",
+                        "feilmelding" to err.message,
                         "simulering" to null
                     )
                 )

@@ -6,9 +6,8 @@ val mockkVersion: String by project
 dependencies {
     implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
     implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:minimal-soap-client:$tbdLibsVersion")
+    implementation("com.github.navikt.tbd-libs:spenn-simulering-client:$tbdLibsVersion")
 
-    testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 }
 

@@ -43,24 +43,13 @@ spec:
     pool: nav-prod
   secureLogs:
     enabled: true
-  envFrom:
-    - secret: spenn
   accessPolicy:
     outbound:
-      external:
-        - host: ws-proxy.prod-fss-pub.nais.io
       rules:
-        - application: ws-proxy
-          cluster: prod-fss
+        - application: spenn-simulering-api
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-simulering-v1
     - name: KAFKA_RAPID_TOPIC
       value: tbd.rapid.v1
-    - name: WS_PROXY_SCOPE
-      value: api://prod-fss.tbd.ws-proxy/.default
-    - name: SIMULERING_SERVICE_URL
-      value: https://ws-proxy.prod-fss-pub.nais.io/cics/cics/services/simulerFpServiceWSBinding
-    - name: GANDALF_BASE_URL
-      value: https://ws-proxy.prod-fss-pub.nais.io/gandalf
 

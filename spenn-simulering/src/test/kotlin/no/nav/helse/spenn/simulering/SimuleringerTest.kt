@@ -1,11 +1,15 @@
 package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.spenn.SimuleringClient
+import com.github.navikt.tbd_libs.spenn.SimuleringException
+import com.github.navikt.tbd_libs.spenn.SimuleringFunksjonellFeilException
+import com.github.navikt.tbd_libs.spenn.SimuleringResponse
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
-import no.nav.helse.spenn.simulering.api.Simuleringtjeneste
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,30 +24,22 @@ internal class SimuleringerTest {
         private const val BEHOV = "f227ed9f-6b53-4db6-a921-bdffb8098bd3"
     }
 
-    private lateinit var resultat: SimuleringResult
-    private val simuleringService = mockk<SimuleringV2Service>()
-
-    init {
-        every {
-            simuleringService.simulerOppdrag(any())
-        } answers {
-            resultat
-        }
-    }
+    private val simuleringClient = mockk<SimuleringClient>()
 
     private val rapid = TestRapid().apply {
-        Simuleringer(this, Simuleringtjeneste(simuleringService))
+        Simuleringer(this, simuleringClient)
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
     fun clear() {
         rapid.reset()
+        clearAllMocks()
     }
 
     @Test
     fun `løser simuleringsbehov`() {
-        resultat(SimuleringStatus.OK)
+        okResultat()
         rapid.sendTestMessage(simuleringbehov())
         assertEquals(1, inspektør.size)
         assertEquals(BEHOV, inspektør.behovId(0))
@@ -53,7 +49,7 @@ internal class SimuleringerTest {
 
     @Test
     fun `løser simuleringsbehov for engangsutbetaling`() {
-        resultat(SimuleringStatus.OK)
+        okResultat()
         val utbetalingslinjer = listOf(
             mapOf(
                 "satstype" to "ENG",
@@ -77,7 +73,7 @@ internal class SimuleringerTest {
 
     @Test
     fun `løser simuleringsbehov med simuleringfeil`() {
-        resultat(SimuleringStatus.FUNKSJONELL_FEIL)
+        funksjonellFeilResultat()
         rapid.sendTestMessage(simuleringbehov())
         assertEquals(1, inspektør.size)
         assertEquals(BEHOV, inspektør.behovId(0))
@@ -87,7 +83,7 @@ internal class SimuleringerTest {
 
     @Test
     fun `løser simuleringsbehov med teknisk feil`() {
-        resultat(SimuleringStatus.TEKNISK_FEIL)
+        tekniskFeilResultat()
         rapid.sendTestMessage(simuleringbehov())
         assertEquals(1, inspektør.size)
         assertEquals(BEHOV, inspektør.behovId(0))
@@ -97,7 +93,7 @@ internal class SimuleringerTest {
 
     @Test
     fun `løser simuleringsbehov for utbetaling til bruker`() {
-        resultat(SimuleringStatus.OK)
+        okResultat()
         rapid.sendTestMessage(simuleringbehovBruker())
         assertEquals(1, inspektør.size)
         assertEquals(BEHOV, inspektør.behovId(0))
@@ -105,19 +101,27 @@ internal class SimuleringerTest {
         assertFalse(inspektør.løsning(0, "Simulering").path("simulering").isNull)
     }
 
-
-    private fun resultat(status: SimuleringStatus) = SimuleringResult(
-        status = status,
-        feilmelding = if (status != SimuleringStatus.OK) "Error message" else "",
-        simulering = if (status == SimuleringStatus.OK) Simulering(
+    private fun okResultat() {
+        every {
+            simuleringClient.hentSimulering(any(), any())
+        } returns SimuleringResponse(
             gjelderId = PERSON,
             gjelderNavn = "Navn Navnesen",
             datoBeregnet = LocalDate.now(),
             totalBelop = 1000,
             periodeList = emptyList()
-        ) else null
-    ).also {
-        resultat = it
+        )
+    }
+
+    private fun funksjonellFeilResultat() {
+        every {
+            simuleringClient.hentSimulering(any(), any())
+        } throws SimuleringFunksjonellFeilException("Feilet")
+    }
+    private fun tekniskFeilResultat() {
+        every {
+            simuleringClient.hentSimulering(any(), any())
+        } throws SimuleringException("Feilet")
     }
 
     private fun simuleringbehovBruker(
