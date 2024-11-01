@@ -6,16 +6,18 @@ import com.github.navikt.tbd_libs.soap.SamlToken
 import com.github.navikt.tbd_libs.soap.SamlTokenProvider
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.spenn.Utbetalingslinjer
 import no.nav.helse.spenn.januar
+import no.nav.helse.spenn.simulering.api.SimuleringRequest
+import no.nav.helse.spenn.simulering.api.SimuleringResponse
+import no.nav.helse.spenn.simulering.api.Simuleringtjeneste
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertInstanceOf
 import java.net.URI
 import java.net.http.HttpClient
 import java.time.LocalDate
 
-class SimuleringV2ServiceTest {
+class SimuleringtjenesteTest {
 
     private companion object {
         private const val ENDRINGSKODE_NY = "NY"
@@ -49,7 +51,7 @@ class SimuleringV2ServiceTest {
 
         val (_, simuleringClient) = mockClient(xmlResponse(xml))
         val result = simuleringClient.simulerOppdrag(simulerRequest)
-        assertEquals(SimuleringStatus.OK, result.status)
+        assertInstanceOf<SimuleringResponse.Ok>(result)
     }
 
     @Test
@@ -72,7 +74,7 @@ class SimuleringV2ServiceTest {
 
         val (_, simuleringClient) = mockClient(xmlResponse(xml))
         val result = simuleringClient.simulerOppdrag(simulerRequest)
-        assertEquals(SimuleringStatus.FUNKSJONELL_FEIL, result.status)
+        assertInstanceOf<SimuleringResponse.FunksjonellFeil>(result)
     }
 
     @Test
@@ -93,61 +95,49 @@ class SimuleringV2ServiceTest {
 
         val (_, simuleringClient) = mockClient(xmlResponse(xml))
         val result = simuleringClient.simulerOppdrag(simulerRequest)
-        assertEquals(SimuleringStatus.TEKNISK_FEIL, result.status)
+        assertInstanceOf<SimuleringResponse.TekniskFeil>(result)
     }
 
     private fun simuleringRequest() =
-        simuleringRequestRefusjon(ENDRINGSKODE_ENDRET) {
-            linje(
-                Utbetalingslinjer.Utbetalingslinje(
-                    1,
-                    ENDRINGSKODE_NY,
-                    "SPREFAG-IOP",
-                    1.januar,
-                    14.januar,
-                    DAGSATS,
-                    GRAD,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "DAG"
+        SimuleringRequest(
+            fødselsnummer = PERSON,
+            oppdrag = SimuleringRequest.Oppdrag(
+                fagområde = SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON,
+                fagsystemId = FAGSYSTEMID,
+                endringskode = SimuleringRequest.Oppdrag.Endringskode.ENDRET,
+                mottakerAvUtbetalingen = ORGNR,
+                linjer = listOf(
+                    SimuleringRequest.Oppdrag.Oppdragslinje(
+                        endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
+                        fom = 1.januar,
+                        tom = 14.januar,
+                        satstype = SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.DAGLIG,
+                        sats = DAGSATS,
+                        grad = GRAD,
+                        delytelseId = 1,
+                        refDelytelseId = null,
+                        refFagsystemId = null,
+                        klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                        opphørerFom = null
+                    ),
+                    SimuleringRequest.Oppdrag.Oppdragslinje(
+                        endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
+                        fom = 15.januar,
+                        tom = 31.januar,
+                        satstype = SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.DAGLIG,
+                        sats = DAGSATS,
+                        grad = GRAD,
+                        delytelseId = 1,
+                        refDelytelseId = null,
+                        refFagsystemId = null,
+                        klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                        opphørerFom = null
+                    )
                 )
-            )
-            linje(
-                Utbetalingslinjer.Utbetalingslinje(
-                    2,
-                    ENDRINGSKODE_NY,
-                    "SPREFAG-IOP",
-                    15.januar,
-                    31.januar,
-                    DAGSATS,
-                    GRAD,
-                    null,
-                    null,
-                    null,
-                    null,
-                    "DAG"
-                )
-            )
-        }
-
-    private fun simuleringRequestRefusjon(
-        endringskode: String,
-        block: Utbetalingslinjer.() -> Unit
-    ): SimulerBeregningRequest {
-        val builder = SimuleringRequestBuilder(
-            Utbetalingslinjer.RefusjonTilArbeidsgiver(
-                PERSON,
-                ORGNR,
-                FAGSYSTEMID,
-                endringskode,
-                SAKSBEHANDLER,
-                MAKSDATO
-            ).apply(block)
+            ),
+            maksdato = MAKSDATO,
+            saksbehandler = SAKSBEHANDLER
         )
-        return builder.build()
-    }
 
     private fun xmlResponse(body: String): String {
         @Language("XML")
@@ -159,7 +149,7 @@ class SimuleringV2ServiceTest {
     }
 
 
-    private fun mockClient(response: String): Pair<HttpClient, SimuleringV2Service> {
+    private fun mockClient(response: String): Pair<HttpClient, Simuleringtjeneste> {
         val httpClient = mockk<HttpClient> {
             every {
                 send<String>(any(), any())
@@ -175,6 +165,6 @@ class SimuleringV2ServiceTest {
             soapClient = soapClient,
             assertionStrategy = { "<saml token>" }
         )
-        return httpClient to client
+        return httpClient to Simuleringtjeneste(client)
     }
 }

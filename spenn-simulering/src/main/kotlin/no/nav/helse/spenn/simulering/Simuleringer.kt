@@ -2,13 +2,16 @@ package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.*
-import no.nav.helse.spenn.UtbetalingslinjerMapper
+import no.nav.helse.spenn.simulering.api.SimuleringRequest
+import no.nav.helse.spenn.simulering.api.SimuleringResponse
+import no.nav.helse.spenn.simulering.api.Simuleringtjeneste
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import kotlin.text.get
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,
-    private val simuleringV2Service: SimuleringV2Service
+    private val simuleringtjeneste: Simuleringtjeneste
 ) : River.PacketListener {
 
     private companion object {
@@ -57,21 +60,82 @@ internal class Simuleringer(
 
     private fun håndter(packet: JsonMessage, context: MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
-        val utbetalingslinjer =
-            UtbetalingslinjerMapper(packet["fødselsnummer"].asText(), packet["organisasjonsnummer"].asText())
-                .fraBehov(packet["Simulering"])
-        if (utbetalingslinjer.isEmpty()) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
+        if (packet["Simulering.linjer"].isEmpty) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
         try {
-            val simulerRequest = SimuleringRequestBuilder(utbetalingslinjer).build()
-            val result = simuleringV2Service.simulerOppdrag(simulerRequest)
-            packet["@løsning"] = mapOf(
-                "Simulering" to mapOf(
-                    "status" to result.status,
-                    "feilmelding" to result.feilmelding,
-                    "simulering" to result.simulering
-                )
+            val simulerRequest = SimuleringRequest(
+                fødselsnummer = packet["fødselsnummer"].asText(),
+                oppdrag = SimuleringRequest.Oppdrag(
+                    fagområde = when (val fagområde = packet["Simulering.fagområde"].asText()) {
+                        "SP" -> SimuleringRequest.Oppdrag.Fagområde.BRUKERUTBETALING
+                        "SPREF" -> SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON
+                        else -> error("Forventet ikke fagområde: $fagområde")
+                    },
+                    fagsystemId = packet["Simulering.fagsystemId"].asText(),
+                    endringskode = endringskode(packet["Simulering.endringskode"].asText()),
+                    mottakerAvUtbetalingen = packet["Simulering.mottaker"].asText(),
+                    linjer = packet["Simulering.linjer"].map { linje ->
+                        SimuleringRequest.Oppdrag.Oppdragslinje(
+                            endringskode = endringskode(linje.path("endringskode").asText()),
+                            fom = linje.path("fom").asLocalDate(),
+                            tom = linje.path("tom").asLocalDate(),
+                            satstype = when (val type = linje.path("satstype").asText()) {
+                                "DAG" -> SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.DAGLIG
+                                "ENG" -> SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.ENGANGS
+                                else -> error("Forventet ikke satstype: $type")
+                            },
+                            sats = linje.path("sats").asInt(),
+                            grad = linje.path("grad").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
+                            delytelseId = linje.path("delytelseId").asInt(),
+                            refDelytelseId = linje.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
+                            refFagsystemId = linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText(),
+                            klassekode = when (val kode = linje.path("klassekode").asText()) {
+                                "SPATORD" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_ORDINÆR
+                                "SPATFER" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_FERIEPENGER
+                                "SPREFAG-IOP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG
+                                "SPREFAGFER-IOP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_FERIEPENGER_IKKE_OPPLYSNINGSPLIKTIG
+                                else -> error("Forventet ikke klassekode: $kode")
+                            },
+                            opphørerFom = linje.path("datoStatusFom").asOptionalLocalDate()
+                        )
+                    }
+                ),
+                maksdato = packet["Simulering.maksdato"].asLocalDate(),
+                saksbehandler = packet["Simulering.saksbehandler"].asText()
             )
+            val result = simuleringtjeneste.simulerOppdrag(simulerRequest)
+
+            when (result) {
+                is SimuleringResponse.Ok -> packet["@løsning"] = mapOf(
+                    "Simulering" to mapOf(
+                        "status" to "OK",
+                        "feilmelding" to null,
+                        "simulering" to result.simulering
+                    )
+                )
+                is SimuleringResponse.FunksjonellFeil -> packet["@løsning"] = mapOf(
+                    "Simulering" to mapOf(
+                        "status" to "FUNKSJONELL_FEIL",
+                        "feilmelding" to result.feilmelding,
+                        "simulering" to null
+                    )
+                )
+                SimuleringResponse.OppdragsystemetErStengt -> packet["@løsning"] = mapOf(
+                    "Simulering" to mapOf(
+                        "status" to "OPPDRAG_UR_ER_STENGT",
+                        "feilmelding" to "Oppdrag/UR er stengt",
+                        "simulering" to null
+                    )
+                )
+                is SimuleringResponse.TekniskFeil -> packet["@løsning"] = mapOf(
+                    "Simulering" to mapOf(
+                        "status" to "TEKNISK_FEIL",
+                        "feilmelding" to result.feilmelding,
+                        "simulering" to null
+                    )
+                )
+            }
+
             context.publish(packet.toJson().also {
                 sikkerLogg.info("svarer behov=${packet["@id"].asText()} med $it")
             })
@@ -80,6 +144,14 @@ internal class Simuleringer(
             sikkerLogg.warn("Ukjent feil ved simulering for behov=${packet["@id"].asText()}: ${err.message}", err)
         }
     }
+
+    private fun endringskode(kode: String) =
+        when (kode) {
+            "NY" -> SimuleringRequest.Oppdrag.Endringskode.NY
+            "ENDR" -> SimuleringRequest.Oppdrag.Endringskode.ENDRET
+            "UEND" -> SimuleringRequest.Oppdrag.Endringskode.IKKE_ENDRET
+            else -> error("Forventet ikke endringskode: $kode")
+        }
 
     private fun withMDC(context: Map<String, String>, block: () -> Unit) {
         val contextMap = MDC.getCopyOfContextMap() ?: emptyMap()

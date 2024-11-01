@@ -5,10 +5,14 @@ import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
 import com.github.navikt.tbd_libs.soap.samlStrategy
+import io.ktor.server.application.Application
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.rapids_rivers.RapidApplication.Builder
+import no.nav.helse.rapids_rivers.RapidApplication.RapidApplicationConfig
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.simulering.SimuleringV2Service
 import no.nav.helse.spenn.simulering.Simuleringer
+import no.nav.helse.spenn.simulering.api.Simuleringtjeneste
 import java.net.URI
 import java.net.http.HttpClient
 
@@ -43,13 +47,15 @@ private fun rapidApp(env: Map<String, String>) {
         samlStrategy(serviceAccountUserName, serviceAccountPassword)
     )
 
+    val simuleringtjeneste = Simuleringtjeneste(simuleringClient)
+
     val rapid: RapidsConnection = RapidApplication.create(env)
-    rapidApp(rapid, simuleringClient)
+    rapidApp(rapid, simuleringtjeneste)
     rapid.start()
 }
 
-fun rapidApp(rapid: RapidsConnection, simuleringV2Service: SimuleringV2Service) {
+fun rapidApp(rapid: RapidsConnection, simuleringtjeneste: Simuleringtjeneste) {
     rapid.apply {
-        Simuleringer(this, simuleringV2Service)
+        Simuleringer(this, simuleringtjeneste)
     }
 }

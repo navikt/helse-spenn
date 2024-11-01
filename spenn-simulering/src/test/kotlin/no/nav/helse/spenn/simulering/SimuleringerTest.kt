@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
+import no.nav.helse.spenn.simulering.api.Simuleringtjeneste
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,7 +32,7 @@ internal class SimuleringerTest {
     }
 
     private val rapid = TestRapid().apply {
-        Simuleringer(this, simuleringService)
+        Simuleringer(this, Simuleringtjeneste(simuleringService))
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
