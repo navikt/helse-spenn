@@ -26,10 +26,6 @@ spec:
   azure:
     application:
       enabled: true
-    accessPolicy:
-      inbound:
-        rules:
-          - application: spenn-simulering
   ingresses:
     - https://spenn-simulering.ansatt.dev.nav.no
     - https://spenn-simulering.intern.dev.nav.no
@@ -48,6 +44,9 @@ spec:
   envFrom:
     - secret: spenn
   accessPolicy:
+    inbound:
+      rules:
+        - application: spenn-simulering
     outbound:
       external:
         - host: ws-proxy.dev-fss-pub.nais.io
