@@ -53,6 +53,7 @@ class SimuleringV2Service(
 
     private fun tolkRespons(responseBody: String): SimuleringResult {
         return try {
+            sikkerLogg.info("rå simuleringsrespons fra oppdrag:\n${responseBody}")
             val result = deserializeSoapBody<JsonNode>(mapper, responseBody)
             sikkerLogg.info("Simuleringsrespons fra oppdrag:\n${result.toPrettyString()}")
             mapResponseToResultat(result.path("simulerBeregningResponse").path("response").path("simulering"))
