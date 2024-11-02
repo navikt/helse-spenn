@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.simulering
+package no.nav.helse.spenn.simulering.api
 
 import com.github.navikt.tbd_libs.mock.MockHttpResponse
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
@@ -6,9 +6,6 @@ import com.github.navikt.tbd_libs.soap.SamlToken
 import com.github.navikt.tbd_libs.soap.SamlTokenProvider
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.spenn.simulering.api.SimuleringRequest
-import no.nav.helse.spenn.simulering.api.SimuleringResponse
-import no.nav.helse.spenn.simulering.api.Simuleringtjeneste
 import no.nav.helse.spenn.simulering.api.client.SimuleringV2Service
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test

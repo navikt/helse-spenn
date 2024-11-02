@@ -5,9 +5,13 @@ import io.ktor.server.application.call
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.receiveNullable
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
+import org.slf4j.LoggerFactory
+
+private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
 fun Route.api(simuleringtjeneste: Simuleringtjeneste) {
     post("/api/simulering") {
@@ -15,6 +19,7 @@ fun Route.api(simuleringtjeneste: Simuleringtjeneste) {
             feilmelding = "Ugyldig request",
             callId = call.callId
         ))
+        sikkerlogg.info("request body:\n${call.receiveText()}")
         val callId = call.callId ?: throw BadRequestException("Mangler callId-header")
         when (val svar = simuleringtjeneste.simulerOppdrag(request)) {
             is SimuleringResponse.Ok -> call.respond(HttpStatusCode.OK, svar.simulering)

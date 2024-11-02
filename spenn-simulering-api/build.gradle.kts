@@ -15,6 +15,7 @@ dependencies {
     api("io.ktor:ktor-server-call-id:$ktorVersion")
     api("io.ktor:ktor-server-status-pages:$ktorVersion")
     api("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    api("io.ktor:ktor-server-double-receive:$ktorVersion") // for å kunne konsumere request body flere ganger
     api("io.ktor:ktor-serialization-jackson:$ktorVersion")
     api("io.ktor:ktor-server-auth:$ktorVersion")
     api("io.ktor:ktor-server-auth-jwt:$ktorVersion") {
@@ -34,7 +35,10 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-host-common-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-double-receive-jvm:2.3.12")
 
+    testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 }

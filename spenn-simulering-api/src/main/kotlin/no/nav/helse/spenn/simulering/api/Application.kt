@@ -64,6 +64,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
+import io.ktor.server.plugins.doublereceive.*
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -142,6 +143,7 @@ fun Application.lagApplikasjonsmodul(simuleringtjeneste: Simuleringtjeneste, obj
         verify { it.isNotEmpty() }
         generate { UUID.randomUUID().toString() }
     }
+    install(DoubleReceive)
     install(CallLogging) {
         logger = LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging")
         level = Level.INFO
