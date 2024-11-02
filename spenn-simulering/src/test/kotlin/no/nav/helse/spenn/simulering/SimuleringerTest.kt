@@ -2,8 +2,7 @@ package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.spenn.SimuleringClient
-import com.github.navikt.tbd_libs.spenn.SimuleringException
-import com.github.navikt.tbd_libs.spenn.SimuleringFunksjonellFeilException
+import com.github.navikt.tbd_libs.spenn.SimuleringClient.SimuleringResult
 import com.github.navikt.tbd_libs.spenn.SimuleringResponse
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -104,24 +103,24 @@ internal class SimuleringerTest {
     private fun okResultat() {
         every {
             simuleringClient.hentSimulering(any(), any())
-        } returns SimuleringResponse(
+        } returns SimuleringResult.Ok(SimuleringResponse(
             gjelderId = PERSON,
             gjelderNavn = "Navn Navnesen",
             datoBeregnet = LocalDate.now(),
             totalBelop = 1000,
             periodeList = emptyList()
-        )
+        ))
     }
 
     private fun funksjonellFeilResultat() {
         every {
             simuleringClient.hentSimulering(any(), any())
-        } throws SimuleringFunksjonellFeilException("Feilet")
+        } returns SimuleringResult.FunksjonellFeil("feilet")
     }
     private fun tekniskFeilResultat() {
         every {
             simuleringClient.hentSimulering(any(), any())
-        } throws SimuleringException("Feilet")
+        } returns SimuleringResult.Feilmelding("Feilet")
     }
 
     private fun simuleringbehovBruker(

@@ -2,8 +2,8 @@ package no.nav.helse.spenn.simulering.api
 
 import com.github.navikt.tbd_libs.mock.MockHttpResponse
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
-import com.github.navikt.tbd_libs.soap.SamlToken
 import com.github.navikt.tbd_libs.soap.SamlTokenProvider
+import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.spenn.simulering.api.client.SimuleringV2Service
@@ -150,14 +150,14 @@ class SimuleringtjenesteTest {
             } returns MockHttpResponse(response)
         }
         val tokenProvider = object : SamlTokenProvider {
-            override fun samlToken(username: String, password: String): SamlToken {
+            override fun samlToken(username: String, password: String): SamlTokenProvider.SamlTokenResult {
                 throw NotImplementedError("ikke implementert i mock")
             }
         }
         val soapClient = MinimalSoapClient(URI("http://simulering-ws"), tokenProvider, httpClient)
         val client = SimuleringV2Service(
             soapClient = soapClient,
-            assertionStrategy = { "<saml token>" }
+            assertionStrategy = { SoapAssertionStrategy.SoapAssertionResult.Ok("<saml token>") }
         )
         return httpClient to Simuleringtjeneste(client)
     }

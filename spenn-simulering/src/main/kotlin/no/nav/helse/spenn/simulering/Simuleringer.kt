@@ -2,10 +2,8 @@ package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.spenn.SimuleringClient
-import com.github.navikt.tbd_libs.spenn.SimuleringException
-import com.github.navikt.tbd_libs.spenn.SimuleringFunksjonellFeilException
+import com.github.navikt.tbd_libs.spenn.SimuleringClient.SimuleringResult
 import com.github.navikt.tbd_libs.spenn.SimuleringRequest
-import com.github.navikt.tbd_libs.spenn.SimuleringUtilgjengeligException
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -107,51 +105,46 @@ internal class Simuleringer(
                 saksbehandler = packet["Simulering.saksbehandler"].asText()
             )
 
-            try {
-                val result = simuleringClient.hentSimulering(simulerRequest, callId)
-                packet["@løsning"] = mapOf(
-                    "Simulering" to mapOf(
-                        "status" to "OK",
-                        "feilmelding" to null,
-                        "simulering" to result
+            when (val result = simuleringClient.hentSimulering(simulerRequest, callId)) {
+                is SimuleringResult.Ok -> {
+                    packet["@løsning"] = mapOf(
+                        "Simulering" to mapOf(
+                            "status" to "OK",
+                            "feilmelding" to null,
+                            "simulering" to result.data
+                        )
                     )
-                )
-            } catch (err: SimuleringUtilgjengeligException) {
-                sikkerLogg.info("Oppdrag/UR er nede: {}", err.message, err)
-                packet["@løsning"] = mapOf(
-                    "Simulering" to mapOf(
-                        "status" to "OPPDRAG_UR_ER_STENGT",
-                        "feilmelding" to "Oppdrag/UR er stengt",
-                        "simulering" to null
+                }
+                SimuleringResult.SimuleringtjenesteUtilgjengelig -> {
+                    sikkerLogg.info("Oppdrag/UR er nede")
+                    packet["@løsning"] = mapOf(
+                        "Simulering" to mapOf(
+                            "status" to "OPPDRAG_UR_ER_STENGT",
+                            "feilmelding" to "Oppdrag/UR er stengt",
+                            "simulering" to null
+                        )
                     )
-                )
-            } catch (err: SimuleringFunksjonellFeilException) {
-                sikkerLogg.info("Feil ved simulering: {}", err.message, err)
-                packet["@løsning"] = mapOf(
-                    "Simulering" to mapOf(
-                        "status" to "FUNKSJONELL_FEIL",
-                        "feilmelding" to err.message,
-                        "simulering" to null
+                }
+                is SimuleringResult.FunksjonellFeil -> {
+                    sikkerLogg.info("Feil ved simulering: {}", result.feilmelding)
+                    packet["@løsning"] = mapOf(
+                        "Simulering" to mapOf(
+                            "status" to "FUNKSJONELL_FEIL",
+                            "feilmelding" to result.feilmelding,
+                            "simulering" to null
+                        )
                     )
-                )
-            } catch (err: SimuleringException) {
-                sikkerLogg.info("Feil ved simulering: {}", err.message, err)
-                packet["@løsning"] = mapOf(
-                    "Simulering" to mapOf(
-                        "status" to "TEKNISK_FEIL",
-                        "feilmelding" to err.message,
-                        "simulering" to null
+                }
+                is SimuleringResult.Feilmelding -> {
+                    sikkerLogg.info("Feil ved simulering: {}", result.feilmelding, result.exception)
+                    packet["@løsning"] = mapOf(
+                        "Simulering" to mapOf(
+                            "status" to "TEKNISK_FEIL",
+                            "feilmelding" to result.feilmelding,
+                            "simulering" to null
+                        )
                     )
-                )
-            } catch (err: Exception) {
-                sikkerLogg.info("Feil ved simulering: {}", err.message, err)
-                packet["@løsning"] = mapOf(
-                    "Simulering" to mapOf(
-                        "status" to "TEKNISK_FEIL",
-                        "feilmelding" to err.message,
-                        "simulering" to null
-                    )
-                )
+                }
             }
 
             context.publish(packet.toJson().also {
