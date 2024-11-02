@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
+import com.github.navikt.tbd_libs.soap.SoapResponseHandlerException
 import com.github.navikt.tbd_libs.soap.SoaptjenesteException
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import io.ktor.utils.io.errors.*
@@ -41,6 +42,12 @@ class SimuleringV2Service(
                 status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
                 feilmelding = "Oppdrag/UR er stengt"
             )
+        } catch (err: SoapResponseHandlerException) {
+            sikkerLogg.info("Feil ved simuleringV2: {}. Oppdrag/OS er trolig stengt.\nResponse body:\n${err.responseBody}", err.message, err)
+            return SimuleringResult(
+                status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
+                feilmelding = err.message
+            )
         } catch (err: Exception) {
             sikkerLogg.info("Feil ved simuleringV2: {}", err.message, err)
             return SimuleringResult(
@@ -52,7 +59,6 @@ class SimuleringV2Service(
 
     private fun tolkRespons(responseBody: String): SimuleringResult {
         return try {
-            sikkerLogg.info("rå simuleringsrespons fra oppdrag:\n${responseBody}")
             val result = deserializeSoapBody<JsonNode>(mapper, responseBody)
             sikkerLogg.info("Simuleringsrespons fra oppdrag:\n${result.toPrettyString()}")
             mapResponseToResultat(result.path("simulerBeregningResponse").path("response").path("simulering"))
