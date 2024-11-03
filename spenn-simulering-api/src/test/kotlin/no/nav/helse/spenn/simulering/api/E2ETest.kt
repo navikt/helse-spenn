@@ -24,12 +24,16 @@ import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.engine.connector
 import io.ktor.server.testing.testApplication
+import io.micrometer.core.instrument.Clock
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
-import io.prometheus.client.CollectorRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.helse.spenn.simulering.api.client.Simulering
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 import java.net.ServerSocket
 import java.time.Instant
 import java.time.LocalDate
@@ -81,13 +85,17 @@ class E2ETest {
         val objectMapper = jacksonObjectMapper()
             .registerModule(JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        simuleringApp(simuleringtjeneste, objectMapper, CollectorRegistry.defaultRegistry, innloggetBruker, testblokk)
+        val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
+        simuleringApp(simuleringtjeneste, objectMapper, meterRegistry, innloggetBruker, testblokk)
     }
 
-    private fun simuleringApp(simuleringtjeneste: Simuleringtjeneste, objectMapper: ObjectMapper, collectorRegistry: CollectorRegistry, innloggetBruker: JWTPrincipal, testblokk: suspend TestContext.() -> Unit) {
+    private fun simuleringApp(simuleringtjeneste: Simuleringtjeneste, objectMapper: ObjectMapper, meterRegistry: PrometheusMeterRegistry, innloggetBruker: JWTPrincipal, testblokk: suspend TestContext.() -> Unit) {
         val randomPort = ServerSocket(0).localPort
         testApplication {
             environment {
+                this.log = LoggerFactory.getLogger(this::class.java)
+            }
+            engine {
                 connector {
                     host = "localhost"
                     port = randomPort
@@ -102,7 +110,8 @@ class E2ETest {
                     }
 
                 }
-                lagApplikasjonsmodul(simuleringtjeneste, objectMapper, collectorRegistry)
+                standardApiModule(meterRegistry, objectMapper)
+                lagApplikasjonsmodul(simuleringtjeneste)
             }
             startApplication()
 

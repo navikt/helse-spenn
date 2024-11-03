@@ -4,8 +4,8 @@ val mockkVersion: String by project
 val jacksonVersion: String by project
 val logbackClassicVersion = "1.4.14"
 val logbackEncoderVersion = "7.4"
-val ktorVersion = "2.3.12"
-val micrometerRegistryPrometheusVersion = "1.12.3"
+val ktorVersion = "3.0.1"
+val micrometerRegistryPrometheusVersion = "1.13.6"
 
 dependencies {
     api("ch.qos.logback:logback-classic:$logbackClassicVersion")
