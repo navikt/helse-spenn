@@ -49,7 +49,10 @@ class SimuleringV2Service(
             is SoapResult.Fault -> håndterFault(result)
             is SoapResult.InvalidResponse -> {
                 sikkerLogg.info("Feil ved simuleringV2: ${result.exception?.message}. Oppdrag/OS er trolig stengt.", result.exception)
-                sikkerLogg.info("Response body:\n${result.responseBody.encodeBase64()}")
+                result.responseBody.also { errorBody ->
+                    sikkerLogg.info("response body: {} length, {} length uten whitespace", errorBody.length, errorBody.trim().length)
+                    sikkerLogg.info("Response body:\n${errorBody.trim().substring(0, 200)}")
+                }
                 return SimuleringResult(
                     status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
                     feilmelding = result.exception?.message
