@@ -11,6 +11,7 @@ import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
 import com.github.navikt.tbd_libs.soap.SoapResult
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
+import io.ktor.util.encodeBase64
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -48,7 +49,7 @@ class SimuleringV2Service(
             is SoapResult.Fault -> håndterFault(result)
             is SoapResult.InvalidResponse -> {
                 sikkerLogg.info("Feil ved simuleringV2: ${result.exception?.message}. Oppdrag/OS er trolig stengt.", result.exception)
-                sikkerLogg.info("Response body:\n${result.responseBody}")
+                sikkerLogg.info("Response body:\n${result.responseBody.encodeBase64()}")
                 return SimuleringResult(
                     status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
                     feilmelding = result.exception?.message
