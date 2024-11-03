@@ -20,19 +20,21 @@ import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.application.log
+import io.ktor.server.application.serverConfig
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.cio.CIO
+import io.ktor.server.cio.CIOApplicationEngine
+import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.EngineConnectorBuilder
-import io.ktor.server.engine.applicationEngineEnvironment
-import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.applicationEnvironment
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.NotFoundException
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.plugins.callid.callIdMdc
-import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.httpMethod
@@ -50,22 +52,20 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import io.prometheus.client.CollectorRegistry
-import io.prometheus.client.exporter.common.TextFormat
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import net.logstash.logback.argument.StructuredArguments.v
 import no.nav.helse.spenn.simulering.api.client.SimuleringV2Service
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
-import java.io.CharArrayWriter
 import java.net.URI
 import java.net.http.HttpClient
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import io.ktor.server.plugins.doublereceive.*
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -79,10 +79,12 @@ fun main() {
         sikkerlogg.error("Ufanget exception: {}", e.message, e)
     }
 
-    launchApp(System.getenv())
+    System.setProperty("io.ktor.development", (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp").toString())
+
+    configureAndLaunchApp(System.getenv())
 }
 
-private fun launchApp(env: Map<String, String>) {
+private fun configureAndLaunchApp(env: Map<String, String>) {
     val azureApp = AzureApp(
         jwkProvider = com.auth0.jwk.JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL()).build(),
         issuer = env.getValue("AZURE_OPENID_CONFIG_ISSUER"),
@@ -119,35 +121,50 @@ private fun launchApp(env: Map<String, String>) {
 
     val simuleringtjeneste = Simuleringtjeneste(simuleringClient)
 
-    val app = embeddedServer(
-        factory = CIO,
-        environment = applicationEngineEnvironment {
-            log = logg
-            connectors.add(EngineConnectorBuilder().apply {
-                this.port = 8080
-            })
-            module {
-                authentication { azureApp.konfigurerJwtAuth(this) }
-                lagApplikasjonsmodul(simuleringtjeneste, objectmapper, CollectorRegistry.defaultRegistry)
-            }
-        }
-    )
+    val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
+    val app = naisApp(meterRegistry, objectmapper) {
+        authentication { azureApp.konfigurerJwtAuth(this) }
+        lagApplikasjonsmodul(simuleringtjeneste)
+    }
     app.start(wait = true)
 }
 
-fun Application.lagApplikasjonsmodul(simuleringtjeneste: Simuleringtjeneste, objectMapper: ObjectMapper, collectorRegistry: CollectorRegistry) {
-    val readyToggle = AtomicBoolean(false)
+fun naisApp(
+    meterRegistry: PrometheusMeterRegistry,
+    objectMapper: ObjectMapper,
+    applicationLogger: Logger = logg,
+    port: Int = 8080,
+    applicationModule: Application.() -> Unit
+): EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration> {
+    val config = serverConfig(
+        environment = applicationEnvironment {
+            log = applicationLogger
+        }
+    ) {
+        module { standardApiModule(meterRegistry, objectMapper) }
+        module(applicationModule)
+    }
+    val app = EmbeddedServer(config, CIO) {
+        connectors.add(EngineConnectorBuilder().apply {
+            this.port = port
+        })
+    }
+    return app
+}
 
-    environment.monitor.subscribe(ApplicationStarted) {
+fun Application.standardApiModule(meterRegistry: PrometheusMeterRegistry, objectMapper: ObjectMapper) {
+    val readyToggle = AtomicBoolean(false)
+    monitor.subscribe(ApplicationStarted) {
         readyToggle.set(true)
     }
-
     install(CallId) {
         header("callId")
         verify { it.isNotEmpty() }
         generate { UUID.randomUUID().toString() }
     }
-    install(DoubleReceive)
+    install(ContentNegotiation) {
+        register(ContentType.Application.Json, JacksonConverter(objectMapper))
+    }
     install(CallLogging) {
         logger = LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging")
         level = Level.INFO
@@ -155,6 +172,11 @@ fun Application.lagApplikasjonsmodul(simuleringtjeneste: Simuleringtjeneste, obj
         disableDefaultColors()
         filter { call -> call.request.path().startsWith("/api/") }
     }
+    nais(readyToggle, meterRegistry)
+}
+
+fun Application.lagApplikasjonsmodul(simuleringtjeneste: Simuleringtjeneste) {
+    install(DoubleReceive)
     install(StatusPages) {
         exception<BadRequestException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, FeilResponse(
@@ -176,11 +198,7 @@ fun Application.lagApplikasjonsmodul(simuleringtjeneste: Simuleringtjeneste, obj
             ))
         }
     }
-    install(ContentNegotiation) {
-        register(ContentType.Application.Json, JacksonConverter(objectMapper))
-    }
     requestResponseTracing(LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.Tracing"))
-    nais(readyToggle, collectorRegistry)
     routing {
         authenticate {
             api(simuleringtjeneste)
@@ -225,9 +243,9 @@ private fun Application.requestResponseTracing(logger: Logger) {
     }
 }
 
-private fun Application.nais(readyToggle: AtomicBoolean, collectorRegistry: CollectorRegistry) {
+private fun Application.nais(readyToggle: AtomicBoolean, meterRegistry: PrometheusMeterRegistry) {
     install(MicrometerMetrics) {
-        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM)
+        registry = meterRegistry
         meterBinders = listOf(
             ClassLoaderMetrics(),
             JvmMemoryMetrics(),
@@ -248,15 +266,7 @@ private fun Application.nais(readyToggle: AtomicBoolean, collectorRegistry: Coll
         }
 
         get(metricsEndpoint) {
-            val names = call.request.queryParameters.getAll("name[]")?.toSet() ?: emptySet()
-            val formatted = CharArrayWriter(1024)
-                .also { TextFormat.write004(it, collectorRegistry.filteredMetricFamilySamples(names)) }
-                .use { it.toString() }
-
-            call.respondText(
-                contentType = ContentType.parse(TextFormat.CONTENT_TYPE_004),
-                text = formatted
-            )
+            call.respond(meterRegistry.scrape())
         }
     }
 }
