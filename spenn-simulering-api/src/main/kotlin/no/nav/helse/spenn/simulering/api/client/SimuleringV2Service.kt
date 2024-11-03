@@ -47,7 +47,8 @@ class SimuleringV2Service(
         return when (val result = deserializeSoapBody<JsonNode>(mapper, responseBody)) {
             is SoapResult.Fault -> håndterFault(result)
             is SoapResult.InvalidResponse -> {
-                sikkerLogg.info("Feil ved simuleringV2: ${result.exception?.message}. Oppdrag/OS er trolig stengt.\nResponse body:\n${result.responseBody}", result.exception)
+                sikkerLogg.info("Feil ved simuleringV2: ${result.exception?.message}. Oppdrag/OS er trolig stengt.", result.exception)
+                sikkerLogg.info("Response body:\n${result.responseBody}")
                 return SimuleringResult(
                     status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
                     feilmelding = result.exception?.message
