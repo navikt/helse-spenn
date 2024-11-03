@@ -143,11 +143,11 @@ class SimuleringtjenesteTest {
     }
 
 
-    private fun mockClient(response: String): Pair<HttpClient, Simuleringtjeneste> {
+    private fun mockClient(response: String, statusCode: Int = 200): Pair<HttpClient, Simuleringtjeneste> {
         val httpClient = mockk<HttpClient> {
             every {
                 send<String>(any(), any())
-            } returns MockHttpResponse(response)
+            } returns MockHttpResponse(response, statusCode)
         }
         val tokenProvider = object : SamlTokenProvider {
             override fun samlToken(username: String, password: String): SamlTokenProvider.SamlTokenResult {

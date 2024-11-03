@@ -36,7 +36,7 @@ class SimuleringV2Service(
             is MinimalSoapClient.Result.Error -> {
                 sikkerLogg.info("Feil ved simuleringV2: {}", result.error, result.exception)
                 return SimuleringResult(
-                    status = SimuleringStatus.TEKNISK_FEIL,
+                    status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
                     feilmelding = result.error
                 )
             }
@@ -49,12 +49,9 @@ class SimuleringV2Service(
             is SoapResult.Fault -> håndterFault(result)
             is SoapResult.InvalidResponse -> {
                 sikkerLogg.info("Feil ved simuleringV2: ${result.exception?.message}. Oppdrag/OS er trolig stengt.", result.exception)
-                result.responseBody.also { errorBody ->
-                    sikkerLogg.info("response body: {} length, {} length uten whitespace", errorBody.length, errorBody.trim().length)
-                    sikkerLogg.info("Response body:\n${errorBody.trim().substring(0, 200)}")
-                }
+                sikkerLogg.info("Response body: ${result.responseBody}")
                 return SimuleringResult(
-                    status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
+                    status = SimuleringStatus.TEKNISK_FEIL,
                     feilmelding = result.exception?.message
                 )
             }
