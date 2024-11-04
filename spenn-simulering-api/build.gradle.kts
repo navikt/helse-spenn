@@ -4,41 +4,28 @@ val mockkVersion: String by project
 val jacksonVersion: String by project
 val logbackClassicVersion = "1.4.14"
 val logbackEncoderVersion = "7.4"
-val ktorVersion = "3.0.1"
-val micrometerRegistryPrometheusVersion = "1.13.6"
+val ktorVersion = "3.0.1" // må være samme som <com.github.navikt.tbd-libs:naisful-app> bruker
 
 dependencies {
     api("ch.qos.logback:logback-classic:$logbackClassicVersion")
     api("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
 
-    api("io.ktor:ktor-server-cio:$ktorVersion")
-    api("io.ktor:ktor-server-call-id:$ktorVersion")
-    api("io.ktor:ktor-server-status-pages:$ktorVersion")
-    api("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     api("io.ktor:ktor-server-double-receive:$ktorVersion") // for å kunne konsumere request body flere ganger
-    api("io.ktor:ktor-serialization-jackson:$ktorVersion")
     api("io.ktor:ktor-server-auth:$ktorVersion")
     api("io.ktor:ktor-server-auth-jwt:$ktorVersion") {
         exclude(group = "junit")
     }
-    api("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
-    api("io.micrometer:micrometer-registry-prometheus:$micrometerRegistryPrometheusVersion")
 
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
+    api("com.github.navikt.tbd-libs:naisful-app:$tbdLibsVersion")
     api("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     api("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
     api("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     api("com.github.navikt.tbd-libs:minimal-soap-client:$tbdLibsVersion")
 
-    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-host-common-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-status-pages-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-double-receive-jvm:2.3.12")
-
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("com.github.navikt.tbd-libs:naisful-test-app:$tbdLibsVersion")
     testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 }

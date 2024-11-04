@@ -3,27 +3,20 @@ package no.nav.helse.spenn.simulering.api
 import com.auth0.jwt.interfaces.Claim
 import com.auth0.jwt.interfaces.Payload
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.HttpClient
+import com.github.navikt.tbd_libs.naisful.test.TestContext
+import com.github.navikt.tbd_libs.naisful.test.naisfulTestApp
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.http.isSuccess
-import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.engine.connector
-import io.ktor.server.testing.testApplication
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -33,8 +26,6 @@ import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.helse.spenn.simulering.api.client.Simulering
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
-import java.net.ServerSocket
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Date
@@ -86,22 +77,9 @@ class E2ETest {
             .registerModule(JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
-        simuleringApp(simuleringtjeneste, objectMapper, meterRegistry, innloggetBruker, testblokk)
-    }
 
-    private fun simuleringApp(simuleringtjeneste: Simuleringtjeneste, objectMapper: ObjectMapper, meterRegistry: PrometheusMeterRegistry, innloggetBruker: JWTPrincipal, testblokk: suspend TestContext.() -> Unit) {
-        val randomPort = ServerSocket(0).localPort
-        testApplication {
-            environment {
-                this.log = LoggerFactory.getLogger(this::class.java)
-            }
-            engine {
-                connector {
-                    host = "localhost"
-                    port = randomPort
-                }
-            }
-            application {
+        naisfulTestApp(
+            testApplicationModule = {
                 authentication {
                     provider {
                         authenticate { context ->
@@ -110,27 +88,19 @@ class E2ETest {
                     }
 
                 }
-                standardApiModule(meterRegistry, objectMapper)
                 lagApplikasjonsmodul(simuleringtjeneste)
-            }
-            startApplication()
+            },
+            objectMapper = objectMapper,
+            meterRegistry = meterRegistry,
+            testblokk = testblokk
+        )
+    }
+}
 
-            val testClient = createClient {
-                defaultRequest {
-                    port = randomPort
-                }
-                install(ContentNegotiation) {
-                    register(ContentType.Application.Json, JacksonConverter(objectMapper))
-                }
-            }
-
-            do {
-                val response = testClient.get("/isready")
-                println("Venter på at isready svarer OK…:${response.status}")
-            } while (!response.status.isSuccess())
-
-            testblokk(TestContext(testClient))
-        }
+suspend fun TestContext.sendSimuleringRequest(simuleringRequest: SimuleringRequest): HttpResponse {
+    return client.post("/api/simulering") {
+        contentType(ContentType.Application.Json)
+        setBody(simuleringRequest)
     }
 }
 
@@ -174,15 +144,7 @@ data class ForventetSimuleringResponse(
     )
 }
 
-class TestContext(val client: HttpClient) {
 
-    suspend fun sendSimuleringRequest(simuleringRequest: SimuleringRequest): HttpResponse {
-        return client.post("/api/simulering") {
-            contentType(ContentType.Application.Json)
-            setBody(simuleringRequest)
-        }
-    }
-}
 
 class LokalePayload(claims: Map<String, String>) : Payload {
     private val claims = claims.mapValues { LokaleClaim(it.value) }

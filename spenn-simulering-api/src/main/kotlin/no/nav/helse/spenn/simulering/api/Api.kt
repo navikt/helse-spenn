@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.simulering.api
 
+import com.github.navikt.tbd_libs.naisful.FeilResponse
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.receiveNullable
