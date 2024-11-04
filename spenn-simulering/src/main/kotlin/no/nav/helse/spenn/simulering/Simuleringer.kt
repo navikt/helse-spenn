@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.spenn.SimuleringClient
 import com.github.navikt.tbd_libs.spenn.SimuleringClient.SimuleringResult
 import com.github.navikt.tbd_libs.spenn.SimuleringRequest
@@ -106,53 +107,55 @@ internal class Simuleringer(
             )
 
             when (val result = simuleringClient.hentSimulering(simulerRequest, callId)) {
-                is SimuleringResult.Ok -> {
-                    packet["@løsning"] = mapOf(
-                        "Simulering" to mapOf(
-                            "status" to "OK",
-                            "feilmelding" to null,
-                            "simulering" to result.data
-                        )
-                    )
-                }
-                SimuleringResult.OkMenTomt -> {
-                    packet["@løsning"] = mapOf(
-                        "Simulering" to mapOf(
-                            "status" to "OK",
-                            "feilmelding" to null,
-                            "simulering" to null
-                        )
-                    )
-                }
-                SimuleringResult.SimuleringtjenesteUtilgjengelig -> {
-                    sikkerLogg.info("Oppdrag/UR er nede")
-                    packet["@løsning"] = mapOf(
-                        "Simulering" to mapOf(
-                            "status" to "OPPDRAG_UR_ER_STENGT",
-                            "feilmelding" to "Oppdrag/UR er stengt",
-                            "simulering" to null
-                        )
-                    )
-                }
-                is SimuleringResult.FunksjonellFeil -> {
-                    sikkerLogg.info("Feil ved simulering: {}", result.feilmelding)
-                    packet["@løsning"] = mapOf(
-                        "Simulering" to mapOf(
-                            "status" to "FUNKSJONELL_FEIL",
-                            "feilmelding" to result.feilmelding,
-                            "simulering" to null
-                        )
-                    )
-                }
-                is SimuleringResult.Feilmelding -> {
-                    sikkerLogg.info("Feil ved simulering: {}", result.feilmelding, result.exception)
+                is Result.Error -> {
+                    sikkerLogg.info("Feil ved simulering: {}", result.error, result.cause)
                     packet["@løsning"] = mapOf(
                         "Simulering" to mapOf(
                             "status" to "TEKNISK_FEIL",
-                            "feilmelding" to result.feilmelding,
+                            "feilmelding" to result.error,
                             "simulering" to null
                         )
                     )
+                }
+                is Result.Ok -> when (val simuleringresultat = result.value) {
+                    is SimuleringResult.Ok -> {
+                        packet["@løsning"] = mapOf(
+                            "Simulering" to mapOf(
+                                "status" to "OK",
+                                "feilmelding" to null,
+                                "simulering" to simuleringresultat.data
+                            )
+                        )
+                    }
+                    SimuleringResult.OkMenTomt -> {
+                        packet["@løsning"] = mapOf(
+                            "Simulering" to mapOf(
+                                "status" to "OK",
+                                "feilmelding" to null,
+                                "simulering" to null
+                            )
+                        )
+                    }
+                    SimuleringResult.SimuleringtjenesteUtilgjengelig -> {
+                        sikkerLogg.info("Oppdrag/UR er nede")
+                        packet["@løsning"] = mapOf(
+                            "Simulering" to mapOf(
+                                "status" to "OPPDRAG_UR_ER_STENGT",
+                                "feilmelding" to "Oppdrag/UR er stengt",
+                                "simulering" to null
+                            )
+                        )
+                    }
+                    is SimuleringResult.FunksjonellFeil -> {
+                        sikkerLogg.info("Feil ved simulering: {}", simuleringresultat.feilmelding)
+                        packet["@løsning"] = mapOf(
+                            "Simulering" to mapOf(
+                                "status" to "FUNKSJONELL_FEIL",
+                                "feilmelding" to simuleringresultat.feilmelding,
+                                "simulering" to null
+                            )
+                        )
+                    }
                 }
             }
 

@@ -20,8 +20,6 @@ dependencies {
 
     api("com.github.navikt.tbd-libs:naisful-app:$tbdLibsVersion")
     api("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    api("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
-    api("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     api("com.github.navikt.tbd-libs:minimal-soap-client:$tbdLibsVersion")
 
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")

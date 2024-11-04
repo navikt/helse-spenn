@@ -1,6 +1,8 @@
 package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.result_object.error
+import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.spenn.SimuleringClient
 import com.github.navikt.tbd_libs.spenn.SimuleringClient.SimuleringResult
 import com.github.navikt.tbd_libs.spenn.SimuleringResponse
@@ -109,18 +111,18 @@ internal class SimuleringerTest {
             datoBeregnet = LocalDate.now(),
             totalBelop = 1000,
             periodeList = emptyList()
-        ))
+        )).ok()
     }
 
     private fun funksjonellFeilResultat() {
         every {
             simuleringClient.hentSimulering(any(), any())
-        } returns SimuleringResult.FunksjonellFeil("feilet")
+        } returns SimuleringResult.FunksjonellFeil("feilet").ok()
     }
     private fun tekniskFeilResultat() {
         every {
             simuleringClient.hentSimulering(any(), any())
-        } returns SimuleringResult.Feilmelding("Feilet")
+        } returns "Feilet".error()
     }
 
     private fun simuleringbehovBruker(
