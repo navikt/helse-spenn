@@ -68,6 +68,29 @@ class E2ETest {
             assertEquals(simuleringsvar.totalBelop, body.totalBelop)
         }
     }
+    @Test
+    fun `tomt svar`() {
+        val simuleringtjeneste = mockk<Simuleringtjeneste> {
+            every { simulerOppdrag(any()) } returns SimuleringResponse.OkMenTomt
+        }
+
+        simuleringTestApp(simuleringtjeneste) {
+            val request = SimuleringRequest(
+                fødselsnummer = "fnr",
+                oppdrag = SimuleringRequest.Oppdrag(
+                    fagområde = SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON,
+                    fagsystemId = "fagsystemId",
+                    endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
+                    mottakerAvUtbetalingen = "orgnr",
+                    linjer = emptyList()
+                ),
+                maksdato = LocalDate.now(),
+                saksbehandler = "saksbehandler",
+            )
+            val response = sendSimuleringRequest(request)
+            assertEquals(HttpStatusCode.NoContent, response.status)
+        }
+    }
 
     private fun simuleringTestApp(simuleringtjeneste: Simuleringtjeneste, testblokk: suspend TestContext.() -> Unit) {
         val innloggetBruker = JWTPrincipal(LokalePayload(mapOf(

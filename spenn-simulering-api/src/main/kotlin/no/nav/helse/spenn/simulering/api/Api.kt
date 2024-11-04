@@ -23,6 +23,7 @@ fun Route.api(simuleringtjeneste: Simuleringtjeneste) {
         val callId = call.callId ?: throw BadRequestException("Mangler callId-header")
         when (val svar = simuleringtjeneste.simulerOppdrag(request)) {
             is SimuleringResponse.Ok -> call.respond(HttpStatusCode.OK, svar.simulering)
+            SimuleringResponse.OkMenTomt -> call.respond(HttpStatusCode.NoContent)
             is SimuleringResponse.FunksjonellFeil -> call.respond(HttpStatusCode.BadRequest, FeilResponse(
                 feilmelding = "Simulering feilet på grunn av funksjonell feil. ${svar.feilmelding}",
                 callId = callId

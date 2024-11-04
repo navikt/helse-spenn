@@ -29,7 +29,7 @@ class Simuleringtjeneste(
         val response = simuleringV2Service.simulerOppdrag(request)
         return when (response.status) {
             SimuleringStatus.OK -> when (response.simulering) {
-                null -> SimuleringResponse.TekniskFeil("simuleringsvaret er null, det var uventet")
+                null -> SimuleringResponse.OkMenTomt
                 else -> SimuleringResponse.Ok(response.simulering)
             }
             SimuleringStatus.OPPDRAG_UR_ER_STENGT -> SimuleringResponse.OppdragsystemetErStengt
@@ -123,6 +123,7 @@ class Simuleringtjeneste(
 
 sealed interface SimuleringResponse {
     data class Ok(val simulering: Simulering) : SimuleringResponse
+    data object OkMenTomt : SimuleringResponse
     data object OppdragsystemetErStengt : SimuleringResponse
     data class FunksjonellFeil(val feilmelding: String) : SimuleringResponse
     data class TekniskFeil(val feilmelding: String) : SimuleringResponse
