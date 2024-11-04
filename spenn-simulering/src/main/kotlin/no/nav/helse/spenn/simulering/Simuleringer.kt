@@ -115,6 +115,15 @@ internal class Simuleringer(
                         )
                     )
                 }
+                SimuleringResult.OkMenTomt -> {
+                    packet["@løsning"] = mapOf(
+                        "Simulering" to mapOf(
+                            "status" to "OK",
+                            "feilmelding" to null,
+                            "simulering" to null
+                        )
+                    )
+                }
                 SimuleringResult.SimuleringtjenesteUtilgjengelig -> {
                     sikkerLogg.info("Oppdrag/UR er nede")
                     packet["@løsning"] = mapOf(
