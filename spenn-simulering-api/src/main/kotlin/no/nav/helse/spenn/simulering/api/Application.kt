@@ -3,10 +3,10 @@ package no.nav.helse.spenn.simulering.api
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.naisful.naisApp
-import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.map
+import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
@@ -55,9 +55,8 @@ private fun configureAndLaunchApp(env: Map<String, String>) {
 
     val azureClient = createAzureTokenClientFromEnvironment(env)
     val proxyAuthorization = {
-        when (val result = azureClient.bearerToken(env.getValue("WS_PROXY_SCOPE"))) {
-            is Result.Error -> throw RuntimeException("Fikk ikke azure token: ${result.error}", result.cause)
-            is Result.Ok -> "Bearer ${result.value.token}"
+        azureClient.bearerToken(env.getValue("WS_PROXY_SCOPE")).map {
+            "Bearer ${it.token}".ok()
         }
     }
 

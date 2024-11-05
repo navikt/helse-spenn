@@ -7,11 +7,12 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.fold
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
 import com.github.navikt.tbd_libs.soap.SoapResult
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
-import io.ktor.util.encodeBase64
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -32,32 +33,36 @@ class SimuleringV2Service(
     fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
         val requestBody = buildXmlRequestBody(simulerRequest)
         sikkerLogg.info("SimuleringV2 request:\n$requestBody")
-        return when (val result = soapClient.doSoapAction("http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt/simulerFpService/simulerBeregningRequest", requestBody, assertionStrategy)) {
-            is MinimalSoapClient.Result.Error -> {
-                sikkerLogg.info("Feil ved simuleringV2: {}", result.error, result.exception)
-                return SimuleringResult(
+        return soapClient.doSoapAction("http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt/simulerFpService/simulerBeregningRequest", requestBody, assertionStrategy).fold(
+            whenError = { msg, cause ->
+                sikkerLogg.info("Feil ved simuleringV2: {}", msg, cause)
+                SimuleringResult(
                     status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
-                    feilmelding = result.error
+                    feilmelding = msg
                 )
+            },
+            whenOk = { body ->
+                tolkRespons(body)
             }
-            is MinimalSoapClient.Result.Ok -> tolkRespons(result.body)
-        }
+        )
     }
 
     private fun tolkRespons(responseBody: String): SimuleringResult {
         return when (val result = deserializeSoapBody<JsonNode>(mapper, responseBody)) {
-            is SoapResult.Fault -> håndterFault(result)
-            is SoapResult.InvalidResponse -> {
-                sikkerLogg.info("Feil ved simuleringV2: ${result.exception?.message}. Oppdrag/OS er trolig stengt.", result.exception)
-                sikkerLogg.info("Response body: ${result.responseBody}")
-                return SimuleringResult(
+            is Result.Error -> {
+                sikkerLogg.info("Feil ved simuleringV2: ${result.error}. Oppdrag/OS er trolig stengt.", result.cause)
+                sikkerLogg.info("Response body: $responseBody")
+                SimuleringResult(
                     status = SimuleringStatus.TEKNISK_FEIL,
-                    feilmelding = result.exception?.message
+                    feilmelding = result.error
                 )
             }
-            is SoapResult.Ok -> {
-                sikkerLogg.info("Simuleringsrespons fra oppdrag:\n${result.response.toPrettyString()}")
-                mapResponseToResultat(result.response.path("simulerBeregningResponse").path("response").path("simulering"))
+            is Result.Ok -> when (val soapresult = result.value) {
+                is SoapResult.Fault -> håndterFault(soapresult)
+                is SoapResult.Ok -> {
+                    sikkerLogg.info("Simuleringsrespons fra oppdrag:\n${soapresult.response.toPrettyString()}")
+                    mapResponseToResultat(soapresult.response.path("simulerBeregningResponse").path("response").path("simulering"))
+                }
             }
         }
     }
