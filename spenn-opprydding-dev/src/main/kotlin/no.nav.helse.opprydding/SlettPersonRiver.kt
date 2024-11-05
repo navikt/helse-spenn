@@ -44,6 +44,7 @@ internal class SlettPersonRiver(
     private fun lagOppdragsmelding(oppdrag: PersonRepository.Oppdrag): JsonMessage {
         return JsonMessage.newMessage("oppdrag_utbetaling", mapOf(
             "fødselsnummer" to oppdrag.fnr,
+            "aktørId" to oppdrag.aktørId,
             "organisasjonsnummer" to oppdrag.orgnr,
             "saksbehandler" to "SPENN",
             "opprettet" to LocalDateTime.now(),

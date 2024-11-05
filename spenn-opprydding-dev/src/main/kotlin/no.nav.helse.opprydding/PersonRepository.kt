@@ -32,6 +32,7 @@ internal class PersonRepository(private val dataSource: DataSource) {
             @Language("PostgreSQL")
             val query = """
                 select o1.fnr,o1.orgnr,o1.utbetaling_id,o1.fagomrade,o1.fagsystem_id,o1.mottaker,
+                       o1.behov->>'aktørId' as aktørId,
                        cast(o1.behov->'Utbetaling'->'linjer'->-1->>'fom' as date) as nyeste_linje_fom,
                        cast(o1.behov->'Utbetaling'->'linjer'->-1->>'tom'  as date) as nyeste_linje_tom,
                        cast(o1.behov->'Utbetaling'->'linjer'->-1->>'delytelseId' as int) as nyeste_linje_delytelse_id,
@@ -45,6 +46,7 @@ internal class PersonRepository(private val dataSource: DataSource) {
             session.run(queryOf(query, fødselsnummer).map { row ->
                 Oppdrag(
                     fnr  = row.string("fnr"),
+                    aktørId = row.string("aktørId"),
                     orgnr = row.string("orgnr"),
                     utbetalingId = row.uuid("utbetaling_id"),
                     fagomrade = row.string("fagomrade"),
@@ -64,6 +66,7 @@ internal class PersonRepository(private val dataSource: DataSource) {
 
     data class Oppdrag(
         val fnr: String,
+        val aktørId: String,
         val orgnr: String,
         val utbetalingId: UUID,
         val fagomrade: String,
