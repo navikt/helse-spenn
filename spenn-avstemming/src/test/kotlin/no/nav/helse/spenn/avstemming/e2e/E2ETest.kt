@@ -149,7 +149,6 @@ class E2ETest {
       "@id": "${UUID.randomUUID()}",
       "@opprettet": "${LocalDateTime.now()}",
       "fødselsnummer": "$fødselsnummer",
-      "aktørId": "aktør",
       "utbetalingId": "$utbetalingId",
       "fagsystemId": "$fagsystemId",
       "fagområde": "$fagområde",

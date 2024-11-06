@@ -18,7 +18,7 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
                 it.demandValue("@event_name", "oppdrag_utbetaling")
                 it.rejectKey("kvittering")
                 it.requireKey("@id", "fødselsnummer")
-                it.interestedIn("aktørId", "maksdato")
+                it.interestedIn("maksdato")
                 it.requireKey("saksbehandler", "avstemmingsnøkkel", "mottaker", "fagsystemId", "utbetalingId")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
                 it.require("endringskode") { value -> EndringskodeDto.valueOf(value.asText()) }
@@ -56,8 +56,7 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
 
         withMDC(mapOf(
             "utbetalingId" to utbetalingId.toString(),
-            "fagsystemId" to fagsystemId,
-            "aktørId" to packet["aktørId"].asText("ikke oppgitt")
+            "fagsystemId" to fagsystemId
         )) {
             val fagområde = packet["fagområde"].asText()
             val utbetalingslinjer = when (fagområde) {

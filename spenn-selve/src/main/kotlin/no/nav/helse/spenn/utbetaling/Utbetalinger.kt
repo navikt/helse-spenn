@@ -28,7 +28,6 @@ internal class Utbetalinger(
                 it.demandAll("@behov", listOf("Utbetaling"))
                 it.rejectKey("@løsning")
                 it.requireKey("@id", "fødselsnummer", "organisasjonsnummer")
-                it.interestedIn("aktørId")
                 it.interestedIn("Utbetaling.maksdato", JsonNode::asLocalDate)
                 it.requireKey(
                     "Utbetaling",
@@ -160,7 +159,6 @@ internal class Utbetalinger(
             }
         ).apply {
             compute("maksdato") { _, _ -> maksdato }
-            compute("aktørId") { _, _ -> packet["aktørId"].asText() }
         })
     }
 }

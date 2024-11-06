@@ -17,7 +17,7 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
             validate {
                 it.demandValue("@event_name", "oppdrag_utbetaling")
                 it.demandKey("kvittering")
-                it.requireKey("@id", "aktørId", "fødselsnummer", "organisasjonsnummer", "utbetalingId", "fagsystemId", "avstemmingsnøkkel")
+                it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "utbetalingId", "fagsystemId", "avstemmingsnøkkel")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.requireKey("kvittering.status", "kvittering.beskrivelse")
                 it.requireAny("kvittering.status", listOf("OVERFØRT", "FEIL"))
