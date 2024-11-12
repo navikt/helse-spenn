@@ -73,10 +73,3 @@ subprojects {
 tasks {
     named<Jar>("jar") { enabled = false }
 }
-
-tasks {
-    named("build") {
-        finalizedBy()
-        project.buildDir.deleteRecursively()
-    }
-}
