@@ -2,8 +2,8 @@ val mainClass = "no.nav.helse.spenn.simulering.api.ApplicationKt"
 val tbdLibsVersion: String by project
 val mockkVersion: String by project
 val jacksonVersion: String by project
-val logbackClassicVersion = "1.4.14"
-val logbackEncoderVersion = "7.4"
+val logbackClassicVersion = "1.5.12"
+val logbackEncoderVersion = "8.0"
 val ktorVersion = "3.0.1" // må være samme som <com.github.navikt.tbd-libs:naisful-app> bruker
 
 dependencies {
