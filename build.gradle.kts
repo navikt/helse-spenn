@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+
 val junitJupiterVersion = "5.11.0"
 val mockkVersion = "1.13.12"
 val jacksonVersion = "2.18.1"
@@ -8,8 +10,6 @@ val rapidsAndRiversVersion = "2024082209261724311613.5baa691b9e0a"
 val postgresqlVersion = "42.7.3"
 val kotliqueryVersion = "1.9.0"
 val postgresSocketFactoryVersion = "1.20.0"
-
-val jvmTarget = 21
 
 plugins {
     kotlin("jvm") version "2.0.21"
@@ -54,13 +54,13 @@ subprojects {
     ext.set("jacksonVersion", jacksonVersion)
     ext.set("mockkVersion", mockkVersion)
 
-    tasks {
-        java {
-            toolchain {
-                languageVersion = JavaLanguageVersion.of(jvmTarget)
-            }
+    configure<KotlinJvmProjectExtension> {
+        jvmToolchain {
+            languageVersion.set(JavaLanguageVersion.of("21"))
         }
+    }
 
+    tasks {
         withType<Test> {
             useJUnitPlatform()
             testLogging {
