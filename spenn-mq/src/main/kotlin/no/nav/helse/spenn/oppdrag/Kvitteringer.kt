@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import no.nav.helse.spenn.oppdrag.AlvorlighetsgradDto.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime

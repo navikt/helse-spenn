@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.clearAllMocks
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.apache.activemq.artemis.api.core.TransportConfiguration
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory

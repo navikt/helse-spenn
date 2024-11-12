@@ -1,7 +1,7 @@
 package no.nav.helse.spenn
 
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.spenn.utbetaling.OppdragDao
 import no.nav.helse.spenn.utbetaling.Overføringer
 import no.nav.helse.spenn.utbetaling.Transaksjoner

@@ -1,7 +1,14 @@
 package no.nav.helse.spenn.avstemming
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.*
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import java.util.*
 
 internal class Utbetalinger(
@@ -25,13 +32,13 @@ internal class Utbetalinger(
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         logger
             .offentligError("Forstod ikke oppdrag_utbetaling (se sikkerlogg for detaljer)")
             .privatError("Forstod ikke oppdrag_utbetaling:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
         val fagsystemId = packet["fagsystemId"].asText()

@@ -4,11 +4,12 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.asLocalDateTime
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.rapidApp
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -94,7 +95,7 @@ internal class E2eTestApp {
             rapid.register(this as MessageListener)
         }
 
-        override fun onMessage(message: String, context: MessageContext, metrics: MeterRegistry) = notifyMessage(message, context, metrics)
+        override fun onMessage(message: String, context: MessageContext, metadata: MessageMetadata, metrics: MeterRegistry) = notifyMessage(message, context, metadata, metrics)
         override fun onNotReady(rapidsConnection: RapidsConnection) = notifyNotReady()
         override fun onReady(rapidsConnection: RapidsConnection) = notifyReady()
         override fun onShutdown(rapidsConnection: RapidsConnection) = notifyShutdown()

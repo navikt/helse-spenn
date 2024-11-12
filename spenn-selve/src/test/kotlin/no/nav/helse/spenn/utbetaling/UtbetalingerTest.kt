@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.utbetaling
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.*
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import no.nav.helse.spenn.e2e.Utbetalingslinje.Companion.utbetalingslinje

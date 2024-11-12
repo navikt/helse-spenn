@@ -1,10 +1,10 @@
 package no.nav.helse.spenn.oppdrag
 
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.wmq.WMQConstants
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import java.io.File
 import javax.jms.Connection
 

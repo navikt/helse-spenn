@@ -1,7 +1,14 @@
 package no.nav.helse.spenn.avstemming
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.*
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.virksomhet.tjenester.avstemming.meldinger.v1.Avstemmingsdata
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -35,26 +42,26 @@ internal class Avstemminger(
 
     // utfører avstemming fra spisset signal, f.eks. fra spout
     private inner class UtførAvstemming : River.PacketListener {
-        override fun onError(problems: MessageProblems, context: MessageContext) {
+        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
             logger
                 .offentligError("Forstod ikke utfør_avstemming (se sikkerlogg for detaljer)")
                 .privatError("Forstod ikke utfør_avstemming:\n${problems.toExtendedReport()}")
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             val dagen = packet["dagen"].asLocalDate()
             avstem(dagen, context)
         }
     }
 
     private inner class AvstemmingBegivenhet : River.PacketListener {
-        override fun onError(problems: MessageProblems, context: MessageContext) {
+        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
             logger
                 .offentligError("Forstod ikke hel_time (se sikkerlogg for detaljer)")
                 .privatError("Forstod ikke hel_time:\n${problems.toExtendedReport()}")
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             // avstemmer gårsdagen
             val dagen = packet["dagen"].asLocalDate().minusDays(1)
             avstem(dagen, context)

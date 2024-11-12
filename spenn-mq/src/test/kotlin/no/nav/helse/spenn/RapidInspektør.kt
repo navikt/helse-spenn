@@ -1,10 +1,11 @@
 package no.nav.helse.spenn
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.isMissingOrNull
+import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import org.junit.jupiter.api.fail
 
-internal class RapidInspektør(private val inspektør: no.nav.helse.rapids_rivers.testsupport.TestRapid.RapidInspector) {
+internal class RapidInspektør(private val inspektør: TestRapid.RapidInspector) {
     val size get() = inspektør.size
 
     fun melding(indeks: Int) = inspektør.message(indeks)

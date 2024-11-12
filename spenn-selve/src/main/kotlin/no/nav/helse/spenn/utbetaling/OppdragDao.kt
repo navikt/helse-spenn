@@ -1,11 +1,11 @@
 package no.nav.helse.spenn.utbetaling
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotliquery.*
 import kotliquery.action.NullableResultQueryAction
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import org.intellij.lang.annotations.Language
 import java.time.LocalDateTime
 import java.util.*

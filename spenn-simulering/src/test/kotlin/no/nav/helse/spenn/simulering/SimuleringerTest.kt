@@ -1,6 +1,7 @@
 package no.nav.helse.spenn.simulering
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.result_object.error
 import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.spenn.SimuleringClient
@@ -9,7 +10,6 @@ import com.github.navikt.tbd_libs.spenn.SimuleringResponse
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach

@@ -2,6 +2,10 @@ package no.nav.helse.spenn.avstemming.e2e
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.test_support.CleanupStrategy
 import com.github.navikt.tbd_libs.test_support.DatabaseContainers
 import com.github.navikt.tbd_libs.test_support.TestDataSource
@@ -9,9 +13,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.avstemming.Database
 import no.nav.helse.spenn.avstemming.Oppdragstatus
 import no.nav.helse.spenn.avstemming.UtKø
@@ -220,13 +221,13 @@ class E2ETest {
         }
 
         fun reset() = rapid.reset()
-        override fun onMessage(message: String, context: MessageContext, metrics: MeterRegistry) = notifyMessage(message, context, metrics)
+        override fun onMessage(message: String, context: MessageContext, metadata: MessageMetadata, metrics: MeterRegistry) = notifyMessage(message, context, metadata, metrics)
         override fun onNotReady(rapidsConnection: RapidsConnection) = notifyNotReady()
         override fun onReady(rapidsConnection: RapidsConnection) = notifyReady()
         override fun onShutdown(rapidsConnection: RapidsConnection) = notifyShutdown()
         override fun onStartup(rapidsConnection: RapidsConnection) = notifyStartup()
 
-        fun sendTestMessage(message: String) = notifyMessage(message, this, SimpleMeterRegistry())
+        fun sendTestMessage(message: String) = notifyMessage(message, this, MessageMetadata("", 0, 0, null, emptyMap()), SimpleMeterRegistry())
 
         override fun publish(message: String) {
             rapid.publish(message)

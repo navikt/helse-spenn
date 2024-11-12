@@ -1,7 +1,14 @@
 package no.nav.helse.spenn.utbetaling
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.*
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
@@ -26,16 +33,16 @@ internal class Transaksjoner(
                     "avstemmingsnøkkel", "feilkode_oppdrag", "beskrivelse", "originalXml"
                 )
             }
-            validate { it.requireAny("status", Oppdragstatus.values().map(Enum<*>::name)) }
+            validate { it.requireAny("status", Oppdragstatus.entries.map(Enum<*>::name)) }
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         log.error("Forstod ikke transaksjon_status (se sikkerlogg for detaljer)")
         sikkerLogg.error("Forstod ikke transaksjon_status:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         val fødselsnummer = packet["fødselsnummer"].asText()
         val fagsystemId = packet["fagsystemId"].asText()
         val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())

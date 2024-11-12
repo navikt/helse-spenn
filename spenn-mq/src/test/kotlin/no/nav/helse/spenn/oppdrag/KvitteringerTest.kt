@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.clearAllMocks
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.TestConnection
 import no.nav.helse.spenn.oppdrag.Kvittering.Companion.AKSEPTERT_MED_FEIL
 import no.nav.helse.spenn.oppdrag.Kvittering.Companion.AKSEPTERT_UTEN_FEIL

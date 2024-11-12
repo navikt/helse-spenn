@@ -1,6 +1,7 @@
 val mainClass = "no.nav.helse.spenn.oppdrag.ApplicationKt"
 
 val rapidsAndRiversVersion: String by project
+val tbdLibsVersion: String by project
 val jacksonVersion: String by project
 val mockkVersion: String by project
 
@@ -15,6 +16,7 @@ dependencies {
     }
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
+    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.apache.activemq:apache-artemis:2.37.0") {
         /* this is a shaded jar that creates conflicts on classpath, see:

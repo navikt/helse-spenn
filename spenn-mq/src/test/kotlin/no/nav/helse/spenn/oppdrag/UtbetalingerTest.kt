@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.oppdrag
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.*
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.TestConnection
 import no.nav.helse.spenn.oppdrag.Utbetalingsbehov.Companion.utbetalingsbehov
@@ -48,7 +48,7 @@ internal class UtbetalingerTest {
         val body = connection.inspektør.melding(0).getBody(String::class.java)
         val unmarshalled = OppdragXml.unmarshal(body)
         assertEquals(0, unmarshalled.oppdrag110!!.oppdragsLinje150[0].grad170.size)
-        assertEquals(SatstypeDto.ENG, unmarshalled.oppdrag110!!.oppdragsLinje150[0].typeSats)
+        assertEquals(SatstypeDto.ENG, unmarshalled.oppdrag110.oppdragsLinje150[0].typeSats)
 
         assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
         assertOverført(0)

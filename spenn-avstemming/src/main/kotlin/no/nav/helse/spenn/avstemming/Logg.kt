@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.avstemming
 
-import no.nav.helse.rapids_rivers.withMDC
+import com.github.navikt.tbd_libs.rapids_and_rivers.withMDC
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
