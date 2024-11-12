@@ -12,7 +12,7 @@ val postgresSocketFactoryVersion = "1.20.0"
 val jvmTarget = 21
 
 plugins {
-    kotlin("jvm") version "2.0.10"
+    kotlin("jvm") version "2.0.21"
 }
 
 allprojects {
