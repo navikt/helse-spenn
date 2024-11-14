@@ -31,9 +31,9 @@ internal class Simuleringer(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", "behov") }
-            validate { it.demandAll("@behov", listOf("Simulering")) }
-            validate { it.rejectKey("@løsning") }
+            precondition { it.requireValue("@event_name", "behov") }
+            precondition { it.requireAll("@behov", listOf("Simulering")) }
+            precondition { it.forbid("@løsning") }
             validate { it.require("Simulering.maksdato", JsonNode::asLocalDate) }
             validate { it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "Simulering.saksbehandler") }
             validate {

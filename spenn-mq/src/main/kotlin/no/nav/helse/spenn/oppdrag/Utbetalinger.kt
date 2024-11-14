@@ -25,9 +25,11 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireValue("@event_name", "oppdrag_utbetaling")
+                it.forbid("kvittering")
+            }
             validate {
-                it.demandValue("@event_name", "oppdrag_utbetaling")
-                it.rejectKey("kvittering")
                 it.requireKey("@id", "fødselsnummer")
                 it.interestedIn("maksdato")
                 it.requireKey("saksbehandler", "avstemmingsnøkkel", "mottaker", "fagsystemId", "utbetalingId")

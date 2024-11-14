@@ -25,7 +25,7 @@ internal class Transaksjoner(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", "transaksjon_status") }
+            precondition { it.requireValue("@event_name", "transaksjon_status") }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate {
                 it.requireKey(

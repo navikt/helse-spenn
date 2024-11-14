@@ -22,9 +22,11 @@ internal class Utbetalinger(
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireValue("@event_name", "oppdrag_utbetaling")
+                it.forbid("kvittering")
+            }
             validate {
-                it.demandValue("@event_name", "oppdrag_utbetaling")
-                it.rejectKey("kvittering")
                 it.requireKey("@id", "utbetalingId", "fagsystemId")
                 it.requireKey("fødselsnummer", "mottaker", "avstemmingsnøkkel", "fagområde", "opprettet", "totalbeløp")
                 it.require("@opprettet", JsonNode::asLocalDateTime)

@@ -32,10 +32,12 @@ internal class Utbetalinger(
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireValue("@event_name", "behov")
+                it.requireAll("@behov", listOf("Utbetaling"))
+                it.forbid("@løsning")
+            }
             validate {
-                it.demandValue("@event_name", "behov")
-                it.demandAll("@behov", listOf("Utbetaling"))
-                it.rejectKey("@løsning")
                 it.requireKey("@id", "fødselsnummer", "organisasjonsnummer")
                 it.interestedIn("Utbetaling.maksdato", JsonNode::asLocalDate)
                 it.requireKey(

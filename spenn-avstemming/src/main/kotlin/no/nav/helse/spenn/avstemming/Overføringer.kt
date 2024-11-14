@@ -15,9 +15,11 @@ internal class Overføringer(rapidsConnection: RapidsConnection, private val opp
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireValue("@event_name", "oppdrag_utbetaling")
+                it.requireKey("kvittering")
+            }
             validate {
-                it.demandValue("@event_name", "oppdrag_utbetaling")
-                it.demandKey("kvittering")
                 it.requireKey("@id", "fødselsnummer", "utbetalingId", "fagsystemId")
                 it.requireKey("avstemmingsnøkkel")
                 it.requireAny("fagområde", listOf("SPREF", "SP"))
