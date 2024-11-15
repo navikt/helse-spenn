@@ -9,7 +9,6 @@ val postgresqlVersion: String by project
 val kotliqueryVersion: String by project
 
 dependencies {
-    api("org.flywaydb:flyway-core:$flywayVersion")
     api("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
     implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")

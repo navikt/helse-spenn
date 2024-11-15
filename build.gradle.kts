@@ -3,11 +3,11 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 val junitJupiterVersion = "5.11.3"
 val mockkVersion = "1.13.12"
 val jacksonVersion = "2.18.1"
-val flywayVersion = "10.17.1"
+val flywayVersion = "10.21.0"
 val hikariCPVersion = "6.1.0"
 val tbdLibsVersion = "2024.11.15-09.09-08ca346b"
 val rapidsAndRiversVersion = "2024111509181731658731.11009b44c672"
-val postgresqlVersion = "42.7.3"
+val postgresqlVersion = "42.7.4"
 val kotliqueryVersion = "1.9.0"
 val postgresSocketFactoryVersion = "1.20.0"
 
