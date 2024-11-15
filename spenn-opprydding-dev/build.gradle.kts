@@ -2,7 +2,7 @@ val mainClass = "no.nav.helse.opprydding.AppKt"
 
 val rapidsAndRiversVersion: String by project
 val tbdLibsVersion: String by project
-val postgresSocketFactoryVersion: String by project
+val cloudSqlVersion: String by project
 val hikariCPVersion: String by project
 val postgresqlVersion: String by project
 val kotliqueryVersion: String by project
@@ -10,7 +10,7 @@ val kotliqueryVersion: String by project
 dependencies {
     implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
 
-    implementation("com.google.cloud.sql:postgres-socket-factory:$postgresSocketFactoryVersion")
+    implementation("com.google.cloud.sql:postgres-socket-factory:$cloudSqlVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")

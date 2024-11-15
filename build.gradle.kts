@@ -9,7 +9,7 @@ val tbdLibsVersion = "2024.11.15-09.09-08ca346b"
 val rapidsAndRiversVersion = "2024111509181731658731.11009b44c672"
 val postgresqlVersion = "42.7.4"
 val kotliqueryVersion = "1.9.0"
-val postgresSocketFactoryVersion = "1.20.0"
+val cloudSqlVersion = "1.21.0"
 
 plugins {
     kotlin("jvm") version "2.0.21"
@@ -46,7 +46,7 @@ allprojects {
 subprojects {
     ext.set("postgresqlVersion", postgresqlVersion)
     ext.set("kotliqueryVersion", kotliqueryVersion)
-    ext.set("postgresSocketFactoryVersion", postgresSocketFactoryVersion)
+    ext.set("cloudSqlVersion", cloudSqlVersion)
     ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
     ext.set("tbdLibsVersion", tbdLibsVersion)
     ext.set("hikariCPVersion", hikariCPVersion)
