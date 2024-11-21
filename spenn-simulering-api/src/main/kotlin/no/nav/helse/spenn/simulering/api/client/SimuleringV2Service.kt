@@ -42,15 +42,15 @@ class SimuleringV2Service(
                 )
             },
             whenOk = { body ->
-                tolkRespons(body)
+                tolkRespons(body.body(), body.statusCode())
             }
         )
     }
 
-    private fun tolkRespons(responseBody: String): SimuleringResult {
+    private fun tolkRespons(responseBody: String, statuskode: Int): SimuleringResult {
         return when (val result = deserializeSoapBody<JsonNode>(mapper, responseBody)) {
             is Result.Error -> {
-                sikkerLogg.info("Feil ved simuleringV2: ${result.error}. Oppdrag/OS er trolig stengt.", result.cause)
+                sikkerLogg.info("Feil ved simuleringV2: ${result.error} (http $statuskode). Oppdrag/OS er trolig stengt.", result.cause)
                 sikkerLogg.info("Response body: $responseBody")
                 SimuleringResult(
                     status = SimuleringStatus.TEKNISK_FEIL,
