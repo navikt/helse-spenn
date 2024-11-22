@@ -14,6 +14,7 @@ private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 fun Route.api(simuleringtjeneste: Simuleringtjeneste) {
     post("/api/simulering") {
         val request = call.receiveNullable<SimuleringRequest>() ?: throw BadRequestException("Ugyldig simulering request, oppfyller ikke kontrakten")
+        if (request.oppdrag.linjer.isEmpty()) throw BadRequestException("Ugyldig simulering request, nytteløst å simulere oppdrag uten linjer")
         sikkerlogg.info("request body:\n${call.receiveText()}")
         when (val svar = simuleringtjeneste.simulerOppdrag(request)) {
             is SimuleringResponse.Ok -> call.respond(HttpStatusCode.OK, svar.simulering)
