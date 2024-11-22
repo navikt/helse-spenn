@@ -24,7 +24,10 @@ class Simuleringtjeneste(
     fun simulerOppdrag(simulering: SimuleringRequest): SimuleringResponse {
         val request = SimulerBeregningRequest(
             oppdrag = mapTilXMLRequest(simulering),
-            simuleringsPeriode = SimuleringsPeriode(simulering.oppdrag.linjer.first().fom, simulering.oppdrag.linjer.last().tom),
+            simuleringsPeriode = SimuleringsPeriode(
+                datoSimulerFom = simulering.simuleringsperiodeFom,
+                datoSimulerTom = simulering.simuleringsperiodeTom
+            ),
         )
         val response = simuleringV2Service.simulerOppdrag(request)
         return when (response.status) {
@@ -136,6 +139,8 @@ data class SimuleringRequest(
     val maksdato: LocalDate?,
     val saksbehandler: String
 ) {
+    val simuleringsperiodeFom = oppdrag.linjer.minOf { it.fom }
+    val simuleringsperiodeTom = oppdrag.linjer.last().tom
     data class Oppdrag(
         val fagområde: Fagområde,
         val fagsystemId: String,
