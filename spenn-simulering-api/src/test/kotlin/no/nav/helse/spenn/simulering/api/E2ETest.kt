@@ -23,6 +23,8 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
 import io.prometheus.metrics.model.registry.PrometheusRegistry
+import no.nav.helse.spenn.simulering.api.SimuleringRequest.Oppdrag
+import no.nav.helse.spenn.simulering.api.SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode
 import no.nav.helse.spenn.simulering.api.client.Simulering
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -53,7 +55,21 @@ class E2ETest {
                     fagsystemId = "fagsystemId",
                     endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
                     mottakerAvUtbetalingen = "orgnr",
-                    linjer = emptyList()
+                    linjer = listOf(
+                        Oppdrag.Oppdragslinje(
+                            endringskode = Oppdrag.Endringskode.NY,
+                            fom = LocalDate.of(2018, 1, 1),
+                            tom = LocalDate.of(2018, 1, 20),
+                            satstype = Oppdrag.Oppdragslinje.Satstype.DAGLIG,
+                            sats = 500,
+                            grad = 100,
+                            delytelseId = 2,
+                            refDelytelseId = null,
+                            refFagsystemId = null,
+                            klassekode = Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                            opphørerFom = null
+                        )
+                    )
                 ),
                 maksdato = LocalDate.now(),
                 saksbehandler = "saksbehandler",
@@ -82,7 +98,21 @@ class E2ETest {
                     fagsystemId = "fagsystemId",
                     endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
                     mottakerAvUtbetalingen = "orgnr",
-                    linjer = emptyList()
+                    linjer = listOf(
+                        Oppdrag.Oppdragslinje(
+                            endringskode = Oppdrag.Endringskode.IKKE_ENDRET,
+                            fom = LocalDate.of(2018, 1, 1),
+                            tom = LocalDate.of(2018, 1, 20),
+                            satstype = Oppdrag.Oppdragslinje.Satstype.DAGLIG,
+                            sats = 500,
+                            grad = 100,
+                            delytelseId = 1,
+                            refDelytelseId = null,
+                            refFagsystemId = null,
+                            klassekode = Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                            opphørerFom = null
+                        )
+                    )
                 ),
                 maksdato = LocalDate.now(),
                 saksbehandler = "saksbehandler",
