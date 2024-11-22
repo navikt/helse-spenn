@@ -12,10 +12,14 @@ import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
 import com.github.navikt.tbd_libs.soap.samlStrategy
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.principal
 import io.ktor.server.plugins.doublereceive.*
+import io.ktor.server.request.header
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
@@ -82,10 +86,21 @@ private fun configureAndLaunchApp(env: Map<String, String>) {
     val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
 
     val app = naisApp(
-        meterRegistry,
-        objectmapper,
-        logg,
-        LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging")
+        meterRegistry = meterRegistry,
+        objectMapper = objectmapper,
+        applicationLogger = logg,
+        callLogger = LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging"),
+        timersConfig = { call, _ ->
+            this
+                .tag("azp_name", call.principal<JWTPrincipal>()?.get("azp_name") ?: "n/a")
+                // https://github.com/linkerd/polixy/blob/main/DESIGN.md#l5d-client-id-client-id
+                // eksempel: <APP>.<NAMESPACE>.serviceaccount.identity.linkerd.cluster.local
+                .tag("konsument", call.request.header("L5d-Client-Id") ?: "n/a")
+        },
+        mdcEntries = mapOf(
+            "azp_name" to { call: ApplicationCall -> call.principal<JWTPrincipal>()?.get("azp_name") },
+            "konsument" to { call: ApplicationCall -> call.request.header("L5d-Client-Id") }
+        ),
     ) {
         authentication { azureApp.konfigurerJwtAuth(this) }
         lagApplikasjonsmodul(simuleringtjeneste)
