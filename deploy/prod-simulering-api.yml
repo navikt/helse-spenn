@@ -16,6 +16,7 @@ spec:
   readiness:
     initialDelay: 5
     path: /isready
+    periodSeconds: 1
   observability:
     autoInstrumentation:
       enabled: true
