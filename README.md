@@ -51,6 +51,10 @@ Kjører som `spenn-simulering` i FSS
 
 Kjører som `spenn` i GCP.
 
+## Hvorfor Spenn?
+
+Spenn heter spenn fordi det er en tjeneste som 100% bryr seg om penger. Spenn.
+
 ## Henvendelser
 
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
