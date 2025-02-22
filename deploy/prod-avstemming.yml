@@ -36,7 +36,7 @@ spec:
     pool: nav-prod
   gcp:
     sqlInstances:
-      - type: POSTGRES_15
+      - type: POSTGRES_17
         diskAutoresize: true
         pointInTimeRecovery: true
         tier: db-custom-4-16384
