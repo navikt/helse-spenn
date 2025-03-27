@@ -44,11 +44,12 @@ jobs:
     name: deploy to dev
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: deploy/dev-opprydding.yml,deploy/dev-db.yml
           IMAGE: ${{ needs.build.outputs.image }}
