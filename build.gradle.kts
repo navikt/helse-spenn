@@ -1,13 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
-val junitJupiterVersion = "5.11.3"
-val mockkVersion = "1.13.12"
-val jacksonVersion = "2.18.1"
-val flywayVersion = "10.21.0"
-val hikariCPVersion = "6.1.0"
-val tbdLibsVersion = "2025.01.27-12.50-76316f3b"
-val rapidsAndRiversVersion = "2025012712551737978926.de930d8e0feb"
-val postgresqlVersion = "42.7.4"
+val junitJupiterVersion = "5.12.1"
+val mockkVersion = "1.13.17"
+val jacksonVersion = "2.18.3"
+val flywayVersion = "11.5.0"
+val hikariCPVersion = "6.3.0"
+val tbdLibsVersion = "2025.03.27-18.30-c228796d"
+val rapidsAndRiversVersion = "2025032719521743101565.4abbf0c3af65"
+val postgresqlVersion = "42.7.5"
 val kotliqueryVersion = "1.9.0"
 val cloudSqlVersion = "1.21.0"
 

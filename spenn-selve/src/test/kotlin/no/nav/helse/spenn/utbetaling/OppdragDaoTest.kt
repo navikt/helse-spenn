@@ -5,11 +5,13 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.spenn.e2e.databaseContainer
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 internal class OppdragDaoTest {
     private companion object {
