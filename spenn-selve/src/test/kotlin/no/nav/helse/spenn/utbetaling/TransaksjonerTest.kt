@@ -8,7 +8,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -56,7 +55,7 @@ internal class TransaksjonerTest {
     fun `løser utbetalingsbehov`() {
         val behov = utbetalingsbehov()
         every { dao.oppdaterOppdrag(UTBETALING_ID, FAGSYSTEMID, Oppdragstatus.AKSEPTERT, "Foo", "00", any()) } returns true
-        every { dao.hentBehovForOppdrag(any(), any()) } returns JsonMessage(behov, MessageProblems(behov), SimpleMeterRegistry())
+        every { dao.hentBehovForOppdrag(any(), any()) } returns JsonMessage(behov, MessageProblems(behov))
         rapid.sendTestMessage(tranaksjonStatus())
         assertEquals(1, inspektør.size)
         assertEquals("behov", rapid.inspektør.field(0, "@event_name").asText())
