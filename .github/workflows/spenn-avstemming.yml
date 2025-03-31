@@ -8,6 +8,7 @@ on:
       - 'deploy/dev-avstemming.yml'
       - 'deploy/prod-avstemming.yml'
       - 'Dockerfile'
+      - 'build.gradle.kts'
     branches:
       - master
 
