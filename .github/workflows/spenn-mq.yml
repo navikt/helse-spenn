@@ -7,6 +7,8 @@ on:
       - '.github/workflows/spenn-mq.yml'
       - 'deploy/dev-mq.yml'
       - 'deploy/prod-mq.yml'
+      - 'build.gradle.kts'
+      - 'Dockerfile'
     branches:
       - master
 
