@@ -49,7 +49,7 @@ class Simuleringtjeneste(
 
     private fun mapTilXMLRequest(simulering: SimuleringRequest): Oppdrag {
         val linjestrategi = when (simulering.oppdrag.fagområde) {
-            SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON -> arbeidsgiverrefusjon(simulering.oppdrag.mottakerAvUtbetalingen.padStart(11, '0'), simulering.saksbehandler, checkNotNull(simulering.maksdato) { "forventer maksdato for refusjonsoppdrag" })
+            SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON -> arbeidsgiverrefusjon(simulering.oppdrag.mottakerAvUtbetalingen.padStart(11, '0'), simulering.saksbehandler, simulering.maksdato)
             SimuleringRequest.Oppdrag.Fagområde.BRUKERUTBETALING -> brukerutbetaling(simulering.fødselsnummer, simulering.saksbehandler)
         }
         val linjer = simulering.oppdrag.linjer.map(linjestrategi)
@@ -74,7 +74,7 @@ class Simuleringtjeneste(
         )
     }
 
-    private fun arbeidsgiverrefusjon(organisasjonsnummer: String, saksbehandler: String, maksdato: LocalDate) =
+    private fun arbeidsgiverrefusjon(organisasjonsnummer: String, saksbehandler: String, maksdato: LocalDate?) =
         { linje: SimuleringRequest.Oppdrag.Oppdragslinje ->
             felles(saksbehandler, linje).apply {
                 refusjonsInfo = RefusjonsInfo(organisasjonsnummer, linje.fom, maksdato)
