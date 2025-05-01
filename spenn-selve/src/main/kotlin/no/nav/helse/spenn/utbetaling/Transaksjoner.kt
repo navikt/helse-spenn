@@ -9,9 +9,9 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.*
+import org.slf4j.LoggerFactory
 
 internal class Transaksjoner(
     rapidsConnection: RapidsConnection,
@@ -59,6 +59,7 @@ internal class Transaksjoner(
         }
 
         oppdragDao.hentBehovForOppdrag(utbetalingId, fagsystemId)?.also {
+            val behovnavn = it.behovnavn
             it["@id"] = UUID.randomUUID()
             it["@opprettet"] = LocalDateTime.now()
             sikkerLogg.info(
@@ -67,7 +68,7 @@ internal class Transaksjoner(
             )
 
             it["@løsning"] = mapOf(
-                "Utbetaling" to mapOf(
+                behovnavn to mapOf(
                     "status" to status,
                     "overføringstidspunkt" to tidspunkt,
                     "avstemmingsnøkkel" to avstemmingsnøkkel,

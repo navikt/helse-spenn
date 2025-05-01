@@ -142,4 +142,9 @@ internal class OppdragDao(private val dataSource: DataSource) {
     }
 }
 
+internal val JsonMessage.behovnavn: String get() {
+    interestedIn("@behov")
+    return this["@behov"].single().asText()
+}
+
 private fun Query.exists(): NullableResultQueryAction<Boolean> = this.map { true }.asSingle

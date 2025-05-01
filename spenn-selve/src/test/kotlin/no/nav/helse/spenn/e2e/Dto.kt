@@ -47,29 +47,68 @@ data class Utbetalingsbehov(
         val utbetalingsbehov = Utbetalingsbehov()
     }
 }
+data class Feriepengebehov(
+    val fnr: String = "12345678911",
+    val utbetalingId: UUID = UUID.randomUUID(),
+    val linjer: List<Feriepengelinje> = listOf(Feriepengelinje()),
+    val fagsystemId: String = UtbetalingerTest.FAGSYSTEMID
+) {
+    fun json() = jacksonObjectMapper().writeValueAsString(toMap())
+    fun toMap(): Map<String, Any> {
+        return mapOf(
+            "@event_name" to "behov",
+            "@behov" to listOf("Feriepengeutbetaling"),
+            "@id" to UUID.randomUUID(),
+            "@behovId" to UtbetalingerTest.BEHOV,
+            "organisasjonsnummer" to UtbetalingerTest.ORGNR,
+            "fødselsnummer" to fnr,
+            "utbetalingId" to utbetalingId.toString(),
+            "Feriepengeutbetaling" to mapOf(
+                "mottaker" to UtbetalingerTest.ORGNR,
+                "saksbehandler" to UtbetalingerTest.SAKSBEHANDLER,
+                "mottaker" to UtbetalingerTest.ORGNR,
+                "fagområde" to "SPREF",
+                "fagsystemId" to fagsystemId,
+                "endringskode" to "NY",
+                "linjer" to linjer.map { it.toMap() }
+            )
+        )
+    }
+
+    fun linjer(vararg linjer: Feriepengelinje) =
+        copy(linjer = linjer.toList())
+
+    fun fnr(it: String) = copy(fnr = it)
+
+    fun fagsystemId(it: String) = copy(fagsystemId = it)
+
+    fun utbetalingId(it: UUID) = copy(utbetalingId = it)
+
+    companion object {
+        val feriepengebehov = Feriepengebehov()
+    }
+}
 
 
 data class Utbetalingslinje(
     val sats: Int = 1000,
-    val grad: Int? = 100,
+    val grad: Int = 100,
     val fom: LocalDate = LocalDate.parse("2020-04-20"),
     val tom: LocalDate = LocalDate.parse("2020-05-20"),
-    val delytelseId: Int = 1,
-    val satstype: String = "DAG"
+    val delytelseId: Int = 1
 ) {
-    fun satstype(it: String) = copy(satstype=it)
     fun sats(it: Int) = copy(sats=it)
     fun fom(it: LocalDate) = copy(fom=it)
     fun tom(it: LocalDate) = copy(tom=it)
-    fun grad(it: Int?) = copy(grad=it)
+    fun grad(it: Int) = copy(grad=it)
 
     fun toMap() =
         mapOf(
-            "satstype" to satstype,
+            "satstype" to "DAG",
             "sats" to "$sats",
             "fom" to "$fom",
             "tom" to "$tom",
-            "grad" to grad?.toString(),
+            "grad" to "$grad",
             "delytelseId" to "$delytelseId",
             "refDelytelseId" to null,
             "refFagsystemId" to null,
@@ -81,6 +120,36 @@ data class Utbetalingslinje(
 
     companion object {
         val utbetalingslinje = Utbetalingslinje()
+    }
+}
+
+data class Feriepengelinje(
+    val sats: Int = 1000,
+    val fom: LocalDate = LocalDate.parse("2020-04-20"),
+    val tom: LocalDate = LocalDate.parse("2020-05-20"),
+    val delytelseId: Int = 1
+) {
+    fun sats(it: Int) = copy(sats=it)
+    fun fom(it: LocalDate) = copy(fom=it)
+    fun tom(it: LocalDate) = copy(tom=it)
+
+    fun toMap() =
+        mapOf(
+            "satstype" to "ENG",
+            "sats" to "$sats",
+            "fom" to "$fom",
+            "tom" to "$tom",
+            "delytelseId" to "$delytelseId",
+            "refDelytelseId" to null,
+            "refFagsystemId" to null,
+            "endringskode" to "NY",
+            "klassekode" to "SPREFAG-IOP",
+            "datoStatusFom" to null,
+            "statuskode" to null
+        )
+
+    companion object {
+        val feriepengelinje = Feriepengelinje()
     }
 }
 

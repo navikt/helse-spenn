@@ -8,14 +8,13 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDateTime
 import no.nav.helse.spenn.RapidInspektør
-import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
+import no.nav.helse.spenn.e2e.Feriepengebehov.Companion.feriepengebehov
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class UtbetalingerTest {
+internal class FeriepengerTest {
     companion object {
         const val PERSON = "12345678911"
         const val ORGNR = "123456789"
@@ -27,7 +26,7 @@ internal class UtbetalingerTest {
 
     private val dao = mockk<OppdragDao>()
     private val rapid = TestRapid().apply {
-        Utbetalinger(this, dao)
+        Feriepenger(this, dao)
     }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
@@ -38,12 +37,15 @@ internal class UtbetalingerTest {
     }
 
     @Test
-    fun `løser utbetalingsbehov`() {
+    fun `løser feriepengebehov`() {
         val avstemmingsnøkkel = CapturingSlot<Long>()
-        val behov = utbetalingsbehov
+
+        val behov = feriepengebehov
+
         every {
             dao.hentOppdrag(any(), any(), any())
         } returns null
+
         every {
             dao.nyttOppdrag(
                 any(),
@@ -65,19 +67,19 @@ internal class UtbetalingerTest {
                 Oppdragstatus.MOTTATT
             )
         }
-        every { dao.oppdaterOppdrag(any(), behov.utbetalingId, behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
-        every { dao.finnesFraFør(behov.fnr, behov.utbetalingId, behov.fagsystemId) } returns false
+        every { dao.finnesFraFør(feriepengebehov.fnr, feriepengebehov.utbetalingId, feriepengebehov.fagsystemId) } returns false
+        every { dao.oppdaterOppdrag(any(), behov.utbetalingId, FAGSYSTEMID, Oppdragstatus.OVERFØRT) } returns true
+
         rapid.sendTestMessage(behov.json())
         assertEquals(2, inspektør.size)
         assertMottatt(0)
         val utbetalingsmelding = rapid.inspektør.message(1)
         assertEquals("oppdrag_utbetaling", utbetalingsmelding.path("@event_name").asText())
-        assertTrue(utbetalingsmelding.hasNonNull("maksdato"))
     }
 
     @Test
     fun `ignorerer tomme utbetalingslinjer`() {
-        val behov = utbetalingsbehov.linjer()
+        val behov = feriepengebehov.linjer()
         rapid.sendTestMessage(behov.json())
         assertEquals(0, inspektør.size)
         verify(exactly = 0) {
@@ -98,7 +100,7 @@ internal class UtbetalingerTest {
     }
 
     @Test
-    fun `utbetalingsbehov med exception`() {
+    fun `feriepengebehov med exception`() {
         every {
             dao.nyttOppdrag(
                 any(),
@@ -114,29 +116,29 @@ internal class UtbetalingerTest {
                 any()
             )
         } throws RuntimeException()
-        rapid.sendTestMessage(utbetalingsbehov.json())
+        rapid.sendTestMessage(feriepengebehov.json())
         assertEquals(1, inspektør.size)
         assertEquals(BEHOV, inspektør.behovId(0))
-        inspektør.løsning(0, "Utbetaling") {
+        inspektør.løsning(0, "Feriepengeutbetaling") {
             assertEquals(Oppdragstatus.FEIL.name, it.path("status").asText())
         }
     }
 
     private fun assertMottatt(indeks: Int) {
         assertEquals(BEHOV, inspektør.behovId(indeks))
-        inspektør.løsning(indeks, "Utbetaling") {
+        inspektør.løsning(indeks, "Feriepengeutbetaling") {
             assertEquals(Oppdragstatus.MOTTATT.name, it.path("status").asText())
             assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }
         }
-        val avstemmingsnøkkel = inspektør.løsning(indeks, "Utbetaling")
+        val avstemmingsnøkkel = inspektør.løsning(indeks, "Feriepengeutbetaling")
             .path("avstemmingsnøkkel")
             .asLong()
         verify(exactly = 1) {
             dao.nyttOppdrag(
-                utbetalingId = utbetalingsbehov.utbetalingId,
+                utbetalingId = feriepengebehov.utbetalingId,
                 fagområde = "SPREF",
                 avstemmingsnøkkel = avstemmingsnøkkel,
-                fødselsnummer = utbetalingsbehov.fnr,
+                fødselsnummer = feriepengebehov.fnr,
                 organisasjonsnummer = ORGNR,
                 mottaker = ORGNR,
                 tidspunkt = any(),
