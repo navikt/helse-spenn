@@ -105,6 +105,7 @@ internal class Simuleringer(
                                 "SPATFER" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_FERIEPENGER
                                 "SPREFAG-IOP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG
                                 "SPREFAGFER-IOP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_FERIEPENGER_IKKE_OPPLYSNINGSPLIKTIG
+                                "SPSND-OP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE
                                 else -> error("Forventet ikke klassekode: $kode")
                             },
                             opphørerFom = linje.path("datoStatusFom").asOptionalLocalDate()

@@ -15,7 +15,6 @@ import no.nav.helse.spenn.simulering.api.client.SimuleringStatus
 import no.nav.helse.spenn.simulering.api.client.SimuleringsPeriode
 import no.nav.helse.spenn.simulering.api.client.SimuleringV2Service
 import java.time.LocalDate
-import kotlin.checkNotNull
 
 class Simuleringtjeneste(
     val simuleringV2Service: SimuleringV2Service
@@ -98,6 +97,7 @@ class Simuleringtjeneste(
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_FERIEPENGER_IKKE_OPPLYSNINGSPLIKTIG -> "SPREFAGFER-IOP"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_ORDINÆR -> "SPATORD"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_FERIEPENGER -> "SPATFER"
+                SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE -> "SPSND-OP"
             },
             kodeStatusLinje = linje.opphørerFom?.let { KodeStatusLinje.OPPH },
             datoStatusFom = linje.opphørerFom,
@@ -178,7 +178,8 @@ data class SimuleringRequest(
                 REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
                 REFUSJON_FERIEPENGER_IKKE_OPPLYSNINGSPLIKTIG,
                 SYKEPENGER_ARBEIDSTAKER_ORDINÆR,
-                SYKEPENGER_ARBEIDSTAKER_FERIEPENGER
+                SYKEPENGER_ARBEIDSTAKER_FERIEPENGER,
+                SELVSTENDIG_NÆRINGSDRIVENDE
             }
         }
     }
