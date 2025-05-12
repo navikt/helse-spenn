@@ -43,7 +43,7 @@ spec:
       - type: POSTGRES_17
         diskAutoresize: true
         pointInTimeRecovery: true
-        tier: db-custom-4-16384
+        tier: db-custom-1-3840
         name: spenn
         databases:
           - name: spenn
