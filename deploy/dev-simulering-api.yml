@@ -21,6 +21,9 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: elastic
   prometheus:
     enabled: true
     path: /metrics
@@ -61,4 +64,3 @@ spec:
       value: https://ws-proxy.dev-fss-pub.nais.io/cics/oppdrag/simulerFpServiceWSBinding
     - name: GANDALF_BASE_URL
       value: https://ws-proxy.dev-fss-pub.nais.io/gandalf
-

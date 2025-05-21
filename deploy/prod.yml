@@ -64,3 +64,7 @@ spec:
       value: tbd.rapid.v1
     - name: KAFKA_RESET_POLICY
       value: none
+  observability:
+    logging:
+      destinations:
+        - id: elastic

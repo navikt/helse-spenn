@@ -60,3 +60,7 @@ spec:
       value: QA.Q1_SPENN.OPPDRAG_SP_XML_KVITT
     - name: MQ_OPPDRAG_AUTHENTICATION
       value: "true"
+  observability:
+    logging:
+      destinations:
+        - id: elastic

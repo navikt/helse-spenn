@@ -37,9 +37,9 @@ spec:
   accessPolicy:
     outbound:
       external:
-      - host: mpls02.adeo.no
-        ports:
-          - port: 1414
+        - host: mpls02.adeo.no
+          ports:
+            - port: 1414
   secureLogs:
     enabled: true
   envFrom:
@@ -63,3 +63,7 @@ spec:
       value: QA.P231.OB04_OPPDRAG_XML
     - name: OPPDRAG_QUEUE_MOTTAK
       value: QA.P_SPENN.OPPDRAG_SP_XML_KVITT
+  observability:
+    logging:
+      destinations:
+        - id: elastic
