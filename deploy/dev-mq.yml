@@ -33,6 +33,9 @@ spec:
     pool: nav-dev
   accessPolicy:
     outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
       external:
         - host: b27apvl220.preprod.local
           ports:

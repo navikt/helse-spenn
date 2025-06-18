@@ -3,9 +3,12 @@ package no.nav.helse.spenn.avstemming.e2e
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.FailedMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.OutgoingMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.SentMessage
 import com.github.navikt.tbd_libs.test_support.CleanupStrategy
 import com.github.navikt.tbd_libs.test_support.DatabaseContainers
 import com.github.navikt.tbd_libs.test_support.TestDataSource
@@ -231,12 +234,17 @@ class E2ETest {
 
         override fun publish(message: String) {
             rapid.publish(message)
-            rapid.sendTestMessage(message)
         }
 
         override fun publish(key: String, message: String) {
             rapid.publish(key, message)
-            rapid.sendTestMessage(message)
+        }
+
+        override fun publish(messages: List<OutgoingMessage>): Pair<List<SentMessage>, List<FailedMessage>> {
+            messages.forEach {
+                rapid.sendTestMessage(it.body)
+            }
+            return rapid.publish(messages)
         }
 
         override fun rapidName() = rapid.rapidName()

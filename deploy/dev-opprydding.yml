@@ -43,6 +43,11 @@ spec:
     pool: nav-dev
   secureLogs:
     enabled: true
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-opprydding-dev-v1

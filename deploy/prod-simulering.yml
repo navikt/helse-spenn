@@ -46,6 +46,8 @@ spec:
   accessPolicy:
     outbound:
       rules:
+        - application: logging
+          namespace: nais-system
         - application: spenn-simulering-api
   env:
     - name: KAFKA_CONSUMER_GROUP_ID

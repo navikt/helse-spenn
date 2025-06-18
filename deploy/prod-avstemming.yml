@@ -53,6 +53,9 @@ spec:
     - secret: spenn
   accessPolicy:
     outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
       external:
         - host: mpls02.adeo.no
           ports:
