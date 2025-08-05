@@ -12,7 +12,7 @@ val kotliqueryVersion = "1.9.0"
 val cloudSqlVersion = "1.21.0"
 
 plugins {
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.2.0"
 }
 
 allprojects {
