@@ -8,7 +8,7 @@ on:
       - 'deploy/dev-opprydding.yml'
       - 'build.gradle.kts'
     branches:
-      - master
+      - main
 
 jobs:
   build:

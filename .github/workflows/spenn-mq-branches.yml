@@ -6,7 +6,7 @@ on:
       - 'spenn-mq/**'
       - '.github/workflows/spenn-mq-branches.yml'
     branches-ignore:
-      - master
+      - main
 
 jobs:
   build:

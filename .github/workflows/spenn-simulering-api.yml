@@ -9,7 +9,7 @@ on:
       - 'deploy/prod-simulering-api.yml'
       - 'build.gradle.kts'
     branches:
-      - master
+      - main
 
 jobs:
   build:

@@ -10,7 +10,7 @@ on:
       - 'build.gradle.kts'
       - 'Dockerfile'
     branches:
-      - master
+      - main
 
 jobs:
   build:
