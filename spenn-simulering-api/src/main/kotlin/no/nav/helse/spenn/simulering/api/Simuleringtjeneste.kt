@@ -98,6 +98,7 @@ class Simuleringtjeneste(
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_ORDINÆR -> "SPATORD"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_FERIEPENGER -> "SPATFER"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE -> "SPSND-OP"
+                SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.BARNEPASSER -> "SPSNDDM-OP"
             },
             kodeStatusLinje = linje.opphørerFom?.let { KodeStatusLinje.OPPH },
             datoStatusFom = linje.opphørerFom,
@@ -179,7 +180,8 @@ data class SimuleringRequest(
                 REFUSJON_FERIEPENGER_IKKE_OPPLYSNINGSPLIKTIG,
                 SYKEPENGER_ARBEIDSTAKER_ORDINÆR,
                 SYKEPENGER_ARBEIDSTAKER_FERIEPENGER,
-                SELVSTENDIG_NÆRINGSDRIVENDE
+                SELVSTENDIG_NÆRINGSDRIVENDE,
+                BARNEPASSER
             }
         }
     }
