@@ -12,7 +12,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
@@ -41,6 +40,7 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
                     require("tom", JsonNode::asLocalDate)
                     require("endringskode") { value -> EndringskodeDto.valueOf(value.asText()) }
                     require("satstype") { value -> SatstypeDto.valueOf(value.asText()) }
+                    interestedIn("datoKlassifikFom", JsonNode::asLocalDate)
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
                     interestedIn("statuskode") { value -> StatuskodeLinjeDto.valueOf(value.asText()) }
                     interestedIn("grad")
@@ -82,6 +82,7 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
                         delytelseId = linje["delytelseId"].asInt(),
                         endringskode = linje["endringskode"].asText(),
                         klassekode = linje["klassekode"].asText(),
+                        klassekodeFom = linje.path("datoKlassifikFom").asOptionalLocalDate(),
                         fom = linje["fom"].asLocalDate(),
                         tom = linje["tom"].asLocalDate(),
                         sats = linje["sats"].asInt(),
@@ -89,7 +90,7 @@ internal class Utbetalinger(rapidsConnection: RapidsConnection, private val tilO
                         grad = linje["grad"]?.takeUnless(JsonNode::isMissingOrNull)?.asInt(),
                         refDelytelseId = linje.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt(),
                         refFagsystemId = linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText()?.trim(),
-                        datoStatusFom = linje.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asLocalDate(),
+                        datoStatusFom = linje.path("datoStatusFom").asOptionalLocalDate(),
                         statuskode = linje.path("statuskode").takeUnless(JsonNode::isMissingOrNull)?.asText()
                     ).also { linje(it) }
                 }

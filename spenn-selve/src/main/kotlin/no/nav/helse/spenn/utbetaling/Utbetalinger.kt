@@ -53,6 +53,7 @@ internal class Utbetalinger(
                     require("tom", JsonNode::asLocalDate)
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                     requireValue("satstype", "DAG")
+                    interestedIn("datoKlassifikFom", JsonNode::asLocalDate)
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
                     interestedIn("statuskode") { value -> check(value.asText() in setOf("OPPH")) }
                 }
@@ -226,6 +227,7 @@ private fun lagOppdragsmelding(
                 // grad settes ikke på feriepengeutbetalinger
                 compute("grad") { _, _ -> linje.path("grad").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
                 compute("statuskode") { _, _ -> linje.path("statuskode").takeUnless(JsonNode::isMissingOrNull)?.asText() }
+                compute("datoKlassifikFom") { _, _ -> linje.path("datoKlassifikFom").takeUnless(JsonNode::isMissingOrNull)?.asText() }
                 compute("datoStatusFom") { _, _ -> linje.path("datoStatusFom").takeUnless(JsonNode::isMissingOrNull)?.asText() }
                 compute("refDelytelseId") { _, _ -> linje.path("refDelytelseId").takeUnless(JsonNode::isMissingOrNull)?.asInt() }
                 compute("refFagsystemId") { _, _ -> linje.path("refFagsystemId").takeUnless(JsonNode::isMissingOrNull)?.asText() }

@@ -64,6 +64,7 @@ internal sealed class Utbetalingslinjer(
         internal val delytelseId: Int,
         internal val endringskode: String,
         internal val klassekode: String,
+        internal val klassekodeFom: LocalDate?,
         internal val fom: LocalDate,
         internal val tom: LocalDate,
         internal val sats: Int,

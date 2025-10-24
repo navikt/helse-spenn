@@ -1,12 +1,10 @@
 package no.nav.helse.spenn.oppdrag
 
-import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -55,6 +53,7 @@ internal class OppdragXmlTest {
                         refFagsystemId = null,
                         kodeEndringLinje = EndringskodeDto.NY,
                         kodeKlassifik = "SYKPENG",
+                        datoKlassifikFom = LocalDate.EPOCH,
                         datoVedtakFom = LocalDate.EPOCH,
                         datoVedtakTom = LocalDate.now(),
                         kodeStatusLinje = StatuskodeLinjeDto.REAK,

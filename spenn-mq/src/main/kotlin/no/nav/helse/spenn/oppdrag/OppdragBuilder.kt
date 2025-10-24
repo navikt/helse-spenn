@@ -73,6 +73,7 @@ internal class OppdragBuilder(
         refFagsystemId = utbetalingslinje.refFagsystemId?.trim(),
         kodeEndringLinje = EndringskodeDto.valueOf(utbetalingslinje.endringskode),
         kodeKlassifik = utbetalingslinje.klassekode,
+        datoKlassifikFom = utbetalingslinje.klassekodeFom,
         datoVedtakFom = utbetalingslinje.fom,
         datoVedtakTom = utbetalingslinje.tom,
         kodeStatusLinje = utbetalingslinje.statuskode?.let { StatuskodeLinjeDto.valueOf(it) },
@@ -224,6 +225,8 @@ data class OppdragsLinje150Dto(
     val kodeEndringLinje: EndringskodeDto,
     @JsonProperty(value = "kodeKlassifik")
     val kodeKlassifik: String,
+    @JsonProperty(value = "datoKlassifikFom")
+    val datoKlassifikFom: LocalDate?,
     @JsonProperty(value = "datoVedtakFom")
     val datoVedtakFom: LocalDate,
     @JsonProperty(value = "datoVedtakTom")
