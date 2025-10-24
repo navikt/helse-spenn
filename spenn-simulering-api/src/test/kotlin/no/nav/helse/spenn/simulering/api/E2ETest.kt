@@ -66,6 +66,7 @@ class E2ETest {
                             delytelseId = 2,
                             refDelytelseId = null,
                             refFagsystemId = null,
+                            klassekodeFom = LocalDate.of(2018, 1, 1),
                             klassekode = Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
                             opphørerFom = null
                         )
@@ -109,6 +110,7 @@ class E2ETest {
                             delytelseId = 1,
                             refDelytelseId = null,
                             refFagsystemId = null,
+                            klassekodeFom = LocalDate.of(2018, 1, 1),
                             klassekode = Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
                             opphørerFom = null
                         )

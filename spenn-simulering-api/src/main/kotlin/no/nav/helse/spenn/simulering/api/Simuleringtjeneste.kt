@@ -92,6 +92,7 @@ class Simuleringtjeneste(
             refDelytelseId = linje.refDelytelseId?.toString(),
             refFagsystemId = linje.refFagsystemId?.toString(),
             kodeEndringLinje = endringskode(linje.endringskode),
+            datoKlassifikFom = linje.klassekodeFom ?: linje.fom,
             kodeKlassifik = when (linje.klassekode) {
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG -> "SPREFAG-IOP"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_FERIEPENGER_IKKE_OPPLYSNINGSPLIKTIG -> "SPREFAGFER-IOP"
@@ -170,6 +171,7 @@ data class SimuleringRequest(
             val refFagsystemId: String?,
 
             val klassekode: Klassekode,
+            val klassekodeFom: LocalDate?,
             val opphørerFom: LocalDate?
         ) {
             enum class Satstype {

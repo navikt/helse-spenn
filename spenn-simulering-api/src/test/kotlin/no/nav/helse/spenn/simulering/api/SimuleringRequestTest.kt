@@ -28,6 +28,7 @@ class SimuleringRequestTest {
                         delytelseId = 1,
                         refDelytelseId = null,
                         refFagsystemId = null,
+                        klassekodeFom = LocalDate.of(2018, 1, 10),
                         klassekode = Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
                         opphørerFom = LocalDate.of(2018, 1, 10)
                     ),
@@ -41,6 +42,7 @@ class SimuleringRequestTest {
                         delytelseId = 2,
                         refDelytelseId = null,
                         refFagsystemId = null,
+                        klassekodeFom = LocalDate.of(2018, 1, 1),
                         klassekode = Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
                         opphørerFom = null
                     )

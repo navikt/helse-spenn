@@ -23,6 +23,7 @@ data class Oppdragslinje(
     val refFagsystemId: String?,
     val kodeEndringLinje: String,
     val kodeKlassifik: String,
+    val datoKlassifikFom: LocalDate,
     val kodeStatusLinje: KodeStatusLinje?,
     val datoStatusFom: LocalDate?,
     val datoVedtakFom: LocalDate,

@@ -114,6 +114,7 @@ class SimuleringtjenesteTest {
                         refDelytelseId = null,
                         refFagsystemId = null,
                         klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                        klassekodeFom = LocalDate.of(2018, 1, 1),
                         opphørerFom = null
                     ),
                     SimuleringRequest.Oppdrag.Oppdragslinje(
@@ -127,6 +128,7 @@ class SimuleringtjenesteTest {
                         refDelytelseId = null,
                         refFagsystemId = null,
                         klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                        klassekodeFom = LocalDate.of(2018, 1, 15),
                         opphørerFom = null
                     )
                 )
