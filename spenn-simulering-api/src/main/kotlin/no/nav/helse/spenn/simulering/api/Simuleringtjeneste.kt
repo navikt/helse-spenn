@@ -99,6 +99,8 @@ class Simuleringtjeneste(
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_ORDINÆR -> "SPATORD"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SYKEPENGER_ARBEIDSTAKER_FERIEPENGER -> "SPATFER"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE -> "SPSND-OP"
+                SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE_FISKER -> "SPSNDFISK"
+                SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE_JORDBRUK -> "SPSNDJORD"
                 SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.BARNEPASSER -> "SPSNDDM-OP"
             },
             kodeStatusLinje = linje.opphørerFom?.let { KodeStatusLinje.OPPH },
@@ -183,6 +185,8 @@ data class SimuleringRequest(
                 SYKEPENGER_ARBEIDSTAKER_ORDINÆR,
                 SYKEPENGER_ARBEIDSTAKER_FERIEPENGER,
                 SELVSTENDIG_NÆRINGSDRIVENDE,
+                SELVSTENDIG_NÆRINGSDRIVENDE_FISKER,
+                SELVSTENDIG_NÆRINGSDRIVENDE_JORDBRUK,
                 BARNEPASSER
             }
         }

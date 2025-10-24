@@ -46,6 +46,7 @@ internal class Simuleringer(
                     require("tom", JsonNode::asLocalDate)
                     requireAny("endringskode", listOf("NY", "UEND", "ENDR"))
                     requireAny("satstype", listOf("DAG", "ENG"))
+                    interestedIn("datoKlassifikFom", JsonNode::asLocalDate)
                     interestedIn("datoStatusFom", JsonNode::asLocalDate)
                     interestedIn("grad")
                 }
@@ -106,9 +107,12 @@ internal class Simuleringer(
                                 "SPREFAG-IOP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG
                                 "SPREFAGFER-IOP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_FERIEPENGER_IKKE_OPPLYSNINGSPLIKTIG
                                 "SPSND-OP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE
+                                "SPSNDFISK" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE_FISKER
+                                "SPSNDJORD" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.SELVSTENDIG_NÆRINGSDRIVENDE_JORDBRUK
                                 "SPSNDDM-OP" -> SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.BARNEPASSER
                                 else -> error("Forventet ikke klassekode: $kode")
                             },
+                            klassekodeFom = linje.path("datoKlassifikFom").asOptionalLocalDate(),
                             opphørerFom = linje.path("datoStatusFom").asOptionalLocalDate()
                         )
                     }
