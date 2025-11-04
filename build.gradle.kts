@@ -5,14 +5,14 @@ val mockkVersion = "1.13.17"
 val jacksonVersion = "2.18.3"
 val flywayVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"
-val tbdLibsVersion = "2025.10.24-08.34-b168ee84"
-val rapidsAndRiversVersion = "2025092210081758528498.1d4b108f2c61"
+val tbdLibsVersion = "2025.11.04-10.12-3a167132"
+val rapidsAndRiversVersion = "2025110410191762247980.5e0592e08597"
 val postgresqlVersion = "42.7.7"
 val kotliqueryVersion = "1.9.0"
 val cloudSqlVersion = "1.21.0"
 
 plugins {
-    kotlin("jvm") version "2.2.10"
+    kotlin("jvm") version "2.2.21"
 }
 
 allprojects {
