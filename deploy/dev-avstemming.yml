@@ -52,8 +52,6 @@ spec:
         - host: b27apvl220.preprod.local
           ports:
             - port: 1413
-  secureLogs:
-    enabled: true
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-avstemming-v1

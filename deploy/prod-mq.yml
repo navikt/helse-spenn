@@ -43,8 +43,6 @@ spec:
         - host: mpls02.adeo.no
           ports:
             - port: 1414
-  secureLogs:
-    enabled: true
   envFrom:
     - secret: spenn
   env:

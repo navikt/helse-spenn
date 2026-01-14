@@ -44,8 +44,6 @@ spec:
     requests:
       cpu: 50m
       memory: 64Mi
-  secureLogs:
-    enabled: true
   envFrom:
     - secret: spenn
   accessPolicy:

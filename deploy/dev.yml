@@ -48,8 +48,6 @@ spec:
             envVarPrefix: DATABASE
             users:
               - name: spenn-opprydding
-  secureLogs:
-    enabled: true
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-v1

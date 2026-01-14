@@ -40,8 +40,6 @@ spec:
         - host: b27apvl220.preprod.local
           ports:
             - port: 1413
-  secureLogs:
-    enabled: true
   envFrom:
     - secret: spenn
   env:

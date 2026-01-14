@@ -41,8 +41,6 @@ spec:
       memory: 64Mi
   kafka:
     pool: nav-prod
-  secureLogs:
-    enabled: true
   accessPolicy:
     outbound:
       rules:

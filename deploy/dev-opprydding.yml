@@ -41,8 +41,6 @@ spec:
     - secret: google-sql-spenn-spenn-spenn-opprydding-38bed636
   kafka:
     pool: nav-dev
-  secureLogs:
-    enabled: true
   accessPolicy:
     outbound:
       rules:

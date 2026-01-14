@@ -57,8 +57,6 @@ spec:
             value: "write,ddl,role"
           - name: pgaudit.log_parameter
             value: "on"
-  secureLogs:
-    enabled: true
   accessPolicy:
     outbound:
       rules:

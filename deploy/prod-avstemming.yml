@@ -62,8 +62,6 @@ spec:
         - host: mpls02.adeo.no
           ports:
             - port: 1414
-  secureLogs:
-    enabled: true
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-avstemming-v1
