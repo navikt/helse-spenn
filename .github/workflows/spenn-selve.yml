@@ -8,6 +8,7 @@ on:
       - 'deploy/dev.yml'
       - 'deploy/prod.yml'
       - 'build.gradle.kts'
+      - 'Dockerfile'
     branches:
       - main
 

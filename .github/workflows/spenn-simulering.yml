@@ -8,6 +8,7 @@ on:
       - 'deploy/dev-simulering.yml'
       - 'deploy/prod-simulering.yml'
       - 'build.gradle.kts'
+      - 'Dockerfile'
     branches:
       - main
 
