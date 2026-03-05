@@ -27,7 +27,7 @@ jobs:
       - name: test and build
         run: ./gradlew :spenn-opprydding-dev:test :spenn-opprydding-dev:build
         env:
-          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: build docker image
         uses: nais/docker-build-push@v0
         id: docker-build-push
