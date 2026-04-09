@@ -65,6 +65,9 @@ spec:
     - name: OPPDRAG_QUEUE_MOTTAK
       value: QA.P_SPENN.OPPDRAG_SP_XML_KVITT
   observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
     logging:
       destinations:
         - id: elastic

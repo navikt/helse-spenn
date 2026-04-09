@@ -62,6 +62,9 @@ spec:
     - name: MQ_OPPDRAG_AUTHENTICATION
       value: "true"
   observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
     logging:
       destinations:
         - id: elastic
