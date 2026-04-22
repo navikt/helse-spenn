@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 val junitJupiterVersion = "5.12.1"
 val mockkVersion = "1.13.17"
-val jacksonVersion = "2.18.3"
+val jacksonVersion = "2.21.2"
 val flywayVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"
 val tbdLibsVersion = "2026.01.22-09.16-1d3f6039"
