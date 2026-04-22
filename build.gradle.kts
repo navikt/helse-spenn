@@ -2,17 +2,17 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 val junitJupiterVersion = "5.12.1"
 val mockkVersion = "1.13.17"
-val jacksonVersion = "2.18.3"
+val jacksonVersion = "2.21.2"
 val flywayVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"
-val tbdLibsVersion = "2026.01.22-09.16-1d3f6039"
+val tbdLibsVersion = "20260416.1520"
 val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
 val postgresqlVersion = "42.7.7"
 val kotliqueryVersion = "1.9.0"
 val cloudSqlVersion = "1.21.0"
 
 plugins {
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.3.20"
 }
 
 allprojects {

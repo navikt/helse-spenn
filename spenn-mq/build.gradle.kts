@@ -18,7 +18,7 @@ dependencies {
 
     testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.apache.activemq:apache-artemis:2.37.0") {
+    testImplementation("org.apache.activemq:apache-artemis:2.53.0") {
         /* this is a shaded jar that creates conflicts on classpath, see:
             https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
         */
