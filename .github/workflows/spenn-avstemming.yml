@@ -11,6 +11,10 @@ on:
       - 'build.gradle.kts'
     branches:
       - main
+  schedule:
+    - cron: '15 9 * * 3'
+      timezone: 'Europe/Oslo'
+  workflow_dispatch:
 
 jobs:
   build:

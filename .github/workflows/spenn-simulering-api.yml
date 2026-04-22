@@ -11,6 +11,10 @@ on:
       - 'Dockerfile'
     branches:
       - main
+  schedule:
+    - cron: '19 9 * * 3'
+      timezone: 'Europe/Oslo'
+  workflow_dispatch:
 
 jobs:
   build:
