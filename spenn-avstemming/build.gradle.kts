@@ -22,7 +22,7 @@ dependencies {
         exclude("com.fasterxml.jackson.core", "jackson-databind")
     }
 
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.5")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.5")
 
     testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
