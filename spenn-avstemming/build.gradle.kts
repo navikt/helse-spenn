@@ -16,7 +16,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
-    implementation("com.ibm.mq:com.ibm.mq.allclient:9.4.0.0") {
+    implementation("com.ibm.mq:com.ibm.mq.allclient:9.4.5.0") {
         exclude("com.fasterxml.jackson.core", "jackson-core")
         exclude("com.fasterxml.jackson.core", "jackson-annotations")
         exclude("com.fasterxml.jackson.core", "jackson-databind")
