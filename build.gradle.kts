@@ -7,7 +7,7 @@ val flywayVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"
 val tbdLibsVersion = "20260416.1520"
 val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
-val postgresqlVersion = "42.7.7"
+val postgresqlVersion = "42.7.10"
 val kotliqueryVersion = "1.9.1"
 val cloudSqlVersion = "1.21.0"
 
