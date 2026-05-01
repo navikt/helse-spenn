@@ -23,7 +23,7 @@ dependencies {
     }
 
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.5")
-    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.5")
+    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.7")
 
     testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
