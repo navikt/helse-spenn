@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 val junitJupiterVersion = "5.12.1"
 val mockkVersion = "1.14.9"
 val jacksonVersion = "2.21.2"
-val flywayVersion = "11.5.0"
+val flywayVersion = "12.4.0"
 val hikariCPVersion = "6.3.0"
 val tbdLibsVersion = "20260429.1019"
 val rapidsAndRiversVersion = "2026042008201776666058"
