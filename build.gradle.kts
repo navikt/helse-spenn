@@ -9,7 +9,7 @@ val tbdLibsVersion = "20260429.1019"
 val rapidsAndRiversVersion = "2026042008201776666058"
 val postgresqlVersion = "42.7.10"
 val kotliqueryVersion = "1.9.1"
-val cloudSqlVersion = "1.21.0"
+val cloudSqlVersion = "1.28.3"
 
 plugins {
     kotlin("jvm") version "2.3.20"
