@@ -200,11 +200,10 @@ internal class Simuleringer(
     }
 
     private class SimuleringErrorException(val error: Result.Error): RuntimeException()
-    private val Simuleringsutsettelser = PredefinerteUtsettelser(ofMillis(500), ofMillis(1500), ofMillis(3000))
     private fun simulerMedRetry(simuleringRequest: SimuleringRequest): Result<SimuleringResult> {
         var forsøk = 0
         return try {
-            retryBlocking(Simuleringsutsettelser) {
+            retryBlocking(PredefinerteUtsettelser(ofMillis(500), ofMillis(1500), ofMillis(3000))) {
                 val callId = UUID.randomUUID().toString()
                 "Requester simulering (forsøk ${++forsøk}/4) med {}".let {
                     log.info(it, keyValue("callId", callId))
