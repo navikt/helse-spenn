@@ -7,6 +7,7 @@ dependencies {
     implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
     implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     implementation("com.github.navikt.tbd-libs:spenn-simulering-client:$tbdLibsVersion")
+    implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
 
     testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")

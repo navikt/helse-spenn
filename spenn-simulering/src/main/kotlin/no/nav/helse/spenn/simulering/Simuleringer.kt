@@ -11,13 +11,17 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.retry.PredefinerteUtsettelser
+import com.github.navikt.tbd_libs.retry.retryBlocking
 import com.github.navikt.tbd_libs.spenn.SimuleringClient
 import com.github.navikt.tbd_libs.spenn.SimuleringClient.SimuleringResult
 import com.github.navikt.tbd_libs.spenn.SimuleringRequest
 import io.micrometer.core.instrument.MeterRegistry
+import java.time.Duration.ofMillis
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.util.UUID
+import net.logstash.logback.argument.StructuredArguments.keyValue
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,
@@ -59,18 +63,12 @@ internal class Simuleringer(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val callId = UUID.randomUUID().toString()
-        withMDC(
-            mapOf(
-                "behovId" to packet["@id"].asText(),
-                "callId" to callId
-            )
-        ) {
-            håndter(packet, callId, context)
+        withMDC(mapOf("behovId" to packet["@id"].asText())) {
+            håndter(packet, context)
         }
     }
 
-    private fun håndter(packet: JsonMessage, callId: String, context: MessageContext) {
+    private fun håndter(packet: JsonMessage, context: MessageContext) {
         log.info("løser simuleringsbehov id=${packet["@id"].asText()}")
         if (packet["Simulering.linjer"].isEmpty) return log.info("ingen utbetalingslinjer id=${packet["@id"].asText()}; ignorerer behov")
 
@@ -121,7 +119,7 @@ internal class Simuleringer(
                 saksbehandler = packet["Simulering.saksbehandler"].asText()
             )
 
-            when (val result = simuleringClient.hentSimulering(simulerRequest, callId)) {
+            when (val result = simulerMedRetry(simulerRequest)) {
                 is Result.Error -> {
                     sikkerLogg.info("Feil ved simulering: {}", result.error, result.cause)
                     packet["@løsning"] = mapOf(
@@ -198,6 +196,31 @@ internal class Simuleringer(
             block()
         } finally {
             MDC.setContextMap(contextMap)
+        }
+    }
+
+    private class SimuleringErrorException(val error: Result.Error): RuntimeException()
+    private val Simuleringsutsettelser = PredefinerteUtsettelser(ofMillis(500), ofMillis(1500), ofMillis(3000))
+    private fun simulerMedRetry(simuleringRequest: SimuleringRequest): Result<SimuleringResult> {
+        var forsøk = 0
+        return try {
+            retryBlocking(Simuleringsutsettelser) {
+                val callId = UUID.randomUUID().toString()
+                "Requester simulering (forsøk ${++forsøk}/4) med {}".let {
+                    log.info(it, keyValue("callId", callId))
+                    sikkerLogg.info(it, keyValue("callId", callId))
+                }
+                when (val result = simuleringClient.hentSimulering(simuleringRequest, callId)) {
+                    is Result.Ok -> result
+                    is Result.Error -> throw SimuleringErrorException(result)
+                }
+            }
+        } catch (ex: SimuleringErrorException) {
+            "Gir opp simulering etter $forsøk feilede forsøk.".let {
+                log.warn(it)
+                sikkerLogg.warn(it)
+            }
+            ex.error
         }
     }
 }
