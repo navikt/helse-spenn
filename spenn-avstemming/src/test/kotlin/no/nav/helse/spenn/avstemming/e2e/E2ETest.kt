@@ -91,6 +91,25 @@ class E2ETest {
     }
 
     @Test
+    fun `håndterer å motta samme melding to ganger`() {
+        val avstemmingsnøkkel = 1024L
+        val utbetalingId = UUID.randomUUID()
+        val fagsystemId = "asdfg"
+        val fagområde = "SPREF"
+        val fødselsnummer = "fnr"
+        val mottaker = "mottaker"
+        val totalbeløp = 5000
+        val opprettet = LocalDateTime.now()
+
+        val oppdragutbetaling = oppdragutbetaling(avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)
+        testRapid.sendTestMessage(oppdragutbetaling)
+        testRapid.sendTestMessage(oppdragutbetaling)
+        assertEquals(1, database.antallOppdrag())
+        assertNull(database.status(avstemmingsnøkkel))
+    }
+
+
+    @Test
     fun `avstemmer oppdrag`() {
         val avstemmingsnøkkel = 1024L
         val avstemmingsnøkkel2 = 1023L

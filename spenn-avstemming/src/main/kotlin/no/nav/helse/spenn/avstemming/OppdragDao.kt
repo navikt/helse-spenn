@@ -33,7 +33,7 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
     ) = sessionOf(dataSource()).use { session ->
         @Language("PostgreSQL")
         val query =
-            "INSERT INTO oppdrag (avstemmingsnokkel, utbetaling_id, fagsystem_id, fagomrade, fnr, mottaker, totalbelop, opprettet) VALUES(?, ?, ?, CAST(? AS fagomrade), ?, ?, ?, ?);"
+            "INSERT INTO oppdrag (avstemmingsnokkel, utbetaling_id, fagsystem_id, fagomrade, fnr, mottaker, totalbelop, opprettet) VALUES(?, ?, ?, CAST(? AS fagomrade), ?, ?, ?, ?) ON CONFLICT DO NOTHING;"
         session.run(queryOf(query, avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet).asUpdate) == 1
     }
 
