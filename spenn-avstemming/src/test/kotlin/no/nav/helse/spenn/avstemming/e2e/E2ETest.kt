@@ -29,6 +29,7 @@ import org.junit.jupiter.api.fail
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import org.junit.jupiter.api.assertThrows
 
 val databaseContainer = DatabaseContainers.container("spenn-avstemming", CleanupStrategy.tables("avstemming,oppdrag"))
 
@@ -104,6 +105,27 @@ class E2ETest {
         val oppdragutbetaling = oppdragutbetaling(avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)
         testRapid.sendTestMessage(oppdragutbetaling)
         testRapid.sendTestMessage(oppdragutbetaling)
+        assertEquals(1, database.antallOppdrag())
+        assertNull(database.status(avstemmingsnøkkel))
+    }
+
+    @Test
+    fun `samme avstemmingsnøkkel, forskjellig utbetalingId`() {
+        val avstemmingsnøkkel = 1024L
+        val utbetalingId1 = UUID.randomUUID()
+        val utbetalingId2 = UUID.randomUUID()
+        val fagsystemId = "asdfg"
+        val fagområde = "SPREF"
+        val fødselsnummer = "fnr"
+        val mottaker = "mottaker"
+        val totalbeløp = 5000
+        val opprettet = LocalDateTime.now()
+
+        val oppdragutbetaling1 = oppdragutbetaling(avstemmingsnøkkel, utbetalingId1, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)
+        val oppdragutbetaling2 = oppdragutbetaling(avstemmingsnøkkel, utbetalingId2, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)
+
+        testRapid.sendTestMessage(oppdragutbetaling1)
+        assertThrows<IllegalStateException> { testRapid.sendTestMessage(oppdragutbetaling2) }
         assertEquals(1, database.antallOppdrag())
         assertNull(database.status(avstemmingsnøkkel))
     }

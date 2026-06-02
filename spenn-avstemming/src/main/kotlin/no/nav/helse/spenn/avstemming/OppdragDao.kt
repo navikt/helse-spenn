@@ -1,10 +1,12 @@
 package no.nav.helse.spenn.avstemming
 
-import kotliquery.*
-import org.intellij.lang.annotations.Language
 import java.time.LocalDateTime
 import java.util.*
 import javax.sql.DataSource
+import kotliquery.Row
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import org.intellij.lang.annotations.Language
 
 internal class OppdragDao(private val dataSource: () -> DataSource) {
     fun hentOppdragForAvstemming(avstemmingsnøkkelTom: Long) =
@@ -32,9 +34,19 @@ internal class OppdragDao(private val dataSource: () -> DataSource) {
         opprettet: LocalDateTime
     ) = sessionOf(dataSource()).use { session ->
         @Language("PostgreSQL")
-        val query =
-            "INSERT INTO oppdrag (avstemmingsnokkel, utbetaling_id, fagsystem_id, fagomrade, fnr, mottaker, totalbelop, opprettet) VALUES(?, ?, ?, CAST(? AS fagomrade), ?, ?, ?, ?) ON CONFLICT DO NOTHING;"
-        session.run(queryOf(query, avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet).asUpdate) == 1
+        val query = """
+            WITH ins AS (
+                INSERT INTO oppdrag (avstemmingsnokkel, utbetaling_id, fagsystem_id, fagomrade, fnr, mottaker, totalbelop, opprettet)
+                VALUES(?, ?, ?, CAST(? AS fagomrade), ?, ?, ?, ?)
+                ON CONFLICT DO NOTHING
+                RETURNING utbetaling_id
+            )
+            select utbetaling_id from ins
+            union all
+            SELECT utbetaling_id FROM oppdrag WHERE avstemmingsnokkel = ?;
+        """.trimIndent()
+        val utbetalingIdFraDb = session.run(queryOf(query, avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet, avstemmingsnøkkel).map { it.uuid("utbetaling_id") }.asSingle)
+        check(utbetalingIdFraDb == utbetalingId) { "avstemmingsnøkkel=$avstemmingsnøkkel finnes allerede for utbetalingId=$utbetalingIdFraDb" }
     }
 
     fun oppdragOverført(avstemmingsnøkkel: Long) = sessionOf(dataSource()).use { session ->

@@ -55,10 +55,7 @@ internal class Utbetalinger(
             .åpent("utbetalingId", "$utbetalingId")
             .åpent("fagsystemId", fagsystemId)
             .privat("fødselsnummer", fødselsnummer)
-        if (oppdragDao.nyttOppdrag(avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)) {
-            pakkelogg.info("opprettet oppdrag med avstemmingsnøkkel $avstemmingsnøkkel")
-        } else {
-            pakkelogg.error("kan ikke opprette oppdrag, finnes avstemmingsnøkkel $avstemmingsnøkkel fra før?")
-        }
+        oppdragDao.nyttOppdrag(avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)
+        pakkelogg.info("oppdrag er opprettet med avstemmingsnøkkel $avstemmingsnøkkel")
     }
 }
