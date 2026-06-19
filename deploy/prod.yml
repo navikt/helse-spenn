@@ -48,8 +48,6 @@ spec:
         databases:
           - name: spenn
             envVarPrefix: DATABASE
-            users:
-              - name: spenn-opprydding
         flags:
           - name: cloudsql.enable_pgaudit
             value: "true"
