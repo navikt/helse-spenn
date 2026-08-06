@@ -1,57 +1,30 @@
-val mainClass = "no.nav.helse.spenn.avstemming.ApplicationKt"
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
 
-val rapidsAndRiversVersion: String by project
-val flywayVersion: String by project
-val hikariCPVersion: String by project
-val postgresqlVersion: String by project
-val kotliqueryVersion: String by project
-val mockkVersion: String by project
-val tbdLibsVersion: String by project
+sasDeployable {
+    mainClass = "no.nav.helse.spenn.avstemming.ApplicationKt"
+    imageName = "helse-spenn-avstemming"
+}
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
+    api(libs.flyway.database.postgresql)
 
-    api("org.flywaydb:flyway-database-postgresql:$flywayVersion")
-    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
-    implementation("org.postgresql:postgresql:$postgresqlVersion")
-    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
+    implementation(libs.rapids.and.rivers)
+    implementation(libs.hikaricp)
+    implementation(libs.postgresql)
+    implementation(libs.kotliquery)
 
-    implementation("com.ibm.mq:com.ibm.mq.allclient:9.4.5.1") {
+    implementation(libs.ibm.mq.allclient) {
         exclude("com.fasterxml.jackson.core", "jackson-core")
         exclude("com.fasterxml.jackson.core", "jackson-annotations")
         exclude("com.fasterxml.jackson.core", "jackson-databind")
     }
 
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.5")
-    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.7")
+    implementation(libs.jakarta.xml.bind.api)
+    implementation(libs.jaxb.runtime)
 
-    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
-    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
-}
-
-tasks {
-    named<Jar>("jar") {
-        archiveFileName.set("app.jar")
-
-        manifest {
-            attributes["Main-Class"] = mainClass
-            attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") {
-                it.name
-            }
-        }
-
-        doLast {
-            configurations.runtimeClasspath.get().forEach {
-                val file = File("${layout.buildDirectory.get()}/libs/${it.name}")
-                if (!file.exists()) it.copyTo(file)
-            }
-        }
-    }
-}
-
-configure<SourceSetContainer> {
-    named("main") {
-        java.srcDir("src/main/java")
-    }
+    testImplementation(libs.tbd.libs.rapids.and.rivers.test)
+    testImplementation(libs.tbd.libs.postgres.testdatabaser)
+    testImplementation(libs.mockk)
 }

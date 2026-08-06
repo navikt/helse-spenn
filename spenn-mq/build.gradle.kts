@@ -1,58 +1,32 @@
-val mainClass = "no.nav.helse.spenn.oppdrag.ApplicationKt"
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
 
-val rapidsAndRiversVersion: String by project
-val tbdLibsVersion: String by project
-val jacksonVersion: String by project
-val mockkVersion: String by project
-
+sasDeployable {
+    mainClass = "no.nav.helse.spenn.oppdrag.ApplicationKt"
+    imageName = "helse-spenn-mq"
+}
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
+    api(libs.jackson.dataformat.xml)
 
-    implementation("com.ibm.mq:com.ibm.mq.allclient:9.4.5.1") {
+    implementation(libs.rapids.and.rivers)
+
+    implementation(libs.ibm.mq.allclient) {
         exclude("com.fasterxml.jackson.core", "jackson-core")
         exclude("com.fasterxml.jackson.core", "jackson-annotations")
         exclude("com.fasterxml.jackson.core", "jackson-databind")
     }
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
-    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.apache.activemq:apache-artemis:2.53.0") {
+    testImplementation(libs.tbd.libs.rapids.and.rivers.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.apache.artemis) {
         /* this is a shaded jar that creates conflicts on classpath, see:
             https://github.com/apache/activemq-artemis/blob/181743f3023443d9ea551164b9bbc5d366a3e38f/docs/user-manual/en/client-classpath.md
-        */
+         */
         exclude("org.apache.activemq", "artemis-jms-client-all")
         exclude("javax.xml.bind", "jaxb-api")
         exclude("com.sun.xml.bind", "jaxb-impl")
         exclude("com.sun.xml.bind", "jaxb-jxc")
-    }
-}
-
-tasks {
-    named<Jar>("jar") {
-        archiveFileName.set("app.jar")
-
-        manifest {
-            attributes["Main-Class"] = mainClass
-            attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") {
-                it.name
-            }
-        }
-
-        doLast {
-            configurations.runtimeClasspath.get().forEach {
-                val file = File("${layout.buildDirectory.get()}/libs/${it.name}")
-                if (!file.exists()) it.copyTo(file)
-            }
-        }
-    }
-}
-
-configure<SourceSetContainer> {
-    named("main") {
-        java.srcDir("src/main/java")
-        java.srcDir("${layout.buildDirectory.get()}/generated-sources/xsd2java")
-        java.srcDir("${layout.buildDirectory.get()}/generated-sources/wsdl2java")
     }
 }

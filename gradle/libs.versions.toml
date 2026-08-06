@@ -1,0 +1,47 @@
+[versions]
+flyway = "11.5.0"
+ibmMq = "9.4.5.1"
+jaxb = "4.0.7"
+sasGradlePlugins = "20260804.1151"
+tbd-libs = "20260521.1202"
+
+[libraries]
+cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.28.3"
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+hikaricp = "com.zaxxer:HikariCP:6.3.0"
+ibm-mq-allclient = { module = "com.ibm.mq:com.ibm.mq.allclient", version.ref = "ibmMq" }
+jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+jakarta-xml-bind-api = "jakarta.xml.bind:jakarta.xml.bind-api:4.0.5"
+jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
+kotliquery = "com.github.seratch:kotliquery:1.9.1"
+ktor-server-auth = { module = "io.ktor:ktor-server-auth" }
+ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt" }
+ktor-server-double-receive = { module = "io.ktor:ktor-server-double-receive" }
+logback-classic = "ch.qos.logback:logback-classic:1.5.38"
+logback-logstash-encoder = "net.logstash.logback:logstash-logback-encoder:8.0"
+postgresql = "org.postgresql:postgresql:42.7.11"
+rapids-and-rivers = "com.github.navikt:rapids-and-rivers:2026042008201776666058"
+tbd-libs-azure = { module = "com.github.navikt.tbd-libs:azure-token-client-default", version.ref = "tbd-libs" }
+tbd-libs-minimal-soap-client = { module = "com.github.navikt.tbd-libs:minimal-soap-client", version.ref = "tbd-libs" }
+tbd-libs-naisful-app = { module = "com.github.navikt.tbd-libs:naisful-app", version.ref = "tbd-libs" }
+tbd-libs-retry = { module = "com.github.navikt.tbd-libs:retry", version.ref = "tbd-libs" }
+tbd-libs-spenn-simulering-client = { module = "com.github.navikt.tbd-libs:spenn-simulering-client", version.ref = "tbd-libs" }
+
+apache-artemis = "org.apache.activemq:apache-artemis:2.53.0"
+ktor-client-contentnegotiation = { module = "io.ktor:ktor-client-content-negotiation" }
+mockk = "io.mockk:mockk:1.14.9"
+tbd-libs-mock-http-client = { module = "com.github.navikt.tbd-libs:mock-http-client", version.ref = "tbd-libs" }
+tbd-libs-naisful-test-app = { module = "com.github.navikt.tbd-libs:naisful-test-app", version.ref = "tbd-libs" }
+tbd-libs-postgres-testdatabaser = { module = "com.github.navikt.tbd-libs:postgres-testdatabaser", version.ref = "tbd-libs" }
+tbd-libs-rapids-and-rivers-test = { module = "com.github.navikt.tbd-libs:rapids-and-rivers-test", version.ref = "tbd-libs" }
+
+[bundles]
+logback = [
+    "logback-classic",
+    "logback-logstash-encoder",
+]
+
+[plugins]
+sas-deployable = { id = "no.nav.helse.sas.sas-deployable", version.ref = "sasGradlePlugins" }
+sas-root = { id = "no.nav.helse.sas.sas-root", version.ref = "sasGradlePlugins" }

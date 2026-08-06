@@ -7,7 +7,6 @@ metadata:
   name: spenn-opprydding-dev
   namespace: tbd
 spec:
-  image: {{image}}
   port: 8080
   strategy:
     type: Recreate

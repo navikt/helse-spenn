@@ -7,8 +7,6 @@ updates:
       prefix: "⬆️ "
     schedule:
       interval: "daily"
-      time: "09:00"
-      timezone: "Europe/Oslo"
     cooldown:
       default-days: 7
 
@@ -19,9 +17,8 @@ updates:
       prefix: "⬆️ "
     schedule:
       interval: "daily"
-      time: "09:00"
-      timezone: "Europe/Oslo"
     cooldown:
       default-days: 7
       exclude:
+        - "no.nav.helse.sas.*"
         - "com.github.navikt.tbd-libs:*"

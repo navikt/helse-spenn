@@ -6,7 +6,6 @@ metadata:
   name: spenn-simulering-api
   namespace: tbd
 spec:
-  image: {{image}}
   port: 8080
   strategy:
     type: RollingUpdate

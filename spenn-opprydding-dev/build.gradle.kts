@@ -1,41 +1,20 @@
-val mainClass = "no.nav.helse.opprydding.AppKt"
-
-val rapidsAndRiversVersion: String by project
-val tbdLibsVersion: String by project
-val cloudSqlVersion: String by project
-val hikariCPVersion: String by project
-val postgresqlVersion: String by project
-val kotliqueryVersion: String by project
-
-dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
-
-    implementation("com.google.cloud.sql:postgres-socket-factory:$cloudSqlVersion")
-    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
-    implementation("org.postgresql:postgresql:$postgresqlVersion")
-    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
-
-    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
-    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
-    testImplementation(project(":spenn-selve"))
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
 }
 
-tasks {
-    named<Jar>("jar") {
-        archiveFileName.set("app.jar")
+sasDeployable {
+    mainClass = "no.nav.helse.opprydding.AppKt"
+    imageName = "helse-spenn-opprydding"
+}
 
-        manifest {
-            attributes["Main-Class"] = mainClass
-            attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") {
-                it.name
-            }
-        }
+dependencies {
+    implementation(libs.rapids.and.rivers)
+    implementation(libs.cloud.sql.postgres.socket.factory)
+    implementation(libs.hikaricp)
+    implementation(libs.postgresql)
+    implementation(libs.kotliquery)
 
-        doLast {
-            configurations.runtimeClasspath.get().forEach {
-                val file = File("${layout.buildDirectory.get()}/libs/${it.name}")
-                if (!file.exists()) it.copyTo(file)
-            }
-        }
-    }
+    testImplementation(project(":spenn-selve"))
+    testImplementation(libs.tbd.libs.rapids.and.rivers.test)
+    testImplementation(libs.tbd.libs.postgres.testdatabaser)
 }

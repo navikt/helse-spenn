@@ -1,0 +1,88 @@
+name: main - spenn-avstemming - Bygg, test og deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Generelt oppsett - alt unntatt dokumentasjon / urelatert oppsett
+      - '**'
+      - '!**.md'
+      - '!CODEOWNERS'
+      - '!LICENSE'
+      - '!docs/**'
+      - '!deploy/**'
+      - '!.github/workflows/standard-dependabot-auto-merge.yml'
+      - '!.github/workflows/standard-dependency-submission.yml'
+      # Ressursene som deployes av denne workflowen
+      - 'deploy/dev-avstemming.yml'
+      - 'deploy/prod-avstemming.yml'
+      # Spesielt for denne tjenesten ellers
+      - '!.github/workflows/standard-pr.yml'
+      - '!.github/workflows/main-spenn-mq.yml'
+      - '!.github/workflows/main-spenn-opprydding-dev.yml'
+      - '!.github/workflows/main-spenn-selve.yml'
+      - '!.github/workflows/main-spenn-simulering.yml'
+      - '!.github/workflows/main-spenn-simulering-api.yml'
+      - '!spenn-mq/**'
+      - '!spenn-opprydding-dev/**'
+      - '!spenn-selve/**'
+      - '!spenn-simulering/**'
+      - '!spenn-simulering-api/**'
+  schedule:
+    - cron: '0 4 * * 3'
+      timezone: 'Europe/Oslo'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read # for sarif
+  contents: read
+  security-events: write # push sarif to github security
+  id-token: write # for nais login
+
+jobs:
+  bygg-og-test:
+    name: Bygg og test
+    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-og-test-med-gradle.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    permissions:
+      contents: read
+
+  bygg-image:
+    name: Bygg image
+    needs: bygg-og-test
+    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-modul-image-med-jib.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    with:
+      modul: spenn-avstemming
+    permissions:
+      actions: read # for sarif upload on private repos
+      contents: read
+      id-token: write # for nais login
+      security-events: write # push sarif to github security
+
+  deploy-dev:
+    name: Deploy til dev
+    needs: bygg-image
+    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    with:
+      CLUSTER: dev-gcp
+      RESOURCE: deploy/dev-avstemming.yml
+      WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
+    permissions:
+      contents: read
+      id-token: write # for nais login
+
+  deploy-prod:
+    name: Deploy til prod
+    needs: [bygg-image, deploy-dev]
+    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    with:
+      CLUSTER: prod-gcp
+      RESOURCE: deploy/prod-avstemming.yml
+      WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
+    permissions:
+      contents: read
+      id-token: write # for nais login
