@@ -3,7 +3,7 @@ flyway = "13.1.0"
 ibmMq = "9.4.5.1"
 jaxb = "4.0.7"
 sasGradlePlugins = "20260804.1151"
-tbd-libs = "20260521.1202"
+tbd-libs = "20260702.1010"
 
 [libraries]
 cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.28.3"
