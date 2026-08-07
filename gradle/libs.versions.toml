@@ -28,7 +28,7 @@ tbd-libs-naisful-app = { module = "com.github.navikt.tbd-libs:naisful-app", vers
 tbd-libs-retry = { module = "com.github.navikt.tbd-libs:retry", version.ref = "tbd-libs" }
 tbd-libs-spenn-simulering-client = { module = "com.github.navikt.tbd-libs:spenn-simulering-client", version.ref = "tbd-libs" }
 
-apache-artemis = "org.apache.activemq:apache-artemis:2.53.0"
+apache-artemis = "org.apache.activemq:apache-artemis:2.55.0"
 ktor-client-contentnegotiation = { module = "io.ktor:ktor-client-content-negotiation" }
 mockk = "io.mockk:mockk:1.14.9"
 tbd-libs-mock-http-client = { module = "com.github.navikt.tbd-libs:mock-http-client", version.ref = "tbd-libs" }
