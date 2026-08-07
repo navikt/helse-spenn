@@ -18,7 +18,7 @@ kotliquery = "com.github.seratch:kotliquery:1.9.1"
 ktor-server-auth = { module = "io.ktor:ktor-server-auth" }
 ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt" }
 ktor-server-double-receive = { module = "io.ktor:ktor-server-double-receive" }
-logback-classic = "ch.qos.logback:logback-classic:1.5.38"
+logback-classic = "ch.qos.logback:logback-classic:1.6.1"
 logback-logstash-encoder = "net.logstash.logback:logstash-logback-encoder:9.0"
 postgresql = "org.postgresql:postgresql:42.7.12"
 rapids-and-rivers = "com.github.navikt:rapids-and-rivers:2026042008201776666058"
