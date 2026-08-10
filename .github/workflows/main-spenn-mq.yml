@@ -66,7 +66,7 @@ jobs:
   deploy-dev:
     name: Deploy til dev
     needs: bygg-image
-    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@2f6844aa5e6852c64522681b3edb09c99445ad59 # v1.0.1
     with:
       CLUSTER: dev-gcp
       RESOURCE: deploy/dev-mq.yml
@@ -78,7 +78,7 @@ jobs:
   deploy-prod:
     name: Deploy til prod
     needs: [bygg-image, deploy-dev]
-    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@2f6844aa5e6852c64522681b3edb09c99445ad59 # v1.0.1
     with:
       CLUSTER: prod-gcp
       RESOURCE: deploy/prod-mq.yml
