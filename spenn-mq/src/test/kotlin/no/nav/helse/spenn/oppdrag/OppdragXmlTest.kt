@@ -21,61 +21,69 @@ internal class OppdragXmlTest {
         private const val AVVIST_FUNKSJONELLE_FEIL = "08"
         private const val AVVIST_TEKNISK_FEIL = "12"
 
-        private val xmlMapper = XmlMapper()
-            .registerModule(JavaTimeModule())
+        private val xmlMapper =
+            XmlMapper()
+                .registerModule(JavaTimeModule())
     }
 
     @Test
     fun marshal() {
         val datoOppdragGjelderFom = LocalDate.EPOCH
-        val oppdrag = OppdragDto(
-            oppdrag110 = Oppdrag110Dto(
-                kodeFagomraade = "SPREF",
-                kodeEndring = EndringskodeDto.ENDR,
-                fagsystemId = "AF6K73WJKNGY5EK6ZSXFWFU6QA",
-                oppdragGjelderId = "12345678911",
-                saksbehId = "SPLEIS",
-                kodeAksjon = "??",
-                utbetFrekvens = "MND",
-                datoOppdragGjelderFom = datoOppdragGjelderFom,
-                avstemming115 = Avstemming115Dto(
-                    nokkelAvstemming = 1L,
-                    tidspktMelding = LocalDateTime.now(),
-                    kodeKomponent = "??"
-                ),
-                oppdragsEnhet120 = listOf(
-                    OppdragsEnhet120Dto("BOS", "SYK", LocalDate.EPOCH)
-                ),
-                oppdragsLinje150 = listOf(
-                    OppdragsLinje150Dto(
-                        delytelseId = 1,
-                        refDelytelseId = null,
-                        refFagsystemId = null,
-                        kodeEndringLinje = EndringskodeDto.NY,
-                        kodeKlassifik = "SYKPENG",
-                        datoKlassifikFom = LocalDate.EPOCH,
-                        datoVedtakFom = LocalDate.EPOCH,
-                        datoVedtakTom = LocalDate.now(),
-                        kodeStatusLinje = StatuskodeLinjeDto.REAK,
-                        datoStatusFom = LocalDate.EPOCH,
-                        sats = 500,
-                        henvisning = "SPEIL",
-                        fradragTillegg = FradragTilleggDto.T,
-                        typeSats = SatstypeDto.DAG,
-                        saksbehId = "SPENN",
-                        brukKjoreplan = "N",
-                        grad170 = listOf(
-                            Grad170Dto("UFOR", 100)
-                        ),
-                        attestant180 = listOf(
-                            Attestant180Dto("SPEIL")
-                        )
-                    ).apply {
-                        utbetalesTilId = "12345678911"
-                    }
-                )
+        val oppdrag =
+            OppdragDto(
+                oppdrag110 =
+                    Oppdrag110Dto(
+                        kodeFagomraade = "SPREF",
+                        kodeEndring = EndringskodeDto.ENDR,
+                        fagsystemId = "AF6K73WJKNGY5EK6ZSXFWFU6QA",
+                        oppdragGjelderId = "12345678911",
+                        saksbehId = "SPLEIS",
+                        kodeAksjon = "??",
+                        utbetFrekvens = "MND",
+                        datoOppdragGjelderFom = datoOppdragGjelderFom,
+                        avstemming115 =
+                            Avstemming115Dto(
+                                nokkelAvstemming = 1L,
+                                tidspktMelding = LocalDateTime.now(),
+                                kodeKomponent = "??",
+                            ),
+                        oppdragsEnhet120 =
+                            listOf(
+                                OppdragsEnhet120Dto("BOS", "SYK", LocalDate.EPOCH),
+                            ),
+                        oppdragsLinje150 =
+                            listOf(
+                                OppdragsLinje150Dto(
+                                    delytelseId = 1,
+                                    refDelytelseId = null,
+                                    refFagsystemId = null,
+                                    kodeEndringLinje = EndringskodeDto.NY,
+                                    kodeKlassifik = "SYKPENG",
+                                    datoKlassifikFom = LocalDate.EPOCH,
+                                    datoVedtakFom = LocalDate.EPOCH,
+                                    datoVedtakTom = LocalDate.now(),
+                                    kodeStatusLinje = StatuskodeLinjeDto.REAK,
+                                    datoStatusFom = LocalDate.EPOCH,
+                                    sats = 500,
+                                    henvisning = "SPEIL",
+                                    fradragTillegg = FradragTilleggDto.T,
+                                    typeSats = SatstypeDto.DAG,
+                                    saksbehId = "SPENN",
+                                    brukKjoreplan = "N",
+                                    grad170 =
+                                        listOf(
+                                            Grad170Dto("UFOR", 100),
+                                        ),
+                                    attestant180 =
+                                        listOf(
+                                            Attestant180Dto("SPEIL"),
+                                        ),
+                                ).apply {
+                                    utbetalesTilId = "12345678911"
+                                },
+                            ),
+                    ),
             )
-        )
         val result = OppdragXml.marshal(oppdrag)
         val node = xmlMapper.readTree(result)
         assertTrue(result.contains("<Oppdrag>")) {
@@ -83,10 +91,13 @@ internal class OppdragXmlTest {
         }
         assertEquals("1970-01-01", node.path("oppdrag-110").path("datoOppdragGjelderFom").asText())
 
-        val feltnavn = node.path("oppdrag-110").path("oppdrags-linje-150")
-            .fieldNames()
-            .asSequence()
-            .toList()
+        val feltnavn =
+            node
+                .path("oppdrag-110")
+                .path("oppdrags-linje-150")
+                .fieldNames()
+                .asSequence()
+                .toList()
         val posisjonUtbetalesTilId = feltnavn.indexOf("utbetalesTilId")
         val posisjonGrad = feltnavn.indexOf("grad-170")
         val posisjonAttestant = feltnavn.indexOf("attestant-180")
@@ -119,18 +130,21 @@ internal class OppdragXmlTest {
         <sectionNavn>CA00-BEHANDLE-FELT</sectionNavn>
     </mmel>
     <oppdrag-110></oppdrag-110>""" // <-- Ja: OS svarer med ugyldig XML
+
     private fun kvittering(alvorlighetsgrad: String) =
         kvittering(
             "<ns2:oppdrag xmlns:ns2=\"http://www.trygdeetaten.no/skjema/oppdrag\">",
             "</ns2:oppdrag>",
-            alvorlighetsgrad
+            alvorlighetsgrad,
         )
 
-    private fun rarKvittering(alvorlighetsgrad: String) =
-        kvittering("<oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</Oppdrag>", alvorlighetsgrad)
+    private fun rarKvittering(alvorlighetsgrad: String) = kvittering("<oppdrag xmlns=\"http://www.trygdeetaten.no/skjema/oppdrag\">", "</Oppdrag>", alvorlighetsgrad)
 
-    private fun kvittering(head: String, foot: String, alvorlighetsgrad: String) =
-        """<?xml version="1.0" encoding="utf-8"?>
+    private fun kvittering(
+        head: String,
+        foot: String,
+        alvorlighetsgrad: String,
+    ) = """<?xml version="1.0" encoding="utf-8"?>
 $head
     <mmel>
         <systemId>231-OPPD</systemId>

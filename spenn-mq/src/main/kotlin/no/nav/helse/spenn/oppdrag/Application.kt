@@ -28,25 +28,35 @@ private fun rapidApp(env: Map<String, String>) {
     rapid.start()
 }
 
-fun rapidApp(rapid: RapidsConnection, kø: Kø) {
-    rapid.apply {
-        Utbetalinger(this, kø.sendSession())
-        Kvitteringer(this, kø)
-    }.apply {
-        register(object : RapidsConnection.StatusListener {
-            override fun onStartup(rapidsConnection: RapidsConnection) {
-                kø.start()
-            }
+fun rapidApp(
+    rapid: RapidsConnection,
+    kø: Kø,
+) {
+    rapid
+        .apply {
+            Utbetalinger(this, kø.sendSession())
+            Kvitteringer(this, kø)
+        }.apply {
+            register(
+                object : RapidsConnection.StatusListener {
+                    override fun onStartup(rapidsConnection: RapidsConnection) {
+                        kø.start()
+                    }
 
-            override fun onShutdown(rapidsConnection: RapidsConnection) {
-                kø.close()
-            }
-        })
-    }
+                    override fun onShutdown(rapidsConnection: RapidsConnection) {
+                        kø.close()
+                    }
+                },
+            )
+        }
 }
 
-internal fun mqConnection(env: Map<String, String>, mqUserName: String, mqPassword: String) =
-    MQConnectionFactory().apply {
+internal fun mqConnection(
+    env: Map<String, String>,
+    mqUserName: String,
+    mqPassword: String,
+) = MQConnectionFactory()
+    .apply {
         hostName = env.getValue("MQ_HOSTNAME")
         port = env.getValue("MQ_PORT").toInt()
         channel = env.getValue("MQ_CHANNEL")

@@ -18,9 +18,10 @@ fun main() {
 private fun rapidApp(env: Map<String, String>) {
     val azureClient = createAzureTokenClientFromEnvironment(env)
     val httpClient = HttpClient.newHttpClient()
-    val objectMapper = jacksonObjectMapper()
-        .registerModule(JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    val objectMapper =
+        jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     val simuleringClient = SimuleringClient(httpClient, objectMapper, azureClient)
 
@@ -29,7 +30,10 @@ private fun rapidApp(env: Map<String, String>) {
     rapid.start()
 }
 
-fun rapidApp(rapid: RapidsConnection, simuleringClient: SimuleringClient) {
+fun rapidApp(
+    rapid: RapidsConnection,
+    simuleringClient: SimuleringClient,
+) {
     rapid.apply {
         Simuleringer(this, simuleringClient)
     }

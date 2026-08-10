@@ -6,7 +6,6 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.LocalDateTime
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 internal class UtbetalingerTest {
     companion object {
@@ -26,9 +26,10 @@ internal class UtbetalingerTest {
     }
 
     private val dao = mockk<OppdragDao>()
-    private val rapid = TestRapid().apply {
-        Utbetalinger(this, dao)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Utbetalinger(this, dao)
+        }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
@@ -56,13 +57,13 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         } answers {
             OppdragDto(
                 avstemmingsnøkkel.captured,
                 LocalDateTime.now(),
-                Oppdragstatus.MOTTATT
+                Oppdragstatus.MOTTATT,
             )
         }
         every { dao.oppdaterOppdrag(any(), behov.utbetalingId, behov.fagsystemId, Oppdragstatus.OVERFØRT) } returns true
@@ -92,7 +93,7 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         }
     }
@@ -111,7 +112,7 @@ internal class UtbetalingerTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         } throws RuntimeException()
         rapid.sendTestMessage(utbetalingsbehov.json())
@@ -128,9 +129,11 @@ internal class UtbetalingerTest {
             assertEquals(Oppdragstatus.MOTTATT.name, it.path("status").asText())
             assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }
         }
-        val avstemmingsnøkkel = inspektør.løsning(indeks, "Utbetaling")
-            .path("avstemmingsnøkkel")
-            .asLong()
+        val avstemmingsnøkkel =
+            inspektør
+                .løsning(indeks, "Utbetaling")
+                .path("avstemmingsnøkkel")
+                .asLong()
         verify(exactly = 1) {
             dao.nyttOppdrag(
                 utbetalingId = utbetalingsbehov.utbetalingId,
@@ -143,7 +146,7 @@ internal class UtbetalingerTest {
                 fagsystemId = FAGSYSTEMID,
                 status = Oppdragstatus.MOTTATT,
                 totalbeløp = BELØP,
-                originalJson = any()
+                originalJson = any(),
             )
         }
     }

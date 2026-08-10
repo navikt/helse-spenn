@@ -30,13 +30,14 @@ internal class KvitteringerIntegrationTest {
         private const val AVVIST_TEKNISK_FEIL = "12"
     }
 
-    private val server = EmbeddedActiveMQ()
-        .setConfiguration(
-            ConfigurationImpl()
-                .setPersistenceEnabled(false)
-                .setSecurityEnabled(false)
-                .addAcceptorConfiguration(TransportConfiguration(InVMAcceptorFactory::class.java.name))
-        )
+    private val server =
+        EmbeddedActiveMQ()
+            .setConfiguration(
+                ConfigurationImpl()
+                    .setPersistenceEnabled(false)
+                    .setSecurityEnabled(false)
+                    .addAcceptorConfiguration(TransportConfiguration(InVMAcceptorFactory::class.java.name)),
+            )
 
     private lateinit var connection: Connection
     private lateinit var rapid: TestRapid
@@ -62,9 +63,10 @@ internal class KvitteringerIntegrationTest {
     fun setup() {
         server.start()
         ActiveMQConnectionFactory("vm://0").also { connection = it.createConnection() }
-        rapid = TestRapid().apply {
-            Kvitteringer(this, Jms(connection, "sendQueue", MOTTAK_QUEUE))
-        }
+        rapid =
+            TestRapid().apply {
+                Kvitteringer(this, Jms(connection, "sendQueue", MOTTAK_QUEUE))
+            }
         connection.start()
     }
 
@@ -73,13 +75,17 @@ internal class KvitteringerIntegrationTest {
         connection.close()
         server.stop()
     }
+
     @AfterEach
     fun after() {
         rapid.reset()
         clearAllMocks()
     }
 
-    private fun awaitUntilAsserted(duration: Duration, test: () -> Unit) {
+    private fun awaitUntilAsserted(
+        duration: Duration,
+        test: () -> Unit,
+    ) {
         val end = System.currentTimeMillis() + duration.toMillis()
         var error: AssertionError? = null
         while (System.currentTimeMillis() < end) {
@@ -93,7 +99,8 @@ internal class KvitteringerIntegrationTest {
         throw error ?: fail { "failed to wait for test to pass" }
     }
 
-    private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
+    private fun kvittering(alvorlighetsgrad: String) =
+        """<?xml version="1.0" encoding="utf-8"?>
 <ns2:oppdrag xmlns:ns2="http://www.trygdeetaten.no/skjema/oppdrag">
     <mmel>
         <systemId>231-OPPD</systemId>

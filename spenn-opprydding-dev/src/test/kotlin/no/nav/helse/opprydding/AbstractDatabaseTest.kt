@@ -15,7 +15,6 @@ import java.util.*
 val databaseContainer = DatabaseContainers.container("spenn-opprydding", CleanupStrategy.tables("oppdrag,avstemming"))
 
 internal abstract class AbstractDatabaseTest {
-
     protected lateinit var personRepository: PersonRepository
     private lateinit var dataSource: TestDataSource
 
@@ -40,23 +39,24 @@ internal abstract class AbstractDatabaseTest {
         }
     }
 
-    private fun finnTabeller(): List<String> {
-        return sessionOf(dataSource.ds).use { session ->
+    private fun finnTabeller(): List<String> =
+        sessionOf(dataSource.ds).use { session ->
             @Language("PostgreSQL")
             val query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
             session.run(queryOf(query).map { it.string("table_name") }.asList)
         }
-    }
 
-    private fun finnTabellCount(tabellnavn: String): Int {
-        return sessionOf(dataSource.ds).use { session ->
+    private fun finnTabellCount(tabellnavn: String): Int =
+        sessionOf(dataSource.ds).use { session ->
             @Language("PostgreSQL")
             val query = "SELECT COUNT(1) FROM $tabellnavn"
             session.run(queryOf(query).map { it.int(1) }.asSingle) ?: 0
         }
-    }
 
-    protected fun opprettPerson(fødselsnummer: String, avstemmingsnøkkel: Int) {
+    protected fun opprettPerson(
+        fødselsnummer: String,
+        avstemmingsnøkkel: Int,
+    ) {
         sessionOf(dataSource.ds).use { session ->
             session.transaction { tx ->
                 tx.opprettOppdrag(fødselsnummer, avstemmingsnøkkel)
@@ -65,7 +65,10 @@ internal abstract class AbstractDatabaseTest {
         }
     }
 
-    private fun TransactionalSession.opprettOppdrag(fødselsnummer: String, avstemmingsnøkkel: Int) {
+    private fun TransactionalSession.opprettOppdrag(
+        fødselsnummer: String,
+        avstemmingsnøkkel: Int,
+    ) {
         @Language("PostgreSQL")
         val query = """INSERT INTO oppdrag(
                 avstemmingsnokkel, fagomrade, fnr, mottaker, opprettet, endret, fagsystem_id, status, 

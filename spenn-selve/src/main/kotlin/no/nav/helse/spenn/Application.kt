@@ -20,20 +20,26 @@ private fun rapidApp(env: Map<String, String>) {
     rapid.start()
 }
 
-fun rapidApp(rapid: RapidsConnection, database: Database) {
+fun rapidApp(
+    rapid: RapidsConnection,
+    database: Database,
+) {
     val dataSource = database.getDataSource()
     val oppdragDao = OppdragDao(dataSource)
 
-    rapid.apply {
-        Utbetalinger(this, oppdragDao)
-        Feriepenger(this, oppdragDao)
-        Overføringer(this, oppdragDao)
-        Transaksjoner(this, oppdragDao)
-    }.apply {
-        register(object : RapidsConnection.StatusListener {
-            override fun onStartup(rapidsConnection: RapidsConnection) {
-                database.migrate()
-            }
-        })
-    }
+    rapid
+        .apply {
+            Utbetalinger(this, oppdragDao)
+            Feriepenger(this, oppdragDao)
+            Overføringer(this, oppdragDao)
+            Transaksjoner(this, oppdragDao)
+        }.apply {
+            register(
+                object : RapidsConnection.StatusListener {
+                    override fun onStartup(rapidsConnection: RapidsConnection) {
+                        database.migrate()
+                    }
+                },
+            )
+        }
 }

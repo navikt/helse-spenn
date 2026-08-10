@@ -25,52 +25,75 @@ internal class Avstemminger(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireValue("@event_name", "utfør_avstemming") }
-            validate {
-                it.require("dagen", JsonNode::asLocalDate)
-            }
-        }.register(UtførAvstemming())
-        River(rapidsConnection).apply {
-            precondition {
-                it.requireValue("@event_name", "hel_time")
-                it.requireValue("time", 9)
-            }
-            validate {
-                it.require("dagen", JsonNode::asLocalDate)
-            }
-        }.register(AvstemmingBegivenhet())
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireValue("@event_name", "utfør_avstemming") }
+                validate {
+                    it.require("dagen", JsonNode::asLocalDate)
+                }
+            }.register(UtførAvstemming())
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.requireValue("@event_name", "hel_time")
+                    it.requireValue("time", 9)
+                }
+                validate {
+                    it.require("dagen", JsonNode::asLocalDate)
+                }
+            }.register(AvstemmingBegivenhet())
     }
 
     // utfører avstemming fra spisset signal, f.eks. fra spout
     private inner class UtførAvstemming : River.PacketListener {
-        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+        override fun onError(
+            problems: MessageProblems,
+            context: MessageContext,
+            metadata: MessageMetadata,
+        ) {
             logger
                 .offentligError("Forstod ikke utfør_avstemming (se sikkerlogg for detaljer)")
                 .privatError("Forstod ikke utfør_avstemming:\n${problems.toExtendedReport()}")
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+        override fun onPacket(
+            packet: JsonMessage,
+            context: MessageContext,
+            metadata: MessageMetadata,
+            meterRegistry: MeterRegistry,
+        ) {
             val dagen = packet["dagen"].asLocalDate()
             avstem(dagen, context)
         }
     }
 
     private inner class AvstemmingBegivenhet : River.PacketListener {
-        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+        override fun onError(
+            problems: MessageProblems,
+            context: MessageContext,
+            metadata: MessageMetadata,
+        ) {
             logger
                 .offentligError("Forstod ikke hel_time (se sikkerlogg for detaljer)")
                 .privatError("Forstod ikke hel_time:\n${problems.toExtendedReport()}")
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+        override fun onPacket(
+            packet: JsonMessage,
+            context: MessageContext,
+            metadata: MessageMetadata,
+            meterRegistry: MeterRegistry,
+        ) {
             // avstemmer gårsdagen
             val dagen = packet["dagen"].asLocalDate().minusDays(1)
             avstem(dagen, context)
         }
     }
 
-    private fun avstem(dagen: LocalDate, context: MessageContext) {
+    private fun avstem(
+        dagen: LocalDate,
+        context: MessageContext,
+    ) {
         val avstemmingsnøkkelTom = Avstemmingsnøkkel.tilOgMed(dagen)
         logger.info("forbereder avstemming av $dagen frem til og med avstemmingsnøkkel=$avstemmingsnøkkelTom")
 
@@ -92,7 +115,7 @@ internal class Avstemminger(
         id: UUID,
         dagen: LocalDate,
         fagområde: String,
-        oppdrag: List<OppdragDto>
+        oppdrag: List<OppdragDto>,
     ) {
         if (oppdrag.isEmpty()) {
             logger.info("ingenting å avstemme for fagområde $fagområde")
@@ -109,12 +132,14 @@ internal class Avstemminger(
                 "nøkkel_fom" to avstemmingsperiode.start,
                 "nøkkel_tom" to avstemmingsperiode.endInclusive,
                 "antall_oppdrag" to oppdrag.size,
-                "antall_avstemmingsmeldinger" to meldinger.size
+                "antall_avstemmingsmeldinger" to meldinger.size,
             )
 
-        context.publish(avstemmingevent(id, dagen, fagområde, oppdrag.size, avstemminginfo).toJson().also {
-            logger.info("sender $it")
-        })
+        context.publish(
+            avstemmingevent(id, dagen, fagområde, oppdrag.size, avstemminginfo).toJson().also {
+                logger.info("sender $it")
+            },
+        )
     }
 
     private fun avstemmingevent(
@@ -122,7 +147,7 @@ internal class Avstemminger(
         dagen: LocalDate,
         fagområde: String,
         antallOppdrag: Int,
-        avstemminginfo: Map<String, Any>
+        avstemminginfo: Map<String, Any>,
     ) = JsonMessage.newMessage(
         mapOf(
             "@event_name" to "avstemming",
@@ -131,8 +156,8 @@ internal class Avstemminger(
             "dagen" to dagen,
             "fagområde" to fagområde,
             "antall_oppdrag" to antallOppdrag,
-            "detaljer" to avstemminginfo
-        )
+            "detaljer" to avstemminginfo,
+        ),
     )
 
     private fun sendAvstemmingsmelding(melding: Avstemmingsdata) {

@@ -14,52 +14,57 @@ internal class OppdragBuilder(
     private val utbetalingId: UUID,
     private val utbetalingslinjer: Utbetalingslinjer,
     private val avstemmingsnøkkel: Long,
-    tidspunkt: LocalDateTime = LocalDateTime.now()
+    tidspunkt: LocalDateTime = LocalDateTime.now(),
 ) {
-    private val linjeStrategy: (Utbetalingslinjer.Utbetalingslinje) -> OppdragsLinje150Dto = when (utbetalingslinjer) {
-        is Utbetalingslinjer.RefusjonTilArbeidsgiver -> ::refusjonTilArbeidsgiver
-        is Utbetalingslinjer.UtbetalingTilBruker -> ::utbetalingTilBruker
-    }
+    private val linjeStrategy: (Utbetalingslinjer.Utbetalingslinje) -> OppdragsLinje150Dto =
+        when (utbetalingslinjer) {
+            is Utbetalingslinjer.RefusjonTilArbeidsgiver -> ::refusjonTilArbeidsgiver
+            is Utbetalingslinjer.UtbetalingTilBruker -> ::utbetalingTilBruker
+        }
 
     private val oppdragslinjer = mutableListOf<OppdragsLinje150Dto>()
-    private val oppdrag110 = Oppdrag110Dto(
-        kodeFagomraade = utbetalingslinjer.fagområde,
-        kodeEndring = EndringskodeDto.valueOf(utbetalingslinjer.endringskode),
-        fagsystemId = utbetalingslinjer.fagsystemId.trim(),
-        oppdragGjelderId = utbetalingslinjer.fødselsnummer,
-        saksbehId = utbetalingslinjer.saksbehandler,
-        kodeAksjon = "1",
-        utbetFrekvens = "MND",
-        datoOppdragGjelderFom = LocalDate.EPOCH,
-        avstemming115 = Avstemming115Dto(
-            nokkelAvstemming = avstemmingsnøkkel,
-            tidspktMelding = tidspunkt,
-            kodeKomponent = "SP",
-        ),
-        oppdragsEnhet120 = listOf(
-            OppdragsEnhet120Dto(
-                enhet = "8020",
-                typeEnhet = "BOS",
-                datoEnhetFom = LocalDate.EPOCH
-            )
-        ),
-        oppdragsLinje150 = oppdragslinjer
-    )
+    private val oppdrag110 =
+        Oppdrag110Dto(
+            kodeFagomraade = utbetalingslinjer.fagområde,
+            kodeEndring = EndringskodeDto.valueOf(utbetalingslinjer.endringskode),
+            fagsystemId = utbetalingslinjer.fagsystemId.trim(),
+            oppdragGjelderId = utbetalingslinjer.fødselsnummer,
+            saksbehId = utbetalingslinjer.saksbehandler,
+            kodeAksjon = "1",
+            utbetFrekvens = "MND",
+            datoOppdragGjelderFom = LocalDate.EPOCH,
+            avstemming115 =
+                Avstemming115Dto(
+                    nokkelAvstemming = avstemmingsnøkkel,
+                    tidspktMelding = tidspunkt,
+                    kodeKomponent = "SP",
+                ),
+            oppdragsEnhet120 =
+                listOf(
+                    OppdragsEnhet120Dto(
+                        enhet = "8020",
+                        typeEnhet = "BOS",
+                        datoEnhetFom = LocalDate.EPOCH,
+                    ),
+                ),
+            oppdragsLinje150 = oppdragslinjer,
+        )
 
     fun build(): OppdragDto {
         utbetalingslinjer.forEach { oppdragslinjer.add(linjeStrategy(it)) }
         return OppdragDto(
-            oppdrag110 = this@OppdragBuilder.oppdrag110
+            oppdrag110 = this@OppdragBuilder.oppdrag110,
         )
     }
 
     private fun refusjonTilArbeidsgiver(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) =
         nyLinje(utbetalingslinje).apply {
-            refusjonsinfo156 = Refusjonsinfo156Dto(
-                refunderesId = utbetalingslinjer.mottaker.padStart(11, '0'),
-                datoFom = datoVedtakFom,
-                maksDato = utbetalingslinjer.maksdato
-            )
+            refusjonsinfo156 =
+                Refusjonsinfo156Dto(
+                    refunderesId = utbetalingslinjer.mottaker.padStart(11, '0'),
+                    datoFom = datoVedtakFom,
+                    maksDato = utbetalingslinjer.maksdato,
+                )
         }
 
     private fun utbetalingTilBruker(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) =
@@ -67,97 +72,101 @@ internal class OppdragBuilder(
             utbetalesTilId = utbetalingslinjer.mottaker
         }
 
-    private fun nyLinje(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) = OppdragsLinje150Dto(
-        delytelseId = utbetalingslinje.delytelseId,
-        refDelytelseId = utbetalingslinje.refDelytelseId,
-        refFagsystemId = utbetalingslinje.refFagsystemId?.trim(),
-        kodeEndringLinje = EndringskodeDto.valueOf(utbetalingslinje.endringskode),
-        kodeKlassifik = utbetalingslinje.klassekode,
-        datoKlassifikFom = utbetalingslinje.klassekodeFom,
-        datoVedtakFom = utbetalingslinje.fom,
-        datoVedtakTom = utbetalingslinje.tom,
-        kodeStatusLinje = utbetalingslinje.statuskode?.let { StatuskodeLinjeDto.valueOf(it) },
-        datoStatusFom = utbetalingslinje.datoStatusFom,
-        sats = utbetalingslinje.sats.absoluteValue,
-        henvisning = "$utbetalingId",
-        fradragTillegg = if (utbetalingslinje.sats >= 0) FradragTilleggDto.T else FradragTilleggDto.F,
-        typeSats = SatstypeDto.valueOf(utbetalingslinje.satstype),
-        saksbehId = utbetalingslinjer.saksbehandler,
-        brukKjoreplan = "N",
-        grad170 = listOfNotNull(
-            if (utbetalingslinje.grad != null) {
-                Grad170Dto(
-                    typeGrad = "UFOR",
-                    grad = utbetalingslinje.grad
-                )
-            } else null
-        ),
-        attestant180 = listOf(
-            Attestant180Dto(
-                attestantId = utbetalingslinjer.saksbehandler
-            )
+    private fun nyLinje(utbetalingslinje: Utbetalingslinjer.Utbetalingslinje) =
+        OppdragsLinje150Dto(
+            delytelseId = utbetalingslinje.delytelseId,
+            refDelytelseId = utbetalingslinje.refDelytelseId,
+            refFagsystemId = utbetalingslinje.refFagsystemId?.trim(),
+            kodeEndringLinje = EndringskodeDto.valueOf(utbetalingslinje.endringskode),
+            kodeKlassifik = utbetalingslinje.klassekode,
+            datoKlassifikFom = utbetalingslinje.klassekodeFom,
+            datoVedtakFom = utbetalingslinje.fom,
+            datoVedtakTom = utbetalingslinje.tom,
+            kodeStatusLinje = utbetalingslinje.statuskode?.let { StatuskodeLinjeDto.valueOf(it) },
+            datoStatusFom = utbetalingslinje.datoStatusFom,
+            sats = utbetalingslinje.sats.absoluteValue,
+            henvisning = "$utbetalingId",
+            fradragTillegg = if (utbetalingslinje.sats >= 0) FradragTilleggDto.T else FradragTilleggDto.F,
+            typeSats = SatstypeDto.valueOf(utbetalingslinje.satstype),
+            saksbehId = utbetalingslinjer.saksbehandler,
+            brukKjoreplan = "N",
+            grad170 =
+                listOfNotNull(
+                    if (utbetalingslinje.grad != null) {
+                        Grad170Dto(
+                            typeGrad = "UFOR",
+                            grad = utbetalingslinje.grad,
+                        )
+                    } else {
+                        null
+                    },
+                ),
+            attestant180 =
+                listOf(
+                    Attestant180Dto(
+                        attestantId = utbetalingslinjer.saksbehandler,
+                    ),
+                ),
         )
-    )
 }
 
 enum class EndringskodeDto {
-    NY, UEND, ENDR
+    NY,
+    UEND,
+    ENDR,
 }
+
 enum class FradragTilleggDto {
-    F, T
+    F,
+    T,
 }
 
 enum class StatuskodeLinjeDto {
     OPPH,
     HVIL,
     SPER,
-    REAK;
+    REAK,
 }
 
 @JsonRootName(value = "Oppdrag")
 data class KvitteringDto(
     @JsonProperty(value = "oppdrag-110")
     val oppdrag110: Oppdrag110Dto?,
-
     @JsonProperty(value = "mmel")
-    val mmel: MmelDto? = null
+    val mmel: MmelDto? = null,
 )
 
 @JsonRootName(value = "Oppdrag")
 data class OppdragDto(
     @JsonProperty(value = "oppdrag-110")
-    val oppdrag110: Oppdrag110Dto
+    val oppdrag110: Oppdrag110Dto,
 )
 
 data class MmelDto(
     @JsonProperty(value = "alvorlighetsgrad")
     val alvorlighetsgrad: AlvorlighetsgradDto,
-
     @JsonProperty(value = "beskrMelding")
     val beskrMelding: String?,
-
     @JsonProperty(value = "kodeMelding")
     val kodeMelding: String?,
-
     @JsonProperty(value = "systemId")
     val systemId: String? = null,
-
     @JsonProperty(value = "programId")
     val programId: String? = null,
-
     @JsonProperty(value = "sectionNavn")
     val sectionNavn: String? = null,
 )
 
 enum class AlvorlighetsgradDto(
-    @JsonValue val verdi: String
+    @JsonValue val verdi: String,
 ) {
     AKSEPTERT("00"),
     AKSEPTERT_MED_FEIL("04"),
     AVVIST("08"),
     FEIL("12"),
+
     @JsonEnumDefaultValue // forutsetter mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
-    UKJENT("??")
+    UKJENT("??"),
 }
 
 data class Oppdrag110Dto(
@@ -184,7 +193,7 @@ data class Oppdrag110Dto(
     val oppdragsEnhet120: List<OppdragsEnhet120Dto>,
     @JacksonXmlElementWrapper(useWrapping = false)
     @JsonProperty(value = "oppdrags-linje-150")
-    val oppdragsLinje150: List<OppdragsLinje150Dto>
+    val oppdragsLinje150: List<OppdragsLinje150Dto>,
 )
 
 data class Avstemming115Dto(
@@ -193,7 +202,7 @@ data class Avstemming115Dto(
     @JsonProperty(value = "tidspktMelding")
     val tidspktMelding: LocalDateTime,
     @JsonProperty(value = "kodeKomponent")
-    val kodeKomponent: String
+    val kodeKomponent: String,
 )
 
 data class OppdragsEnhet120Dto(
@@ -202,7 +211,7 @@ data class OppdragsEnhet120Dto(
     @JsonProperty(value = "typeEnhet")
     val typeEnhet: String,
     @JsonProperty(value = "datoEnhetFom")
-    val datoEnhetFom: LocalDate?
+    val datoEnhetFom: LocalDate?,
 )
 
 data class Refusjonsinfo156Dto(
@@ -211,7 +220,7 @@ data class Refusjonsinfo156Dto(
     @JsonProperty(value = "datoFom")
     val datoFom: LocalDate,
     @JsonProperty(value = "maksDato")
-    val maksDato: LocalDate?
+    val maksDato: LocalDate?,
 )
 
 data class OppdragsLinje150Dto(
@@ -256,21 +265,22 @@ data class OppdragsLinje150Dto(
     val grad170: List<Grad170Dto> = emptyList(),
     @JacksonXmlElementWrapper(useWrapping = false)
     @JsonProperty(value = "attestant-180")
-    val attestant180: List<Attestant180Dto>
+    val attestant180: List<Attestant180Dto>,
 )
 
 enum class SatstypeDto {
-    ENG, DAG
+    ENG,
+    DAG,
 }
 
 data class Grad170Dto(
     @JsonProperty(value = "typeGrad")
     val typeGrad: String,
     @JsonProperty(value = "grad")
-    val grad: Int
+    val grad: Int,
 )
 
 data class Attestant180Dto(
     @JsonProperty(value = "attestantId")
-    val attestantId: String
+    val attestantId: String,
 )

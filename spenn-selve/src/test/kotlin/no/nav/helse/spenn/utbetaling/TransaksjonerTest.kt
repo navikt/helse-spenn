@@ -34,15 +34,17 @@ internal class TransaksjonerTest {
         private val OPPRETTET = LocalDateTime.now()
         private val STATUS = Oppdragstatus.AKSEPTERT
 
-        private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        private val objectMapper =
+            jacksonObjectMapper()
+                .registerModule(JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     }
 
     private val dao = mockk<OppdragDao>()
-    private val rapid = TestRapid().apply {
-        Transaksjoner(this, dao)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Transaksjoner(this, dao)
+        }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
@@ -74,8 +76,8 @@ internal class TransaksjonerTest {
         }
     }
 
-    private fun utbetalingsbehov(): String {
-        return objectMapper.writeValueAsString(
+    private fun utbetalingsbehov(): String =
+        objectMapper.writeValueAsString(
             mapOf(
                 "@event_name" to "behov",
                 "@behov" to listOf("Utbetaling"),
@@ -87,20 +89,20 @@ internal class TransaksjonerTest {
                 "utbetalingId" to UTBETALING_ID,
                 "fagsystemId" to FAGSYSTEMID,
                 "forlengelse" to false,
-                "utbetalingslinjer" to listOf(
-                    mapOf(
-                        "dagsats" to "$BELØP",
-                        "fom" to "2020-04-20",
-                        "tom" to "2020-05-20",
-                        "grad" to 100
-                    )
-                )
-            )
+                "utbetalingslinjer" to
+                    listOf(
+                        mapOf(
+                            "dagsats" to "$BELØP",
+                            "fom" to "2020-04-20",
+                            "tom" to "2020-05-20",
+                            "grad" to 100,
+                        ),
+                    ),
+            ),
         )
-    }
 
-    private fun tranaksjonStatus(): String {
-        return objectMapper.writeValueAsString(
+    private fun tranaksjonStatus(): String =
+        objectMapper.writeValueAsString(
             mapOf(
                 "@event_name" to "transaksjon_status",
                 "@id" to TRANSAKSJON_ID,
@@ -112,8 +114,7 @@ internal class TransaksjonerTest {
                 "status" to STATUS,
                 "feilkode_oppdrag" to "00",
                 "beskrivelse" to BESKRIVELSE,
-                "originalXml" to "xml"
-            )
+                "originalXml" to "xml",
+            ),
         )
-    }
 }

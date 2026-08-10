@@ -12,9 +12,10 @@ import java.util.*
 
 internal class TransaksjonerTest {
     private val dao = mockk<OppdragDao>(relaxed = true)
-    private val rapid = TestRapid().apply {
-        Transaksjoner(this, dao)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Transaksjoner(this, dao)
+        }
 
     @BeforeEach
     fun clear() {
@@ -99,7 +100,7 @@ internal class TransaksjonerTest {
         status: String,
         kodemelding: String?,
         beskrivendemelding: String?,
-        oppdragkvittering: String
+        oppdragkvittering: String,
     ) = """
         {
           "@event_name": "transaksjon_status",

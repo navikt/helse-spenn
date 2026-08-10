@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.util.*
 
-internal class AppTest: AbstractDatabaseTest() {
+internal class AppTest : AbstractDatabaseTest() {
     private lateinit var testRapid: TestRapid
 
     @BeforeEach
@@ -33,14 +33,14 @@ internal class AppTest: AbstractDatabaseTest() {
         assertTabellinnhold { it == 1 }
     }
 
-
     @Language("JSON")
-    private fun slettemelding(fødselsnummer: String) = """
+    private fun slettemelding(fødselsnummer: String) =
+        """
         {
           "@event_name": "slett_person",
           "@id": "${UUID.randomUUID()}",
           "opprettet": "${LocalDateTime.now()}",
           "fødselsnummer": "$fødselsnummer"
         }
-    """.trimIndent()
+        """.trimIndent()
 }

@@ -26,10 +26,15 @@ class E2eTest {
 
             val oppdragutbetaling = rapid.inspektør.message(1) as ObjectNode
             assertEquals("oppdrag_utbetaling", oppdragutbetaling.path("@event_name").asText())
-            oppdragutbetaling.set<JsonNode>("kvittering", jacksonObjectMapper().convertValue<JsonNode>(mapOf(
-                "status" to "OVERFØRT",
-                "beskrivelse" to "Overført til OS!"
-            )))
+            oppdragutbetaling.set<JsonNode>(
+                "kvittering",
+                jacksonObjectMapper().convertValue<JsonNode>(
+                    mapOf(
+                        "status" to "OVERFØRT",
+                        "beskrivelse" to "Overført til OS!",
+                    ),
+                ),
+            )
             assertTrue(oppdragutbetaling.hasNonNull("maksdato"))
             rapid.sendTestMessage(oppdragutbetaling.toString())
 
@@ -39,26 +44,44 @@ class E2eTest {
             val avstemming = løsning.avstemmingsnøkkel
 
             val transaksjonId = UUID.randomUUID()
-            rapid.sendTestMessage(JsonMessage.newMessage("transaksjon_status", mapOf<String, Any>(
-                "@id" to transaksjonId,
-                "fødselsnummer" to utbetalingsbehov.fnr,
-                "avstemmingsnøkkel" to avstemming,
-                "utbetalingId" to utbetalingsbehov.utbetalingId,
-                "fagsystemId" to utbetalingsbehov.fagsystemId,
-                "status" to "AKSEPTERT",
-                "feilkode_oppdrag" to "00",
-                "beskrivelse" to "Akseptert uten problemer",
-                "originalXml" to ""
-            )).toJson())
+            rapid.sendTestMessage(
+                JsonMessage
+                    .newMessage(
+                        "transaksjon_status",
+                        mapOf<String, Any>(
+                            "@id" to transaksjonId,
+                            "fødselsnummer" to utbetalingsbehov.fnr,
+                            "avstemmingsnøkkel" to avstemming,
+                            "utbetalingId" to utbetalingsbehov.utbetalingId,
+                            "fagsystemId" to utbetalingsbehov.fagsystemId,
+                            "status" to "AKSEPTERT",
+                            "feilkode_oppdrag" to "00",
+                            "beskrivelse" to "Akseptert uten problemer",
+                            "originalXml" to "",
+                        ),
+                    ).toJson(),
+            )
 
             assertEquals(4, rapid.inspektør.size)
             val finalLøsning = rapid.inspektør.message(3)
             assertEquals("behov", finalLøsning["@event_name"].asText())
             assertEquals("AKSEPTERT", finalLøsning["@løsning"].path("Utbetaling").path("status").asText())
 
-            assertEquals(behovMeldingId, rapid.inspektør.field(0, "@forårsaket_av").path("id").asText())
+            assertEquals(
+                behovMeldingId,
+                rapid.inspektør
+                    .field(0, "@forårsaket_av")
+                    .path("id")
+                    .asText(),
+            )
             assertNotEquals(behovMeldingId, rapid.inspektør.field(0, "@id").asText())
-            assertEquals(transaksjonId.toString(), rapid.inspektør.field(3, "@forårsaket_av").path("id").asText())
+            assertEquals(
+                transaksjonId.toString(),
+                rapid.inspektør
+                    .field(3, "@forårsaket_av")
+                    .path("id")
+                    .asText(),
+            )
         }
     }
 
@@ -70,10 +93,15 @@ class E2eTest {
             val løsning1 = parseMottattLøsning(rapid.inspektør.message(0))
             val oppdragutbetaling = rapid.inspektør.message(1) as ObjectNode
             assertEquals("oppdrag_utbetaling", oppdragutbetaling.path("@event_name").asText())
-            oppdragutbetaling.set<JsonNode>("kvittering", jacksonObjectMapper().convertValue<JsonNode>(mapOf(
-                "status" to "OVERFØRT",
-                "beskrivelse" to "Overført til OS!"
-            )))
+            oppdragutbetaling.set<JsonNode>(
+                "kvittering",
+                jacksonObjectMapper().convertValue<JsonNode>(
+                    mapOf(
+                        "status" to "OVERFØRT",
+                        "beskrivelse" to "Overført til OS!",
+                    ),
+                ),
+            )
             rapid.sendTestMessage(oppdragutbetaling.toString())
             assertEquals(3, rapid.inspektør.size)
 
@@ -97,7 +125,6 @@ class E2eTest {
             }
         }
     }
-
 
     @Test
     fun `utbetalinger på samme fnr og utbetalingsid, men ulik fagsystemId`() {
@@ -127,21 +154,27 @@ class E2eTest {
             rapid.sendTestMessage(utbetaling1.json())
             val løsning1 = parseMottattLøsning(rapid.inspektør.message(0))
 
-            rapid.sendTestMessage(JsonMessage.newMessage("transaksjon_status", mapOf<String, Any>(
-                "fødselsnummer" to utbetaling1.fnr,
-                "avstemmingsnøkkel" to løsning1.avstemmingsnøkkel,
-                "fagsystemId" to utbetaling1.fagsystemId,
-                "utbetalingId" to utbetaling1.utbetalingId,
-                "status" to "AVVIST",
-                "feilkode_oppdrag" to "08",
-                "beskrivelse" to "Oppdraget ble avvist",
-                "originalXml" to """<?xml version="1.0" encoding="utf-8"?><ns2:oppdrag xmlns:ns2="http://www.trygdeetaten.no/skjema/oppdrag"></ns2:oppdrag>"""
-            )).toJson())
+            rapid.sendTestMessage(
+                JsonMessage
+                    .newMessage(
+                        "transaksjon_status",
+                        mapOf<String, Any>(
+                            "fødselsnummer" to utbetaling1.fnr,
+                            "avstemmingsnøkkel" to løsning1.avstemmingsnøkkel,
+                            "fagsystemId" to utbetaling1.fagsystemId,
+                            "utbetalingId" to utbetaling1.utbetalingId,
+                            "status" to "AVVIST",
+                            "feilkode_oppdrag" to "08",
+                            "beskrivelse" to "Oppdraget ble avvist",
+                            "originalXml" to """<?xml version="1.0" encoding="utf-8"?><ns2:oppdrag xmlns:ns2="http://www.trygdeetaten.no/skjema/oppdrag"></ns2:oppdrag>""",
+                        ),
+                    ).toJson(),
+            )
 
             rapid.sendTestMessage(utbetalingKopi.json())
 
             assertEquals(1, database.hentAlleOppdrag().size)
-            assertEquals(5, rapid.inspektør.size) //behov, løsning på behov, oppdrag_utbetaling, nytt behov, oppdrag_utbetaling
+            assertEquals(5, rapid.inspektør.size) // behov, løsning på behov, oppdrag_utbetaling, nytt behov, oppdrag_utbetaling
 
             parseOkLøsning(rapid.inspektør.message(2)).also { løsningKopi ->
                 assertEquals(løsning1.avstemmingsnøkkel, løsningKopi.avstemmingsnøkkel)

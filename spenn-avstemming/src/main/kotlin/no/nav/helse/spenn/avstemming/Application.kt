@@ -21,26 +21,37 @@ private fun rapidApp(env: Map<String, String>) {
     }
 }
 
-fun rapidApp(rapid: RapidsConnection, database: Database, avstemmingkø: UtKø) {
+fun rapidApp(
+    rapid: RapidsConnection,
+    database: Database,
+    avstemmingkø: UtKø,
+) {
     val oppdragDao = OppdragDao(database::getDataSource)
     val avstemmingDao = AvstemmingDao(database::getDataSource)
 
-    rapid.apply {
-        Avstemminger(this, oppdragDao, avstemmingDao, avstemmingkø)
-        Utbetalinger(this, oppdragDao)
-        Overføringer(this, oppdragDao)
-        Transaksjoner(this, oppdragDao)
-    }.apply {
-        register(object : RapidsConnection.StatusListener {
-            override fun onStartup(rapidsConnection: RapidsConnection) {
-                database.migrate()
-            }
-        })
-    }
+    rapid
+        .apply {
+            Avstemminger(this, oppdragDao, avstemmingDao, avstemmingkø)
+            Utbetalinger(this, oppdragDao)
+            Overføringer(this, oppdragDao)
+            Transaksjoner(this, oppdragDao)
+        }.apply {
+            register(
+                object : RapidsConnection.StatusListener {
+                    override fun onStartup(rapidsConnection: RapidsConnection) {
+                        database.migrate()
+                    }
+                },
+            )
+        }
 }
 
-private fun mqConnection(env: Map<String, String>, mqUserName: String, mqPassword: String) =
-    MQConnectionFactory().apply {
+private fun mqConnection(
+    env: Map<String, String>,
+    mqUserName: String,
+    mqPassword: String,
+) = MQConnectionFactory()
+    .apply {
         hostName = env.getValue("MQ_HOSTNAME")
         port = env.getValue("MQ_PORT").toInt()
         channel = env.getValue("MQ_CHANNEL")

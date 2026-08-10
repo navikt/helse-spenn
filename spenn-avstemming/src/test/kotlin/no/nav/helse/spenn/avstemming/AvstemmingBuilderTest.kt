@@ -29,97 +29,99 @@ internal class AvstemmingBuilderTest {
     }
 
     private val id = UUID.randomUUID()
-    private val avstemmingsoppdrag = listOf(
-        OppdragDto(
-            AVSTEMMINGSNØKKEL,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET,
-            Oppdragstatus.MANGELFULL,
-            BELØP,
-            null,
-            null,
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 1,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET,
-            Oppdragstatus.AKSEPTERT,
-            BELØP,
-            "00",
-            null,
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 2,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(1),
-            Oppdragstatus.AKSEPTERT,
-            BELØP,
-            "00",
-            null,
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 3,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(2),
-            Oppdragstatus.AKSEPTERT_MED_VARSEL,
-            BELØP,
-            "04",
-            "Det var noe varsel her ja",
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 4,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(3),
-            Oppdragstatus.AVVIST,
-            BELØP,
-            "08",
-            "oppdraget finnes fra før",
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 5,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(4),
-            Oppdragstatus.AVVIST,
-            -BELØP,
-            "08",
-            "oppdraget finnes fra før",
-            null
-        ),
-        OppdragDto(
-            AVSTEMMINGSNØKKEL + 6,
-            PERSON,
-            UTBETALINGSREF,
-            OPPRETTET.plusDays(5),
-            Oppdragstatus.AVVIST,
-            -BELØP,
-            "12",
-            "feil mot enhetsregister",
-            null
+    private val avstemmingsoppdrag =
+        listOf(
+            OppdragDto(
+                AVSTEMMINGSNØKKEL,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET,
+                Oppdragstatus.MANGELFULL,
+                BELØP,
+                null,
+                null,
+                null,
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 1,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET,
+                Oppdragstatus.AKSEPTERT,
+                BELØP,
+                "00",
+                null,
+                null,
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 2,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET.plusDays(1),
+                Oppdragstatus.AKSEPTERT,
+                BELØP,
+                "00",
+                null,
+                null,
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 3,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET.plusDays(2),
+                Oppdragstatus.AKSEPTERT_MED_VARSEL,
+                BELØP,
+                "04",
+                "Det var noe varsel her ja",
+                null,
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 4,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET.plusDays(3),
+                Oppdragstatus.AVVIST,
+                BELØP,
+                "08",
+                "oppdraget finnes fra før",
+                null,
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 5,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET.plusDays(4),
+                Oppdragstatus.AVVIST,
+                -BELØP,
+                "08",
+                "oppdraget finnes fra før",
+                null,
+            ),
+            OppdragDto(
+                AVSTEMMINGSNØKKEL + 6,
+                PERSON,
+                UTBETALINGSREF,
+                OPPRETTET.plusDays(5),
+                Oppdragstatus.AVVIST,
+                -BELØP,
+                "12",
+                "feil mot enhetsregister",
+                null,
+            ),
         )
-    )
     private val detaljer = OppdragDto.detaljer(avstemmingsoppdrag)
 
     private lateinit var builder: AvstemmingBuilder
 
     @BeforeEach
     fun setup() {
-        builder = AvstemmingBuilder(
-            id,
-            "SPREF",
-            avstemmingsoppdrag,
-            DETALJER_PER_AVSTEMMINGMELDING
-        )
+        builder =
+            AvstemmingBuilder(
+                id,
+                "SPREF",
+                avstemmingsoppdrag,
+                DETALJER_PER_AVSTEMMINGMELDING,
+            )
     }
 
     @Test
@@ -135,19 +137,20 @@ internal class AvstemmingBuilderTest {
 
     @Test
     fun `avstemming med negativt totalbeløp`() {
-        val oppdrag = listOf(
-            OppdragDto(
-                AVSTEMMINGSNØKKEL,
-                PERSON,
-                UTBETALINGSREF,
-                OPPRETTET.plusDays(4),
-                Oppdragstatus.AVVIST,
-                -BELØP,
-                "08",
-                null,
-                null
+        val oppdrag =
+            listOf(
+                OppdragDto(
+                    AVSTEMMINGSNØKKEL,
+                    PERSON,
+                    UTBETALINGSREF,
+                    OPPRETTET.plusDays(4),
+                    Oppdragstatus.AVVIST,
+                    -BELØP,
+                    "08",
+                    null,
+                    null,
+                ),
             )
-        )
         val oppdragsdetaljer = OppdragDto.detaljer(oppdrag)
         builder = AvstemmingBuilder(id, "SPREF", oppdrag, DETALJER_PER_AVSTEMMINGMELDING)
         builder.build().also {
@@ -158,7 +161,13 @@ internal class AvstemmingBuilderTest {
         }
     }
 
-    private fun assertFørsteAvstemmingdataData(avstemmingsdata: Avstemmingsdata, oppdrag: List<OppdragDto> = avstemmingsoppdrag, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6, antallAvstemmingsdetaljer: Int = DETALJER_PER_AVSTEMMINGMELDING) {
+    private fun assertFørsteAvstemmingdataData(
+        avstemmingsdata: Avstemmingsdata,
+        oppdrag: List<OppdragDto> = avstemmingsoppdrag,
+        nøkkelFom: Long = AVSTEMMINGSNØKKEL,
+        nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6,
+        antallAvstemmingsdetaljer: Int = DETALJER_PER_AVSTEMMINGMELDING,
+    ) {
         assertAvstemmingdataData(antallAvstemmingsdetaljer, avstemmingsdata, nøkkelFom, nøkkelTom)
         OppdragDto.totaldata(oppdrag).also {
             assertEquals(it.totalAntall, avstemmingsdata.total.totalAntall)
@@ -183,26 +192,42 @@ internal class AvstemmingBuilderTest {
         assertNotNull(avstemmingsdata.periode.datoAvstemtTom)
     }
 
-    private fun assertPåfølgendeAvstemmingdataData(antall: Int, avstemmingsdata: Avstemmingsdata, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6) {
+    private fun assertPåfølgendeAvstemmingdataData(
+        antall: Int,
+        avstemmingsdata: Avstemmingsdata,
+        nøkkelFom: Long = AVSTEMMINGSNØKKEL,
+        nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6,
+    ) {
         assertAvstemmingdataData(antall, avstemmingsdata, nøkkelFom, nøkkelTom)
         assertNull(avstemmingsdata.total)
         assertNull(avstemmingsdata.grunnlag)
         assertNull(avstemmingsdata.periode)
     }
 
-    private fun assertAvstemmingdataData(antall: Int, avstemmingsdata: Avstemmingsdata, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6) {
+    private fun assertAvstemmingdataData(
+        antall: Int,
+        avstemmingsdata: Avstemmingsdata,
+        nøkkelFom: Long = AVSTEMMINGSNØKKEL,
+        nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6,
+    ) {
         assertAvstemmingdata(AksjonType.DATA, avstemmingsdata, nøkkelFom, nøkkelTom)
         assertEquals(antall, avstemmingsdata.detalj.size)
     }
 
-    private fun assertAvstemmingdata(aksjonstype: AksjonType, avstemmingsdata: Avstemmingsdata, nøkkelFom: Long = AVSTEMMINGSNØKKEL, nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6) {
+    private fun assertAvstemmingdata(
+        aksjonstype: AksjonType,
+        avstemmingsdata: Avstemmingsdata,
+        nøkkelFom: Long = AVSTEMMINGSNØKKEL,
+        nøkkelTom: Long = AVSTEMMINGSNØKKEL + 6,
+    ) {
         assertEquals(aksjonstype, avstemmingsdata.aksjon.aksjonType)
         assertEquals("$nøkkelFom", avstemmingsdata.aksjon.nokkelFom)
         assertEquals("$nøkkelTom", avstemmingsdata.aksjon.nokkelTom)
         assertNotNull(avstemmingsdata.aksjon.avleverendeAvstemmingId)
     }
 
-    private fun kvittering(alvorlighetsgrad: String) = """<?xml version="1.0" encoding="utf-8"?>
+    private fun kvittering(alvorlighetsgrad: String) =
+        """<?xml version="1.0" encoding="utf-8"?>
 <ns2:oppdrag xmlns:ns2="http://www.trygdeetaten.no/skjema/oppdrag">
     <mmel>
         <systemId>231-OPPD</systemId>

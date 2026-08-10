@@ -10,9 +10,10 @@ import java.util.*
 
 internal class OverføringerTest {
     private val dao = mockk<OppdragDao>(relaxed = true)
-    private val rapid = TestRapid().apply {
-        Overføringer(this, dao)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Overføringer(this, dao)
+        }
 
     @BeforeEach
     fun clear() {
@@ -72,7 +73,16 @@ internal class OverføringerTest {
     }
 
     @Language("JSON")
-    private fun oppdragutbetaling(avstemmingsnøkkel: Long, utbetalingId: UUID, fagsystemId: String, fagområde: String, fødselsnummer: String, mottaker: String, totalbeløp: Int, opprettet: LocalDateTime) = """
+    private fun oppdragutbetaling(
+        avstemmingsnøkkel: Long,
+        utbetalingId: UUID,
+        fagsystemId: String,
+        fagområde: String,
+        fødselsnummer: String,
+        mottaker: String,
+        totalbeløp: Int,
+        opprettet: LocalDateTime,
+    ) = """
     {
       "@event_name": "oppdrag_utbetaling",
       "@id": "${UUID.randomUUID()}",
@@ -88,9 +98,18 @@ internal class OverføringerTest {
     }
     """
 
-
     @Language("JSON")
-    private fun oppdragutbetalingMedKvittering(status: String, avstemmingsnøkkel: Long, utbetalingId: UUID, fagsystemId: String, fagområde: String, fødselsnummer: String, mottaker: String, totalbeløp: Int, opprettet: LocalDateTime) = """
+    private fun oppdragutbetalingMedKvittering(
+        status: String,
+        avstemmingsnøkkel: Long,
+        utbetalingId: UUID,
+        fagsystemId: String,
+        fagområde: String,
+        fødselsnummer: String,
+        mottaker: String,
+        totalbeløp: Int,
+        opprettet: LocalDateTime,
+    ) = """
     {
       "@event_name": "oppdrag_utbetaling",
       "@id": "${UUID.randomUUID()}",
@@ -108,5 +127,4 @@ internal class OverføringerTest {
       }
     }
     """
-
 }

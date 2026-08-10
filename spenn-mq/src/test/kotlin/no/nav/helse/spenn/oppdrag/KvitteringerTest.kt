@@ -21,9 +21,10 @@ internal class KvitteringerTest {
     }
 
     private val connection = TestConnection()
-    private val rapid = TestRapid().apply {
-        Kvitteringer(this, Jms( connection, "sendQueue", MOTTAK_QUEUE))
-    }
+    private val rapid =
+        TestRapid().apply {
+            Kvitteringer(this, Jms(connection, "sendQueue", MOTTAK_QUEUE))
+        }
 
     @BeforeEach
     fun clear() {
@@ -59,7 +60,8 @@ internal class KvitteringerTest {
 
     @Test
     fun `parsingfeil fra OS`() {
-        connection.sendMessage("""<?xml version="1.0" encoding="utf-8"?>
+        connection.sendMessage(
+            """<?xml version="1.0" encoding="utf-8"?>
 <oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag">
     <mmel>
         <systemId>231-OPPD</systemId>
@@ -69,17 +71,25 @@ internal class KvitteringerTest {
         <programId>K231B606</programId>
         <sectionNavn>CA00-BEHANDLE-FELT</sectionNavn>
     </mmel>
-    <oppdrag-110></oppdrag-110>""")
+    <oppdrag-110></oppdrag-110>""",
+        )
         assertEquals(1, rapid.inspektør.size)
     }
 
-    private fun håndter(status: Oppdragstatus, alvorlighetsgrad: String) {
-        val kvittering = Kvittering(alvorlighetsgrad=alvorlighetsgrad).toXml()
+    private fun håndter(
+        status: Oppdragstatus,
+        alvorlighetsgrad: String,
+    ) {
+        val kvittering = Kvittering(alvorlighetsgrad = alvorlighetsgrad).toXml()
         connection.sendMessage(kvittering)
         assertKvittering(status, alvorlighetsgrad, kvittering)
     }
 
-    private fun assertKvittering(status: Oppdragstatus, alvorlighetsgrad: String, melding: String) {
+    private fun assertKvittering(
+        status: Oppdragstatus,
+        alvorlighetsgrad: String,
+        melding: String,
+    ) {
         assertEquals(2, rapid.inspektør.size)
         assertEquals("oppdrag_kvittering", rapid.inspektør.field(0, "@event_name").asText())
         assertEquals("transaksjon_status", rapid.inspektør.field(1, "@event_name").asText())
@@ -88,7 +98,12 @@ internal class KvitteringerTest {
         assertEquals(kvittering.fagsystemId, rapid.inspektør.field(1, "fagsystemId").asText())
         assertEquals(status.name, rapid.inspektør.field(1, "status").asText())
         assertEquals(alvorlighetsgrad, rapid.inspektør.field(1, "feilkode_oppdrag").asText())
-        assertTrue(rapid.inspektør.field(1, "beskrivelse").asText().isNotBlank())
+        assertTrue(
+            rapid.inspektør
+                .field(1, "beskrivelse")
+                .asText()
+                .isNotBlank(),
+        )
         assertEquals(melding, rapid.inspektør.field(1, "originalXml").asText())
         assertDoesNotThrow { UUID.fromString(rapid.inspektør.field(1, "@id").asText()) }
         assertDoesNotThrow { LocalDateTime.parse(rapid.inspektør.field(1, "@opprettet").asText()) }

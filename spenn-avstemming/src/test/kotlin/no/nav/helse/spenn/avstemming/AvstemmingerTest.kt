@@ -17,14 +17,16 @@ internal class AvstemmingerTest {
     private val oppdragDao = mockk<OppdragDao>(relaxed = true)
     private val avstemmingDao = mockk<AvstemmingDao>(relaxed = true)
     private val utgåendeMeldinger = mutableListOf<String>()
-    private val utkø = object : UtKø {
-        override fun send(messageString: String) {
-            utgåendeMeldinger.add(messageString)
+    private val utkø =
+        object : UtKø {
+            override fun send(messageString: String) {
+                utgåendeMeldinger.add(messageString)
+            }
         }
-    }
-    private val rapid = TestRapid().apply {
-        Avstemminger(this, oppdragDao, avstemmingDao, utkø)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Avstemminger(this, oppdragDao, avstemmingDao, utkø)
+        }
 
     @BeforeEach
     fun clear() {
@@ -43,14 +45,17 @@ internal class AvstemmingerTest {
     @Test
     fun `avstemmer oppdrag`() {
         val dagen = LocalDate.of(2018, 1, 1)
-        val oppdragTilAvstemming = mapOf(
-            "SPREF" to listOf(
-                OppdragDto(1024L, "fnr", "fagsystemId1", LocalDateTime.now(), Oppdragstatus.AKSEPTERT, 5000, "00", null, null)
-            ),
-            "SP" to listOf(
-                OppdragDto(1025L, "fnr", "fagsystemId2", LocalDateTime.now(), Oppdragstatus.AKSEPTERT, 5000, "00", null, null)
+        val oppdragTilAvstemming =
+            mapOf(
+                "SPREF" to
+                    listOf(
+                        OppdragDto(1024L, "fnr", "fagsystemId1", LocalDateTime.now(), Oppdragstatus.AKSEPTERT, 5000, "00", null, null),
+                    ),
+                "SP" to
+                    listOf(
+                        OppdragDto(1025L, "fnr", "fagsystemId2", LocalDateTime.now(), Oppdragstatus.AKSEPTERT, 5000, "00", null, null),
+                    ),
             )
-        )
         every {
             oppdragDao.hentOppdragForAvstemming(any())
         } returns oppdragTilAvstemming
@@ -67,7 +72,8 @@ internal class AvstemmingerTest {
     }
 
     @Language("JSON")
-    private fun utførAvstemming(dagen: LocalDate) = """
+    private fun utførAvstemming(dagen: LocalDate) =
+        """
         {
           "@event_name": "utfør_avstemming",
           "@id": "${UUID.randomUUID()}",
@@ -77,7 +83,10 @@ internal class AvstemmingerTest {
     """
 
     @Language("JSON")
-    private fun avstemming(fagområde: String, nøkkelTom: Long) = """
+    private fun avstemming(
+        fagområde: String,
+        nøkkelTom: Long,
+    ) = """
        {
           "@event_name": "avstemming",
           "@id": "${UUID.randomUUID()}",

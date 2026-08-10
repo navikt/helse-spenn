@@ -9,7 +9,7 @@ internal sealed class Utbetalingslinjer(
     internal val mottaker: String,
     internal val endringskode: String,
     internal val saksbehandler: String,
-    internal val maksdato: LocalDate?
+    internal val maksdato: LocalDate?,
 ) : Iterable<Utbetalingslinjer.Utbetalingslinje> {
     private val linjer = mutableListOf<Utbetalingslinje>()
 
@@ -18,11 +18,14 @@ internal sealed class Utbetalingslinjer(
     }
 
     fun isEmpty() = linjer.isEmpty()
-    fun førsteDag() = checkNotNull(Utbetalingslinje.førsteDato(linjer)) { "Ingen oppdragslinjer" }
-    fun sisteDag() = checkNotNull(Utbetalingslinje.sisteDato(linjer)) { "Ingen oppdragslinjer" }
-    fun totalbeløp() = Utbetalingslinje.totalbeløp(linjer)
-    fun erFeriepenger() = linjer.any { it.klassekode in listOf("SPATFER", "SPREFAGFER-IOP") }
 
+    fun førsteDag() = checkNotNull(Utbetalingslinje.førsteDato(linjer)) { "Ingen oppdragslinjer" }
+
+    fun sisteDag() = checkNotNull(Utbetalingslinje.sisteDato(linjer)) { "Ingen oppdragslinjer" }
+
+    fun totalbeløp() = Utbetalingslinje.totalbeløp(linjer)
+
+    fun erFeriepenger() = linjer.any { it.klassekode in listOf("SPATFER", "SPREFAGFER-IOP") }
 
     override fun iterator() = linjer.toList().listIterator()
 
@@ -32,16 +35,16 @@ internal sealed class Utbetalingslinjer(
         fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
-        maksdato: LocalDate?
+        maksdato: LocalDate?,
     ) : Utbetalingslinjer(
-        "SPREF",
-        fagsystemId,
-        fødselsnummer,
-        mottaker,
-        endringskode,
-        saksbehandler,
-        maksdato
-    )
+            "SPREF",
+            fagsystemId,
+            fødselsnummer,
+            mottaker,
+            endringskode,
+            saksbehandler,
+            maksdato,
+        )
 
     class UtbetalingTilBruker(
         fødselsnummer: String,
@@ -49,16 +52,16 @@ internal sealed class Utbetalingslinjer(
         fagsystemId: String,
         endringskode: String,
         saksbehandler: String,
-        maksdato: LocalDate?
+        maksdato: LocalDate?,
     ) : Utbetalingslinjer(
-        "SP",
-        fagsystemId,
-        fødselsnummer,
-        mottaker,
-        endringskode,
-        saksbehandler,
-        maksdato
-    )
+            "SP",
+            fagsystemId,
+            fødselsnummer,
+            mottaker,
+            endringskode,
+            saksbehandler,
+            maksdato,
+        )
 
     internal class Utbetalingslinje(
         internal val delytelseId: Int,
@@ -73,12 +76,13 @@ internal sealed class Utbetalingslinjer(
         internal val refFagsystemId: String?,
         internal val datoStatusFom: LocalDate?,
         internal val statuskode: String?,
-        internal val satstype: String
+        internal val satstype: String,
     ) {
-
         internal companion object {
             fun førsteDato(linjer: List<Utbetalingslinje>) = linjer.minByOrNull { it.fom }?.fom
+
             fun sisteDato(linjer: List<Utbetalingslinje>) = linjer.maxByOrNull { it.tom }?.tom
+
             fun totalbeløp(linjer: List<Utbetalingslinje>) = linjer.sumOf { it.sats }
         }
     }

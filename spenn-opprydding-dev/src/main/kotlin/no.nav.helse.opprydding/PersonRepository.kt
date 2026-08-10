@@ -8,29 +8,33 @@ import java.time.LocalDate
 import java.util.*
 import javax.sql.DataSource
 
-internal class PersonRepository(private val dataSource: DataSource) {
+internal class PersonRepository(
+    private val dataSource: DataSource,
+) {
     internal fun slett(fødselsnummer: String) {
         sessionOf(dataSource).use { session ->
-            session.transaction {tx ->
+            session.transaction { tx ->
                 tx.finnAvstemmingsnøkkel(fødselsnummer).also { tx.slettAvstemming(it) }
                 tx.slettOppdrag(fødselsnummer)
             }
         }
     }
 
-    fun hentSisteOppdrag(fødselsnummer: String): List<Oppdrag> {
-        return sessionOf(dataSource).use { session ->
+    fun hentSisteOppdrag(fødselsnummer: String): List<Oppdrag> =
+        sessionOf(dataSource).use { session ->
             @Language("PostgreSQL")
-            val stmt = """
+            val stmt =
+                """
                 select fagsystem_id, min(v ->> 'fom') as fom
                 from oppdrag, json_array_elements(behov->'Utbetaling'->'linjer') as v
                 where fnr=?
                 group by fagsystem_id;
-            """.trimIndent()
+                """.trimIndent()
             val minsteFomPerOppdrag = session.run(queryOf(stmt, fødselsnummer).map { row -> row.string("fagsystem_id") to row.localDate("fom") }.asList).toMap()
 
             @Language("PostgreSQL")
-            val query = """
+            val query =
+                """
                 select o1.fnr,o1.orgnr,o1.utbetaling_id,o1.fagomrade,o1.fagsystem_id,o1.mottaker,
                        cast(o1.behov->'Utbetaling'->'linjer'->-1->>'fom' as date) as nyeste_linje_fom,
                        cast(o1.behov->'Utbetaling'->'linjer'->-1->>'tom'  as date) as nyeste_linje_tom,
@@ -41,26 +45,28 @@ internal class PersonRepository(private val dataSource: DataSource) {
                 from oppdrag o1
                 left join oppdrag o2 on o2.fagsystem_id=o1.fagsystem_id and o2.opprettet > o1.opprettet
                 where o2.fagsystem_id is null and o1.fnr=? and o1.behov->'Utbetaling'->'linjer' is not null;
-            """.trimIndent()
-            session.run(queryOf(query, fødselsnummer).map { row ->
-                Oppdrag(
-                    fnr  = row.string("fnr"),
-                    orgnr = row.string("orgnr"),
-                    utbetalingId = row.uuid("utbetaling_id"),
-                    fagomrade = row.string("fagomrade"),
-                    fagsystemId = row.string("fagsystem_id"),
-                    mottaker = row.string("mottaker"),
-                    eldsteFom = minsteFomPerOppdrag[row.string("fagsystem_id")],
-                    fom = row.localDate("nyeste_linje_fom"),
-                    tom = row.localDate("nyeste_linje_tom"),
-                    grad = row.int("nyeste_linje_grad"),
-                    sats = row.int("nyeste_linje_sats"),
-                    delytelseId = row.int("nyeste_linje_delytelse_id"),
-                    klassekode = row.string("nyeste_linje_klassekode"),
-                )
-            }.asList)
+                """.trimIndent()
+            session.run(
+                queryOf(query, fødselsnummer)
+                    .map { row ->
+                        Oppdrag(
+                            fnr = row.string("fnr"),
+                            orgnr = row.string("orgnr"),
+                            utbetalingId = row.uuid("utbetaling_id"),
+                            fagomrade = row.string("fagomrade"),
+                            fagsystemId = row.string("fagsystem_id"),
+                            mottaker = row.string("mottaker"),
+                            eldsteFom = minsteFomPerOppdrag[row.string("fagsystem_id")],
+                            fom = row.localDate("nyeste_linje_fom"),
+                            tom = row.localDate("nyeste_linje_tom"),
+                            grad = row.int("nyeste_linje_grad"),
+                            sats = row.int("nyeste_linje_sats"),
+                            delytelseId = row.int("nyeste_linje_delytelse_id"),
+                            klassekode = row.string("nyeste_linje_klassekode"),
+                        )
+                    }.asList,
+            )
         }
-    }
 
     data class Oppdrag(
         val fnr: String,
@@ -75,7 +81,7 @@ internal class PersonRepository(private val dataSource: DataSource) {
         val delytelseId: Int,
         val grad: Int,
         val sats: Int,
-        val klassekode: String
+        val klassekode: String,
     )
 
     private fun TransactionalSession.finnAvstemmingsnøkkel(fødselsnummer: String): List<Long> {

@@ -5,10 +5,10 @@ import java.time.LocalDateTime
 class OppdragDto(
     private val avstemmingsnøkkel: Long,
     private val opprettet: LocalDateTime,
-    private val status: Oppdragstatus
+    private val status: Oppdragstatus,
 ) {
-
     internal fun kanSendesPåNytt() = status in setOf(Oppdragstatus.MOTTATT, Oppdragstatus.AVVIST, Oppdragstatus.FEIL)
+
     internal fun erKvittert() = status != Oppdragstatus.MOTTATT
 
     internal fun somLøsning() =
@@ -16,6 +16,6 @@ class OppdragDto(
             "status" to status,
             "beskrivelse" to status.beskrivelse(),
             "overføringstidspunkt" to opprettet,
-            "avstemmingsnøkkel" to avstemmingsnøkkel
+            "avstemmingsnøkkel" to avstemmingsnøkkel,
         )
 }

@@ -9,11 +9,12 @@ data class Utbetalingsbehov(
     val utbetalingId: UUID = UUID.randomUUID(),
     val linjer: List<Utbetalingslinje> = listOf(Utbetalingslinje()),
     val fagsystemId: String = UtbetalingerTest.FAGSYSTEMID,
-    val avstemmingsnøkkel: Long = 1024L
+    val avstemmingsnøkkel: Long = 1024L,
 ) {
     fun json() = jacksonObjectMapper().writeValueAsString(toMap())
-    fun toMap(): Map<String, Any> {
-        return mapOf(
+
+    fun toMap(): Map<String, Any> =
+        mapOf(
             "@event_name" to "oppdrag_utbetaling",
             "@id" to UUID.randomUUID(),
             "organisasjonsnummer" to UtbetalingerTest.ORGNR,
@@ -27,12 +28,10 @@ data class Utbetalingsbehov(
             "fagområde" to "SPREF",
             "fagsystemId" to fagsystemId,
             "endringskode" to "NY",
-            "linjer" to linjer.map { it.toMap() }
+            "linjer" to linjer.map { it.toMap() },
         )
-    }
 
-    fun linjer(vararg linjer: Utbetalingslinje) =
-        copy(linjer = linjer.toList())
+    fun linjer(vararg linjer: Utbetalingslinje) = copy(linjer = linjer.toList())
 
     fun fnr(it: String) = copy(fnr = it)
 
@@ -45,20 +44,23 @@ data class Utbetalingsbehov(
     }
 }
 
-
 data class Utbetalingslinje(
     val sats: Int = 1000,
     val grad: Int? = 100,
     val fom: LocalDate = LocalDate.parse("2020-04-20"),
     val tom: LocalDate = LocalDate.parse("2020-05-20"),
     val delytelseId: Int = 1,
-    val satstype: String = "DAG"
+    val satstype: String = "DAG",
 ) {
-    fun satstype(it: String) = copy(satstype=it)
-    fun sats(it: Int) = copy(sats=it)
-    fun fom(it: LocalDate) = copy(fom=it)
-    fun tom(it: LocalDate) = copy(tom=it)
-    fun grad(it: Int?) = copy(grad=it)
+    fun satstype(it: String) = copy(satstype = it)
+
+    fun sats(it: Int) = copy(sats = it)
+
+    fun fom(it: LocalDate) = copy(fom = it)
+
+    fun tom(it: LocalDate) = copy(tom = it)
+
+    fun grad(it: Int?) = copy(grad = it)
 
     fun toMap() =
         mapOf(
@@ -73,7 +75,7 @@ data class Utbetalingslinje(
             "endringskode" to "NY",
             "klassekode" to "SPREFAG-IOP",
             "datoStatusFom" to null,
-            "statuskode" to null
+            "statuskode" to null,
         )
 
     companion object {
@@ -88,15 +90,18 @@ data class Kvittering(
     val fødselsnummer: String = "12345678911",
     val saksbehandler: String = "Navn Navnesen",
     val orgnr: String = "123456789",
-    val utbetalingId: UUID = UUID.randomUUID()
+    val utbetalingId: UUID = UUID.randomUUID(),
 ) {
-    fun fagsystemId(it: String) = copy(fagsystemId=it)
-    fun avstemmingsnøkkel(it: Long) = copy(avstemmingsnøkkel=it)
-    fun akseptert() = copy(alvorlighetsgrad=AKSEPTERT_UTEN_FEIL)
-    fun funksjonellFeil() = copy(alvorlighetsgrad=AVVIST_FUNKSJONELLE_FEIL)
+    fun fagsystemId(it: String) = copy(fagsystemId = it)
 
-    fun toXml(): String {
-        return """<?xml version="1.0" encoding="utf-8"?>
+    fun avstemmingsnøkkel(it: Long) = copy(avstemmingsnøkkel = it)
+
+    fun akseptert() = copy(alvorlighetsgrad = AKSEPTERT_UTEN_FEIL)
+
+    fun funksjonellFeil() = copy(alvorlighetsgrad = AVVIST_FUNKSJONELLE_FEIL)
+
+    fun toXml(): String =
+        """<?xml version="1.0" encoding="utf-8"?>
     <oppdrag xmlns="http://www.trygdeetaten.no/skjema/oppdrag">
         <mmel>
             <systemId>231-OPPD</systemId>
@@ -199,7 +204,6 @@ data class Kvittering(
             </oppdrags-linje-150>
         </oppdrag-110>
     </oppdrag>"""
-    }
 
     companion object {
         val kvittering = Kvittering()

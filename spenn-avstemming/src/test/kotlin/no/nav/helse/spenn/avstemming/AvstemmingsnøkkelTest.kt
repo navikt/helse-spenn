@@ -10,24 +10,26 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 internal class AvstemmingsnøkkelTest {
-
     @Test
     fun `avstemmingsnøkkel er et tall`() {
         val idag = LocalDate.now()
-        val nå = idag
-            .atTime(LocalTime.now())
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
-        val igår = idag
-            .minusDays(1)
-            .atTime(LocalTime.now())
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
-        val imorgen = idag
-            .plusDays(1)
-            .atTime(LocalTime.now())
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
+        val nå =
+            idag
+                .atTime(LocalTime.now())
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+        val igår =
+            idag
+                .minusDays(1)
+                .atTime(LocalTime.now())
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+        val imorgen =
+            idag
+                .plusDays(1)
+                .atTime(LocalTime.now())
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
 
         val periode = Avstemmingsnøkkel.periode(idag)
         val avstemmingsnøkkel = Avstemmingsnøkkel.opprett(nå)
@@ -43,14 +45,16 @@ internal class AvstemmingsnøkkelTest {
     @Test
     fun `ytterpunkter`() {
         val idag = LocalDate.now()
-        val idagStart = idag
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-        val idagSlutt = idag
-            .plusDays(1)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .minusNanos(1)
+        val idagStart =
+            idag
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+        val idagSlutt =
+            idag
+                .plusDays(1)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .minusNanos(1)
 
         val periode = Avstemmingsnøkkel.periode(idag)
         val avstemmingsnøkkelIdagStart = Avstemmingsnøkkel.opprett(idagStart)
@@ -62,9 +66,11 @@ internal class AvstemmingsnøkkelTest {
     @Test
     fun `avstemmingsnøkkel i 2100 er større enn dagens, og har ikke overflowet`() {
         val nå = Instant.now()
-        val lengeTil = LocalDate.of(2100, 1, 1)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
+        val lengeTil =
+            LocalDate
+                .of(2100, 1, 1)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
         assertTrue(Avstemmingsnøkkel.opprett(lengeTil) > Avstemmingsnøkkel.opprett(nå))
     }
 }

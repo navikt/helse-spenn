@@ -18,7 +18,6 @@ import java.time.LocalDate
 import java.util.*
 
 internal class SimuleringerTest {
-
     private companion object {
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
@@ -27,9 +26,10 @@ internal class SimuleringerTest {
 
     private val simuleringClient = mockk<SimuleringClient>()
 
-    private val rapid = TestRapid().apply {
-        Simuleringer(this, simuleringClient)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Simuleringer(this, simuleringClient)
+        }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
@@ -51,14 +51,15 @@ internal class SimuleringerTest {
     @Test
     fun `løser simuleringsbehov for engangsutbetaling`() {
         okResultat()
-        val utbetalingslinjer = listOf(
-            mapOf(
-                "satstype" to "ENG",
-                "sats" to 10000,
-                "fom" to "2020-04-20",
-                "tom" to "2020-04-20"
+        val utbetalingslinjer =
+            listOf(
+                mapOf(
+                    "satstype" to "ENG",
+                    "sats" to 10000,
+                    "fom" to "2020-04-20",
+                    "tom" to "2020-04-20",
+                ),
             )
-        )
         rapid.sendTestMessage(simuleringbehov(utbetalingslinjer))
         assertEquals(1, inspektør.size)
         assertEquals(BEHOV, inspektør.behovId(0))
@@ -105,13 +106,17 @@ internal class SimuleringerTest {
     private fun okResultat() {
         every {
             simuleringClient.hentSimulering(any(), any())
-        } returns SimuleringResult.Ok(SimuleringResponse(
-            gjelderId = PERSON,
-            gjelderNavn = "Navn Navnesen",
-            datoBeregnet = LocalDate.now(),
-            totalBelop = 1000,
-            periodeList = emptyList()
-        )).ok()
+        } returns
+            SimuleringResult
+                .Ok(
+                    SimuleringResponse(
+                        gjelderId = PERSON,
+                        gjelderNavn = "Navn Navnesen",
+                        datoBeregnet = LocalDate.now(),
+                        totalBelop = 1000,
+                        periodeList = emptyList(),
+                    ),
+                ).ok()
     }
 
     private fun funksjonellFeilResultat() {
@@ -119,6 +124,7 @@ internal class SimuleringerTest {
             simuleringClient.hentSimulering(any(), any())
         } returns SimuleringResult.FunksjonellFeil("feilet").ok()
     }
+
     private fun tekniskFeilResultat() {
         every {
             simuleringClient.hentSimulering(any(), any())
@@ -126,17 +132,18 @@ internal class SimuleringerTest {
     }
 
     private fun simuleringbehovBruker(
-        utbetalingslinjer: List<Map<String, Any>> = listOf(
-            mapOf(
-                "satstype" to "DAG",
-                "sats" to 1000,
-                "fom" to "2020-04-20",
-                "tom" to "2020-05-20",
-                "grad" to 100
-            )
-        )
-    ): String {
-        return jacksonObjectMapper().writeValueAsString(
+        utbetalingslinjer: List<Map<String, Any>> =
+            listOf(
+                mapOf(
+                    "satstype" to "DAG",
+                    "sats" to 1000,
+                    "fom" to "2020-04-20",
+                    "tom" to "2020-05-20",
+                    "grad" to 100,
+                ),
+            ),
+    ): String =
+        jacksonObjectMapper().writeValueAsString(
             mapOf(
                 "@event_name" to "behov",
                 "@behov" to listOf("Simulering"),
@@ -144,47 +151,49 @@ internal class SimuleringerTest {
                 "@behovId" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
                 "fødselsnummer" to PERSON,
-                "Simulering" to mapOf(
-                    "mottaker" to PERSON,
-                    "maksdato" to "2020-04-20",
-                    "saksbehandler" to "Spleis",
-                    "fagområde" to "SP",
-                    "fagsystemId" to "ref",
-                    "endringskode" to "NY",
-                    "sjekksum" to -873852214,
-                    "linjer" to utbetalingslinjer.map {
-                        mapOf(
-                            "fom" to it["fom"],
-                            "tom" to it["tom"],
-                            "sats" to it["sats"],
-                            "satstype" to it["satstype"],
-                            "grad" to it["grad"],
-                            "delytelseId" to 1,
-                            "refDelytelseId" to null,
-                            "refFagsystemId" to null,
-                            "endringskode" to "NY",
-                            "klassekode" to "SPATORD",
-                            "datoStatusFom" to null,
-                            "statuskode" to null
-                        )
-                    }
-                )
-            )
+                "Simulering" to
+                    mapOf(
+                        "mottaker" to PERSON,
+                        "maksdato" to "2020-04-20",
+                        "saksbehandler" to "Spleis",
+                        "fagområde" to "SP",
+                        "fagsystemId" to "ref",
+                        "endringskode" to "NY",
+                        "sjekksum" to -873852214,
+                        "linjer" to
+                            utbetalingslinjer.map {
+                                mapOf(
+                                    "fom" to it["fom"],
+                                    "tom" to it["tom"],
+                                    "sats" to it["sats"],
+                                    "satstype" to it["satstype"],
+                                    "grad" to it["grad"],
+                                    "delytelseId" to 1,
+                                    "refDelytelseId" to null,
+                                    "refFagsystemId" to null,
+                                    "endringskode" to "NY",
+                                    "klassekode" to "SPATORD",
+                                    "datoStatusFom" to null,
+                                    "statuskode" to null,
+                                )
+                            },
+                    ),
+            ),
         )
-    }
 
     private fun simuleringbehov(
-        utbetalingslinjer: List<Map<String, Any>> = listOf(
-            mapOf(
-                "satstype" to "DAG",
-                "sats" to 1000,
-                "fom" to "2020-04-20",
-                "tom" to "2020-05-20",
-                "grad" to 100
-            )
-        )
-    ): String {
-        return jacksonObjectMapper().writeValueAsString(
+        utbetalingslinjer: List<Map<String, Any>> =
+            listOf(
+                mapOf(
+                    "satstype" to "DAG",
+                    "sats" to 1000,
+                    "fom" to "2020-04-20",
+                    "tom" to "2020-05-20",
+                    "grad" to 100,
+                ),
+            ),
+    ): String =
+        jacksonObjectMapper().writeValueAsString(
             mapOf(
                 "@event_name" to "behov",
                 "@behov" to listOf("Simulering"),
@@ -192,33 +201,34 @@ internal class SimuleringerTest {
                 "@behovId" to BEHOV,
                 "organisasjonsnummer" to ORGNR,
                 "fødselsnummer" to PERSON,
-                "Simulering" to mapOf(
-                    "mottaker" to ORGNR,
-                    "maksdato" to "2020-04-20",
-                    "saksbehandler" to "Spleis",
-                    "mottaker" to ORGNR,
-                    "fagområde" to "SPREF",
-                    "fagsystemId" to "ref",
-                    "endringskode" to "NY",
-                    "sjekksum" to -873852214,
-                    "linjer" to utbetalingslinjer.map {
-                        mapOf<String, Any?>(
-                            "fom" to it["fom"],
-                            "tom" to it["tom"],
-                            "sats" to it["sats"],
-                            "satstype" to it["satstype"],
-                            "grad" to it["grad"],
-                            "delytelseId" to 1,
-                            "refDelytelseId" to null,
-                            "refFagsystemId" to null,
-                            "endringskode" to "NY",
-                            "klassekode" to "SPREFAG-IOP",
-                            "datoStatusFom" to null,
-                            "statuskode" to null
-                        )
-                    }
-                )
-            )
+                "Simulering" to
+                    mapOf(
+                        "mottaker" to ORGNR,
+                        "maksdato" to "2020-04-20",
+                        "saksbehandler" to "Spleis",
+                        "mottaker" to ORGNR,
+                        "fagområde" to "SPREF",
+                        "fagsystemId" to "ref",
+                        "endringskode" to "NY",
+                        "sjekksum" to -873852214,
+                        "linjer" to
+                            utbetalingslinjer.map {
+                                mapOf<String, Any?>(
+                                    "fom" to it["fom"],
+                                    "tom" to it["tom"],
+                                    "sats" to it["sats"],
+                                    "satstype" to it["satstype"],
+                                    "grad" to it["grad"],
+                                    "delytelseId" to 1,
+                                    "refDelytelseId" to null,
+                                    "refFagsystemId" to null,
+                                    "endringskode" to "NY",
+                                    "klassekode" to "SPREFAG-IOP",
+                                    "datoStatusFom" to null,
+                                    "statuskode" to null,
+                                )
+                            },
+                    ),
+            ),
         )
-    }
 }

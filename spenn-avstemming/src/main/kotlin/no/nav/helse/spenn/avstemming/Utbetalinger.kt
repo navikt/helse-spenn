@@ -13,34 +13,43 @@ import java.util.*
 
 internal class Utbetalinger(
     rapidsConnection: RapidsConnection,
-    private val oppdragDao: OppdragDao
+    private val oppdragDao: OppdragDao,
 ) : River.PacketListener {
-
     private companion object {
         private val logger = Logg.ny(Utbetalinger::class)
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition {
-                it.requireValue("@event_name", "oppdrag_utbetaling")
-                it.forbid("kvittering")
-            }
-            validate {
-                it.requireKey("@id", "utbetalingId", "fagsystemId")
-                it.requireKey("fødselsnummer", "mottaker", "avstemmingsnøkkel", "fagområde", "opprettet", "totalbeløp")
-                it.require("@opprettet", JsonNode::asLocalDateTime)
-            }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.requireValue("@event_name", "oppdrag_utbetaling")
+                    it.forbid("kvittering")
+                }
+                validate {
+                    it.requireKey("@id", "utbetalingId", "fagsystemId")
+                    it.requireKey("fødselsnummer", "mottaker", "avstemmingsnøkkel", "fagområde", "opprettet", "totalbeløp")
+                    it.require("@opprettet", JsonNode::asLocalDateTime)
+                }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         logger
             .offentligError("Forstod ikke oppdrag_utbetaling (se sikkerlogg for detaljer)")
             .privatError("Forstod ikke oppdrag_utbetaling:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val utbetalingId = UUID.fromString(packet["utbetalingId"].asText())
         val avstemmingsnøkkel = packet["avstemmingsnøkkel"].asLong()
         val fagsystemId = packet["fagsystemId"].asText()
@@ -50,11 +59,12 @@ internal class Utbetalinger(
         val totalbeløp = packet["totalbeløp"].asInt()
         val opprettet = packet["opprettet"].asLocalDateTime()
 
-        val pakkelogg = logger
-            .åpent("meldingsreferanseId", packet["@id"].asText())
-            .åpent("utbetalingId", "$utbetalingId")
-            .åpent("fagsystemId", fagsystemId)
-            .privat("fødselsnummer", fødselsnummer)
+        val pakkelogg =
+            logger
+                .åpent("meldingsreferanseId", packet["@id"].asText())
+                .åpent("utbetalingId", "$utbetalingId")
+                .åpent("fagsystemId", fagsystemId)
+                .privat("fødselsnummer", fødselsnummer)
         oppdragDao.nyttOppdrag(avstemmingsnøkkel, utbetalingId, fagsystemId, fagområde, fødselsnummer, mottaker, totalbeløp, opprettet)
         pakkelogg.info("oppdrag er opprettet med avstemmingsnøkkel $avstemmingsnøkkel")
     }

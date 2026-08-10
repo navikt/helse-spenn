@@ -10,9 +10,8 @@ internal class AvstemmingBuilder(
     id: UUID,
     private val fagområde: String,
     private val oppdrag: List<OppdragDto>,
-    private val detaljerPerMelding: Int = DETALJER_PER_AVSTEMMINGMELDING
+    private val detaljerPerMelding: Int = DETALJER_PER_AVSTEMMINGMELDING,
 ) {
-
     private companion object {
         private const val DETALJER_PER_AVSTEMMINGMELDING = 70
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyyMMddHH")
@@ -23,13 +22,15 @@ internal class AvstemmingBuilder(
     private val avstemmingsnøkler =
         OppdragDto.avstemmingsperiode(oppdrag)
     private val detaljer = OppdragDto.detaljer(oppdrag)
-    private val meldinger = mutableListOf(
-        avstemmingsdata(AksjonType.START)
-    )
+    private val meldinger =
+        mutableListOf(
+            avstemmingsdata(AksjonType.START),
+        )
 
     fun build(): List<Avstemmingsdata> {
         initiellDatamelding()
-        detaljer.takeLast(max(0, detaljer.size - detaljerPerMelding))
+        detaljer
+            .takeLast(max(0, detaljer.size - detaljerPerMelding))
             .chunked(detaljerPerMelding)
             .map { datamelding(it) }
             .forEach { meldinger.add(it) }
@@ -38,33 +39,36 @@ internal class AvstemmingBuilder(
     }
 
     private fun initiellDatamelding() {
-        meldinger.add(datamelding(detaljer.take(detaljerPerMelding)).apply {
-            total = OppdragDto.totaldata(oppdrag)
-            periode = Periodedata().apply {
-                datoAvstemtFom = perioder.start.format(tidsstempel)
-                datoAvstemtTom = perioder.endInclusive.format(tidsstempel)
-            }
-            grunnlag = OppdragDto.grunnlagsdata(oppdrag)
-        })
+        meldinger.add(
+            datamelding(detaljer.take(detaljerPerMelding)).apply {
+                total = OppdragDto.totaldata(oppdrag)
+                periode =
+                    Periodedata().apply {
+                        datoAvstemtFom = perioder.start.format(tidsstempel)
+                        datoAvstemtTom = perioder.endInclusive.format(tidsstempel)
+                    }
+                grunnlag = OppdragDto.grunnlagsdata(oppdrag)
+            },
+        )
     }
 
-    private fun datamelding(detaljer: List<Detaljdata>) =
-        avstemmingsdata(AksjonType.DATA).apply { detalj.addAll(detaljer) }
+    private fun datamelding(detaljer: List<Detaljdata>) = avstemmingsdata(AksjonType.DATA).apply { detalj.addAll(detaljer) }
 
     private fun avstemmingsdata(aksjonstype: AksjonType) =
         Avstemmingsdata().apply {
-            aksjon = Aksjonsdata().apply {
-                aksjonType = aksjonstype
-                kildeType = KildeType.AVLEV
-                avstemmingType = AvstemmingType.GRSN
-                avleverendeKomponentKode = "SP"
-                mottakendeKomponentKode = "OS"
-                underkomponentKode = fagområde
-                nokkelFom = "${avstemmingsnøkler.start}"
-                nokkelTom = "${avstemmingsnøkler.endInclusive}"
-                avleverendeAvstemmingId = id
-                brukerId = "SPENN"
-            }
+            aksjon =
+                Aksjonsdata().apply {
+                    aksjonType = aksjonstype
+                    kildeType = KildeType.AVLEV
+                    avstemmingType = AvstemmingType.GRSN
+                    avleverendeKomponentKode = "SP"
+                    mottakendeKomponentKode = "OS"
+                    underkomponentKode = fagområde
+                    nokkelFom = "${avstemmingsnøkler.start}"
+                    nokkelTom = "${avstemmingsnøkler.endInclusive}"
+                    avleverendeAvstemmingId = id
+                    brukerId = "SPENN"
+                }
         }
 
     private fun encodeUUIDBase64(uuid: UUID): String {

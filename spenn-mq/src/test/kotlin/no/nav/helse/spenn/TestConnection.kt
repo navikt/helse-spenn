@@ -2,10 +2,10 @@ package no.nav.helse.spenn
 
 import io.mockk.mockk
 import javax.jms.*
-import javax.print.attribute.standard.JobPriority
 
-internal class TestConnection private constructor(delegate: Connection) : Connection by delegate {
-
+internal class TestConnection private constructor(
+    delegate: Connection,
+) : Connection by delegate {
     private var consumer: TestConsumer? = null
     private val meldinger = mutableListOf<Message>()
     internal val inspektør get() = ConnectionInspektør(meldinger.toList())
@@ -22,27 +22,44 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
     }
 
     override fun createSession(): Session = TestSession()
-    override fun createSession(transacted: Boolean, acknowledgeMode: Int) = createSession()
+
+    override fun createSession(
+        transacted: Boolean,
+        acknowledgeMode: Int,
+    ) = createSession()
 
     fun kastExceptionNesteSend() {
         kastException = true
     }
 
-    private inner class TestSession private constructor(delegate: Session) : Session by delegate {
+    private inner class TestSession private constructor(
+        delegate: Session,
+    ) : Session by delegate {
         constructor() : this(mockk())
 
         override fun createQueue(queueName: String) = Queue { queueName }
+
         override fun createTextMessage(text: String): TextMessage = TestTextMessage(text)
+
         override fun createProducer(destination: Destination): MessageProducer = TestProducer()
-        override fun createConsumer(destination: Destination): MessageConsumer = TestConsumer().also {
-            this@TestConnection.consumer = it
-        }
+
+        override fun createConsumer(destination: Destination): MessageConsumer =
+            TestConsumer().also {
+                this@TestConnection.consumer = it
+            }
     }
 
-    private inner class TestProducer private constructor(delegate: MessageProducer) : MessageProducer by delegate {
+    private inner class TestProducer private constructor(
+        delegate: MessageProducer,
+    ) : MessageProducer by delegate {
         constructor() : this(mockk())
 
-        override fun send(message: Message, deliveryMode: Int, priority: Int, timeToLive: Long) {
+        override fun send(
+            message: Message,
+            deliveryMode: Int,
+            priority: Int,
+            timeToLive: Long,
+        ) {
             if (kastException) {
                 kastException = false
                 throw RuntimeException("En superalvorlig feil har oppstått!")
@@ -51,7 +68,9 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
         }
     }
 
-    private inner class TestConsumer private constructor(delegate: MessageConsumer) : MessageConsumer by delegate {
+    private inner class TestConsumer private constructor(
+        delegate: MessageConsumer,
+    ) : MessageConsumer by delegate {
         private var listener: MessageListener? = null
 
         constructor() : this(mockk())
@@ -67,7 +86,7 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
 
     private class TestTextMessage private constructor(
         delegate: TextMessage,
-        private var text: String
+        private var text: String,
     ) : TextMessage by delegate {
         private var jmsReplyTo: Destination? = null
 
@@ -80,7 +99,9 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
         }
 
         override fun getText() = text
+
         override fun getJMSReplyTo() = jmsReplyTo
+
         override fun setJMSReplyTo(replyTo: Destination?) {
             jmsReplyTo = replyTo
         }
@@ -90,9 +111,11 @@ internal class TestConnection private constructor(delegate: Connection) : Connec
         }
     }
 
-    class ConnectionInspektør(private val meldinger: List<Message>) {
-
+    class ConnectionInspektør(
+        private val meldinger: List<Message>,
+    ) {
         fun melding(indeks: Int) = meldinger[indeks]
+
         fun antall() = meldinger.size
     }
 }

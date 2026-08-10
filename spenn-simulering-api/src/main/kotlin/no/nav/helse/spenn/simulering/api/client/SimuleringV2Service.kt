@@ -21,9 +21,8 @@ import java.time.LocalDateTime
 class SimuleringV2Service(
     private val soapClient: MinimalSoapClient,
     private val assertionStrategy: SoapAssertionStrategy,
-    private val mapper: XmlMapper = XmlMapper()
+    private val mapper: XmlMapper = XmlMapper(),
 ) {
-
     private companion object {
         private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(SimuleringV2Service::class.java)
@@ -38,34 +37,42 @@ class SimuleringV2Service(
                 sikkerLogg.info("Feil ved simuleringV2: {}", msg, cause)
                 SimuleringResult(
                     status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
-                    feilmelding = msg
+                    feilmelding = msg,
                 )
             },
             whenOk = { body ->
                 tolkRespons(body.body(), body.statusCode())
-            }
+            },
         )
     }
 
-    private fun tolkRespons(responseBody: String, statuskode: Int): SimuleringResult {
-        return when (val result = deserializeSoapBody<JsonNode>(mapper, responseBody)) {
+    private fun tolkRespons(
+        responseBody: String,
+        statuskode: Int,
+    ): SimuleringResult =
+        when (val result = deserializeSoapBody<JsonNode>(mapper, responseBody)) {
             is Result.Error -> {
                 sikkerLogg.info("Feil ved simuleringV2: ${result.error} (http $statuskode). Oppdrag/OS er trolig stengt.", result.cause)
                 sikkerLogg.info("Response body: $responseBody")
                 SimuleringResult(
                     status = SimuleringStatus.TEKNISK_FEIL,
-                    feilmelding = result.error
+                    feilmelding = result.error,
                 )
             }
-            is Result.Ok -> when (val soapresult = result.value) {
-                is SoapResult.Fault -> håndterFault(soapresult)
-                is SoapResult.Ok -> {
-                    sikkerLogg.info("Simuleringsrespons fra oppdrag:\n${soapresult.response.toPrettyString()}")
-                    mapResponseToResultat(soapresult.response.path("simulerBeregningResponse").path("response").path("simulering"))
+            is Result.Ok ->
+                when (val soapresult = result.value) {
+                    is SoapResult.Fault -> håndterFault(soapresult)
+                    is SoapResult.Ok -> {
+                        sikkerLogg.info("Simuleringsrespons fra oppdrag:\n${soapresult.response.toPrettyString()}")
+                        mapResponseToResultat(
+                            soapresult.response
+                                .path("simulerBeregningResponse")
+                                .path("response")
+                                .path("simulering"),
+                        )
+                    }
                 }
-            }
         }
-    }
 
     private fun håndterFault(err: SoapResult.Fault): SimuleringResult {
         val detalje = err.detalje ?: return håndterGenerellFault(err)
@@ -76,21 +83,25 @@ class SimuleringV2Service(
         sikkerLogg.info("SOAP FAULT: ${err.message}")
         return SimuleringResult(
             status = SimuleringStatus.FUNKSJONELL_FEIL,
-            feilmelding = err.message
+            feilmelding = err.message,
         )
     }
 
-    private fun tolkOppdragFault(fault: SoapResult.Fault, detalje: String): SimuleringResult {
+    private fun tolkOppdragFault(
+        fault: SoapResult.Fault,
+        detalje: String,
+    ): SimuleringResult {
         val node = tolkDetaljeSomJson(detalje) ?: return håndterGenerellFault(fault)
         return tolkJsonSomOppdragFault(node) ?: return håndterGenerellFault(fault)
     }
 
     private fun tolkDetaljeSomJson(detalje: String): ObjectNode? {
-        val node = try {
-            jsonMapper.readTree(detalje)
-        } catch (_: Exception) {
-            return null
-        }
+        val node =
+            try {
+                jsonMapper.readTree(detalje)
+            } catch (_: Exception) {
+                return null
+            }
         if (node !is ObjectNode) return null
         return node
     }
@@ -109,44 +120,55 @@ class SimuleringV2Service(
         }
     }
 
-    private fun håndterOppdragFault(feiltype: String, fault: JsonNode): SimuleringResult {
+    private fun håndterOppdragFault(
+        feiltype: String,
+        fault: JsonNode,
+    ): SimuleringResult {
         val oppdragFault = jsonMapper.convertValue<Oppdragfault>(fault)
         sikkerLogg.info("Feil fra OS: {}:\nMelding: {}\nKilde: {}\nRotårsak: {}\nTidspunkt: {}", feiltype, oppdragFault.melding, oppdragFault.kilde, oppdragFault.rotårsak, oppdragFault.tidspunkt)
         return SimuleringResult(
             status = SimuleringStatus.FUNKSJONELL_FEIL,
-            feilmelding = oppdragFault.melding
+            feilmelding = oppdragFault.melding,
         )
     }
+
     private fun håndterCicsFault(fault: JsonNode): SimuleringResult {
         Oppdragfault(fault.asText(), "", "", LocalDateTime.now())
         sikkerLogg.info("Teknisk feil fra OS: {}", fault.asText())
         return SimuleringResult(
             status = SimuleringStatus.TEKNISK_FEIL,
-            feilmelding = fault.asText()
+            feilmelding = fault.asText(),
         )
     }
 
-    private fun mapResponseToResultat(simulering: JsonNode) = SimuleringResult(
-        status = SimuleringStatus.OK,
-        simulering = if (simulering.isNull || simulering.isMissingNode) null else Simulering(
-            gjelderId = simulering.path("gjelderId").asText(),
-            gjelderNavn = simulering.path("gjelderNavn").asText().trim(),
-            datoBeregnet = LocalDate.parse(simulering.path("datoBeregnet").asText()),
-            totalBelop = simulering.path("belop").asInt(),
-            periodeList = simulering.path("beregningsPeriode").asArray().map { mapBeregningsPeriode(it) }
+    private fun mapResponseToResultat(simulering: JsonNode) =
+        SimuleringResult(
+            status = SimuleringStatus.OK,
+            simulering =
+                if (simulering.isNull || simulering.isMissingNode) {
+                    null
+                } else {
+                    Simulering(
+                        gjelderId = simulering.path("gjelderId").asText(),
+                        gjelderNavn = simulering.path("gjelderNavn").asText().trim(),
+                        datoBeregnet = LocalDate.parse(simulering.path("datoBeregnet").asText()),
+                        totalBelop = simulering.path("belop").asInt(),
+                        periodeList = simulering.path("beregningsPeriode").asArray().map { mapBeregningsPeriode(it) },
+                    )
+                },
         )
-    )
 
-    private fun JsonNode.asArray() = when (this) {
-        is ObjectNode -> jsonMapper.createArrayNode().add(this)
-        else -> this
-    }
+    private fun JsonNode.asArray() =
+        when (this) {
+            is ObjectNode -> jsonMapper.createArrayNode().add(this)
+            else -> this
+        }
 
     private fun mapBeregningsPeriode(periode: JsonNode) =
         SimulertPeriode(
             fom = LocalDate.parse(periode.path("periodeFom").asText()),
             tom = LocalDate.parse(periode.path("periodeTom").asText()),
-            utbetaling = periode.path("beregningStoppnivaa").asArray().map { mapBeregningStoppNivaa(it) }
+            utbetaling = periode.path("beregningStoppnivaa").asArray().map { mapBeregningStoppNivaa(it) },
         )
 
     private fun mapBeregningStoppNivaa(stoppNivaa: JsonNode) =
@@ -156,7 +178,8 @@ class SimuleringV2Service(
             utbetalesTilId = stoppNivaa.path("utbetalesTilId").asText().removePrefix("00"),
             forfall = LocalDate.parse(stoppNivaa.path("forfall").asText()),
             feilkonto = stoppNivaa.path("feilkonto").asBoolean(),
-            detaljer = stoppNivaa.path("beregningStoppnivaaDetaljer").asArray().map { mapDetaljer(it) })
+            detaljer = stoppNivaa.path("beregningStoppnivaaDetaljer").asArray().map { mapDetaljer(it) },
+        )
 
     private fun mapDetaljer(detaljer: JsonNode) =
         Detaljer(
@@ -172,7 +195,7 @@ class SimuleringV2Service(
             klassekode = detaljer.path("klassekode").asText().trim(),
             klassekodeBeskrivelse = detaljer.path("klasseKodeBeskrivelse").asText().trim(),
             utbetalingsType = detaljer.path("typeKlasse").asText(),
-            refunderesOrgNr = detaljer.path("refunderesOrgNr").asText().removePrefix("00")
+            refunderesOrgNr = detaljer.path("refunderesOrgNr").asText().removePrefix("00"),
         )
 
     private data class Oppdragfault(
@@ -183,12 +206,12 @@ class SimuleringV2Service(
         @JsonProperty("rootCause")
         val rotårsak: String,
         @JsonProperty("dateTimeStamp")
-        val tidspunkt: LocalDateTime
+        val tidspunkt: LocalDateTime,
     )
 
     @Language("XML")
-    private fun buildXmlRequestBody(request: SimulerBeregningRequest): String {
-        return """<ns2:simulerBeregningRequest xmlns:ns2="http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt"
+    private fun buildXmlRequestBody(request: SimulerBeregningRequest): String =
+        """<ns2:simulerBeregningRequest xmlns:ns2="http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt"
                              xmlns:ns3="http://nav.no/system/os/entiteter/oppdragSkjema">
     <request>
         <simuleringsPeriode>
@@ -204,14 +227,14 @@ class SimuleringV2Service(
             <datoOppdragGjelderFom>${request.oppdrag.datoOppdragGjelderFom}</datoOppdragGjelderFom>
             <saksbehId>${request.oppdrag.saksbehId}</saksbehId>
             ${request.oppdrag.enhet.joinToString(separator = "\n") { enhet ->
-                """<ns3:enhet>
+            """<ns3:enhet>
                     <typeEnhet>${enhet.typeEnhet}</typeEnhet>
                     <enhet>${enhet.enhet}</enhet>
                     <datoEnhetFom>${enhet.datoEnhetFom}</datoEnhetFom>
-                </ns3:enhet>"""    
-            }}
+                </ns3:enhet>"""
+        }}
             ${request.oppdrag.oppdragslinje.joinToString(separator = "\n") { linje ->
-                """<oppdragslinje>
+            """<oppdragslinje>
                 <kodeEndringLinje>${linje.kodeEndringLinje}</kodeEndringLinje>
                 <delytelseId>${linje.delytelseId}</delytelseId>
                 ${linje.refDelytelseId?.let { """<refDelytelseId>${linje.refDelytelseId}</refDelytelseId>""" } ?: ""}
@@ -227,30 +250,29 @@ class SimuleringV2Service(
                 <brukKjoreplan>${linje.brukKjoreplan}</brukKjoreplan>
                 <saksbehId>${linje.saksbehId}</saksbehId>
                 ${linje.utbetalesTilId?.let {
-                    """<utbetalesTilId>$it</utbetalesTilId>"""
-                } ?: ""}
+                """<utbetalesTilId>$it</utbetalesTilId>"""
+            } ?: ""}
                 ${linje.grad.joinToString(separator = "\n") { grad ->
-                    """<ns3:grad>
+                """<ns3:grad>
                     <typeGrad>${grad.typeGrad}</typeGrad>
                     ${grad.grad?.let { """<grad>${grad.grad}</grad>""" } ?: ""}
                 </ns3:grad>"""
-                }}
+            }}
                 ${linje.attestant.joinToString(separator = "\n") { attestant ->
-                    """<ns3:attestant>
+                """<ns3:attestant>
                     <attestantId>${attestant.attestantId}</attestantId>
                 </ns3:attestant>"""
-                }}
+            }}
                 ${linje.refusjonsInfo?.let { refusjonsInfo ->
-                    """<ns3:refusjonsInfo>
+                """<ns3:refusjonsInfo>
                     <refunderesId>${refusjonsInfo.refunderesId}</refunderesId>
                     ${refusjonsInfo.maksDato?.let { """<maksDato>${refusjonsInfo.maksDato}</maksDato>""" } ?: ""}
                     <datoFom>${refusjonsInfo.datoFom}</datoFom>
                 </ns3:refusjonsInfo>"""
-                } ?: "" }
+            } ?: "" }
             </oppdragslinje>"""
-            }}
+        }}
         </oppdrag>
     </request>
 </ns2:simulerBeregningRequest>"""
-    }
 }

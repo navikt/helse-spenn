@@ -17,7 +17,6 @@ import java.net.http.HttpClient
 import java.time.LocalDate
 
 class SimuleringtjenesteTest {
-
     private companion object {
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
@@ -97,44 +96,46 @@ class SimuleringtjenesteTest {
     private fun simuleringRequest() =
         SimuleringRequest(
             fødselsnummer = PERSON,
-            oppdrag = SimuleringRequest.Oppdrag(
-                fagområde = SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON,
-                fagsystemId = FAGSYSTEMID,
-                endringskode = SimuleringRequest.Oppdrag.Endringskode.ENDRET,
-                mottakerAvUtbetalingen = ORGNR,
-                linjer = listOf(
-                    SimuleringRequest.Oppdrag.Oppdragslinje(
-                        endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
-                        fom = LocalDate.of(2018, 1, 1),
-                        tom = LocalDate.of(2018, 1, 14),
-                        satstype = SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.DAGLIG,
-                        sats = DAGSATS,
-                        grad = GRAD,
-                        delytelseId = 1,
-                        refDelytelseId = null,
-                        refFagsystemId = null,
-                        klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
-                        klassekodeFom = LocalDate.of(2018, 1, 1),
-                        opphørerFom = null
-                    ),
-                    SimuleringRequest.Oppdrag.Oppdragslinje(
-                        endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
-                        fom = LocalDate.of(2018, 1, 15),
-                        tom = LocalDate.of(2018, 1, 31),
-                        satstype = SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.DAGLIG,
-                        sats = DAGSATS,
-                        grad = GRAD,
-                        delytelseId = 1,
-                        refDelytelseId = null,
-                        refFagsystemId = null,
-                        klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
-                        klassekodeFom = LocalDate.of(2018, 1, 15),
-                        opphørerFom = null
-                    )
-                )
-            ),
+            oppdrag =
+                SimuleringRequest.Oppdrag(
+                    fagområde = SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON,
+                    fagsystemId = FAGSYSTEMID,
+                    endringskode = SimuleringRequest.Oppdrag.Endringskode.ENDRET,
+                    mottakerAvUtbetalingen = ORGNR,
+                    linjer =
+                        listOf(
+                            SimuleringRequest.Oppdrag.Oppdragslinje(
+                                endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
+                                fom = LocalDate.of(2018, 1, 1),
+                                tom = LocalDate.of(2018, 1, 14),
+                                satstype = SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.DAGLIG,
+                                sats = DAGSATS,
+                                grad = GRAD,
+                                delytelseId = 1,
+                                refDelytelseId = null,
+                                refFagsystemId = null,
+                                klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                                klassekodeFom = LocalDate.of(2018, 1, 1),
+                                opphørerFom = null,
+                            ),
+                            SimuleringRequest.Oppdrag.Oppdragslinje(
+                                endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
+                                fom = LocalDate.of(2018, 1, 15),
+                                tom = LocalDate.of(2018, 1, 31),
+                                satstype = SimuleringRequest.Oppdrag.Oppdragslinje.Satstype.DAGLIG,
+                                sats = DAGSATS,
+                                grad = GRAD,
+                                delytelseId = 1,
+                                refDelytelseId = null,
+                                refFagsystemId = null,
+                                klassekode = SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                                klassekodeFom = LocalDate.of(2018, 1, 15),
+                                opphørerFom = null,
+                            ),
+                        ),
+                ),
             maksdato = MAKSDATO,
-            saksbehandler = SAKSBEHANDLER
+            saksbehandler = SAKSBEHANDLER,
         )
 
     private fun xmlResponse(body: String): String {
@@ -146,23 +147,29 @@ class SimuleringtjenesteTest {
         return response
     }
 
-
-    private fun mockClient(response: String, statusCode: Int = 200): Pair<HttpClient, Simuleringtjeneste> {
-        val httpClient = mockk<HttpClient> {
-            every {
-                send<String>(any(), any())
-            } returns MockHttpResponse(response, statusCode)
-        }
-        val tokenProvider = object : SamlTokenProvider {
-            override fun samlToken(username: String, password: String): Result<SamlToken> {
-                throw NotImplementedError("ikke implementert i mock")
+    private fun mockClient(
+        response: String,
+        statusCode: Int = 200,
+    ): Pair<HttpClient, Simuleringtjeneste> {
+        val httpClient =
+            mockk<HttpClient> {
+                every {
+                    send<String>(any(), any())
+                } returns MockHttpResponse(response, statusCode)
             }
-        }
+        val tokenProvider =
+            object : SamlTokenProvider {
+                override fun samlToken(
+                    username: String,
+                    password: String,
+                ): Result<SamlToken> = throw NotImplementedError("ikke implementert i mock")
+            }
         val soapClient = MinimalSoapClient(URI("http://simulering-ws"), tokenProvider, httpClient)
-        val client = SimuleringV2Service(
-            soapClient = soapClient,
-            assertionStrategy = { "<saml token>".ok() }
-        )
+        val client =
+            SimuleringV2Service(
+                soapClient = soapClient,
+                assertionStrategy = { "<saml token>".ok() },
+            )
         return httpClient to Simuleringtjeneste(client)
     }
 }

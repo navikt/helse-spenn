@@ -15,7 +15,7 @@ class OppdragDto(
     private val totalbeløp: Int,
     private val alvorlighetsgrad: String?,
     private val kodemelding: String?,
-    private val beskrivendemelding: String?
+    private val beskrivendemelding: String?,
 ) {
     internal companion object {
         private val tidsstempel = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SSSSSS")
@@ -32,43 +32,45 @@ class OppdragDto(
             check(liste.isNotEmpty())
             return LongRange(
                 liste.minOf { it.avstemmingsnøkkel },
-                liste.maxOf { it.avstemmingsnøkkel }
+                liste.maxOf { it.avstemmingsnøkkel },
             )
         }
 
         fun detaljer(liste: List<OppdragDto>) = liste.mapNotNull { it.somDetalj() }
 
-        fun totaldata(liste: List<OppdragDto>) = Totaldata().apply {
-            liste.summer { antall, beløp, fortegn ->
-                totalAntall = antall
-                totalBelop = beløp
-                this.fortegn = fortegn
+        fun totaldata(liste: List<OppdragDto>) =
+            Totaldata().apply {
+                liste.summer { antall, beløp, fortegn ->
+                    totalAntall = antall
+                    totalBelop = beløp
+                    this.fortegn = fortegn
+                }
             }
-        }
 
-        fun grunnlagsdata(liste: List<OppdragDto>) = Grunnlagsdata().apply {
-            val beløpEtterStatus = liste.groupBy { it.status }
-            beløpEtterStatus.summer(Oppdragstatus.AKSEPTERT) { antall, beløp, fortegn ->
-                godkjentAntall = antall
-                godkjentBelop = beløp
-                godkjentFortegn = fortegn
+        fun grunnlagsdata(liste: List<OppdragDto>) =
+            Grunnlagsdata().apply {
+                val beløpEtterStatus = liste.groupBy { it.status }
+                beløpEtterStatus.summer(Oppdragstatus.AKSEPTERT) { antall, beløp, fortegn ->
+                    godkjentAntall = antall
+                    godkjentBelop = beløp
+                    godkjentFortegn = fortegn
+                }
+                beløpEtterStatus.summer(Oppdragstatus.AKSEPTERT_MED_VARSEL) { antall, beløp, fortegn ->
+                    varselAntall = antall
+                    varselBelop = beløp
+                    varselFortegn = fortegn
+                }
+                beløpEtterStatus.summer(Oppdragstatus.AVVIST) { antall, beløp, fortegn ->
+                    avvistAntall = antall
+                    avvistBelop = beløp
+                    avvistFortegn = fortegn
+                }
+                beløpEtterStatus.summer(Oppdragstatus.MANGELFULL) { antall, beløp, fortegn ->
+                    manglerAntall = antall
+                    manglerBelop = beløp
+                    manglerFortegn = fortegn
+                }
             }
-            beløpEtterStatus.summer(Oppdragstatus.AKSEPTERT_MED_VARSEL) { antall, beløp, fortegn ->
-                varselAntall = antall
-                varselBelop = beløp
-                varselFortegn = fortegn
-            }
-            beløpEtterStatus.summer(Oppdragstatus.AVVIST) { antall, beløp, fortegn ->
-                avvistAntall = antall
-                avvistBelop = beløp
-                avvistFortegn = fortegn
-            }
-            beløpEtterStatus.summer(Oppdragstatus.MANGELFULL) { antall, beløp, fortegn ->
-                manglerAntall = antall
-                manglerBelop = beløp
-                manglerFortegn = fortegn
-            }
-        }
 
         private fun List<OppdragDto>.summer(block: (Int, BigDecimal, Fortegn) -> Unit) {
             totalbeløp(this)
@@ -77,7 +79,7 @@ class OppdragDto(
 
         private fun Map<Oppdragstatus, List<OppdragDto>>.summer(
             status: Oppdragstatus,
-            block: (Int, BigDecimal, Fortegn) -> Unit
+            block: (Int, BigDecimal, Fortegn) -> Unit,
         ) {
             this[status]?.summer(block)
         }
@@ -99,10 +101,11 @@ class OppdragDto(
         }
     }
 
-    private fun detaljType() = when (status) {
-        Oppdragstatus.MANGELFULL -> DetaljType.MANG
-        Oppdragstatus.AVVIST -> DetaljType.AVVI
-        Oppdragstatus.AKSEPTERT_MED_VARSEL -> DetaljType.VARS
-        else -> null
-    }
+    private fun detaljType() =
+        when (status) {
+            Oppdragstatus.MANGELFULL -> DetaljType.MANG
+            Oppdragstatus.AVVIST -> DetaljType.AVVI
+            Oppdragstatus.AKSEPTERT_MED_VARSEL -> DetaljType.VARS
+            else -> null
+        }
 }

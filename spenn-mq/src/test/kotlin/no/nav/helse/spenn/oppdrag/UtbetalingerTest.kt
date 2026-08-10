@@ -22,9 +22,10 @@ internal class UtbetalingerTest {
     }
 
     private val connection = TestConnection()
-    private val rapid = TestRapid().apply {
-        Utbetalinger(this, Jms(connection, SEND_QUEUE, REPLY_TO_QUEUE).sendSession())
-    }
+    private val rapid =
+        TestRapid().apply {
+            Utbetalinger(this, Jms(connection, SEND_QUEUE, REPLY_TO_QUEUE).sendSession())
+        }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
@@ -36,21 +37,33 @@ internal class UtbetalingerTest {
 
     @Test
     fun `løser utbetalingsbehov med engangsutbetaling`() {
-        val behov = utbetalingsbehov.linjer(
-            utbetalingslinje
-                .grad(null)
-                .satstype("ENG")
-        )
+        val behov =
+            utbetalingsbehov.linjer(
+                utbetalingslinje
+                    .grad(null)
+                    .satstype("ENG"),
+            )
         rapid.sendTestMessage(behov.json())
 
         assertEquals(1, inspektør.size)
         assertEquals(1, connection.inspektør.antall())
         val body = connection.inspektør.melding(0).getBody(String::class.java)
         val unmarshalled = OppdragXml.unmarshal(body)
-        assertEquals(0, unmarshalled.oppdrag110!!.oppdragsLinje150[0].grad170.size)
+        assertEquals(
+            0,
+            unmarshalled.oppdrag110!!
+                .oppdragsLinje150[0]
+                .grad170.size,
+        )
         assertEquals(SatstypeDto.ENG, unmarshalled.oppdrag110.oppdragsLinje150[0].typeSats)
 
-        assertEquals("queue:///$REPLY_TO_QUEUE", connection.inspektør.melding(0).jmsReplyTo.toString())
+        assertEquals(
+            "queue:///$REPLY_TO_QUEUE",
+            connection.inspektør
+                .melding(0)
+                .jmsReplyTo
+                .toString(),
+        )
         assertOverført(0)
     }
 

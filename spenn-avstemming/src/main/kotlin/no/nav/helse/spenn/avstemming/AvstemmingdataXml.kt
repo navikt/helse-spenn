@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.avstemming
 
-
 import jakarta.xml.bind.JAXBContext
 import jakarta.xml.bind.JAXBElement
 import jakarta.xml.bind.Marshaller
@@ -12,37 +11,36 @@ import javax.xml.stream.XMLInputFactory
 import javax.xml.transform.stream.StreamSource
 
 object AvstemmingdataXml {
-
     private val jaxbContext = JAXBContext.newInstance(Avstemmingsdata::class.java)
     private val unmarshaller = jaxbContext.createUnmarshaller()
-    private val marshaller = jaxbContext.createMarshaller().apply {
-        setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-    }
+    private val marshaller =
+        jaxbContext.createMarshaller().apply {
+            setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
+        }
 
-    private val xmlInputFactory = XMLInputFactory.newInstance().apply {
-        setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
-        setProperty(XMLInputFactory.SUPPORT_DTD, false)
-    }
+    private val xmlInputFactory =
+        XMLInputFactory.newInstance().apply {
+            setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
+            setProperty(XMLInputFactory.SUPPORT_DTD, false)
+        }
 
-    fun marshal(avstemmingsdata: Avstemmingsdata): String {
-        return StringWriter().use {
+    fun marshal(avstemmingsdata: Avstemmingsdata): String =
+        StringWriter().use {
             marshaller.marshal(
                 JAXBElement(QName("", "Avstemmingsdata"), Avstemmingsdata::class.java, avstemmingsdata),
-                it
+                it,
             )
             it.toString()
         }
-    }
 
-    fun unmarshal(avstemmingsdataXML: String): Avstemmingsdata {
-        return StringReader(avstemmingsdataXML).use {
+    fun unmarshal(avstemmingsdataXML: String): Avstemmingsdata =
+        StringReader(avstemmingsdataXML).use {
             xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
             xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false)
-            unmarshaller.unmarshal(
-                xmlInputFactory.createXMLStreamReader(StreamSource(it)),
-                Avstemmingsdata::class.java
-            ).value
+            unmarshaller
+                .unmarshal(
+                    xmlInputFactory.createXMLStreamReader(StreamSource(it)),
+                    Avstemmingsdata::class.java,
+                ).value
         }
-    }
-
 }

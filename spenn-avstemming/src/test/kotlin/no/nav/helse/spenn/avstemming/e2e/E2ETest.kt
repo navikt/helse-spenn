@@ -25,23 +25,23 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
-import org.junit.jupiter.api.assertThrows
 
 val databaseContainer = DatabaseContainers.container("spenn-avstemming", CleanupStrategy.tables("avstemming,oppdrag"))
 
 class E2ETest {
-
     private val mapper = jacksonObjectMapper()
     private val mqmeldinger = mutableListOf<String>()
-    private val utkø = object : UtKø {
-        override fun send(messageString: String) {
-            mqmeldinger.add(messageString)
+    private val utkø =
+        object : UtKø {
+            override fun send(messageString: String) {
+                mqmeldinger.add(messageString)
+            }
         }
-    }
 
     private lateinit var dataSource: TestDataSource
     private lateinit var database: TestDatabase
@@ -130,7 +130,6 @@ class E2ETest {
         assertNull(database.status(avstemmingsnøkkel))
     }
 
-
     @Test
     fun `avstemmer oppdrag`() {
         val avstemmingsnøkkel = 1024L
@@ -178,7 +177,8 @@ class E2ETest {
     }
 
     @Language("JSON")
-    private fun utførAvstemming(dagen: LocalDate) = """
+    private fun utførAvstemming(dagen: LocalDate) =
+        """
         {
           "@event_name": "utfør_avstemming",
           "@id": "${UUID.randomUUID()}",
@@ -188,7 +188,16 @@ class E2ETest {
     """
 
     @Language("JSON")
-    private fun oppdragutbetaling(avstemmingsnøkkel: Long, utbetalingId: UUID, fagsystemId: String, fagområde: String, fødselsnummer: String, mottaker: String, totalbeløp: Int, opprettet: LocalDateTime) = """
+    private fun oppdragutbetaling(
+        avstemmingsnøkkel: Long,
+        utbetalingId: UUID,
+        fagsystemId: String,
+        fagområde: String,
+        fødselsnummer: String,
+        mottaker: String,
+        totalbeløp: Int,
+        opprettet: LocalDateTime,
+    ) = """
     {
       "@event_name": "oppdrag_utbetaling",
       "@id": "${UUID.randomUUID()}",
@@ -204,13 +213,14 @@ class E2ETest {
     }
     """
 
-
     @Language("JSON")
-    private fun String.medKvittering(status: String) = (mapper.readTree(this) as ObjectNode).apply {
-        putObject("kvittering").apply {
-            put("status", status)
-        }
-    }.toString()
+    private fun String.medKvittering(status: String) =
+        (mapper.readTree(this) as ObjectNode)
+            .apply {
+                putObject("kvittering").apply {
+                    put("status", status)
+                }
+            }.toString()
 
     @Language("JSON")
     private fun transaksjonStatus(
@@ -221,7 +231,7 @@ class E2ETest {
         status: String,
         kodemelding: String?,
         beskrivendemelding: String?,
-        oppdragkvittering: String
+        oppdragkvittering: String,
     ) = """
         {
           "@event_name": "transaksjon_status",
@@ -239,24 +249,34 @@ class E2ETest {
         }
     """
 
-    private class TestDatabase(private val dataSource: TestDataSource) : Database {
+    private class TestDatabase(
+        private val dataSource: TestDataSource,
+    ) : Database {
         override fun getDataSource() = dataSource.ds
+
         override fun migrate() {}
 
-        fun antallOppdrag() = sessionOf(dataSource.ds).use {
-            it.run(queryOf("SELECT COUNT(1) FROM oppdrag").map { it.int(1) }.asSingle)
-        } ?: 0
+        fun antallOppdrag() =
+            sessionOf(dataSource.ds).use {
+                it.run(queryOf("SELECT COUNT(1) FROM oppdrag").map { it.int(1) }.asSingle)
+            } ?: 0
 
-        fun status(avstemmingsnøkkel: Long) = sessionOf(dataSource.ds).use {
-            it.run(queryOf("SELECT status FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.stringOrNull("status")?.let { Oppdragstatus.valueOf(it) } }.asSingle)
-        }
+        fun status(avstemmingsnøkkel: Long) =
+            sessionOf(dataSource.ds).use {
+                it.run(queryOf("SELECT status FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.stringOrNull("status")?.let { Oppdragstatus.valueOf(it) } }.asSingle)
+            }
 
-        fun avstemt(avstemmingsnøkkel: Long) = sessionOf(dataSource.ds).use {
-            it.run(queryOf("SELECT avstemt FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.boolean(1) }.asSingle)
-        } ?: fail { "forventer å finne oppdrag" }
+        fun avstemt(avstemmingsnøkkel: Long) =
+            sessionOf(dataSource.ds).use {
+                it.run(queryOf("SELECT avstemt FROM oppdrag WHERE avstemmingsnokkel=?", avstemmingsnøkkel).map { it.boolean(1) }.asSingle)
+            } ?: fail { "forventer å finne oppdrag" }
     }
 
-    internal class RepublishableTestRapid(private val rapid: TestRapid = TestRapid()) : RapidsConnection(), RapidsConnection.StatusListener, RapidsConnection.MessageListener {
+    internal class RepublishableTestRapid(
+        private val rapid: TestRapid = TestRapid(),
+    ) : RapidsConnection(),
+        RapidsConnection.StatusListener,
+        RapidsConnection.MessageListener {
         val inspektør get() = rapid.inspektør
 
         init {
@@ -265,10 +285,20 @@ class E2ETest {
         }
 
         fun reset() = rapid.reset()
-        override fun onMessage(message: String, context: MessageContext, metadata: MessageMetadata, metrics: MeterRegistry) = notifyMessage(message, context, metadata, metrics)
+
+        override fun onMessage(
+            message: String,
+            context: MessageContext,
+            metadata: MessageMetadata,
+            metrics: MeterRegistry,
+        ) = notifyMessage(message, context, metadata, metrics)
+
         override fun onNotReady(rapidsConnection: RapidsConnection) = notifyNotReady()
+
         override fun onReady(rapidsConnection: RapidsConnection) = notifyReady()
+
         override fun onShutdown(rapidsConnection: RapidsConnection) = notifyShutdown()
+
         override fun onStartup(rapidsConnection: RapidsConnection) = notifyStartup()
 
         fun sendTestMessage(message: String) = notifyMessage(message, this, MessageMetadata("", 0, 0, null, emptyMap()), SimpleMeterRegistry())
@@ -277,7 +307,10 @@ class E2ETest {
             rapid.publish(message)
         }
 
-        override fun publish(key: String, message: String) {
+        override fun publish(
+            key: String,
+            message: String,
+        ) {
             rapid.publish(key, message)
         }
 
@@ -289,7 +322,9 @@ class E2ETest {
         }
 
         override fun rapidName() = rapid.rapidName()
+
         override fun start() = rapid.start()
+
         override fun stop() = rapid.start()
     }
 }

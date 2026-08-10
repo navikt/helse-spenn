@@ -9,7 +9,7 @@ import java.time.LocalDate
 data class SimuleringResult(
     val status: SimuleringStatus,
     val feilmelding: String? = null,
-    val simulering: Simulering? = null
+    val simulering: Simulering? = null,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -18,14 +18,14 @@ data class Simulering(
     val gjelderNavn: String,
     val datoBeregnet: LocalDate,
     val totalBelop: Int,
-    val periodeList: List<SimulertPeriode>
+    val periodeList: List<SimulertPeriode>,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SimulertPeriode(
     val fom: LocalDate,
     val tom: LocalDate,
-    val utbetaling: List<Utbetaling>
+    val utbetaling: List<Utbetaling>,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -35,7 +35,7 @@ data class Utbetaling(
     val utbetalesTilNavn: String,
     val forfall: LocalDate,
     val feilkonto: Boolean,
-    val detaljer: List<Detaljer>
+    val detaljer: List<Detaljer>,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -52,13 +52,12 @@ data class Detaljer(
     val klassekode: String,
     val klassekodeBeskrivelse: String,
     val utbetalingsType: String,
-    val refunderesOrgNr: String
+    val refunderesOrgNr: String,
 )
-
 
 enum class SimuleringStatus {
     OK,
     OPPDRAG_UR_ER_STENGT,
     FUNKSJONELL_FEIL,
-    TEKNISK_FEIL
+    TEKNISK_FEIL,
 }

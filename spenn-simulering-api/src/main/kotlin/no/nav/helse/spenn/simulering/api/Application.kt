@@ -32,9 +32,10 @@ import java.net.http.HttpClient
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-private val objectmapper = jacksonObjectMapper()
-    .registerModules(JavaTimeModule())
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+private val objectmapper =
+    jacksonObjectMapper()
+        .registerModules(JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
 fun main() {
     Thread.currentThread().setUncaughtExceptionHandler { _, e ->
@@ -48,11 +49,15 @@ fun main() {
 }
 
 private fun configureAndLaunchApp(env: Map<String, String>) {
-    val azureApp = AzureApp(
-        jwkProvider = com.auth0.jwk.JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL()).build(),
-        issuer = env.getValue("AZURE_OPENID_CONFIG_ISSUER"),
-        clientId = env.getValue("AZURE_APP_CLIENT_ID"),
-    )
+    val azureApp =
+        AzureApp(
+            jwkProvider =
+                com.auth0.jwk
+                    .JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL())
+                    .build(),
+            issuer = env.getValue("AZURE_OPENID_CONFIG_ISSUER"),
+            clientId = env.getValue("AZURE_APP_CLIENT_ID"),
+        )
 
     val serviceAccountUserName = env.getValue("SERVICEUSER_NAME")
     val serviceAccountPassword = env.getValue("SERVICEUSER_PASSWORD")
@@ -65,46 +70,50 @@ private fun configureAndLaunchApp(env: Map<String, String>) {
     }
 
     val httpClient = HttpClient.newHttpClient()
-    val simuleringClient = SimuleringV2Service(
-        MinimalSoapClient(
-            serviceUrl = URI(env.getValue("SIMULERING_SERVICE_URL")),
-            tokenProvider = InMemoryStsClient(
-                MinimalStsClient(
-                    baseUrl = URI(env.getValue("GANDALF_BASE_URL")),
-                    httpClient = httpClient,
-                    proxyAuthorization = proxyAuthorization
-                )
+    val simuleringClient =
+        SimuleringV2Service(
+            MinimalSoapClient(
+                serviceUrl = URI(env.getValue("SIMULERING_SERVICE_URL")),
+                tokenProvider =
+                    InMemoryStsClient(
+                        MinimalStsClient(
+                            baseUrl = URI(env.getValue("GANDALF_BASE_URL")),
+                            httpClient = httpClient,
+                            proxyAuthorization = proxyAuthorization,
+                        ),
+                    ),
+                httpClient = httpClient,
+                proxyAuthorization = proxyAuthorization,
             ),
-            httpClient = httpClient,
-            proxyAuthorization = proxyAuthorization
-        ),
-        samlStrategy(serviceAccountUserName, serviceAccountPassword)
-    )
+            samlStrategy(serviceAccountUserName, serviceAccountPassword),
+        )
 
     val simuleringtjeneste = Simuleringtjeneste(simuleringClient)
 
     val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
 
-    val app = naisApp(
-        meterRegistry = meterRegistry,
-        objectMapper = objectmapper,
-        applicationLogger = logg,
-        callLogger = LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging"),
-        timersConfig = { call, _ ->
-            this
-                .tag("azp_name", call.principal<JWTPrincipal>()?.get("azp_name") ?: "n/a")
-                // https://github.com/linkerd/polixy/blob/main/DESIGN.md#l5d-client-id-client-id
-                // eksempel: <APP>.<NAMESPACE>.serviceaccount.identity.linkerd.cluster.local
-                .tag("konsument", call.request.header("L5d-Client-Id") ?: "n/a")
-        },
-        mdcEntries = mapOf(
-            "azp_name" to { call: ApplicationCall -> call.principal<JWTPrincipal>()?.get("azp_name") },
-            "konsument" to { call: ApplicationCall -> call.request.header("L5d-Client-Id") }
-        ),
-    ) {
-        authentication { azureApp.konfigurerJwtAuth(this) }
-        lagApplikasjonsmodul(simuleringtjeneste)
-    }
+    val app =
+        naisApp(
+            meterRegistry = meterRegistry,
+            objectMapper = objectmapper,
+            applicationLogger = logg,
+            callLogger = LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging"),
+            timersConfig = { call, _ ->
+                this
+                    .tag("azp_name", call.principal<JWTPrincipal>()?.get("azp_name") ?: "n/a")
+                    // https://github.com/linkerd/polixy/blob/main/DESIGN.md#l5d-client-id-client-id
+                    // eksempel: <APP>.<NAMESPACE>.serviceaccount.identity.linkerd.cluster.local
+                    .tag("konsument", call.request.header("L5d-Client-Id") ?: "n/a")
+            },
+            mdcEntries =
+                mapOf(
+                    "azp_name" to { call: ApplicationCall -> call.principal<JWTPrincipal>()?.get("azp_name") },
+                    "konsument" to { call: ApplicationCall -> call.request.header("L5d-Client-Id") },
+                ),
+        ) {
+            authentication { azureApp.konfigurerJwtAuth(this) }
+            lagApplikasjonsmodul(simuleringtjeneste)
+        }
     app.start(wait = true)
 }
 

@@ -5,13 +5,13 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.spenn.e2e.databaseContainer
 import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 internal class OppdragDaoTest {
     private companion object {
@@ -57,7 +57,7 @@ internal class OppdragDaoTest {
                 status = Oppdragstatus.OVERFØRT,
                 totalbeløp = BELØP,
                 originalJson = BEHOV,
-            )
+            ),
         )
         finnOppdrag(AVSTEMMINGSNØKKEL).also {
             assertEquals(AVSTEMMINGSNØKKEL, it.avstemmingsnøkkel)
@@ -113,28 +113,30 @@ internal class OppdragDaoTest {
     private fun finnOppdrag(avstemmingsnøkkel: Long) =
         sessionOf(dataSource.ds).use { session ->
             @Language("PostgreSQL")
-            val stmt = """
+            val stmt =
+                """
                 |SELECT avstemmingsnokkel, fnr, mottaker, opprettet, endret, fagsystem_id, status, totalbelop, beskrivelse, feilkode_oppdrag, oppdrag_response 
                 |FROM oppdrag
                 |WHERE avstemmingsnokkel = ?
                 |LIMIT 1
-            """.trimMargin()
+                """.trimMargin()
             session.run(
-                queryOf(stmt, avstemmingsnøkkel).map {
-                    TestOppdragDto(
-                        avstemmingsnøkkel = it.long("avstemmingsnokkel"),
-                        fnr = it.string("fnr"),
-                        mottaker = it.string("mottaker"),
-                        opprettet = it.localDateTime("opprettet"),
-                        endret = it.localDateTimeOrNull("endret"),
-                        fagsystemId = it.string("fagsystem_id"),
-                        status = it.string("status"),
-                        totalbeløp = it.int("totalbelop"),
-                        beskrivelse = it.stringOrNull("beskrivelse"),
-                        feilkode_oppdrag = it.stringOrNull("feilkode_oppdrag"),
-                        oppdrag_response = it.stringOrNull("oppdrag_response")
-                    )
-                }.asSingle
+                queryOf(stmt, avstemmingsnøkkel)
+                    .map {
+                        TestOppdragDto(
+                            avstemmingsnøkkel = it.long("avstemmingsnokkel"),
+                            fnr = it.string("fnr"),
+                            mottaker = it.string("mottaker"),
+                            opprettet = it.localDateTime("opprettet"),
+                            endret = it.localDateTimeOrNull("endret"),
+                            fagsystemId = it.string("fagsystem_id"),
+                            status = it.string("status"),
+                            totalbeløp = it.int("totalbelop"),
+                            beskrivelse = it.stringOrNull("beskrivelse"),
+                            feilkode_oppdrag = it.stringOrNull("feilkode_oppdrag"),
+                            oppdrag_response = it.stringOrNull("oppdrag_response"),
+                        )
+                    }.asSingle,
             )
         } ?: fail { "Fant ikke oppdrag med avstemmingsnøkkel $avstemmingsnøkkel" }
 
@@ -149,6 +151,6 @@ internal class OppdragDaoTest {
         val totalbeløp: Int,
         val beskrivelse: String?,
         val feilkode_oppdrag: String?,
-        val oppdrag_response: String?
+        val oppdrag_response: String?,
     )
 }

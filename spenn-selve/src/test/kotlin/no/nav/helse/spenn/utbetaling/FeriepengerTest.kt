@@ -6,13 +6,13 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.LocalDateTime
 import no.nav.helse.spenn.RapidInspektør
 import no.nav.helse.spenn.e2e.Feriepengebehov.Companion.feriepengebehov
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 internal class FeriepengerTest {
     companion object {
@@ -25,9 +25,10 @@ internal class FeriepengerTest {
     }
 
     private val dao = mockk<OppdragDao>()
-    private val rapid = TestRapid().apply {
-        Feriepenger(this, dao)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Feriepenger(this, dao)
+        }
     private val inspektør get() = RapidInspektør(rapid.inspektør)
 
     @BeforeEach
@@ -58,13 +59,13 @@ internal class FeriepengerTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         } answers {
             OppdragDto(
                 avstemmingsnøkkel.captured,
                 LocalDateTime.now(),
-                Oppdragstatus.MOTTATT
+                Oppdragstatus.MOTTATT,
             )
         }
         every { dao.finnesFraFør(feriepengebehov.fnr, feriepengebehov.utbetalingId, feriepengebehov.fagsystemId) } returns false
@@ -94,7 +95,7 @@ internal class FeriepengerTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         }
     }
@@ -113,7 +114,7 @@ internal class FeriepengerTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         } throws RuntimeException()
         rapid.sendTestMessage(feriepengebehov.json())
@@ -130,9 +131,11 @@ internal class FeriepengerTest {
             assertEquals(Oppdragstatus.MOTTATT.name, it.path("status").asText())
             assertDoesNotThrow { it.path("avstemmingsnøkkel").asText().toLong() }
         }
-        val avstemmingsnøkkel = inspektør.løsning(indeks, "Feriepengeutbetaling")
-            .path("avstemmingsnøkkel")
-            .asLong()
+        val avstemmingsnøkkel =
+            inspektør
+                .løsning(indeks, "Feriepengeutbetaling")
+                .path("avstemmingsnøkkel")
+                .asLong()
         verify(exactly = 1) {
             dao.nyttOppdrag(
                 utbetalingId = feriepengebehov.utbetalingId,
@@ -145,7 +148,7 @@ internal class FeriepengerTest {
                 fagsystemId = FAGSYSTEMID,
                 status = Oppdragstatus.MOTTATT,
                 totalbeløp = BELØP,
-                originalJson = any()
+                originalJson = any(),
             )
         }
     }

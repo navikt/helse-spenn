@@ -8,7 +8,6 @@ import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
 internal class UtbetalingslinjerTest {
-
     private companion object {
         private const val PERSON = "12345678911"
         private const val ORGNR = "123456789"
@@ -50,8 +49,8 @@ internal class UtbetalingslinjerTest {
                     null,
                     null,
                     null,
-                    "DAG"
-                )
+                    "DAG",
+                ),
             )
             linje(
                 Utbetalingslinjer.Utbetalingslinje(
@@ -67,8 +66,8 @@ internal class UtbetalingslinjerTest {
                     null,
                     null,
                     null,
-                    "DAG"
-                )
+                    "DAG",
+                ),
             )
         }
         assertEquals(1.januar, utbetalingslinjer.førsteDag())
@@ -92,8 +91,8 @@ internal class UtbetalingslinjerTest {
                     null,
                     null,
                     null,
-                    "DAG"
-                )
+                    "DAG",
+                ),
             )
             linje(
                 Utbetalingslinjer.Utbetalingslinje(
@@ -109,8 +108,8 @@ internal class UtbetalingslinjerTest {
                     null,
                     null,
                     null,
-                    "DAG"
-                )
+                    "DAG",
+                ),
             )
         }
         assertEquals(DAGSATS + DAGSATS, utbetalingslinjer.totalbeløp())

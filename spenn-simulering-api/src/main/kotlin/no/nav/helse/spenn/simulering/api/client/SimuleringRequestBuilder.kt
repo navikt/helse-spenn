@@ -2,7 +2,11 @@ package no.nav.helse.spenn.simulering.api.client
 
 import java.time.LocalDate
 
-data class SimulerBeregningRequest(val oppdrag: Oppdrag, val simuleringsPeriode: SimuleringsPeriode)
+data class SimulerBeregningRequest(
+    val oppdrag: Oppdrag,
+    val simuleringsPeriode: SimuleringsPeriode,
+)
+
 data class Oppdrag(
     val kodeFagomraade: String,
     val kodeEndring: String,
@@ -12,11 +16,26 @@ data class Oppdrag(
     val saksbehId: String,
     val datoOppdragGjelderFom: LocalDate?,
     val enhet: List<Enhet>,
-    val oppdragslinje: MutableList<Oppdragslinje>
+    val oppdragslinje: MutableList<Oppdragslinje>,
 )
-data class Enhet(val enhet: String, val typeEnhet: String, val datoEnhetFom: LocalDate?)
-data class SimuleringsPeriode(val datoSimulerFom: LocalDate, val datoSimulerTom: LocalDate)
-data class RefusjonsInfo(val refunderesId: String, val datoFom: LocalDate, val maksDato: LocalDate?)
+
+data class Enhet(
+    val enhet: String,
+    val typeEnhet: String,
+    val datoEnhetFom: LocalDate?,
+)
+
+data class SimuleringsPeriode(
+    val datoSimulerFom: LocalDate,
+    val datoSimulerTom: LocalDate,
+)
+
+data class RefusjonsInfo(
+    val refunderesId: String,
+    val datoFom: LocalDate,
+    val maksDato: LocalDate?,
+)
+
 data class Oppdragslinje(
     val delytelseId: String,
     val refDelytelseId: String?,
@@ -34,20 +53,29 @@ data class Oppdragslinje(
     val saksbehId: String,
     val brukKjoreplan: String,
     val grad: List<Grad>,
-    val attestant: List<Attestant>
+    val attestant: List<Attestant>,
 ) {
     var refusjonsInfo: RefusjonsInfo? = null
     var utbetalesTilId: String? = null
 }
 
 enum class FradragTillegg {
-    F, T
+    F,
+    T,
 }
+
 enum class KodeStatusLinje {
     OPPH,
     HVIL,
     SPER,
-    REAK;
+    REAK,
 }
-data class Grad(val typeGrad: String, val grad: Int?)
-data class Attestant(val attestantId: String)
+
+data class Grad(
+    val typeGrad: String,
+    val grad: Int?,
+)
+
+data class Attestant(
+    val attestantId: String,
+)
