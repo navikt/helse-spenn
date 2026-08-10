@@ -47,7 +47,7 @@ permissions:
 jobs:
   bygg-og-test:
     name: Bygg og test
-    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-og-test-med-gradle.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-og-test-med-gradle.yml@2f6844aa5e6852c64522681b3edb09c99445ad59 # v1.0.1
     permissions:
       contents: read
 
