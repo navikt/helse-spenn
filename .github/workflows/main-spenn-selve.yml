@@ -54,7 +54,7 @@ jobs:
   bygg-image:
     name: Bygg image
     needs: bygg-og-test
-    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-modul-image-med-jib.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-modul-image-med-jib.yml@2f6844aa5e6852c64522681b3edb09c99445ad59 # v1.0.1
     with:
       modul: spenn-selve
     permissions:
