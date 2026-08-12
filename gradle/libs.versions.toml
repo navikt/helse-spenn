@@ -21,7 +21,7 @@ ktor-server-double-receive = { module = "io.ktor:ktor-server-double-receive" }
 logback-classic = "ch.qos.logback:logback-classic:1.6.1"
 logback-logstash-encoder = "net.logstash.logback:logstash-logback-encoder:9.0"
 postgresql = "org.postgresql:postgresql:42.7.13"
-rapids-and-rivers = "com.github.navikt:rapids-and-rivers:2026042008201776666058"
+rapids-and-rivers = "com.github.navikt:rapids-and-rivers:2026071513121784113927"
 tbd-libs-azure = { module = "com.github.navikt.tbd-libs:azure-token-client-default", version.ref = "tbd-libs" }
 tbd-libs-minimal-soap-client = { module = "com.github.navikt.tbd-libs:minimal-soap-client", version.ref = "tbd-libs" }
 tbd-libs-naisful-app = { module = "com.github.navikt.tbd-libs:naisful-app", version.ref = "tbd-libs" }
