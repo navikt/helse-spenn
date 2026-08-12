@@ -1,6 +1,6 @@
 [versions]
 flyway = "13.1.0"
-ibmMq = "9.4.5.1"
+ibmMq = "10.0.0.0"
 jaxb = "4.0.9"
 sasGradlePlugins = "20260807.0944"
 tbd-libs = "20260811.1310"
