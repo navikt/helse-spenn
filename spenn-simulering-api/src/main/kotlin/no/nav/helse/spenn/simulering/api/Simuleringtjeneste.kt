@@ -19,7 +19,11 @@ import java.time.LocalDate
 class Simuleringtjeneste(
     val simuleringV2Service: SimuleringV2Service,
 ) {
-    fun simulerOppdrag(simulering: SimuleringRequest): SimuleringResponse {
+    fun simulerOppdrag(
+        simulering: SimuleringRequest,
+        serviceuserUsername: String,
+        serviceuserPassword: String,
+    ): SimuleringResponse {
         val request =
             SimulerBeregningRequest(
                 oppdrag = mapTilXMLRequest(simulering),
@@ -29,7 +33,12 @@ class Simuleringtjeneste(
                         datoSimulerTom = simulering.simuleringsperiodeTom,
                     ),
             )
-        val response = simuleringV2Service.simulerOppdrag(request)
+        val response =
+            simuleringV2Service.simulerOppdrag(
+                simulerRequest = request,
+                serviceuserUsername = serviceuserUsername,
+                serviceuserPassword = serviceuserPassword,
+            )
         return when (response.status) {
             SimuleringStatus.OK ->
                 when (response.simulering) {

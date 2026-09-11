@@ -68,7 +68,7 @@ jobs:
     needs: bygg-image
     uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@2f6844aa5e6852c64522681b3edb09c99445ad59 # v1.0.1
     with:
-      CLUSTER: dev-gcp
+      CLUSTER: dev-fss
       RESOURCE: deploy/dev-simulering-api.yml
       WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
     permissions:
@@ -80,7 +80,7 @@ jobs:
     needs: [bygg-image, deploy-dev]
     uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@2f6844aa5e6852c64522681b3edb09c99445ad59 # v1.0.1
     with:
-      CLUSTER: prod-gcp
+      CLUSTER: prod-fss
       RESOURCE: deploy/prod-simulering-api.yml
       WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
     permissions:

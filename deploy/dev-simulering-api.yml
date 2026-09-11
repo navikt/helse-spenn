@@ -31,36 +31,30 @@ spec:
     application:
       enabled: true
   ingresses:
-    - https://spenn-simulering.ansatt.dev.nav.no
-    - https://spenn-simulering.intern.dev.nav.no
+    - https://spenn-simulering-api.dev-fss-pub.nais.io
   replicas:
-    cpuThresholdPercentage: 75
-    max: 12
-    min: 2
+    min: 1
+    max: 1
   resources:
     limits:
       memory: 512Mi
     requests:
       cpu: 50m
       memory: 64Mi
-  envFrom:
-    - secret: spenn
   accessPolicy:
     inbound:
       rules:
         - application: spenn-simulering
+          cluster: dev-gcp
     outbound:
-      external:
-        - host: ws-proxy.dev-fss-pub.nais.io
       rules:
         - application: logging
           namespace: nais-system
-        - application: ws-proxy
-          cluster: dev-fss
+  webproxy: true
   env:
-    - name: WS_PROXY_SCOPE
-      value: api://dev-fss.tbd.ws-proxy/.default
+    - name: JDK_JAVA_OPTIONS
+      value: $(JAVA_PROXY_OPTIONS)
     - name: SIMULERING_SERVICE_URL
-      value: https://ws-proxy.dev-fss-pub.nais.io/cics/oppdrag/simulerFpServiceWSBinding
+      value: https://cics-q2.adeo.no/oppdrag/simulerFpServiceWSBinding
     - name: GANDALF_BASE_URL
-      value: https://ws-proxy.dev-fss-pub.nais.io/gandalf
+      value: https://security-token-service.nais.preprod.local

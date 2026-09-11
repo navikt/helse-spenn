@@ -10,9 +10,9 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.result_object.fold
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
-import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
 import com.github.navikt.tbd_libs.soap.SoapResult
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
+import com.github.navikt.tbd_libs.soap.samlStrategy
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -20,7 +20,6 @@ import java.time.LocalDateTime
 
 class SimuleringV2Service(
     private val soapClient: MinimalSoapClient,
-    private val assertionStrategy: SoapAssertionStrategy,
     private val mapper: XmlMapper = XmlMapper(),
 ) {
     private companion object {
@@ -29,21 +28,34 @@ class SimuleringV2Service(
         private val jsonMapper = jacksonObjectMapper().registerModules(JavaTimeModule())
     }
 
-    fun simulerOppdrag(simulerRequest: SimulerBeregningRequest): SimuleringResult {
+    fun simulerOppdrag(
+        simulerRequest: SimulerBeregningRequest,
+        serviceuserUsername: String,
+        serviceuserPassword: String,
+    ): SimuleringResult {
         val requestBody = buildXmlRequestBody(simulerRequest)
         sikkerLogg.info("SimuleringV2 request:\n$requestBody")
-        return soapClient.doSoapAction("http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt/simulerFpService/simulerBeregningRequest", requestBody, assertionStrategy).fold(
-            whenError = { msg, cause ->
-                sikkerLogg.info("Feil ved simuleringV2: {}", msg, cause)
-                SimuleringResult(
-                    status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
-                    feilmelding = msg,
-                )
-            },
-            whenOk = { body ->
-                tolkRespons(body.body(), body.statusCode())
-            },
-        )
+        return soapClient
+            .doSoapAction(
+                action = "http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt/simulerFpService/simulerBeregningRequest",
+                body = requestBody,
+                tokenStrategy =
+                    samlStrategy(
+                        username = serviceuserUsername,
+                        password = serviceuserPassword,
+                    ),
+            ).fold(
+                whenError = { msg, cause ->
+                    sikkerLogg.info("Feil ved simuleringV2: {}", msg, cause)
+                    SimuleringResult(
+                        status = SimuleringStatus.OPPDRAG_UR_ER_STENGT,
+                        feilmelding = msg,
+                    )
+                },
+                whenOk = { body ->
+                    tolkRespons(body.body(), body.statusCode())
+                },
+            )
     }
 
     private fun tolkRespons(

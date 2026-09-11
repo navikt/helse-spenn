@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.test.TestContext
 import com.github.navikt.tbd_libs.naisful.test.naisfulTestApp
 import io.ktor.client.call.body
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -22,6 +23,8 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.helse.spenn.simulering.api.SimuleringRequest.Oppdrag
 import no.nav.helse.spenn.simulering.api.SimuleringRequest.Oppdrag.Oppdragslinje.Klassekode
@@ -30,7 +33,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
-import java.util.Date
+import java.util.*
 
 class E2ETest {
     @Test
@@ -45,7 +48,7 @@ class E2ETest {
             )
         val simuleringtjeneste =
             mockk<Simuleringtjeneste> {
-                every { simulerOppdrag(any()) } returns SimuleringResponse.Ok(simuleringsvar)
+                every { simulerOppdrag(any(), any(), any()) } returns SimuleringResponse.Ok(simuleringsvar)
             }
 
         simuleringTestApp(simuleringtjeneste) {
@@ -94,7 +97,7 @@ class E2ETest {
     fun `tomt svar`() {
         val simuleringtjeneste =
             mockk<Simuleringtjeneste> {
-                every { simulerOppdrag(any()) } returns SimuleringResponse.OkMenTomt
+                every { simulerOppdrag(any(), any(), any()) } returns SimuleringResponse.OkMenTomt
             }
 
         simuleringTestApp(simuleringtjeneste) {
@@ -133,6 +136,105 @@ class E2ETest {
         }
     }
 
+    @Test
+    fun `leser serviceuser-legitimasjonen fra kalleren`() {
+        val brukernavn = slot<String>()
+        val passord = slot<String>()
+        val simuleringtjeneste =
+            mockk<Simuleringtjeneste> {
+                every { simulerOppdrag(any(), capture(brukernavn), capture(passord)) } returns SimuleringResponse.OkMenTomt
+            }
+
+        simuleringTestApp(simuleringtjeneste) {
+            val response =
+                sendSimuleringRequest(
+                    simuleringRequest = enkelRequest(),
+                    brukernavn = "testbruker-goes-here",
+                    passord = "and-passordet-goes-here",
+                )
+            assertEquals(HttpStatusCode.NoContent, response.status)
+        }
+
+        assertEquals("testbruker-goes-here", brukernavn.captured)
+        assertEquals("and-passordet-goes-here", passord.captured)
+    }
+
+    @Test
+    fun `avviser kall uten brukernavn`() {
+        val simuleringtjeneste =
+            mockk<Simuleringtjeneste> {
+                every { simulerOppdrag(any(), any(), any()) } returns SimuleringResponse.OkMenTomt
+            }
+
+        simuleringTestApp(simuleringtjeneste) {
+            val response = sendSimuleringRequest(enkelRequest(), brukernavn = null)
+            assertEquals(HttpStatusCode.InternalServerError, response.status)
+        }
+
+        verify(exactly = 0) { simuleringtjeneste.simulerOppdrag(any(), any(), any()) }
+    }
+
+    @Test
+    fun `avviser kall uten passord`() {
+        val simuleringtjeneste =
+            mockk<Simuleringtjeneste> {
+                every { simulerOppdrag(any(), any(), any()) } returns SimuleringResponse.OkMenTomt
+            }
+
+        simuleringTestApp(simuleringtjeneste) {
+            val response = sendSimuleringRequest(enkelRequest(), passord = null)
+            assertEquals(HttpStatusCode.InternalServerError, response.status)
+        }
+
+        verify(exactly = 0) { simuleringtjeneste.simulerOppdrag(any(), any(), any()) }
+    }
+
+    @Test
+    fun `avviser tomt brukernavn`() {
+        val simuleringtjeneste =
+            mockk<Simuleringtjeneste> {
+                every { simulerOppdrag(any(), any(), any()) } returns SimuleringResponse.OkMenTomt
+            }
+
+        simuleringTestApp(simuleringtjeneste) {
+            val response = sendSimuleringRequest(enkelRequest(), brukernavn = "  ")
+            assertEquals(HttpStatusCode.InternalServerError, response.status)
+        }
+
+        verify(exactly = 0) { simuleringtjeneste.simulerOppdrag(any(), any(), any()) }
+    }
+
+    private fun enkelRequest() =
+        SimuleringRequest(
+            fødselsnummer = "fnr",
+            oppdrag =
+                SimuleringRequest.Oppdrag(
+                    fagområde = SimuleringRequest.Oppdrag.Fagområde.ARBEIDSGIVERREFUSJON,
+                    fagsystemId = "fagsystemId",
+                    endringskode = SimuleringRequest.Oppdrag.Endringskode.NY,
+                    mottakerAvUtbetalingen = "orgnr",
+                    linjer =
+                        listOf(
+                            Oppdrag.Oppdragslinje(
+                                endringskode = Oppdrag.Endringskode.NY,
+                                fom = LocalDate.of(2018, 1, 1),
+                                tom = LocalDate.of(2018, 1, 20),
+                                satstype = Oppdrag.Oppdragslinje.Satstype.DAGLIG,
+                                sats = 500,
+                                grad = 100,
+                                delytelseId = 1,
+                                refDelytelseId = null,
+                                refFagsystemId = null,
+                                klassekodeFom = LocalDate.of(2018, 1, 1),
+                                klassekode = Klassekode.REFUSJON_IKKE_OPPLYSNINGSPLIKTIG,
+                                opphørerFom = null,
+                            ),
+                        ),
+                ),
+            maksdato = LocalDate.now(),
+            saksbehandler = "saksbehandler",
+        )
+
     private fun simuleringTestApp(
         simuleringtjeneste: Simuleringtjeneste,
         testblokk: suspend TestContext.() -> Unit,
@@ -169,9 +271,15 @@ class E2ETest {
     }
 }
 
-suspend fun TestContext.sendSimuleringRequest(simuleringRequest: SimuleringRequest): HttpResponse =
+suspend fun TestContext.sendSimuleringRequest(
+    simuleringRequest: SimuleringRequest,
+    brukernavn: String? = "srvspenn",
+    passord: String? = "et-passord",
+): HttpResponse =
     client.post("/api/simulering") {
         contentType(ContentType.Application.Json)
+        if (brukernavn != null) header("X-ServiceUser-Username", brukernavn)
+        if (passord != null) header("X-ServiceUser-Password", passord)
         setBody(simuleringRequest)
     }
 

@@ -3,14 +3,10 @@ package no.nav.helse.spenn.simulering.api
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.naisful.naisApp
-import com.github.navikt.tbd_libs.result_object.map
-import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
-import com.github.navikt.tbd_libs.soap.samlStrategy
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
@@ -18,7 +14,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
-import io.ktor.server.plugins.doublereceive.*
+import io.ktor.server.plugins.doublereceive.DoubleReceive
 import io.ktor.server.request.header
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
@@ -43,7 +39,7 @@ fun main() {
         sikkerlogg.error("Ufanget exception: {}", e.message, e)
     }
 
-    System.setProperty("io.ktor.development", (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp").toString())
+    System.setProperty("io.ktor.development", (System.getenv("NAIS_CLUSTER_NAME") == "dev-fss").toString())
 
     configureAndLaunchApp(System.getenv())
 }
@@ -59,17 +55,7 @@ private fun configureAndLaunchApp(env: Map<String, String>) {
             clientId = env.getValue("AZURE_APP_CLIENT_ID"),
         )
 
-    val serviceAccountUserName = env.getValue("SERVICEUSER_NAME")
-    val serviceAccountPassword = env.getValue("SERVICEUSER_PASSWORD")
-
-    val azureClient = createAzureTokenClientFromEnvironment(env)
-    val proxyAuthorization = {
-        azureClient.bearerToken(env.getValue("WS_PROXY_SCOPE")).map {
-            "Bearer ${it.token}".ok()
-        }
-    }
-
-    val httpClient = HttpClient.newHttpClient()
+    val httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()
     val simuleringClient =
         SimuleringV2Service(
             MinimalSoapClient(
@@ -79,13 +65,12 @@ private fun configureAndLaunchApp(env: Map<String, String>) {
                         MinimalStsClient(
                             baseUrl = URI(env.getValue("GANDALF_BASE_URL")),
                             httpClient = httpClient,
-                            proxyAuthorization = proxyAuthorization,
+                            proxyAuthorization = null,
                         ),
                     ),
                 httpClient = httpClient,
-                proxyAuthorization = proxyAuthorization,
+                proxyAuthorization = null,
             ),
-            samlStrategy(serviceAccountUserName, serviceAccountPassword),
         )
 
     val simuleringtjeneste = Simuleringtjeneste(simuleringClient)

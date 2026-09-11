@@ -13,15 +13,13 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.retry.PredefinerteUtsettelser
 import com.github.navikt.tbd_libs.retry.retryBlocking
-import com.github.navikt.tbd_libs.spenn.SimuleringClient
-import com.github.navikt.tbd_libs.spenn.SimuleringClient.SimuleringResult
-import com.github.navikt.tbd_libs.spenn.SimuleringRequest
 import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.spenn.simulering.SimuleringClient.SimuleringResult
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.Duration.ofMillis
-import java.util.UUID
+import java.util.*
 
 internal class Simuleringer(
     rapidsConnection: RapidsConnection,

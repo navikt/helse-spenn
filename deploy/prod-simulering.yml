@@ -45,12 +45,19 @@ spec:
       rules:
         - application: logging
           namespace: nais-system
-        - application: spenn-simulering-api
+      external:
+        - host: spenn-simulering-api.prod-fss-pub.nais.io
+  envFrom:
+    - secret: spenn
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spenn-simulering-v1
     - name: KAFKA_RAPID_TOPIC
       value: tbd.rapid.v1
+    - name: SIMULERING_API_BASE_URL
+      value: https://spenn-simulering-api.prod-fss-pub.nais.io
+    - name: SIMULERING_API_SCOPE
+      value: api://prod-fss.tbd.spenn-simulering-api/.default
   observability:
     autoInstrumentation:
       enabled: true

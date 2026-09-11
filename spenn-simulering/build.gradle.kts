@@ -10,9 +10,10 @@ sasDeployable {
 dependencies {
     implementation(libs.rapids.and.rivers)
     implementation(libs.tbd.libs.azure)
-    implementation(libs.tbd.libs.spenn.simulering.client)
+    implementation(libs.jackson.module.kotlin)
     implementation(libs.tbd.libs.retry)
 
     testImplementation(libs.tbd.libs.rapids.and.rivers.test)
+    testImplementation(libs.tbd.libs.mock.http.client)
     testImplementation(libs.mockk)
 }

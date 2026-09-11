@@ -15,6 +15,7 @@ import org.junit.jupiter.api.assertInstanceOf
 import java.net.URI
 import java.net.http.HttpClient
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class SimuleringtjenesteTest {
     private companion object {
@@ -45,7 +46,12 @@ class SimuleringtjenesteTest {
         val simulerRequest = simuleringRequest()
 
         val (_, simuleringClient) = mockClient(xmlResponse(xml))
-        val result = simuleringClient.simulerOppdrag(simulerRequest)
+        val result =
+            simuleringClient.simulerOppdrag(
+                simulering = simulerRequest,
+                serviceuserUsername = "en-serviceuser",
+                serviceuserPassword = "et-passord",
+            )
         assertInstanceOf<SimuleringResponse.Ok>(result)
     }
 
@@ -68,7 +74,12 @@ class SimuleringtjenesteTest {
         val simulerRequest = simuleringRequest()
 
         val (_, simuleringClient) = mockClient(xmlResponse(xml))
-        val result = simuleringClient.simulerOppdrag(simulerRequest)
+        val result =
+            simuleringClient.simulerOppdrag(
+                simulering = simulerRequest,
+                serviceuserUsername = "en-serviceuser",
+                serviceuserPassword = "et-passord",
+            )
         assertInstanceOf<SimuleringResponse.FunksjonellFeil>(result)
     }
 
@@ -89,7 +100,12 @@ class SimuleringtjenesteTest {
         val simulerRequest = simuleringRequest()
 
         val (_, simuleringClient) = mockClient(xmlResponse(xml))
-        val result = simuleringClient.simulerOppdrag(simulerRequest)
+        val result =
+            simuleringClient.simulerOppdrag(
+                simulering = simulerRequest,
+                serviceuserUsername = "en-serviceuser",
+                serviceuserPassword = "et-passord",
+            )
         assertInstanceOf<SimuleringResponse.TekniskFeil>(result)
     }
 
@@ -162,14 +178,10 @@ class SimuleringtjenesteTest {
                 override fun samlToken(
                     username: String,
                     password: String,
-                ): Result<SamlToken> = throw NotImplementedError("ikke implementert i mock")
+                ): Result<SamlToken> = SamlToken("<saml token>", LocalDateTime.now().plusHours(1)).ok()
             }
         val soapClient = MinimalSoapClient(URI("http://simulering-ws"), tokenProvider, httpClient)
-        val client =
-            SimuleringV2Service(
-                soapClient = soapClient,
-                assertionStrategy = { "<saml token>".ok() },
-            )
+        val client = SimuleringV2Service(soapClient = soapClient)
         return httpClient to Simuleringtjeneste(client)
     }
 }

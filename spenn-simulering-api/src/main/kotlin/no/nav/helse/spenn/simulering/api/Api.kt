@@ -1,7 +1,9 @@
 package no.nav.helse.spenn.simulering.api
 
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.plugins.BadRequestException
+import io.ktor.server.request.header
 import io.ktor.server.request.receiveNullable
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
@@ -16,7 +18,13 @@ fun Route.api(simuleringtjeneste: Simuleringtjeneste) {
         val request = call.receiveNullable<SimuleringRequest>() ?: throw BadRequestException("Ugyldig simulering request, oppfyller ikke kontrakten")
         if (request.oppdrag.linjer.isEmpty()) throw BadRequestException("Ugyldig simulering request, nytteløst å simulere oppdrag uten linjer")
         sikkerlogg.info("request body:\n${call.receiveText()}")
-        when (val svar = simuleringtjeneste.simulerOppdrag(request)) {
+        val svar =
+            simuleringtjeneste.simulerOppdrag(
+                simulering = request,
+                serviceuserUsername = call.getRequiredHeader("X-ServiceUser-Username"),
+                serviceuserPassword = call.getRequiredHeader("X-ServiceUser-Password"),
+            )
+        when (svar) {
             is SimuleringResponse.Ok -> call.respond(HttpStatusCode.OK, svar.simulering)
             SimuleringResponse.OkMenTomt -> call.respond(HttpStatusCode.NoContent)
             is SimuleringResponse.FunksjonellFeil -> throw BadRequestException("Simulering feilet på grunn av funksjonell feil. ${svar.feilmelding}")
@@ -25,3 +33,7 @@ fun Route.api(simuleringtjeneste: Simuleringtjeneste) {
         }
     }
 }
+
+private fun ApplicationCall.getRequiredHeader(navn: String): String =
+    request.header(navn)?.takeUnless(String::isBlank)
+        ?: error("Missing header $navn")
