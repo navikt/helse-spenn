@@ -74,15 +74,3 @@ jobs:
     permissions:
       contents: read
       id-token: write # for nais login
-
-  deploy-prod:
-    name: Deploy til prod
-    needs: [bygg-image, deploy-dev]
-    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@2f6844aa5e6852c64522681b3edb09c99445ad59 # v1.0.1
-    with:
-      CLUSTER: prod-gcp
-      RESOURCE: deploy/prod-simulering.yml
-      WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
-    permissions:
-      contents: read
-      id-token: write # for nais login
