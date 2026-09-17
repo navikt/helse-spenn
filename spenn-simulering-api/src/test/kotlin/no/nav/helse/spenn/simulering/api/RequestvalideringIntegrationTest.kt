@@ -12,7 +12,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(500, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -27,6 +26,7 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(500, responseStatus)
     }
 
     @Test
@@ -36,7 +36,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(500, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -51,6 +50,7 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(500, responseStatus)
     }
 
     @Test
@@ -60,7 +60,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(500, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -75,6 +74,7 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(500, responseStatus)
     }
 
     @Test
@@ -84,7 +84,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(500, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -99,6 +98,7 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(500, responseStatus)
     }
 
     @Test
@@ -125,7 +125,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(400, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -140,6 +139,7 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(400, responseStatus)
     }
 
     @Test
@@ -149,7 +149,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(400, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -164,6 +163,7 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(400, responseStatus)
     }
 
     @Test
@@ -178,7 +178,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(400, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -193,6 +192,7 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(400, responseStatus)
     }
 
     @Test
@@ -202,7 +202,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(400, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -217,5 +216,6 @@ class RequestvalideringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(400, responseStatus)
     }
 }

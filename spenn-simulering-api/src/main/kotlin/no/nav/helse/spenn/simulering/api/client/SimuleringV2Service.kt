@@ -1,12 +1,6 @@
 package no.nav.helse.spenn.simulering.api.client
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.result_object.fold
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
@@ -15,6 +9,11 @@ import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import com.github.navikt.tbd_libs.soap.samlStrategy
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ObjectNode
+import tools.jackson.dataformat.xml.XmlMapper
+import tools.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -25,7 +24,7 @@ class SimuleringV2Service(
     private companion object {
         private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(SimuleringV2Service::class.java)
-        private val jsonMapper = jacksonObjectMapper().registerModules(JavaTimeModule())
+        private val jsonMapper = jacksonObjectMapper()
     }
 
     fun simulerOppdrag(
@@ -119,7 +118,7 @@ class SimuleringV2Service(
     }
 
     private fun tolkJsonSomOppdragFault(node: ObjectNode): SimuleringResult? {
-        val feiltype = node.fieldNames().next()
+        val feiltype = node.propertyNames().first()
         val fault = node.path(feiltype)
         try {
             return when (feiltype) {
@@ -165,12 +164,17 @@ class SimuleringV2Service(
                         gjelderNavn = simulering.path("gjelderNavn").asText().trim(),
                         datoBeregnet = LocalDate.parse(simulering.path("datoBeregnet").asText()),
                         totalBelop = simulering.path("belop").asInt(),
-                        periodeList = simulering.path("beregningsPeriode").asArray().map { mapBeregningsPeriode(it) },
+                        periodeList =
+                            simulering
+                                .path("beregningsPeriode")
+                                .toArray()
+                                .toList()
+                                .map { mapBeregningsPeriode(it) },
                     )
                 },
         )
 
-    private fun JsonNode.asArray() =
+    private fun JsonNode.toArray() =
         when (this) {
             is ObjectNode -> jsonMapper.createArrayNode().add(this)
             else -> this
@@ -180,7 +184,12 @@ class SimuleringV2Service(
         SimulertPeriode(
             fom = LocalDate.parse(periode.path("periodeFom").asText()),
             tom = LocalDate.parse(periode.path("periodeTom").asText()),
-            utbetaling = periode.path("beregningStoppnivaa").asArray().map { mapBeregningStoppNivaa(it) },
+            utbetaling =
+                periode
+                    .path("beregningStoppnivaa")
+                    .toArray()
+                    .toList()
+                    .map { mapBeregningStoppNivaa(it) },
         )
 
     private fun mapBeregningStoppNivaa(stoppNivaa: JsonNode) =
@@ -190,7 +199,12 @@ class SimuleringV2Service(
             utbetalesTilId = stoppNivaa.path("utbetalesTilId").asText().removePrefix("00"),
             forfall = LocalDate.parse(stoppNivaa.path("forfall").asText()),
             feilkonto = stoppNivaa.path("feilkonto").asBoolean(),
-            detaljer = stoppNivaa.path("beregningStoppnivaaDetaljer").asArray().map { mapDetaljer(it) },
+            detaljer =
+                stoppNivaa
+                    .path("beregningStoppnivaaDetaljer")
+                    .toArray()
+                    .toList()
+                    .map { mapDetaljer(it) },
         )
 
     private fun mapDetaljer(detaljer: JsonNode) =

@@ -12,7 +12,6 @@ class AutentiseringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(401, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -27,6 +26,7 @@ class AutentiseringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(401, responseStatus)
     }
 
     @Test
@@ -36,7 +36,6 @@ class AutentiseringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(401, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -51,6 +50,7 @@ class AutentiseringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(401, responseStatus)
     }
 
     @Test
@@ -60,7 +60,6 @@ class AutentiseringIntegrationTest : AbstractIntegrationTest() {
         forventIngenRequestsTilGandalf()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(401, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -75,5 +74,6 @@ class AutentiseringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(401, responseStatus)
     }
 }

@@ -17,12 +17,12 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
         forventÉnRequestTilGandalfMedServiceUser()
         forventÉnRequestTilSimuleringService(HappyPathTestdata.ARBEIDSGIVERREFUSJON.forventetRequestTilSimuleringServiceFactory)
 
-        assertEquals(expected = 200, actual = faktiskResponseCode)
         assertJsonEquals(
             expectedJson = HappyPathTestdata.ARBEIDSGIVERREFUSJON.forventetResponse,
             actualJson = faktiskResponseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(expected = 200, actual = faktiskResponseCode)
     }
 
     @Test
@@ -36,12 +36,12 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
         forventÉnRequestTilGandalfMedServiceUser()
         forventÉnRequestTilSimuleringService(HappyPathTestdata.BRUKERUTBETALING.forventetRequestTilSimuleringServiceFactory)
 
-        assertEquals(expected = 200, actual = faktiskResponseCode)
         assertJsonEquals(
             expectedJson = HappyPathTestdata.BRUKERUTBETALING.forventetResponse,
             actualJson = faktiskResponseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(expected = 200, actual = faktiskResponseCode)
     }
 
     @Test
@@ -67,8 +67,8 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
         forventÉnRequestTilGandalfMedServiceUser()
         forventÉnRequestTilSimuleringService(HappyPathTestdata.ARBEIDSGIVERREFUSJON.forventetRequestTilSimuleringServiceFactory)
 
-        assertEquals(expected = 204, actual = faktiskResponseCode)
         assertJsonEquals(expectedJson = "", actualJson = faktiskResponseBody, bortsettFraStier = setOf("callId", "stacktrace"))
+        assertEquals(expected = 204, actual = faktiskResponseCode)
     }
 
     @Test
@@ -107,7 +107,6 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
         forventÉnRequestTilGandalfMedServiceUser()
         forventÉnRequestTilSimuleringService(HappyPathTestdata.ARBEIDSGIVERREFUSJON.forventetRequestTilSimuleringServiceFactory)
 
-        assertEquals(expected = 400, actual = faktiskResponseCode)
         assertJsonEquals(
             expectedJson =
                 """
@@ -122,6 +121,7 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
             actualJson = faktiskResponseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(expected = 400, actual = faktiskResponseCode)
     }
 
     @Test
@@ -154,7 +154,6 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
         forventÉnRequestTilGandalfMedServiceUser()
         forventÉnRequestTilSimuleringService(HappyPathTestdata.ARBEIDSGIVERREFUSJON.forventetRequestTilSimuleringServiceFactory)
 
-        assertEquals(expected = 500, actual = faktiskResponseCode)
         assertJsonEquals(
             expectedJson =
                 """
@@ -169,6 +168,7 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
             actualJson = faktiskResponseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(expected = 500, actual = faktiskResponseCode)
     }
 
     @Test
@@ -186,7 +186,6 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
         forventÉnRequestTilGandalfMedServiceUser()
         forventÉnRequestTilSimuleringService(HappyPathTestdata.ARBEIDSGIVERREFUSJON.forventetRequestTilSimuleringServiceFactory)
 
-        assertEquals(expected = 500, actual = faktiskResponseCode)
         assertJsonEquals(
             expectedJson =
                 """
@@ -201,6 +200,7 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
             actualJson = faktiskResponseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(expected = 500, actual = faktiskResponseCode)
     }
 
     @Test
@@ -218,7 +218,6 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
         forventÉnRequestTilGandalfMedServiceUser()
         forventIngenRequestsTilSimuleringService()
 
-        assertEquals(503, responseStatus)
         assertJsonEquals(
             expectedJson =
                 """
@@ -233,5 +232,6 @@ class SimuleringIntegrationTest : AbstractIntegrationTest() {
             actualJson = responseBody,
             bortsettFraStier = setOf("callId", "stacktrace"),
         )
+        assertEquals(503, responseStatus)
     }
 }
