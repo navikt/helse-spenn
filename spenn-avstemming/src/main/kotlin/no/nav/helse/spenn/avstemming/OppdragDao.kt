@@ -15,7 +15,14 @@ internal class OppdragDao(
         sessionOf(dataSource())
             .use { session ->
                 @Language("PostgreSQL")
-                val query = "SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, alvorlighetsgrad,kodemelding,beskrivendemelding, oppdragkvittering FROM oppdrag WHERE avstemt = FALSE AND avstemmingsnokkel <= ? AND status IS NOT NULL;"
+                val query =
+                    """
+                    SELECT fagomrade, avstemmingsnokkel, fnr, fagsystem_id, utbetaling_id, opprettet, status, totalbelop, alvorlighetsgrad,kodemelding,beskrivendemelding, oppdragkvittering
+                    FROM oppdrag
+                    WHERE NOT avstemt
+                        AND avstemmingsnokkel <= ?
+                        AND status IS NOT NULL
+                    """.trimIndent()
                 session.run(queryOf(query, avstemmingsnøkkelTom).map { it.string("fagomrade") to it.tilOppdragDto() }.asList)
             }.groupBy({ it.first }) { it.second }
 
@@ -24,8 +31,16 @@ internal class OppdragDao(
         avstemmingsnøkkelTom: Long,
     ) = sessionOf(dataSource()).use { session ->
         @Language("PostgreSQL")
-        val query = "UPDATE oppdrag SET avstemt = TRUE WHERE fagomrade = CAST(? AS fagomrade) AND status IS NOT NULL AND avstemt = FALSE AND avstemmingsnokkel <= ?"
-        session.run(queryOf(query, fagområde, avstemmingsnøkkelTom).asUpdate)
+        val query =
+            """
+            UPDATE oppdrag
+            SET avstemt = TRUE
+            WHERE NOT avstemt
+                AND status IS NOT NULL
+                AND avstemmingsnokkel <= ?
+                AND fagomrade = CAST(? AS fagomrade)
+            """.trimIndent()
+        session.run(queryOf(query, avstemmingsnøkkelTom, fagområde).asUpdate)
     }
 
     fun nyttOppdrag(
