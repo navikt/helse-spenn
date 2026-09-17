@@ -14,6 +14,8 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
+import io.ktor.server.cio.CIOApplicationEngine
+import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.plugins.doublereceive.DoubleReceive
 import io.ktor.server.request.header
 import io.ktor.server.routing.routing
@@ -41,10 +43,14 @@ fun main() {
 
     System.setProperty("io.ktor.development", (System.getenv("NAIS_CLUSTER_NAME") == "dev-fss").toString())
 
-    configureAndLaunchApp(System.getenv())
+    val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
+    lagApplikasjon(System.getenv(), meterRegistry).start(wait = true)
 }
 
-private fun configureAndLaunchApp(env: Map<String, String>) {
+fun lagApplikasjon(
+    env: Map<String, String>,
+    meterRegistry: PrometheusMeterRegistry,
+): EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration> {
     val azureApp =
         AzureApp(
             jwkProvider =
@@ -75,14 +81,13 @@ private fun configureAndLaunchApp(env: Map<String, String>) {
 
     val simuleringtjeneste = Simuleringtjeneste(simuleringClient)
 
-    val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
-
     val app =
         naisApp(
             meterRegistry = meterRegistry,
             objectMapper = objectmapper,
             applicationLogger = logg,
             callLogger = LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging"),
+            port = env["HTTP_PORT"]?.toInt() ?: 8080,
             timersConfig = { call, _ ->
                 this
                     .tag("azp_name", call.principal<JWTPrincipal>()?.get("azp_name") ?: "n/a")
@@ -99,7 +104,7 @@ private fun configureAndLaunchApp(env: Map<String, String>) {
             authentication { azureApp.konfigurerJwtAuth(this) }
             lagApplikasjonsmodul(simuleringtjeneste)
         }
-    app.start(wait = true)
+    return app
 }
 
 fun Application.lagApplikasjonsmodul(simuleringtjeneste: Simuleringtjeneste) {

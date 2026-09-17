@@ -30,12 +30,16 @@ tbd-libs-naisful-app = { module = "com.github.navikt.tbd-libs:naisful-app", vers
 tbd-libs-retry = { module = "com.github.navikt.tbd-libs:retry", version.ref = "tbd-libs" }
 
 apache-artemis = "org.apache.activemq:apache-artemis:2.55.0"
+httpclient5-fluent = "org.apache.httpcomponents.client5:httpclient5-fluent:5.6.4"
 ktor-client-contentnegotiation = { module = "io.ktor:ktor-client-content-negotiation" }
+mock-oauth2-server = "no.nav.security:mock-oauth2-server:6.0.2"
 mockk = "io.mockk:mockk:1.14.11"
+sykepengerLibs-testing = "no.nav.sykepenger.libs:testing:20260829.1737"
 tbd-libs-mock-http-client = { module = "com.github.navikt.tbd-libs:mock-http-client", version.ref = "tbd-libs" }
 tbd-libs-naisful-test-app = { module = "com.github.navikt.tbd-libs:naisful-test-app", version.ref = "tbd-libs" }
 tbd-libs-postgres-testdatabaser = { module = "com.github.navikt.tbd-libs:postgres-testdatabaser", version.ref = "tbd-libs" }
 tbd-libs-rapids-and-rivers-test = { module = "com.github.navikt.tbd-libs:rapids-and-rivers-test", version.ref = "tbd-libs" }
+wiremock = "org.wiremock:wiremock-jetty12:3.13.2"
 
 [bundles]
 logback = [
