@@ -1,4 +1,4 @@
-package com.github.navikt.tbd_libs.soap
+package no.nav.helse.spenn.simulering.api.soap
 
 import java.time.Duration
 import java.time.LocalDateTime

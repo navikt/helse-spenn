@@ -4,9 +4,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.naisApp
-import com.github.navikt.tbd_libs.soap.InMemoryStsClient
-import com.github.navikt.tbd_libs.soap.MinimalSoapClient
-import com.github.navikt.tbd_libs.soap.MinimalStsClient
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
@@ -24,6 +21,9 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.helse.spenn.simulering.api.client.SimuleringV2Service
+import no.nav.helse.spenn.simulering.api.soap.InMemoryStsClient
+import no.nav.helse.spenn.simulering.api.soap.MinimalSoapClient
+import no.nav.helse.spenn.simulering.api.soap.MinimalStsClient
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.http.HttpClient

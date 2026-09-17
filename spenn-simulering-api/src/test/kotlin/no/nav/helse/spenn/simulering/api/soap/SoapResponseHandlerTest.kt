@@ -1,4 +1,4 @@
-package com.github.navikt.tbd_libs.soap
+package no.nav.helse.spenn.simulering.api.soap
 
 import com.github.navikt.tbd_libs.result_object.Result
 import org.intellij.lang.annotations.Language
