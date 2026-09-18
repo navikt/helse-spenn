@@ -3,10 +3,10 @@ package no.nav.helse.spenn.simulering.api.client
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.result_object.fold
-import no.nav.helse.spenn.simulering.api.soap.MinimalSoapClient
-import no.nav.helse.spenn.simulering.api.soap.SoapResult
-import no.nav.helse.spenn.simulering.api.soap.deserializeSoapBody
-import no.nav.helse.spenn.simulering.api.soap.samlStrategy
+import com.github.navikt.tbd_libs.soap.MinimalSoapClient
+import com.github.navikt.tbd_libs.soap.SoapResult
+import com.github.navikt.tbd_libs.soap.deserializeSoapBody
+import com.github.navikt.tbd_libs.soap.samlStrategy
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode

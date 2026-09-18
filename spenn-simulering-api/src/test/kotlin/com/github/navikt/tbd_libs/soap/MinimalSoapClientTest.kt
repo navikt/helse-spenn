@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.simulering.api.soap
+package com.github.navikt.tbd_libs.soap
 
 import com.github.navikt.tbd_libs.mock.MockHttpResponse
 import com.github.navikt.tbd_libs.mock.bodyAsString
@@ -42,7 +42,7 @@ class MinimalSoapClientTest {
         val expectedResponseBody = "Hello"
         val (httpClient, soapClient) = mockClient(expectedResponseBody)
         val result = soapClient.doSoapAction(action, body, samlStrategy(USERNAME, PASSWORD))
-        result as Result.Ok
+        result as com.github.navikt.tbd_libs.result_object.Result.Ok
         assertEquals(expectedResponseBody, result.value.body())
         verifiserSoapRequest(httpClient, action, body)
     }

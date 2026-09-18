@@ -1,4 +1,4 @@
-package no.nav.helse.spenn.simulering.api.soap
+package com.github.navikt.tbd_libs.soap
 
 import com.github.navikt.tbd_libs.result_object.Result
 
