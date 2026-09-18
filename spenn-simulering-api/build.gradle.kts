@@ -24,11 +24,7 @@ dependencies {
     api(libs.tbd.libs.minimal.soap.client)
 
     testImplementation(libs.ktor.client.contentnegotiation)
-    testImplementation(libs.httpclient5.fluent)
     testImplementation(libs.tbd.libs.naisful.test.app)
     testImplementation(libs.tbd.libs.mock.http.client)
     testImplementation(libs.mockk)
-    testImplementation(libs.mock.oauth2.server)
-    testImplementation(libs.sykepengerLibs.testing)
-    testImplementation(libs.wiremock)
 }

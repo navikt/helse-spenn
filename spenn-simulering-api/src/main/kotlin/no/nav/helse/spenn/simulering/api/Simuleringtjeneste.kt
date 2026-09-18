@@ -29,11 +29,8 @@ class Simuleringtjeneste(
                 oppdrag = mapTilXMLRequest(simulering),
                 simuleringsPeriode =
                     SimuleringsPeriode(
-                        datoSimulerFom = simulering.oppdrag.linjer.minOf { it.fom },
-                        datoSimulerTom =
-                            simulering.oppdrag.linjer
-                                .last()
-                                .tom,
+                        datoSimulerFom = simulering.simuleringsperiodeFom,
+                        datoSimulerTom = simulering.simuleringsperiodeTom,
                     ),
             )
         val response =
@@ -184,6 +181,9 @@ data class SimuleringRequest(
     val maksdato: LocalDate?,
     val saksbehandler: String,
 ) {
+    val simuleringsperiodeFom get() = oppdrag.linjer.minOf { it.fom }
+    val simuleringsperiodeTom get() = oppdrag.linjer.last().tom
+
     data class Oppdrag(
         val fagområde: Fagområde,
         val fagsystemId: String,

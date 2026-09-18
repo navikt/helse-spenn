@@ -14,8 +14,6 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
-import io.ktor.server.cio.CIOApplicationEngine
-import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.plugins.doublereceive.DoubleReceive
 import io.ktor.server.request.header
 import io.ktor.server.routing.routing
@@ -43,14 +41,10 @@ fun main() {
 
     System.setProperty("io.ktor.development", (System.getenv("NAIS_CLUSTER_NAME") == "dev-fss").toString())
 
-    val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
-    lagApplikasjon(System.getenv(), meterRegistry).start(wait = true)
+    configureAndLaunchApp(System.getenv())
 }
 
-fun lagApplikasjon(
-    env: Map<String, String>,
-    meterRegistry: PrometheusMeterRegistry,
-): EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration> {
+private fun configureAndLaunchApp(env: Map<String, String>) {
     val azureApp =
         AzureApp(
             jwkProvider =
@@ -81,13 +75,14 @@ fun lagApplikasjon(
 
     val simuleringtjeneste = Simuleringtjeneste(simuleringClient)
 
+    val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
+
     val app =
         naisApp(
             meterRegistry = meterRegistry,
             objectMapper = objectmapper,
             applicationLogger = logg,
             callLogger = LoggerFactory.getLogger("no.nav.helse.spenn.simulering.api.CallLogging"),
-            port = env["HTTP_PORT"]?.toInt() ?: 8080,
             timersConfig = { call, _ ->
                 this
                     .tag("azp_name", call.principal<JWTPrincipal>()?.get("azp_name") ?: "n/a")
@@ -104,7 +99,7 @@ fun lagApplikasjon(
             authentication { azureApp.konfigurerJwtAuth(this) }
             lagApplikasjonsmodul(simuleringtjeneste)
         }
-    return app
+    app.start(wait = true)
 }
 
 fun Application.lagApplikasjonsmodul(simuleringtjeneste: Simuleringtjeneste) {
