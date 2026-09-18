@@ -1,6 +1,5 @@
 [versions]
 flyway = "13.1.0"
-jackson3 = "3.2.2"
 testcontainers = "2.0.5"
 ibmMq = "10.0.0.0"
 jaxb = "4.0.9"
@@ -15,7 +14,6 @@ ibm-mq-allclient = { module = "com.ibm.mq:com.ibm.mq.allclient", version.ref = "
 jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
-jackson3-bom = { module = "tools.jackson:jackson-bom", version.ref = "jackson3" }
 jakarta-xml-bind-api = "jakarta.xml.bind:jakarta.xml.bind-api:4.0.5"
 jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
 kotliquery = "com.github.seratch:kotliquery:1.9.1"
@@ -27,9 +25,9 @@ logback-logstash-encoder = "net.logstash.logback:logstash-logback-encoder:9.0"
 postgresql = "org.postgresql:postgresql:42.7.13"
 rapids-and-rivers = "com.github.navikt:rapids-and-rivers:2026042008201776666058"
 tbd-libs-azure = { module = "com.github.navikt.tbd-libs:azure-token-client-default", version.ref = "tbd-libs" }
+tbd-libs-minimal-soap-client = { module = "com.github.navikt.tbd-libs:minimal-soap-client", version.ref = "tbd-libs" }
 tbd-libs-naisful-app = { module = "com.github.navikt.tbd-libs:naisful-app", version.ref = "tbd-libs" }
 tbd-libs-retry = { module = "com.github.navikt.tbd-libs:retry", version.ref = "tbd-libs" }
-tbdLibs-resultObject = { module = "com.github.navikt.tbd-libs:result-object", version.ref = "tbd-libs" }
 
 apache-artemis = "org.apache.activemq:apache-artemis:2.55.0"
 httpclient5-fluent = "org.apache.httpcomponents.client5:httpclient5-fluent:5.6.4"
