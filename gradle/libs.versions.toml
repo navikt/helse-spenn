@@ -7,7 +7,7 @@ sasGradlePlugins = "20260918.1635"
 tbd-libs = "20260811.1310"
 
 [libraries]
-cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.29.0"
+cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.30.0"
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 hikaricp = "com.zaxxer:HikariCP:7.1.0"
 ibm-mq-allclient = { module = "com.ibm.mq:com.ibm.mq.allclient", version.ref = "ibmMq" }
