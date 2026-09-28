@@ -3,7 +3,7 @@ flyway = "13.7.0"
 testcontainers = "2.0.5"
 ibmMq = "10.0.0.5"
 jaxb = "4.0.9"
-sasGradlePlugins = "20260923.0907"
+sasGradlePlugins = "20260925.1602"
 tbd-libs = "20260811.1310"
 
 [libraries]
