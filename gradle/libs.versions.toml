@@ -1,9 +1,8 @@
 [versions]
 flyway = "13.7.0"
-testcontainers = "2.0.5"
 ibmMq = "10.0.0.5"
 jaxb = "4.0.9"
-sasGradlePlugins = "20260930.1152"
+sykepengerGradlePlugins = "20261001.1830"
 tbd-libs = "20260811.1310"
 
 [libraries]
@@ -44,5 +43,5 @@ logback = [
 ]
 
 [plugins]
-sas-deployable = { id = "no.nav.helse.sas.sas-deployable", version.ref = "sasGradlePlugins" }
-sas-root = { id = "no.nav.helse.sas.sas-root", version.ref = "sasGradlePlugins" }
+sykepenger-deployable = { id = "no.nav.sykepenger.deployable", version.ref = "sykepengerGradlePlugins" }
+sykepenger-root = { id = "no.nav.sykepenger.root", version.ref = "sykepengerGradlePlugins" }

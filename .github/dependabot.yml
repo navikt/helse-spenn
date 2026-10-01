@@ -9,6 +9,8 @@ updates:
       interval: "daily"
     cooldown:
       default-days: 7
+      exclude:
+        - "navikt/sykepenger-github-workflows*"
 
   # Maintain dependencies for gradle
   - package-ecosystem: "gradle"
@@ -20,5 +22,5 @@ updates:
     cooldown:
       default-days: 7
       exclude:
-        - "no.nav.helse.sas.*"
+        - "no.nav.sykepenger.*"
         - "com.github.navikt.tbd-libs:*"
