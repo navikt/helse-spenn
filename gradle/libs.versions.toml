@@ -1,5 +1,5 @@
 [versions]
-flyway = "13.7.0"
+flyway = "13.8.0"
 ibmMq = "10.0.0.5"
 jaxb = "4.0.9"
 sykepengerGradlePlugins = "20261001.1830"
