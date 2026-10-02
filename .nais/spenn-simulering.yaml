@@ -3,12 +3,12 @@ kind: Application
 metadata:
   labels:
     team: tbd
-  name: spenn
+  name: spenn-simulering
   namespace: tbd
 spec:
   port: 8080
   strategy:
-    type: Recreate
+    type: RollingUpdate
   liveness:
     initialDelay: 5
     path: /isalive
@@ -18,38 +18,23 @@ spec:
   prometheus:
     enabled: true
     path: /metrics
-  replicas:
-    cpuThresholdPercentage: 90
-    max: 1
-    min: 1
+  azure:
+    application:
+      enabled: true
   resources:
-    limits:
-      memory: 512Mi
     requests:
       cpu: 50m
       memory: 64Mi
-  kafka:
-    pool: nav-dev
   accessPolicy:
     outbound:
       rules:
         - application: logging
           namespace: nais-system
-  gcp:
-    sqlInstances:
-      - type: POSTGRES_17
-        diskAutoresize: true
-        pointInTimeRecovery: true
-        tier: db-f1-micro
-        name: spenn
-        databases:
-          - name: spenn
-            envVarPrefix: DATABASE
-            users:
-              - name: spenn-opprydding
+  envFrom:
+    - secret: spenn
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
-      value: tbd-spenn-v1
+      value: tbd-spenn-simulering-v1
     - name: KAFKA_RAPID_TOPIC
       value: tbd.rapid.v1
   observability:

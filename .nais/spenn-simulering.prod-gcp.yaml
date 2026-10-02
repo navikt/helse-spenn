@@ -1,0 +1,26 @@
+spec:
+  replicas:
+    max: 12
+    min: 2
+    scalingStrategy:
+      kafka:
+        topic: tbd.rapid.v1
+        consumerGroup: tbd-spenn-simulering-v1
+        threshold: 200
+  preStopHook:
+    http:
+      path: /stop
+  resources:
+    limits:
+      memory: 1024Mi
+  kafka:
+    pool: nav-prod
+  accessPolicy:
+    outbound:
+      external:
+        - host: spenn-simulering-api.prod-fss-pub.nais.io
+  env:
+    - name: SIMULERING_API_BASE_URL
+      value: https://spenn-simulering-api.prod-fss-pub.nais.io
+    - name: SIMULERING_API_SCOPE
+      value: api://prod-fss.tbd.spenn-simulering-api/.default

@@ -1,0 +1,16 @@
+spec:
+  ingresses:
+    - https://spenn-simulering-api.prod-fss-pub.nais.io
+  replicas:
+    min: 2
+    max: 2
+  accessPolicy:
+    inbound:
+      rules:
+        - application: spenn-simulering
+          cluster: prod-gcp
+  env:
+    - name: SIMULERING_SERVICE_URL
+      value: https://wasapp.adeo.no/cics/services/simulerFpServiceWSBinding
+    - name: GANDALF_BASE_URL
+      value: https://security-token-service.nais.adeo.no

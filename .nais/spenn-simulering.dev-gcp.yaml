@@ -1,0 +1,19 @@
+spec:
+  replicas:
+    cpuThresholdPercentage: 75
+    max: 2
+    min: 1
+  resources:
+    limits:
+      memory: 512Mi
+  kafka:
+    pool: nav-dev
+  accessPolicy:
+    outbound:
+      external:
+        - host: spenn-simulering-api.dev-fss-pub.nais.io
+  env:
+    - name: SIMULERING_API_BASE_URL
+      value: https://spenn-simulering-api.dev-fss-pub.nais.io
+    - name: SIMULERING_API_SCOPE
+      value: api://dev-fss.tbd.spenn-simulering-api/.default
