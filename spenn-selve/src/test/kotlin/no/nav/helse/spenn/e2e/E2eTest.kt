@@ -1,15 +1,15 @@
 package no.nav.helse.spenn.e2e
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import no.nav.helse.spenn.e2e.E2eTestApp.Companion.e2eTest
 import no.nav.helse.spenn.e2e.Utbetalingsbehov.Companion.utbetalingsbehov
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ObjectNode
+import tools.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.util.*
 import java.util.UUID.randomUUID
 
@@ -26,7 +26,7 @@ class E2eTest {
 
             val oppdragutbetaling = rapid.inspektør.message(1) as ObjectNode
             assertEquals("oppdrag_utbetaling", oppdragutbetaling.path("@event_name").asText())
-            oppdragutbetaling.set<JsonNode>(
+            oppdragutbetaling.set(
                 "kvittering",
                 jacksonObjectMapper().convertValue<JsonNode>(
                     mapOf(
@@ -93,7 +93,7 @@ class E2eTest {
             val løsning1 = parseMottattLøsning(rapid.inspektør.message(0))
             val oppdragutbetaling = rapid.inspektør.message(1) as ObjectNode
             assertEquals("oppdrag_utbetaling", oppdragutbetaling.path("@event_name").asText())
-            oppdragutbetaling.set<JsonNode>(
+            oppdragutbetaling.set(
                 "kvittering",
                 jacksonObjectMapper().convertValue<JsonNode>(
                     mapOf(

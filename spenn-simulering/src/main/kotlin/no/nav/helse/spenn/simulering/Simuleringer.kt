@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.simulering
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -18,6 +17,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.spenn.simulering.SimuleringClient.SimuleringResult
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import tools.jackson.databind.JsonNode
 import java.time.Duration.ofMillis
 import java.util.*
 
@@ -98,7 +98,7 @@ internal class Simuleringer(
                             endringskode = endringskode(packet["Simulering.endringskode"].asText()),
                             mottakerAvUtbetalingen = packet["Simulering.mottaker"].asText(),
                             linjer =
-                                packet["Simulering.linjer"].map { linje ->
+                                packet["Simulering.linjer"].values().map { linje ->
                                     SimuleringRequest.Oppdrag.Oppdragslinje(
                                         endringskode = endringskode(linje.path("endringskode").asText()),
                                         fom = linje.path("fom").asLocalDate(),

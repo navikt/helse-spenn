@@ -1,7 +1,7 @@
 package no.nav.helse.spenn.e2e
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.spenn.utbetaling.UtbetalingerTest
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.util.*
 

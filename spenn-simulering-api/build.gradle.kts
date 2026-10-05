@@ -17,8 +17,6 @@ dependencies {
         exclude(group = "junit")
     }
 
-    api(libs.jackson.datatype.jsr310)
-
     api(libs.tbd.libs.naisful.app)
     api(libs.tbd.libs.azure)
     api(libs.tbd.libs.minimal.soap.client)

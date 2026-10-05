@@ -1,9 +1,9 @@
 package no.nav.helse.spenn
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import org.junit.jupiter.api.fail
+import tools.jackson.databind.JsonNode
 
 internal class RapidInspektør(
     private val inspektør: TestRapid.RapidInspector,

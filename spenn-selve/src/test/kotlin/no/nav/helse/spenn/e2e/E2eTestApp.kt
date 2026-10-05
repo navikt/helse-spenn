@@ -3,7 +3,6 @@ package no.nav.helse.spenn.e2e
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.FailedMessage
@@ -15,6 +14,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.SentMessage
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.spenn.rapidApp
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 import java.time.LocalDateTime
 
 internal class E2eTestApp {

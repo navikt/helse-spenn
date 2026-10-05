@@ -1,8 +1,5 @@
 package no.nav.helse.spenn.simulering
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureToken
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.mock.MockHttpResponse
@@ -12,6 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.time.LocalDate
@@ -60,9 +58,7 @@ class SimuleringClientTest {
     ) = SimuleringClient(
         httpClient = httpClient,
         objectMapper =
-            jacksonObjectMapper()
-                .registerModule(JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS),
+            jacksonObjectMapper(),
         tokenProvider =
             object : AzureTokenProvider {
                 override fun onBehalfOfToken(

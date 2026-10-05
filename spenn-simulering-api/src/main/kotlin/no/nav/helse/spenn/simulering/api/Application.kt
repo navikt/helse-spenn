@@ -1,8 +1,5 @@
 package no.nav.helse.spenn.simulering.api
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.naisApp
 import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
@@ -23,15 +20,13 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.helse.spenn.simulering.api.client.SimuleringV2Service
 import org.slf4j.LoggerFactory
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URI
 import java.net.http.HttpClient
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-private val objectmapper =
-    jacksonObjectMapper()
-        .registerModules(JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+private val objectmapper = jacksonObjectMapper()
 
 fun main() {
     Thread.currentThread().setUncaughtExceptionHandler { _, e ->

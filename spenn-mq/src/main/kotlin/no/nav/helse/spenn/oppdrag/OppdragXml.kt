@@ -1,24 +1,25 @@
 package no.nav.helse.spenn.oppdrag
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.cfg.EnumFeature
+import tools.jackson.dataformat.xml.XmlMapper
+import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 
 object OppdragXml {
     private val xmlMapper =
         XmlMapper
             .builder()
-            .addModules(kotlinModule())
-            .addModules(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .addModule(kotlinModule())
+            .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+            // normalizeXml kan legge til en ekstra avslutningstag, f.eks. når kvitteringen bruker `</ns2:oppdrag>`
+            .disable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+            .enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
             // gjør slik at jackson ikke serialiserer null-felter som tomme xml-felter, dvs. unngå `<mmel />` hvis `mmel` egentlig er null
-            .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+            .changeDefaultPropertyInclusion { it.withValueInclusion(JsonInclude.Include.NON_EMPTY) }
             .build()
 
     fun marshal(oppdrag: OppdragDto): String =

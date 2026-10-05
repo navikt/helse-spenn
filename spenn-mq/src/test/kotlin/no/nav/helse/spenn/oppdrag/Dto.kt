@@ -1,6 +1,6 @@
 package no.nav.helse.spenn.oppdrag
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.util.*
 

@@ -1,9 +1,5 @@
 package no.nav.helse.spenn.utbetaling
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
@@ -16,6 +12,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDateTime
 import java.util.*
 
@@ -34,10 +32,7 @@ internal class TransaksjonerTest {
         private val OPPRETTET = LocalDateTime.now()
         private val STATUS = Oppdragstatus.AKSEPTERT
 
-        private val objectMapper =
-            jacksonObjectMapper()
-                .registerModule(JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        private val objectMapper = jacksonObjectMapper()
     }
 
     private val dao = mockk<OppdragDao>()
@@ -61,7 +56,13 @@ internal class TransaksjonerTest {
         rapid.sendTestMessage(tranaksjonStatus())
         assertEquals(1, inspektør.size)
         assertEquals("behov", rapid.inspektør.field(0, "@event_name").asText())
-        assertEquals(listOf("Utbetaling"), rapid.inspektør.field(0, "@behov").map(JsonNode::asText))
+        assertEquals(
+            listOf("Utbetaling"),
+            rapid.inspektør
+                .field(0, "@behov")
+                .values()
+                .map(JsonNode::asText),
+        )
         assertNotEquals(BEHOV_ID, rapid.inspektør.field(0, "@id").asText())
         assertEquals(ORGNR, rapid.inspektør.field(0, "organisasjonsnummer").asText())
         assertEquals(PERSON, rapid.inspektør.field(0, "fødselsnummer").asText())
