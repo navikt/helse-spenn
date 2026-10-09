@@ -1,13 +1,12 @@
 package no.nav.helse.spenn
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.spenn.simulering.SimuleringClient
 import no.nav.helse.spenn.simulering.Simuleringer
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.net.http.HttpClient
 
 fun main() {
@@ -19,9 +18,9 @@ private fun rapidApp(env: Map<String, String>) {
     val azureClient = createAzureTokenClientFromEnvironment(env)
     val httpClient = HttpClient.newHttpClient()
     val objectMapper =
-        jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        jacksonMapperBuilder()
+            .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build()
 
     val simuleringClient =
         SimuleringClient(

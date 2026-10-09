@@ -1,12 +1,6 @@
 package no.nav.helse.spenn.simulering.api.client
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.result_object.fold
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
@@ -15,6 +9,12 @@ import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import com.github.navikt.tbd_libs.soap.samlStrategy
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ObjectNode
+import tools.jackson.dataformat.xml.XmlMapper
+import tools.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -25,7 +25,7 @@ class SimuleringV2Service(
     private companion object {
         private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(SimuleringV2Service::class.java)
-        private val jsonMapper = jacksonObjectMapper().registerModules(JavaTimeModule())
+        private val jsonMapper = jacksonObjectMapper()
     }
 
     fun simulerOppdrag(
@@ -119,7 +119,7 @@ class SimuleringV2Service(
     }
 
     private fun tolkJsonSomOppdragFault(node: ObjectNode): SimuleringResult? {
-        val feiltype = node.fieldNames().next()
+        val feiltype = node.propertyNames().first()
         val fault = node.path(feiltype)
         try {
             return when (feiltype) {
@@ -127,7 +127,7 @@ class SimuleringV2Service(
                 else -> håndterOppdragFault(feiltype, fault)
             }
         } catch (err: Exception) {
-            sikkerLogg.info("Kunne ikke oversette til oppdrag fault. feiltype={}, innhold={} fordi {}", feiltype, fault.toPrettyString(), err.message, err)
+            sikkerLogg.info("Kunne ikke oversette til oppdrag fault. feiltype={}, innhold={} fordi {}", feiltype, jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fault), err.message, err)
             return null
         }
     }
@@ -164,23 +164,43 @@ class SimuleringV2Service(
                         gjelderId = simulering.path("gjelderId").asText(),
                         gjelderNavn = simulering.path("gjelderNavn").asText().trim(),
                         datoBeregnet = LocalDate.parse(simulering.path("datoBeregnet").asText()),
-                        totalBelop = simulering.path("belop").asInt(),
-                        periodeList = simulering.path("beregningsPeriode").asArray().map { mapBeregningsPeriode(it) },
+                        totalBelop = simulering.path("belop").tolkSomInt(),
+                        periodeList =
+                            simulering
+                                .path("beregningsPeriode")
+                                .somArray()
+                                .values()
+                                .map { mapBeregningsPeriode(it) },
                     )
                 },
         )
 
-    private fun JsonNode.asArray() =
+    private fun JsonNode.somArray() =
         when (this) {
             is ObjectNode -> jsonMapper.createArrayNode().add(this)
             else -> this
         }
 
+    // XML-verdier er alltid tekst, f.eks. "1234.00". Jackson 3 feiler på slike i asInt()/asBoolean(),
+    // så vi tolker dem like romslig som Jackson 2 gjorde: desimaler kuttes, og ugyldige verdier blir 0/false.
+    private fun JsonNode.tolkSomDesimaltall(): BigDecimal = asString("").trim().toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+    private fun JsonNode.tolkSomInt(): Int = tolkSomDesimaltall().toInt()
+
+    private fun JsonNode.tolkSomDouble(): Double = tolkSomDesimaltall().toDouble()
+
+    private fun JsonNode.tolkSomBoolean(): Boolean = asString("").trim() == "true"
+
     private fun mapBeregningsPeriode(periode: JsonNode) =
         SimulertPeriode(
             fom = LocalDate.parse(periode.path("periodeFom").asText()),
             tom = LocalDate.parse(periode.path("periodeTom").asText()),
-            utbetaling = periode.path("beregningStoppnivaa").asArray().map { mapBeregningStoppNivaa(it) },
+            utbetaling =
+                periode
+                    .path("beregningStoppnivaa")
+                    .somArray()
+                    .values()
+                    .map { mapBeregningStoppNivaa(it) },
         )
 
     private fun mapBeregningStoppNivaa(stoppNivaa: JsonNode) =
@@ -189,21 +209,26 @@ class SimuleringV2Service(
             utbetalesTilNavn = stoppNivaa.path("utbetalesTilNavn").asText().trim(),
             utbetalesTilId = stoppNivaa.path("utbetalesTilId").asText().removePrefix("00"),
             forfall = LocalDate.parse(stoppNivaa.path("forfall").asText()),
-            feilkonto = stoppNivaa.path("feilkonto").asBoolean(),
-            detaljer = stoppNivaa.path("beregningStoppnivaaDetaljer").asArray().map { mapDetaljer(it) },
+            feilkonto = stoppNivaa.path("feilkonto").tolkSomBoolean(),
+            detaljer =
+                stoppNivaa
+                    .path("beregningStoppnivaaDetaljer")
+                    .somArray()
+                    .values()
+                    .map { mapDetaljer(it) },
         )
 
     private fun mapDetaljer(detaljer: JsonNode) =
         Detaljer(
             faktiskFom = LocalDate.parse(detaljer.path("faktiskFom").asText()),
             faktiskTom = LocalDate.parse(detaljer.path("faktiskTom").asText()),
-            uforegrad = detaljer.path("uforeGrad").asInt(),
-            antallSats = detaljer.path("antallSats").asInt(),
+            uforegrad = detaljer.path("uforeGrad").tolkSomInt(),
+            antallSats = detaljer.path("antallSats").tolkSomInt(),
             typeSats = detaljer.path("typeSats").asText().trim(),
-            sats = detaljer.path("sats").asDouble(),
-            belop = detaljer.path("belop").asInt(),
+            sats = detaljer.path("sats").tolkSomDouble(),
+            belop = detaljer.path("belop").tolkSomInt(),
             konto = detaljer.path("kontoStreng").asText().trim(),
-            tilbakeforing = detaljer.path("tilbakeforing").asBoolean(),
+            tilbakeforing = detaljer.path("tilbakeforing").tolkSomBoolean(),
             klassekode = detaljer.path("klassekode").asText().trim(),
             klassekodeBeskrivelse = detaljer.path("klasseKodeBeskrivelse").asText().trim(),
             utbetalingsType = detaljer.path("typeKlasse").asText(),

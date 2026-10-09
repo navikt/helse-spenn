@@ -1,10 +1,9 @@
 package no.nav.helse.spenn.oppdrag
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import tools.jackson.dataformat.xml.XmlMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -21,9 +20,7 @@ internal class OppdragXmlTest {
         private const val AVVIST_FUNKSJONELLE_FEIL = "08"
         private const val AVVIST_TEKNISK_FEIL = "12"
 
-        private val xmlMapper =
-            XmlMapper()
-                .registerModule(JavaTimeModule())
+        private val xmlMapper = XmlMapper()
     }
 
     @Test
@@ -95,8 +92,7 @@ internal class OppdragXmlTest {
             node
                 .path("oppdrag-110")
                 .path("oppdrags-linje-150")
-                .fieldNames()
-                .asSequence()
+                .propertyNames()
                 .toList()
         val posisjonUtbetalesTilId = feltnavn.indexOf("utbetalesTilId")
         val posisjonGrad = feltnavn.indexOf("grad-170")

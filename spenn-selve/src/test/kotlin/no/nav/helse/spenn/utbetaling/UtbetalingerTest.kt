@@ -74,6 +74,8 @@ internal class UtbetalingerTest {
         val utbetalingsmelding = rapid.inspektør.message(1)
         assertEquals("oppdrag_utbetaling", utbetalingsmelding.path("@event_name").asText())
         assertTrue(utbetalingsmelding.hasNonNull("maksdato"))
+        assertTrue(utbetalingsmelding.path("linjer").isArray)
+        assertEquals(behov.linjer.size, utbetalingsmelding.path("linjer").size())
     }
 
     @Test

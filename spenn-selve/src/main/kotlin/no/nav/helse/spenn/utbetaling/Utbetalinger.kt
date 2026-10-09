@@ -1,6 +1,5 @@
 package no.nav.helse.spenn.utbetaling
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -14,6 +13,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.spenn.Avstemmingsnøkkel
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -237,7 +237,7 @@ private fun lagOppdragsmelding(
             "endringskode" to endringskode,
             "totalbeløp" to linjer.sumOf { it.path("sats").asInt() },
             "linjer" to
-                linjer.map { linje ->
+                linjer.values().map { linje ->
                     mutableMapOf<String, Any>(
                         "fom" to linje.path("fom").asText(),
                         "tom" to linje.path("tom").asText(),

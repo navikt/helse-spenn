@@ -8,10 +8,16 @@ import com.github.navikt.tbd_libs.soap.SamlToken
 import com.github.navikt.tbd_libs.soap.SamlTokenProvider
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.helse.spenn.simulering.api.client.Detaljer
+import no.nav.helse.spenn.simulering.api.client.Simulering
 import no.nav.helse.spenn.simulering.api.client.SimuleringV2Service
+import no.nav.helse.spenn.simulering.api.client.SimulertPeriode
+import no.nav.helse.spenn.simulering.api.client.Utbetaling
 import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertInstanceOf
+import java.math.BigDecimal
 import java.net.URI
 import java.net.http.HttpClient
 import java.time.LocalDate
@@ -53,6 +59,134 @@ class SimuleringtjenesteTest {
                 serviceuserPassword = "et-passord",
             )
         assertInstanceOf<SimuleringResponse.Ok>(result)
+    }
+
+    @Test
+    fun `tolker simuleringsresultat med desimaltall og flere detaljer`() {
+        @Language("XML")
+        val xml = """<simulerBeregningResponse xmlns="http://nav.no/system/os/tjenester/simulerFpService/simulerFpServiceGrensesnitt">
+    <response xmlns="">
+        <simulering>
+            <gjelderId>12345678911</gjelderId>
+            <gjelderNavn>NORMAL MUFFINS   </gjelderNavn>
+            <datoBeregnet>2018-01-17</datoBeregnet>
+            <kodeFaggruppe>KORTTID</kodeFaggruppe>
+            <belop>4501.75</belop>
+            <beregningsPeriode>
+                <periodeFom>2018-01-01</periodeFom>
+                <periodeTom>2018-01-31</periodeTom>
+                <beregningStoppnivaa>
+                    <kodeFagomraade>SPREF</kodeFagomraade>
+                    <stoppNivaaId>1</stoppNivaaId>
+                    <behandlendeEnhet>8020</behandlendeEnhet>
+                    <oppdragsId>1</oppdragsId>
+                    <fagsystemId>$FAGSYSTEMID  </fagsystemId>
+                    <kid/>
+                    <utbetalesTilId>00$ORGNR</utbetalesTilId>
+                    <utbetalesTilNavn>EN ARBEIDSGIVER  </utbetalesTilNavn>
+                    <bilagsType>U</bilagsType>
+                    <forfall>2018-02-15</forfall>
+                    <feilkonto>true</feilkonto>
+                    <beregningStoppnivaaDetaljer>
+                        <faktiskFom>2018-01-01</faktiskFom>
+                        <faktiskTom>2018-01-14</faktiskTom>
+                        <kontoStreng>1338011    </kontoStreng>
+                        <behandlingskode>2</behandlingskode>
+                        <belop>3001.50</belop>
+                        <tilbakeforing>false</tilbakeforing>
+                        <sats>1000.50</sats>
+                        <typeSats>DAG </typeSats>
+                        <antallSats>3.00</antallSats>
+                        <uforeGrad>100</uforeGrad>
+                        <klassekode>SPREFAG-IOP</klassekode>
+                        <klasseKodeBeskrivelse>Sykepenger, Refusjon arbeidsgiver </klasseKodeBeskrivelse>
+                        <typeKlasse>YTEL</typeKlasse>
+                        <refunderesOrgNr>00$ORGNR</refunderesOrgNr>
+                    </beregningStoppnivaaDetaljer>
+                    <beregningStoppnivaaDetaljer>
+                        <faktiskFom>2018-01-15</faktiskFom>
+                        <faktiskTom>2018-01-31</faktiskTom>
+                        <kontoStreng>1338011    </kontoStreng>
+                        <behandlingskode>2</behandlingskode>
+                        <belop>-1500.25</belop>
+                        <tilbakeforing>true</tilbakeforing>
+                        <sats>1500.25</sats>
+                        <typeSats>DAG</typeSats>
+                        <antallSats>1.00</antallSats>
+                        <uforeGrad>50</uforeGrad>
+                        <klassekode>SPREFAG-IOP</klassekode>
+                        <klasseKodeBeskrivelse>Sykepenger, Refusjon arbeidsgiver</klasseKodeBeskrivelse>
+                        <typeKlasse>YTEL</typeKlasse>
+                        <refunderesOrgNr>00$ORGNR</refunderesOrgNr>
+                    </beregningStoppnivaaDetaljer>
+                </beregningStoppnivaa>
+            </beregningsPeriode>
+        </simulering>
+    </response>
+</simulerBeregningResponse>"""
+
+        val (_, simuleringClient) = mockClient(xmlResponse(xml))
+        val result =
+            simuleringClient.simulerOppdrag(
+                simulering = simuleringRequest(),
+                serviceuserUsername = "en-serviceuser",
+                serviceuserPassword = "et-passord",
+            )
+
+        val forventetDetalj =
+            Detaljer(
+                faktiskFom = LocalDate.of(2018, 1, 1),
+                faktiskTom = LocalDate.of(2018, 1, 14),
+                konto = "1338011",
+                belop = 3001,
+                tilbakeforing = false,
+                sats = BigDecimal("1000.50").toDouble(),
+                typeSats = "DAG",
+                antallSats = 3,
+                uforegrad = 100,
+                klassekode = "SPREFAG-IOP",
+                klassekodeBeskrivelse = "Sykepenger, Refusjon arbeidsgiver",
+                utbetalingsType = "YTEL",
+                refunderesOrgNr = ORGNR,
+            )
+        val forventet =
+            Simulering(
+                gjelderId = PERSON,
+                gjelderNavn = "NORMAL MUFFINS",
+                datoBeregnet = LocalDate.of(2018, 1, 17),
+                totalBelop = 4501,
+                periodeList =
+                    listOf(
+                        SimulertPeriode(
+                            fom = LocalDate.of(2018, 1, 1),
+                            tom = LocalDate.of(2018, 1, 31),
+                            utbetaling =
+                                listOf(
+                                    Utbetaling(
+                                        fagSystemId = FAGSYSTEMID,
+                                        utbetalesTilId = ORGNR,
+                                        utbetalesTilNavn = "EN ARBEIDSGIVER",
+                                        forfall = LocalDate.of(2018, 2, 15),
+                                        feilkonto = true,
+                                        detaljer =
+                                            listOf(
+                                                forventetDetalj,
+                                                forventetDetalj.copy(
+                                                    faktiskFom = LocalDate.of(2018, 1, 15),
+                                                    faktiskTom = LocalDate.of(2018, 1, 31),
+                                                    belop = -1500,
+                                                    tilbakeforing = true,
+                                                    sats = BigDecimal("1500.25").toDouble(),
+                                                    antallSats = 1,
+                                                    uforegrad = 50,
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+            )
+        assertEquals(SimuleringResponse.Ok(forventet), result)
     }
 
     @Test
