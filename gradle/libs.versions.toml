@@ -1,5 +1,5 @@
 [versions]
-flyway = "13.8.0"
+flyway = "13.9.0"
 ibmMq = "10.0.0.5"
 jaxb = "4.0.9"
 sykepengerGradlePlugins = "20261001.1830"
@@ -20,7 +20,7 @@ kotliquery = "com.github.seratch:kotliquery:1.9.1"
 ktor-server-auth = { module = "io.ktor:ktor-server-auth" }
 ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt" }
 ktor-server-double-receive = { module = "io.ktor:ktor-server-double-receive" }
-logback-classic = "ch.qos.logback:logback-classic:1.6.4"
+logback-classic = "ch.qos.logback:logback-classic:1.6.5"
 logback-logstash-encoder = "net.logstash.logback:logstash-logback-encoder:9.0"
 postgresql = "org.postgresql:postgresql:42.7.13"
 rapids-and-rivers = "com.github.navikt:rapids-and-rivers:2026091610031789545782"
