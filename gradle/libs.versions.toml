@@ -2,8 +2,8 @@
 flyway = "13.9.0"
 ibmMq = "10.0.0.5"
 jaxb = "4.0.9"
-sykepengerGradlePlugins = "20261001.1830"
-tbd-libs = "20261005.1432"
+sykepengerGradlePlugins = "20261013.1718"
+tbd-libs = "20261013.1613"
 # minimal-soap-client finnes ikke lenger
 tbd-libs-minimal-soap-client = "20260917.1302"
 
