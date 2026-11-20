@@ -1,5 +1,5 @@
 [versions]
-flyway = "13.12.1"
+flyway = "13.12.2"
 ibmMq = "10.0.1.0"
 jaxb = "4.0.9"
 sykepengerGradlePlugins = "20261029.1945"
@@ -8,7 +8,7 @@ tbd-libs = "20261029.1843"
 tbd-libs-minimal-soap-client = "20260917.1302"
 
 [libraries]
-cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.30.2"
+cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.31.0"
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 hikaricp = "com.zaxxer:HikariCP:7.1.0"
 ibm-mq-allclient = { module = "com.ibm.mq:com.ibm.mq.allclient", version.ref = "ibmMq" }
