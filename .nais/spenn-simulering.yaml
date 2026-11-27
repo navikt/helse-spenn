@@ -9,6 +9,10 @@ spec:
   port: 8080
   strategy:
     type: RollingUpdate
+  startup:
+    path: /isalive
+    periodSeconds: 5
+    failureThreshold: 36
   liveness:
     initialDelay: 5
     path: /isalive
